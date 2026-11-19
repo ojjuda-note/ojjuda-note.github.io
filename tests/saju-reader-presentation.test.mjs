@@ -1,67 +1,75 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
-import {presentReadingStories,createReadingProgress} from '../games/starlit-saju/reader-presentation.mjs';
+import {createReadingProgress} from '../games/starlit-saju/reader-presentation.mjs';
+import {createStoryReader,splitStoryText} from '../games/starlit-saju/story-reader.mjs';
+import {createReadingScore} from '../games/starlit-saju/reading-score-view.mjs';
 import {calculateSaju} from '../games/starlit-saju/engine.mjs';
 import {analyzeFortune} from '../games/starlit-saju/fortune-data.mjs';
 import {buildDetailedReading} from '../games/starlit-saju/readings.mjs';
 import {buildCompatibilityReading} from '../games/starlit-saju/compatibility.mjs';
 import {renderDetailedReport,renderCompatibilityReport} from '../games/starlit-saju/report-view.mjs';
 
-const {JSDOM}=createRequire(import.meta.url)('jsdom');
+const require=createRequire(import.meta.url),{JSDOM}=require('jsdom');
+const {currentStory,chooseStory,followStory,collectStories,originalParagraphs,assertSummaryAndScore,visible}=require('./helpers/saju-story-ui.cjs');
 const now=new Date('2026-11-20T00:00:00Z');
 const chart=calculateSaju({year:1990,month:5,day:17,hour:8,minute:37},{now});
 
 function environment(html='<nav id="outside"></nav><div id="report"></div>') {
   const dom=new JSDOM('<!doctype html>'+html,{url:'https://example.test/'});
   const doc=dom.window.document;globalThis.document=doc;
+  doc.documentElement.dataset.reducedMotion='true';
   dom.window.HTMLElement.prototype.scrollIntoView=function(){};
   return {dom,doc,host:doc.getElementById('report'),close:()=>dom.window.close()};
 }
-function follow(link) {link.addEventListener('click',event=>event.preventDefault(),{once:true});link.click();}
-function visible(element) {
-  if(!element||element.closest('[hidden]'))return false;
-  for(let parent=element.parentElement;parent;parent=parent.parentElement) {
-    if(parent.tagName==='DETAILS'&&!parent.open&&!parent.querySelector(':scope > summary')?.contains(element))return false;
-  }
-  return true;
+function checkProgress(host) {
+  const progress=host.querySelector('.reading-progress');
+  const counter=host.querySelector('.reading-page-position').textContent.match(/(\d+)\s*\/\s*(\d+)$/);
+  assert.ok(counter);assert.equal(progress.getAttribute('aria-valuenow'),counter[1]);assert.equal(progress.getAttribute('aria-valuemax'),counter[2]);
+  assert.ok(Math.abs(parseFloat(progress.firstChild.style.width)-Number(counter[1])/Number(counter[2])*100)<.0001);
 }
 
-test('a native disclosure preserves the actual prose nodes and keeps uncertainty outside it',()=>{
-  const h=environment(`<div id="report"><article id="summarized">
-    <h4>내 모습</h4><div class="saju-two-line-summary"><p>핵심 풀이</p><p>해볼 일</p></div>
-    <div id="story" class="report-prose reader-prose" data-original="yes"><h5 class="reading-body-heading">생활 속 모습</h5><p id="first">원래 첫 문단</p><p>원래 두 번째 문단</p><p class="reader-scope-note">태어난 시간은 확인하지 못했어요.</p></div>
-    </article><article id="unsummarized"><h4>기본 설명</h4><div class="reader-prose"><p>별도의 요약이 없는 설명은 바로 읽을 수 있어야 해요.</p></div></article></div>`);
-  try {
-    const first=h.doc.getElementById('first');
-    presentReadingStories(h.host);
-    const details=h.doc.getElementById('story');
-    assert.equal(details.tagName,'DETAILS');assert.equal(details.open,false);
-    assert.equal(details.dataset.original,'yes');assert.equal(h.doc.getElementById('first'),first);
-    assert.deepEqual([...details.querySelectorAll(':scope > p')].map(p=>p.textContent),['원래 첫 문단','원래 두 번째 문단']);
-    assert.ok(visible(h.host.querySelector('.saju-two-line-summary')));
-    const notice=h.host.querySelector('.reader-scope-note');assert.ok(visible(notice));
-    assert.equal(notice.closest('.reading-story-details'),null);
-    assert.equal(visible(first),false);
-    details.querySelector('summary').click();assert.ok(visible(first));
-    details.querySelector('summary').click();assert.equal(visible(first),false);
-    assert.equal(h.doc.getElementById('unsummarized').querySelector('details'),null);
-    assert.ok(visible(h.doc.getElementById('unsummarized').querySelector('p')));
-    presentReadingStories(h.host);assert.equal(h.host.querySelectorAll('details').length,1,'presentation is idempotent');
-  } finally {h.close();}
+test('sentence-sized story pieces preserve every original character and never truncate a long sentence',()=>{
+  const text='첫 문장을 그대로 남겨요.  '+ '다음 문장은 생활 속의 예시를 설명해요. '.repeat(24)+'“따옴표도 남겨요!”\n마지막 문장도 보존해요.';
+  const pieces=splitStoryText(text);
+  assert.ok(pieces.length>2);assert.equal(pieces.map(piece=>piece.text).join(''),text);
+  let offset=0;
+  for(const piece of pieces) {
+    assert.equal(piece.start,offset);assert.equal(piece.end-piece.start,piece.text.length);
+    assert.ok(piece.text.length<=240);offset=piece.end;
+  }
+  const unbroken='생략할 수 없는 한 문장'.repeat(60)+'예요.';
+  assert.deepEqual(splitStoryText(unbroken),[{text:unbroken,start:0,end:unbroken.length}]);
+  assert.deepEqual(splitStoryText(''),[]);
 });
 
-test('an inline decade summary and its score stay visible while the full paragraph order is preserved',()=>{
-  const h=environment(`<div id="report"><div class="reader-prose"><h4 class="reader-headline">긴 흐름</h4>
-    <div class="saju-two-line-summary"><p>첫 요약</p><p>둘째 요약</p></div><div class="saju-reading-score">순풍 40점</div>
-    <h5 class="reading-body-heading">이번 구간</h5><p>첫 문단</p><h5 class="reading-body-heading">생활 예시</h5><p>두 번째 문단</p>
-    <p class="reader-scope-note">오전 6시를 기준으로 계산했어요.</p></div></div>`);
+test('a flat story shows its two real meters beside the summary and reconstructs all prose through next',()=>{
+  const h=environment();
   try {
-    presentReadingStories(h.host);
-    const details=h.host.querySelector('.reading-story-inline');assert.ok(details);assert.equal(details.open,false);
-    assert.deepEqual([...details.children].slice(1).map(item=>item.textContent),['이번 구간','첫 문단','생활 예시','두 번째 문단']);
-    for(const selector of ['.saju-two-line-summary','.saju-reading-score','.reader-scope-note','.reader-headline'])assert.ok(visible(h.host.querySelector(selector)));
-    details.querySelector('summary').click();assert.ok([...details.querySelectorAll('p')].every(visible));
+    const fortune=analyzeFortune(chart,{year:2026,now}),item=buildDetailedReading(chart,fortune).personPortrait;
+    const source=h.doc.createElement('section');source.id='original-topic';source.dataset.readerCard='synthetic-story';
+    source.innerHTML='<h3 class="reader-headline"></h3><div class="saju-two-line-summary"></div><div class="reader-prose"></div>';
+    source.querySelector('h3').textContent=item.summaryLines[0];
+    item.summaryLines.forEach(text=>{const p=h.doc.createElement('p');p.className='saju-summary-line';p.textContent=text;source.querySelector('.saju-two-line-summary').append(p);});
+    source.querySelector('.saju-two-line-summary').after(createReadingScore(item.readingScore));
+    for(const [index,text] of item.paragraphs.entries()) {
+      const p=h.doc.createElement('p');p.textContent=text;p.id='paragraph-'+index;source.querySelector('.reader-prose').append(p);
+    }
+    h.host.append(source);
+    const reader=createStoryReader(h.host,{pages:[{id:source.id,element:source,label:'성격',group:'평생운',domain:'lifelong'}]});
+    const first=currentStory(h.host);
+    assert.equal(first.querySelector('.story-title').textContent,item.summaryLines[0]);
+    assert.equal(first.querySelectorAll('.saju-wind-meter[role="meter"]').length,2);
+    assert.ok([...first.querySelectorAll('.saju-wind-meter')].every(visible));
+    assert.equal(h.host.querySelector('dialog.story-menu').open,false);
+    assert.equal(h.host.querySelector('.reading-map,details'),null);
+    const scenes=collectStories(h.host);
+    assertSummaryAndScore(scenes,item,'the synthetic topic');
+    assert.deepEqual(originalParagraphs(scenes),item.paragraphs);
+    assert.ok(scenes.every(scene=>scene.kind!=='score'),'general scores stay with their topic summary instead of taking another screen');
+    assert.equal(reader.restore('paragraph-2'),true);
+    const restored=currentStory(h.host);assert.ok(restored.querySelector('.story-body').textContent.includes(item.paragraphs[2].slice(0,30)));
+    assert.equal(reader.restore('missing-paragraph'),false);assert.equal(currentStory(h.host),restored);
   } finally {h.close();}
 });
 
@@ -82,55 +90,73 @@ test('reading progress exposes real positions and hides unsupported locations',(
   } finally {h.close();}
 });
 
-test('the report starts with summaries, keeps fields inside its menu and expands deep links before focus',()=>{
+test('a paid report enters the story directly and its modal contents retain keyboard focus',()=>{
   const h=environment();
   try {
-    const fortune=analyzeFortune(chart,{year:2026,now}),reading=buildDetailedReading(chart,fortune);
-    const copy=reading.copyByCategory.annual;
+    const fortune=analyzeFortune(chart,{year:2026,now}),reading=buildDetailedReading(chart,fortune),copy=reading.copyByCategory.annual;
     renderDetailedReport(h.host,{reading,fortune,topic:'annual'});
-    follow(h.host.querySelector('.map-deep-link'));
-    const current=h.host.querySelector('[data-reader-current]');
-    const details=current.querySelector('.reading-story-details');
-    assert.ok(details);assert.equal(details.open,false);
-    assert.ok(visible(current.querySelector('.saju-two-line-summary')));
-    assert.ok(visible(current.querySelector('.saju-reading-score')));
-    const picker=h.host.querySelector('.reading-item-picker');
-    assert.equal(picker.open,false);assert.ok(picker.contains(h.host.querySelector('.reading-domain-nav')));
-    picker.querySelector('summary').click();assert.equal(picker.open,true);
-    const active=h.host.querySelector('.reading-domain-button[aria-pressed="true"]');
-    active.focus();active.click();assert.equal(picker.open,true);assert.equal(h.doc.activeElement,active);
-    picker.querySelector('summary').click();assert.equal(picker.open,false);
-    const target=details.querySelector('p');target.id='full-story-target';target.tabIndex=-1;
-    const link=h.doc.createElement('a');link.href='#'+target.id;h.doc.getElementById('outside').append(link);
-    follow(link);assert.equal(details.open,true);assert.ok(visible(target));assert.equal(h.doc.activeElement,target);
-    const progress=h.host.querySelector('.reading-progress');
-    const check=()=>{
-      const counter=h.host.querySelector('.reading-page-position').textContent.match(/(\d+) \/ (\d+)$/);
-      assert.ok(counter);assert.equal(progress.getAttribute('aria-valuenow'),counter[1]);assert.equal(progress.getAttribute('aria-valuemax'),counter[2]);
-      assert.ok(Math.abs(parseFloat(progress.firstChild.style.width)-Number(counter[1])/Number(counter[2])*100)<.0001);
-    };
-    check();const before=h.host.querySelector('[data-reader-current]');
-    h.host.querySelectorAll('.reading-pager-step')[1].click();
-    assert.notEqual(h.host.querySelector('[data-reader-current]'),before);check();
-    assert.equal(reading.copyByCategory.annual,copy,'display changes do not alter the complete copied reading');
+    const first=currentStory(h.host);
+    assert.equal(h.host.querySelector('.reading-map,.map-return'),null,'there is no extra map or repeated return control before the story');
+    assert.equal(first.querySelectorAll('.saju-wind-meter[role="meter"]').length,2,'the initial summary visibly includes both independent bars');
+    const select=h.host.querySelector('#reading-page-select'),toggle=h.doc.getElementById(select.id+'-toggle'),menu=h.host.querySelector('dialog.story-menu');
+    assert.equal(menu.open,false);assert.equal(select.hidden,true);
+    toggle.click();assert.equal(menu.open,true);assert.equal(toggle.getAttribute('aria-expanded'),'true');
+    const domain=menu.querySelector('.reading-domain-button');domain.focus();domain.click();
+    assert.equal(h.doc.activeElement,domain);assert.equal(menu.open,true);
+    menu.dispatchEvent(new h.dom.window.KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}));
+    assert.equal(menu.open,false);assert.equal(h.doc.activeElement,toggle);
+    const choice=menu.querySelectorAll('[data-reading-target]')[1];chooseStory(select,choice.dataset.readingTarget);
+    assert.equal(h.doc.activeElement,toggle,'choosing another topic returns focus to the closed contents button');
+    checkProgress(h.host);
+    const next=h.host.querySelectorAll('.reading-pager-step')[1];next.focus();const before=select.value;next.click();
+    assert.notEqual(select.value,before);assert.equal(h.doc.activeElement,next);checkProgress(h.host);
+    const target=followStory(h.host,'reading-annual-summary');
+    assert.ok(target.contains(h.doc.activeElement),'a source anchor reveals its story before focusing it');
+    assert.equal(reading.copyByCategory.annual,copy,'presentation never rewrites the copied report');
   } finally {h.close();}
 });
 
-test('each person keeps an independent closed explanation and compatibility progress follows its controls',()=>{
+test('A and B remain identifiable in sequential stories and compatibility meters remain in the reading order',()=>{
   const h=environment();
   try {
     const partner=calculateSaju({year:1992,month:3,day:14,hour:10,minute:20},{now});
-    renderCompatibilityReport(h.host,buildCompatibilityReading(chart,partner));
-    follow(h.host.querySelector('.map-topic[href="#compatibility-people-overview"]'));
-    const current=h.host.querySelector('[data-compatibility-current]');
-    const details=[...current.querySelectorAll('.compatibility-person-reading .reading-story-details')];
-    assert.equal(details.length,2);assert.ok(details.every(item=>!item.open));
-    assert.ok([...current.querySelectorAll('.compatibility-two-line-summary')].every(visible));
-    details[0].querySelector('summary').click();assert.equal(details[0].open,true);assert.equal(details[1].open,false);
-    const progress=h.host.querySelector('.reading-progress'),before=Number(progress.getAttribute('aria-valuenow'));
-    h.host.querySelector('[data-compatibility-step="next"]').click();
-    assert.equal(Number(progress.getAttribute('aria-valuenow')),before+1);
-    h.host.querySelector('[data-compatibility-step="previous"]').click();
-    assert.equal(Number(progress.getAttribute('aria-valuenow')),before);
+    const reading=buildCompatibilityReading(chart,partner);
+    renderCompatibilityReport(h.host,reading,{names:[{name:'예시 A'},{name:'예시 B'}]});
+    const scenes=collectStories(h.host);
+    for(const [index,person] of reading.people.entries())for(const item of [person,...person.cards]) {
+      const relevant=scenes.filter(scene=>scene.topic===item.id);
+      assert.ok(relevant.length,`${item.id} is in the normal reading order`);
+      assert.ok(relevant.every(scene=>scene.data.personMarker===(index===0?'A':'B')));
+      assert.ok(relevant[0].label.includes(index===0?'A · 예시 A':'B · 예시 B'));
+      assertSummaryAndScore(relevant,item,item.id);assert.deepEqual(originalParagraphs(relevant),item.paragraphs);
+    }
+    const scores=scenes.filter(scene=>scene.kind==='score');assert.equal(scores.length,1);
+    chooseStory(h.host.querySelector('#compatibility-page-select'),scores[0].id);
+    const current=currentStory(h.host);
+    assert.equal(current.querySelectorAll('.compatibility-score-meter[role="meter"]').length,reading.score.items.length);
+    assert.equal(Number(current.querySelector('[data-score-total]').textContent.match(/\d+/)[0]),reading.score.total);
+    checkProgress(h.host);
+  } finally {h.close();}
+});
+
+test('replacing a paid reader binds one keyboard turn and never turns the story from its open contents',()=>{
+  const h=environment();
+  try {
+    const fortune=analyzeFortune(chart,{year:2026,now}),reading=buildDetailedReading(chart,fortune);
+    const partner=calculateSaju({year:1992,month:3,day:14,hour:10,minute:20},{now});
+    for(const render of [
+      ()=>renderDetailedReport(h.host,{reading,fortune,topic:'lifelong'}),
+      ()=>renderDetailedReport(h.host,{reading,fortune,topic:'annual'}),
+      ()=>renderCompatibilityReport(h.host,buildCompatibilityReading(chart,partner)),
+    ]) {
+      render();const select=h.host.querySelector('select.reading-page-select'),options=[...select.options];
+      const before=options.findIndex(option=>option.value===select.value);
+      currentStory(h.host).dispatchEvent(new h.dom.window.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true,cancelable:true}));
+      assert.equal(select.value,options[before+1].value,'one key advances one scene after each replacement');
+      h.doc.getElementById(select.id+'-toggle').click();const saved=select.value,menu=h.host.querySelector('dialog.story-menu');
+      menu.querySelector('.story-menu-title').dispatchEvent(new h.dom.window.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true,cancelable:true}));
+      assert.equal(select.value,saved,'keyboard activity in the open contents never advances the background story');
+      menu.querySelector('.story-menu-close').click();
+    }
   } finally {h.close();}
 });

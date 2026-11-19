@@ -49,6 +49,7 @@ function entryFlowDriver(form,window) {
   return {current,next,back,confirm};
 }
 function selectReadingItem(select,id) {
+  if(select.closest('.story-reader'))return require('./saju-story-ui.cjs').chooseStory(select,id);
   const doc=select.ownerDocument,nav=doc.getElementById(select.id+'-navigator');
   assert.ok(nav,'the reading has visible field and item navigation');
   const item=nav.querySelector('[data-reading-target="'+id+'"]');
@@ -294,7 +295,14 @@ async function harness(options = {}) {
     try { await waitFor(() => !$('result').hidden && $('report-content').dataset.topic===topic && $('report-content').dataset.year===String(year),'report missing'); }
     catch(error) { error.message+=` · ${$('form-error').textContent} · ${$('entry-check-error-text').textContent} · starts=${state.starts.length}`;throw error; }
   }
+  function openTools() {
+    const dialog=$('reading-tools');
+    if(dialog&&!dialog.open)window.document.querySelector('[data-reader-tools="reading-tools"]').click();
+    if(dialog)assert.equal(dialog.open,true,'secondary reading controls are explicitly opened');
+    return dialog;
+  }
   function pickReport(topic,year=2026) {
+    openTools();
     if (!$('other-reading-options').open) $('other-reading-options').querySelector('summary').click();
     assert.equal($('other-reading-options').open,true,'open the other-reading options before choosing a product');
     const radio=window.document.querySelector(`input[name="report-topic"][value="${topic}"]`);
@@ -340,7 +348,7 @@ async function harness(options = {}) {
     })();
     return closing;
   }
-  return {dom,window,state,$,fill,submit,ready,change,pickReport,changeAccount,advance,flow,close};
+  return {dom,window,state,$,fill,submit,ready,change,pickReport,openTools,changeAccount,advance,flow,close};
 }
 
 module.exports = {harness, fixedNow, PROFILE_USER_A, PROFILE_USER_B, pause, deferred, waitFor, entryFlowDriver, selectReadingItem, assertNoReadingScores, assertNoCalculationUI, assertReadingScores, assertReadingScoreCopy};

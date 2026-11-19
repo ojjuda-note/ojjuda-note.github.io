@@ -73,16 +73,15 @@ globalThis.__sajuScoreFixture = {key:fixtureCase,birth:births[fixtureCase],nativ
   daeun:{natalTimeKnown:chart.timeKnown,natalHour:chart.input.hour,available:reading.daeun.available,timeAssumed:reading.daeun.timeAssumed,
     assumedBirthTime:reading.daeun.assumedBirthTime,notice:reading.daeun.birthTimeNotice,periodCount:reading.daeun.periods.length,
     currentPeriodLabel:reading.daeun.periods.find(period=>period.isCurrent)?.periodLabel},
-  items:[{key:'portrait-overview',selector:'.portrait-intro',reading:reading.personPortrait},
-    {key:'portrait-decisions',selector:'.portrait-card[data-portrait-card="portrait-decisions"]',reading:reading.personPortrait.cards.find(item=>item.id==='portrait-decisions')},
-    {key:'lifelong-overview',selector:'#reading-lifelong-summary .reader-intro',reading:reading.reader.lifelong}]};
+  items:[{key:'portrait-overview',reading:reading.personPortrait},
+    {key:'portrait-decisions',reading:reading.personPortrait.cards.find(item=>item.id==='portrait-decisions')},
+    {key:'lifelong-overview',reading:reading.reader.lifelong}]};
 const target = document.getElementById('report-content');
 const select = document.getElementById('fixture-topic');
 function show(){
   const content=document.createElement('div');
   renderDetailedReport(content,{reading,fortune,topic:select.value});
   target.replaceChildren(content);
-  if(!new URLSearchParams(location.search).has('map'))target.querySelector('.map-deep-link').click();
   target.dataset.ready=select.value;
 }
 select.addEventListener('change',show);show();
@@ -103,7 +102,6 @@ function show(){
   const content=document.createElement('div');
   renderCompatibilityReport(content,reading,{names:[{name:'길게 입력한 첫 번째 예시 이름'},{name:'길게 입력한 두 번째 예시 이름'}]});
   target.replaceChildren(...content.childNodes);
-  if(!new URLSearchParams(location.search).has('map'))target.querySelector('.map-deep-link').click();
   target.dataset.ready=select.value;
 }
 select.addEventListener('change',show);show();
@@ -192,335 +190,234 @@ const server = http.createServer((request, response) => {
     await page.waitForFunction(() => document.querySelector('#app').dataset.phase === 'reading');
     const roles = ['지금의 문제', '현재 상황', '해결 방법과 결과'];
     const revealedNames = [];
+    async function inspectReaderPage(expected, prefix = 'result') {
+      const article = page.locator('#' + prefix + '-reader-page');
+      await page.waitForFunction(({prefix,id}) => document.getElementById(prefix + '-reader-page')?.dataset.pageId === id,
+        {prefix,id:expected.id});
+      assert.equal(await article.getAttribute('data-chapter-id'), expected.chapterId);
+      assert.equal(await article.getAttribute('data-group-id'), expected.groupId);
+      assert.equal(await page.locator('#' + prefix + '-reader-body [data-page-id]:visible').count(), 1,
+        'exactly one current reading page is visible');
+      assert.equal(await page.locator('#' + prefix + '-title').textContent(), expected.title);
+      assert.deepEqual(await article.locator('.reader-paragraph').allTextContents(), expected.paragraphs || []);
+      assert.deepEqual(await article.locator('.reader-summary-line').allTextContents(), expected.summaryLines || []);
+    }
+    async function openReaderMenu(prefix = 'result') {
+      if (!await page.locator('#' + prefix + '-reader-menu').isVisible()) await page.locator('#' + prefix + '-reader-menu-toggle').click();
+      assert.equal(await page.locator('#' + prefix + '-reader-menu-toggle').getAttribute('aria-expanded'), 'true');
+      assert.equal(await page.locator('#' + prefix + '-reader-body').getAttribute('aria-hidden'), 'true',
+        'the reading behind the contents menu is excluded from navigation');
+    }
+    async function goToReaderPage(expected, pages, prefix = 'result') {
+      const first = pages.find(item => item.chapterId === expected.chapterId);
+      await openReaderMenu(prefix);
+      await page.locator('#' + prefix + '-reader-menu [data-reader-target="' + first.id + '"]').click();
+      assert.equal(await page.locator('#' + prefix + '-reader-menu').isVisible(), false);
+      const start = pages.findIndex(item => item.id === first.id);
+      const target = pages.findIndex(item => item.id === expected.id);
+      for (let index = start; index < target; index++) await page.locator('#' + prefix + '-reader-next').click();
+      await inspectReaderPage(expected, prefix);
+    }
+    async function inspectReaderLayout(label, prefix = 'result') {
+      const geometry = await page.evaluate(prefix => {
+        const dialog = document.getElementById(prefix + '-dialog');
+        const body = document.getElementById(prefix + '-reader-body');
+        const title = document.getElementById(prefix + '-title');
+        const close = document.getElementById(prefix + '-reader-close').getBoundingClientRect();
+        const range = document.createRange(); range.selectNodeContents(title);
+        const titleClear = [...range.getClientRects()].every(line =>
+          line.right <= close.left || line.left >= close.right || line.bottom <= close.top || line.top >= close.bottom);
+        const controls = ['reader-prev','reader-next','reader-menu-toggle','reader-close'].map(name => {
+          const button = document.getElementById(prefix + '-' + name), box = button.getBoundingClientRect();
+          const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+          return {id:button.id,width:box.width,height:box.height,inside:box.left >= -1 && box.right <= innerWidth + 1
+            && box.top >= -1 && box.bottom <= innerHeight + 1,hit:hit === button || button.contains(hit)};
+        });
+        const prose = [...body.querySelectorAll('.reader-paragraph,.reader-summary-line')].map(node => {
+          const style = getComputedStyle(node);
+          return {text:node.textContent, font:parseFloat(style.fontSize), fits:node.scrollWidth <= node.clientWidth + 1
+            && node.scrollHeight <= node.clientHeight + 1, clamp:style.webkitLineClamp, ellipsis:style.textOverflow === 'ellipsis'};
+        });
+        return {horizontalOverflow:document.documentElement.scrollWidth > innerWidth + 1
+          || dialog.scrollWidth > dialog.clientWidth + 1 || body.scrollWidth > body.clientWidth + 1,
+          titleClear,controls,prose,scrollable:body.scrollHeight > body.clientHeight + 1,
+          bodyHeight:body.clientHeight,scrollStyle:getComputedStyle(body).overflowY};
+      }, prefix);
+      assert.equal(geometry.horizontalOverflow, false, label + ': the reader has no horizontal overflow');
+      assert.equal(geometry.titleClear, true, label + ': the full title stays clear of the close button');
+      assert.ok(geometry.controls.every(control => control.inside && control.hit && control.width >= 43.9 && control.height >= 43.9),
+        label + ': the previous, next, contents and close controls stay reachable with 44px targets');
+      assert.ok(geometry.bodyHeight > 100 && /auto|scroll/.test(geometry.scrollStyle), label + ': long content has its own usable scroll area');
+      assert.ok(geometry.prose.length && geometry.prose.every(item => item.text && item.font >= 16 && item.fits
+        && ['none','','unset'].includes(item.clamp) && !item.ellipsis), label + ': whole original sentences wrap without clipping or ellipses');
+      if (geometry.scrollable) {
+        const before = await page.locator('#' + prefix + '-reader-page').getAttribute('data-page-id');
+        await page.locator('#' + prefix + '-reader-body').evaluate(body => { body.scrollTop = body.scrollHeight; });
+        assert.ok(await page.locator('#' + prefix + '-reader-body').evaluate(body => body.scrollTop > 0),
+          label + ': the complete page can be scrolled');
+        assert.equal(await page.locator('#' + prefix + '-reader-page').getAttribute('data-page-id'), before,
+          'vertical reading does not navigate to another page');
+        await page.locator('#' + prefix + '-reader-body').evaluate(body => { body.scrollTop = 0; });
+      }
+      return geometry;
+    }
     for (const [slot, index] of [2, 4, 3].entries()) {
-      await page.locator(`.card[data-index="${index}"]`).click();
+      await page.locator('.card[data-index="' + index + '"]').click();
       await page.waitForFunction(phase => document.querySelector('#app').dataset.phase === phase, slot === 2 ? 'complete' : 'reading');
       assert.equal(await page.locator('#reading-dialog').isVisible(), false, 'revealing a card keeps the visitor at the table');
       assert.equal(await page.locator('#result-dialog').isVisible(), false, 'results wait for an explicit action');
-      await page.locator(`.card[data-index="${index}"]`).click();
+      const name = await page.locator('.card[data-index="' + index + '"] .front-title strong').textContent();
+      revealedNames.push(name);
+      await page.locator('.card[data-index="' + index + '"]').click();
       await page.locator('#reading-dialog[open]').waitFor();
-      assert.ok((await page.locator('#reading-position').textContent()).endsWith(roles[slot]));
-      assert.ok((await page.locator('#reading-introduction').textContent()).length > 20);
-      assert.ok((await page.locator('#reading-title').textContent()).length > 0);
-      const paragraphs = await page.locator('#reading-sections > p').allTextContents();
-      assert.ok(paragraphs.length >= 5, 'card meaning, topic, position, example and caution remain detailed; actions continue in the combined view');
-      assert.ok(paragraphs.every(text => text.trim().length > 20));
-      assert.ok(paragraphs.join('').length >= 350, 'the individual reading remains detailed');
-      assert.equal(await page.locator('#reading-sections h3').count(), 0);
-      const cardName = await page.locator('#reading-title').textContent();
-      revealedNames.push(cardName);
-      assert.ok((await page.locator('#reading-introduction .reading-card-name').allTextContents()).some(text => text.includes(cardName)), 'the actual card name is subtly emphasized');
-      assert.ok(await page.locator('#reading-detail-sections .reading-part').count() > 0, 'original meanings and cautions remain available');
-      assert.match(await page.locator('#reading-source-link').getAttribute('href'), /^https:\/\/en\.wikisource\.org\//);
-      if (index === 2) {
-        await page.screenshot({ path: path.join(artifacts, 'tarot-card-mobile.png') });
-        await page.locator('#reading-source-link').locator('xpath=ancestor::details[1]').locator('summary').click();
-        await page.locator('#reading-source-link').scrollIntoViewIfNeeded();
-        await page.screenshot({ path: path.join(artifacts, 'tarot-source-mobile.png') });
+      const cardModel = await page.evaluate(async ({index,slot,role}) => {
+        const {DECK,getReading} = await import('/games/moonlit-tarot/readings.js');
+        const {buildCardPages} = await import('/games/moonlit-tarot/reading-pages.js');
+        const name = document.querySelector('.card[data-index="' + index + '"] .front-title strong').textContent;
+        const card = DECK.find(item => item.name === name), reading = getReading(card,'money',slot);
+        const positionLabel = ['첫 번째','두 번째','세 번째'][slot] + ' 자리 · ' + role;
+        return {pages:buildCardPages(card,reading,{positionLabel}),paragraphs:reading.paragraphs,meaning:reading.meaning,reference:reading.reference.url};
+      }, {index,slot,role:roles[slot]});
+      assert.ok(cardModel.paragraphs.join('').length >= 350, 'individual card explanations retain their full detail');
+      await inspectReaderPage(cardModel.pages[0], 'reading');
+      assert.ok((await page.locator('#reading-reader-page').textContent()).includes(roles[slot]));
+      const sourcePage = cardModel.pages.find(item => item.links?.some(link => link.url === cardModel.reference));
+      assert.ok(sourcePage, 'original card references remain a reachable reader page');
+      if (slot === 0) {
+        await inspectReaderLayout('individual mobile', 'reading');
+        await page.screenshot({path:path.join(artifacts,'tarot-card-mobile.png'),animations:'disabled'});
+        await goToReaderPage(sourcePage, cardModel.pages, 'reading');
+        assert.match(await page.locator('#reading-reader-page a.reader-source-link').first().getAttribute('href'), /^https:\/\/en\.wikisource\.org\//);
+        await page.screenshot({path:path.join(artifacts,'tarot-source-mobile.png'),animations:'disabled'});
       }
-      await page.locator('#reading-dialog .modal-close').click();
+      await page.locator('#reading-reader-close').click();
     }
     assert.equal(await page.locator('#action-button').isVisible(), true);
     await page.locator('#action-button').click();
-    await page.locator('#result-dialog[open]').waitFor({ timeout: 15000 });
-    assert.equal(await page.locator('#summary-tab-cards').getAttribute('aria-selected'), 'true');
-    assert.deepEqual(await page.locator('#summary-tabs [role="tab"]').allTextContents(),
-      ['카드 소개', '나의 이야기', '과거·현재·미래', '분야별 풀이', '내 상황']);
-    assert.equal(await page.locator('#summary-panel-cards').isVisible(), true);
-    assert.equal(await page.locator('#summary-panel-problem').isVisible(), false);
-    assert.equal(await page.locator('#summary-panel-timeline').isVisible(), false);
-    await page.locator('#summary-tab-problem').click();
-    assert.equal(await page.locator('#result-title').textContent(), '나를 위한 종합 점괘');
-    assert.ok((await page.locator('#summary-panel-problem [data-section-id="together"] h3').textContent()).includes('지금 나에게 필요한 이야기'));
-    const storyVoice = (await page.locator('#summary-panel-problem').textContent()).replace(/[‘“][^’”]*[’”]/gu, '');
-    assert.doesNotMatch(storyVoice, /(?<![가-힣])(?:너에게|너는|너를|네가|네게|당신)|(?:보렴|하렴|거야|있어)[.!?]/u,
-      'the personal-story screen keeps its first-person perspective from heading to full explanation');
-    await page.locator('#summary-tab-problem').press('ArrowLeft');
-    assert.equal(await page.locator('#summary-tab-cards').getAttribute('aria-selected'), 'true', 'Left from the personal story selects the first introduction tab');
-    assert.equal(await page.locator('#summary-tab-cards').evaluate(tab => tab === document.activeElement), true);
-    await page.locator('#summary-tab-cards').press('ArrowLeft');
-    assert.equal(await page.locator('#summary-tab-personal').getAttribute('aria-selected'), 'true', 'Left from the first tab wraps to the final situation tab');
-    await page.locator('#summary-tab-personal').press('Home');
-    assert.equal(await page.locator('#summary-tab-cards').getAttribute('aria-selected'), 'true', 'Home selects the first introduction tab');
-    assert.equal(await page.locator('#summary-tab-cards').evaluate(tab => tab === document.activeElement), true);
-    await page.locator('#summary-tab-problem').click();
-    const solutionSummary = page.locator('#summary-panel-problem [data-section-id="solution"] > .reading-two-line-summary');
-    assert.equal(await solutionSummary.locator('.reading-summary-line').count(), 2, 'the direct reading keeps two complete summary sentences');
-    const solutionLines = await solutionSummary.locator('.reading-summary-line').allTextContents();
-    assert.ok(solutionLines.every(line => /[.!?]$/u.test(line.trim())), 'the reason and the action remain complete sentences');
-    assert.notEqual(solutionLines[0], solutionLines[1], 'the action does not merely repeat the explanation');
-    assert.equal(await page.locator('#summary-panel-problem > .reading-part').first().getAttribute('data-section-id'), 'together', 'the person’s combined story comes before the action sections');
-    assert.equal((await page.locator('#summary-panel-problem [data-section-id="possible-outcome"] h3').textContent()).replace(/^\d+\s*/u, ''), '실천한 뒤 살펴볼 변화', 'the outcome is presented as a change to check after acting');
-    const selectedSource = await page.evaluate(async () => {
-      const { DECK, getReading, getSummary } = await import('/games/moonlit-tarot/readings.js');
-      const { getFortune } = await import('/games/moonlit-tarot/fortune-corpus/index.js');
-      const cards = [2, 4, 3].map(index => {
-        const name = document.querySelector(`.card[data-index="${index}"] .front-title strong`).textContent;
-        return DECK.find(card => card.name === name);
-      });
-      const summary = getSummary(cards, 'money');
-      return { record: getFortune('money', summary.source.pattern), sections: summary.detailSections,
-        firstCardMeaning: getReading(cards[0], 'money', 0).meaning,
-        groupOriginals: Object.fromEntries(summary.groups.map(group =>
-          [group.id, group.sections.map(section => section.paragraphs.join(''))])) };
-    });
-    assert.ok((await page.locator('#summary-panel-cards [data-section-id="card-intro-0"] > .reading-summary-details .reading-summary-full').textContent()).includes(selectedSource.firstCardMeaning), 'card introductions preserve the actual first card meaning');
-    assert.ok(!(await page.locator('#summary-panel-problem').textContent()).includes(selectedSource.firstCardMeaning), 'the personal story does not repeat the card definition');
-    const tarotExplanation = /(?:이|첫|다음|마지막) 카드|카드(?:가|는|의 뜻|의 의미|로 살펴)|타로의|같은 세 장/u;
-    for (const group of ['problem', 'timeline', 'domains']) {
-      assert.doesNotMatch(await page.locator(`#summary-panel-${group}`).textContent(), tarotExplanation,
-        group + ': personal reading text has no card lesson');
+    await page.locator('#result-dialog[open]').waitFor({timeout:15000});
+    async function summaryModel(contextId = '') {
+      return page.evaluate(async contextId => {
+        const {DECK,getSummary,getReading} = await import('/games/moonlit-tarot/readings.js');
+        const {buildSummaryPages} = await import('/games/moonlit-tarot/reading-pages.js');
+        const {buildPersonalReading,personalReadingCopyLines} = await import('/games/moonlit-tarot/personal-reading.js');
+        const {getFortune} = await import('/games/moonlit-tarot/fortune-corpus/index.js');
+        const cards = [2,4,3].map(index => {
+          const name = document.querySelector('.card[data-index="' + index + '"] .front-title strong').textContent;
+          return DECK.find(card => card.name === name);
+        });
+        const summary = getSummary(cards,'money');
+        const report = contextId ? buildPersonalReading({cards,topicId:'money',contextId}) : null;
+        return {pages:buildSummaryPages(summary,{cards,personalReport:report}),summary,record:getFortune('money',summary.source.pattern),
+          firstCardMeaning:getReading(cards[0],'money',0).meaning,personalCopy:report ? personalReadingCopyLines(report).filter(Boolean) : []};
+      }, contextId);
     }
-    const tarotViews = { entry: tarotEntryViews };
-    const domainCategories = [['self', 5], ['timeline', 5], ['solutions', 5], ['love', 7], ['family', 4], ['career', 5], ['study', 5], ['money', 5], ['wellbeing', 4], ['opportunities', 5]];
-    const captureCategories = new Set(['self', 'love', 'money', 'wellbeing']);
-    const overflowState = () => page.evaluate(() => ({ document: document.documentElement.scrollWidth > innerWidth, modal: document.querySelector('#result-dialog').scrollWidth > document.querySelector('#result-dialog').clientWidth }));
-    async function inspectSummaryDetails(viewport) {
-      const details = page.locator('#summary-detail');
-      assert.equal(await details.count(), 1, 'tab and viewport changes never append duplicate source interpretations');
-      assert.equal(await details.locator('summary').textContent(), '함께 읽는 종합 해석');
-      assert.equal(await details.getAttribute('open'), null);
-      const sections = details.locator('#summary-detail-sections > .reading-part');
-      assert.equal(await sections.count(), selectedSource.sections.length);
-      for (const [index, source] of selectedSource.sections.entries()) {
-        assert.ok((await sections.nth(index).locator('h3').textContent()).endsWith(source.title));
-        if (source.subtitle) assert.equal(await sections.nth(index).locator('.reading-part-subtitle').textContent(), source.subtitle);
-        const paragraphs = await sections.nth(index).locator('p').allTextContents();
-        assert.equal(paragraphs.join(''), source.body.split(/\n\s*\n/).join(''), 'all selected source text and cautions survive visual paragraph breaks');
-      }
-      for (const text of [selectedSource.record.body, selectedSource.record.action]) assert.equal((await details.textContent()).split(text).length - 1, 1, 'the actual corpus body and practical advice appear once');
-      await details.locator('summary').focus();
-      await details.locator('summary').press('Enter');
-      assert.equal(await details.locator('#summary-detail-sections').isVisible(), true, 'keyboard activation opens the full selected interpretation');
-      assert.deepEqual(await overflowState(), { document: false, modal: false }, viewport + ': the complete source interpretation wraps without horizontal overflow');
-      await page.screenshot({ path: path.join(artifacts, `tarot-source-interpretation-${viewport}.png`) });
-      await details.locator('summary').press('Space');
-      assert.equal(await details.locator('#summary-detail-sections').isVisible(), false);
+    const selectedSource = await summaryModel();
+    const tarotViews = {entry:tarotEntryViews,reader:{pages:selectedSource.pages.length,layouts:{}}};
+    await inspectReaderPage(selectedSource.pages[0]);
+    assert.equal(await page.locator('#result-reader-prev').isDisabled(), true);
+    await openReaderMenu();
+    const targets = await page.locator('#result-reader-menu [data-reader-target]').evaluateAll(buttons => buttons.map(button => button.dataset.readerTarget));
+    const chapterFirst = selectedSource.pages.filter((item,index,pages) => !index || item.chapterId !== pages[index - 1].chapterId);
+    assert.deepEqual([...targets].sort(), chapterFirst.map(item => item.id).sort(), 'every original chapter and appendix is directly reachable once');
+    assert.equal(await page.locator('#result-context-select option').count(), 4, 'the money reading keeps its three scoped situations');
+    const domainChapters = chapterFirst.filter(item => item.groupId.startsWith('domains:'));
+    assert.equal(domainChapters.length, 50);
+    for (const category of selectedSource.summary.groups.find(group => group.id === 'domains').categories) {
+      const chapters = domainChapters.filter(item => item.groupId === 'domains:' + category.id);
+      assert.equal(chapters.length, category.count);
+      await goToReaderPage(chapters[0], selectedSource.pages);
+      await openReaderMenu();
+      assert.equal(await page.locator('#result-reader-menu [aria-current="page"]').getAttribute('data-reader-target'), chapters[0].id);
     }
-    async function inspectUnclippedSummaries(scope, label) {
-      const geometry = await scope.locator('.reading-summary-line:visible').evaluateAll(lines => lines.map(line => {
-        const style = getComputedStyle(line);
-        return { text: line.textContent.trim(), fits: line.scrollWidth <= line.clientWidth + 1 && line.scrollHeight <= line.clientHeight + 1,
-          wraps: style.whiteSpace !== 'nowrap', clamp: style.webkitLineClamp, overflow: style.textOverflow };
+    const firstStory = chapterFirst.find(item => item.groupId === 'problem');
+    await goToReaderPage(firstStory, selectedSource.pages);
+    await page.locator('#result-reader-body').focus();
+    await page.locator('#result-reader-body').press('ArrowRight');
+    await inspectReaderPage(selectedSource.pages[selectedSource.pages.findIndex(item => item.id === firstStory.id) + 1]);
+    await page.locator('#result-reader-body').focus();
+    await page.locator('#result-reader-body').press('ArrowLeft');
+    await inspectReaderPage(firstStory);
+    await openReaderMenu();
+    await page.locator('#result-reader-menu-toggle').press('Escape');
+    assert.equal(await page.locator('#result-reader-menu').isVisible(), false);
+    assert.equal(await page.locator('#result-reader-menu-toggle').evaluate(button => button === document.activeElement), true);
+
+    const longPage = selectedSource.pages.slice(0, -1).filter(item => item.paragraphs?.length && !item.links?.length)
+      .reduce((longest,item) => item.paragraphs.join('').length > longest.paragraphs.join('').length ? item : longest);
+    for (const [label,viewport] of [
+      ['small-phone',{width:320,height:640}], ['mobile',{width:390,height:844}], ['desktop',{width:750,height:750}]
+    ]) {
+      await page.setViewportSize(viewport);
+      await goToReaderPage(longPage, selectedSource.pages);
+      tarotViews.reader.layouts[label] = await inspectReaderLayout(label);
+      await page.screenshot({path:path.join(artifacts,'tarot-reader-' + label + '.png'),animations:'disabled'});
+      await page.locator('#result-reader-body').evaluate(body => { body.scrollTop = body.scrollHeight; });
+      const index = selectedSource.pages.findIndex(item => item.id === longPage.id);
+      await page.locator('#result-reader-next').click();
+      await inspectReaderPage(selectedSource.pages[index + 1]);
+      assert.equal(await page.locator('#result-reader-body').evaluate(body => body.scrollTop), 0, 'changing the page resets its own scroll');
+      await page.locator('#result-reader-prev').click();
+      await inspectReaderPage(longPage);
+      await openReaderMenu();
+      const menuGeometry = await page.locator('#result-reader-menu').evaluate(menu => ({
+        overflow:menu.scrollWidth > menu.clientWidth + 1,
+        entries:[...menu.querySelectorAll('[data-reader-target]')].map(button => {
+          const box = button.getBoundingClientRect();
+          return {width:box.width,height:box.height,fits:button.scrollWidth <= button.clientWidth + 1};
+        })
       }));
-      assert.ok(geometry.length >= 2, label + ': both summary meaning units are visible');
-      assert.ok(geometry.every(line => line.text && line.fits && line.wraps && ['none', '', 'unset'].includes(line.clamp) && line.overflow !== 'ellipsis'), label + ': complete sentences wrap naturally without clipping or an ellipsis');
+      assert.equal(menuGeometry.overflow, false);
+      assert.ok(menuGeometry.entries.every(button => button.width >= 44 && button.height >= 44 && button.fits),
+        label + ': every contents entry has a readable full-size button');
     }
-    async function inspectDomainCategories(viewport) {
-      const panel = page.locator('#summary-panel-domains');
-      const select = page.locator('#summary-domain-category');
-      assert.equal(await select.locator('option').count(), 10);
-      assert.equal(await page.locator('label[for="summary-domain-category"]').textContent(), '풀이 분야');
-      assert.equal(await page.locator('#summary-domain-total').textContent(), '50개 풀이 · 10개 분야');
-      const checks = [];
-      let firstNumber = 1;
-      for (const [category, count] of domainCategories) {
-        await select.selectOption(category);
-        assert.equal(await select.inputValue(), category);
-        assert.ok((await select.locator('option:checked').textContent()).endsWith(` · ${count}개`));
-        const visible = panel.locator('.reading-part:visible');
-        assert.equal(await visible.count(), count, category + ': only the chosen category is visible');
-        assert.ok((await visible.evaluateAll(sections => sections.map(section => section.dataset.categoryId))).every(id => id === category));
-        const numbers = (await visible.locator('.reading-part-number').allTextContents()).map(Number);
-        assert.deepEqual(numbers, Array.from({ length: count }, (_, index) => firstNumber + index), category + ': original topic numbers are retained');
-        firstNumber += count;
-        assert.equal(await panel.locator('.reading-part').count(), 50, 'all original topics remain in the DOM');
-        assert.equal(await visible.locator(':scope > .reading-two-line-summary > .reading-summary-line:visible').count(), count * 2, category + ': every topic starts with its own two-line summary');
-        assert.equal(await visible.locator('.reading-summary-full:visible').count(), 0, category + ': full explanations remain folded until requested');
-        assert.equal(await visible.locator('.reading-card-name').count(), 0, category + ': the personal domain text has no card-name labels');
-        await inspectUnclippedSummaries(visible, category + ' ' + viewport);
-        const overflow = await overflowState();
-        assert.deepEqual(overflow, { document: false, modal: false }, category + ': the ' + viewport + ' reading fits');
-        checks.push({ category, count, overflow });
-        if (captureCategories.has(category)) await page.screenshot({ path: path.join(artifacts, `tarot-domains-${category}-${viewport}.png`) });
-      }
-      assert.equal(firstNumber, 51, 'all fifty topics were reached through the native selector');
-      await select.selectOption('self');
-      return checks;
+    await page.setViewportSize({width:390,height:844});
+    let currentModel = selectedSource;
+    for (const contextId of ['money-spending','money-saving','money-agreement']) {
+      await openReaderMenu();
+      await page.locator('#result-context-select').selectOption(contextId);
+      currentModel = await summaryModel(contextId);
+      const firstPersonal = currentModel.pages.find(item => item.groupId === 'personal');
+      await inspectReaderPage(firstPersonal);
+      assert.equal(await page.locator('#result-reader-menu').isVisible(), false, 'choosing a situation moves directly to its own first page');
+      const personalPages = currentModel.pages.filter(item => item.groupId === 'personal');
+      assert.ok(personalPages.some(item => item.chapterId.includes('gain')) && personalPages.some(item => item.chapterId.includes('burden'))
+        && personalPages.some(item => item.chapterId.includes('prepare')), 'both choices retain gain, burden and preparation pages');
+      await goToReaderPage(personalPages[personalPages.length - 1], currentModel.pages);
     }
-    async function inspectPersonal(viewport) {
-      await page.locator('#summary-tab-personal').click();
-      const panel = page.locator('#summary-panel-personal');
-      await panel.waitFor({ state: 'visible' });
-      assert.equal(await page.locator('#result-context-select option').count(), 4, 'the money topic has three scoped situations');
-      await page.locator('#result-context-select').selectOption('money-spending');
-      const reading = page.locator('#personal-reading');
-      const paragraphs = await reading.locator('.personal-card-guides .reading-part').allTextContents();
-      assert.equal(paragraphs.length, 3);
-      assert.doesNotMatch(await panel.textContent(), tarotExplanation, 'the situation view stays about the person');
-      assert.equal(await reading.locator('.reading-card-name').count(), 0);
-      assert.ok(paragraphs.every(text => text.length > 60), 'every revealed role still has a substantive personal explanation');
-      assert.equal(await reading.locator('.personal-card-guides .reading-summary-line:visible, .personal-card-connections .reading-summary-line:visible').count(), 8, 'three roles and their connection each show two summary lines');
-      assert.equal(await reading.locator('.personal-card-guides .reading-summary-full:visible, .personal-card-connections .reading-summary-full:visible').count(), 0);
-      assert.equal(await page.locator('#personal-basis').getAttribute('open'), null);
-      assert.equal(await page.locator('#personal-followups details').count(), 3);
-      await page.locator('#result-context-select').scrollIntoViewIfNeeded();
-      assert.deepEqual(await overflowState(), { document: false, modal: false }, 'personal ' + viewport + ': no horizontal overflow');
-      await page.screenshot({ path: path.join(artifacts, `tarot-personal-${viewport}.png`) });
-      await page.locator('#personal-comparison > summary').click();
-      assert.equal(await page.locator('#personal-comparison .personal-choice:visible').count(), 2);
-      assert.equal(await page.locator('.personal-comparison-basis .reading-summary-line:visible').count(), 2, 'the card-based comparison criteria have their own overview');
-      assert.equal(await page.locator('.personal-choice > .reading-two-line-summary > .reading-summary-line:visible').count(), 4, 'both choices preview their gain and burden');
-      assert.equal(await page.locator('#personal-comparison dt:visible').count(), 0, 'each choice keeps its original detailed criteria folded');
-      await inspectUnclippedSummaries(page.locator('#personal-comparison'), 'comparison ' + viewport);
-      await page.locator('#personal-comparison > summary').scrollIntoViewIfNeeded();
-      assert.deepEqual(await overflowState(), { document: false, modal: false }, 'comparison ' + viewport + ': no horizontal overflow');
-      await page.screenshot({ path: path.join(artifacts, `tarot-comparison-${viewport}.png`) });
-      for (const choice of await page.locator('#personal-comparison .personal-choice').all()) {
-        await choice.locator('.reading-summary-details > summary').click();
-        assert.equal(await choice.locator('dt:visible').count(), 3, 'expanding a choice shows gain, burden and preparation');
-      }
-      assert.equal(await page.locator('#personal-comparison dt:visible').count(), 6);
-      assert.deepEqual(await page.locator('#personal-comparison dt:visible').allTextContents(), ['이 선택의 장점', '감수할 부담', '먼저 준비할 것', '이 선택의 장점', '감수할 부담', '먼저 준비할 것']);
-      const following = page.locator('#personal-followups details').first();
-      assert.equal(await following.getAttribute('open'), null);
-      assert.equal(await following.locator('summary .reading-summary-line:visible').count(), 2, 'a closed follow-up already previews its actual answer');
-      assert.equal(await following.locator('.personal-answer').isVisible(), false);
-      await following.locator('summary').scrollIntoViewIfNeeded();
-      await page.screenshot({ path: path.join(artifacts, `tarot-followup-summary-${viewport}.png`) });
-      await following.locator('summary').click();
-      await following.scrollIntoViewIfNeeded();
-      assert.ok((await following.locator('.personal-answer').textContent()).length > 100);
-      assert.deepEqual(await overflowState(), { document: false, modal: false }, 'follow-up ' + viewport + ': no horizontal overflow');
-      await page.screenshot({ path: path.join(artifacts, `tarot-followup-${viewport}.png`) });
-      const firstText = await reading.textContent();
-      await page.locator('#result-context-select').selectOption('money-saving');
-      assert.notEqual(await reading.textContent(), firstText, 'changing situations changes the substantive guidance');
-      await page.locator('#result-context-select').selectOption('money-agreement');
-      assert.notEqual(await reading.textContent(), firstText);
-      tarotViews.personal = { situations: 3, revealedNames, mobile: true, desktop: viewport === 'desktop' };
-    }
-    for (const [group, expectedSections] of [['cards', 3], ['problem', 5], ['timeline', 7], ['domains', 50]]) {
-      await page.locator(`#summary-tab-${group}`).click();
-      const panel = page.locator(`#summary-panel-${group}`);
-      await panel.waitFor({ state: 'visible' });
-      assert.equal(await page.locator(`#summary-tab-${group}`).getAttribute('aria-selected'), 'true');
-      assert.equal(await panel.getAttribute('aria-labelledby'), `summary-tab-${group}`);
-      const mainSelector = group === 'domains' ? '#summary-domain-sections > .reading-part'
-        : group === 'cards' ? '#card-introductions > .reading-part' : ':scope > .reading-part';
-      const mainSections = panel.locator(mainSelector);
-      assert.equal(await mainSections.count(), expectedSections);
-      const sectionDetails = await mainSections.evaluateAll((sections, originals) => sections.every((section, index) => {
-        const overview = section.querySelector(':scope > .reading-two-line-summary');
-        const details = section.querySelector(':scope > .reading-summary-details');
-        const paragraphs = [...(details?.querySelectorAll('.reading-summary-full p') || [])];
-        return section.querySelector('h3')?.textContent.trim() && overview?.querySelectorAll('.reading-summary-line').length === 2
-          && [...overview.children].every(line => line.textContent.trim()) && !overview.closest('details')
-          && details && !details.open && details.querySelector('summary')?.textContent === '자세히 읽기'
-          && paragraphs.length >= 1 && paragraphs.map(paragraph => paragraph.textContent).join('') === originals[index]
-          && !section.closest('details');
-      }), selectedSource.groupOriginals[group]);
-      assert.ok(sectionDetails, group + ': every title and two-line overview precede the complete selected explanation, without forcing extra paragraphs');
-      let categoryChecks;
-      if (group === 'domains') {
-        assert.equal(await page.locator('#summary-domain-basis').count(), 0);
-        assert.ok((await page.locator('#summary-domain-description').textContent()).includes('분야'));
-        categoryChecks = await inspectDomainCategories('mobile');
-      } else assert.equal(await panel.locator(mainSelector + ':visible').count(), expectedSections, group + ': every main section stays visible');
-      if (group === 'cards') {
-        assert.equal(await panel.locator('.card-introduction-art:visible').count(), 3);
-        const titles = await mainSections.locator('h3').allTextContents();
-        for (const name of revealedNames) assert.ok(titles.some(title => title.includes(name)), 'introductions identify the actual drawn cards');
-        const basis = page.locator('#card-reading-basis');
-        assert.ok((await basis.textContent()).includes('같은 세 장'));
-        await basis.locator('summary').click();
-        assert.equal(await basis.locator('p').first().isVisible(), true);
-        await basis.locator('summary').click();
-      }
-      const firstSection = panel.locator(mainSelector + ':visible').first();
-      const firstDetail = firstSection.locator(':scope > .reading-summary-details');
-      const originalText = await firstDetail.locator('.reading-summary-full').textContent();
-      assert.equal(await firstDetail.locator('.reading-summary-full').isVisible(), false);
-      await firstDetail.locator('summary').focus();
-      await firstDetail.locator('summary').press('Enter');
-      assert.equal(await firstDetail.locator('.reading-summary-full').isVisible(), true, group + ': keyboard Enter opens the original explanation');
-      assert.equal(await firstDetail.locator('.reading-summary-full').textContent(), originalText, group + ': expanding changes no original text');
-      if (group === 'problem') await page.screenshot({ path: path.join(artifacts, 'tarot-summary-expanded-mobile.png') });
-      await firstDetail.locator('summary').press('Space');
-      assert.equal(await firstDetail.locator('.reading-summary-full').isVisible(), false, group + ': keyboard Space folds the explanation again');
-      if (group === 'problem') await inspectSummaryDetails('mobile');
-      await inspectUnclippedSummaries(panel, group + ' mobile');
-      await firstSection.locator('.reading-two-line-summary').scrollIntoViewIfNeeded();
-      const overflow = await overflowState();
-      assert.deepEqual(overflow, { document: false, modal: false }, group + ': the mobile reading fits the viewport');
-      tarotViews[group] = { sections: expectedSections, overflow };
-      if (categoryChecks) tarotViews[group].mobileCategories = categoryChecks;
-      await page.screenshot({ path: path.join(artifacts, group === 'problem' ? 'tarot-result-mobile.png' : `tarot-${group}-mobile.png`) });
-      if (group === 'problem') await page.screenshot({ path: path.join(artifacts, 'tarot-summary-mobile.png') });
-    }
-    assert.ok((await page.locator('#summary-ritual').textContent()).length > 20);
-    await inspectPersonal('mobile');
-    await page.setViewportSize({ width: 1280, height: 900 });
-    for (const group of ['cards', 'problem', 'timeline', 'domains']) {
-      await page.locator(`#summary-tab-${group}`).click();
-      if (group === 'domains') tarotViews[group].desktopCategories = await inspectDomainCategories('desktop');
-      const overflow = await overflowState();
-      assert.deepEqual(overflow, { document: false, modal: false }, group + ': the desktop reading fits the viewport');
-      await inspectUnclippedSummaries(page.locator(`#summary-panel-${group}`), group + ' desktop');
-      if (group === 'problem') await inspectSummaryDetails('desktop');
-      await page.screenshot({ path: path.join(artifacts, group === 'problem' ? 'tarot-result-desktop.png' : `tarot-${group}-desktop.png`) });
-      if (group === 'problem') await page.screenshot({ path: path.join(artifacts, 'tarot-summary-desktop.png') });
-    }
-    await inspectPersonal('desktop');
-    await page.setViewportSize({ width: 320, height: 844 });
-    await page.locator('#summary-tab-cards').click();
-    await inspectUnclippedSummaries(page.locator('#summary-panel-cards'), 'card introductions on a small phone');
-    const adjacentTabs = await page.locator('#summary-tabs').evaluate(tabs => {
-      const a = tabs.querySelector('#summary-tab-cards').getBoundingClientRect();
-      const b = tabs.querySelector('#summary-tab-problem').getBoundingClientRect();
-      return Math.abs(a.top - b.top) < 2 && b.left >= a.right;
-    });
-    assert.ok(adjacentTabs, 'card introductions remain first, beside the personal story on a 320px screen');
-    const headingClearOfClose = await page.locator('#result-dialog').evaluate(dialog => {
-      const title = dialog.querySelector('#result-title');
-      const close = dialog.querySelector(':scope > .modal-close').getBoundingClientRect();
-      const range = document.createRange();
-      range.selectNodeContents(title);
-      return [...range.getClientRects()].every(line =>
-        line.right <= close.left || line.left >= close.right || line.bottom <= close.top || line.top >= close.bottom);
-    });
-    assert.ok(headingClearOfClose, 'the complete result heading stays clear of the close button on a 320px screen');
-    assert.deepEqual(await overflowState(), { document: false, modal: false });
-    await page.screenshot({ path: path.join(artifacts, 'tarot-cards-small-phone.png') });
-    await page.locator('#summary-tab-problem').click();
-    await inspectUnclippedSummaries(page.locator('#summary-panel-problem'), 'small phone');
-    assert.deepEqual(await overflowState(), { document: false, modal: false }, 'complete summary sentences fit a 320px phone without cropping');
-    await page.locator('#summary-panel-problem .reading-two-line-summary').first().scrollIntoViewIfNeeded();
-    await page.screenshot({ path: path.join(artifacts, 'tarot-summary-small-phone.png') });
-    await inspectSummaryDetails('small-phone');
-    await page.locator('#summary-tab-timeline').click();
     await page.evaluate(() => {
       globalThis.__tarotCopiedReading = '';
-      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
-        async writeText(text) { globalThis.__tarotCopiedReading = text; }
-      } });
+      Object.defineProperty(navigator,'clipboard',{configurable:true,value:{async writeText(text){globalThis.__tarotCopiedReading=text;}}});
     });
+    await openReaderMenu();
     await page.locator('#copy-result').click();
     await page.waitForFunction(() => globalThis.__tarotCopiedReading.length > 0);
     const copiedTarot = await page.evaluate(() => globalThis.__tarotCopiedReading);
-    const introStart = copiedTarot.indexOf('\n카드 소개\n');
-    const introEnd = copiedTarot.indexOf('\n나의 이야기\n');
-    assert.ok(introStart >= 0 && introEnd > introStart);
-    const copiedGroupOrder = ['\n카드 소개\n', '\n나의 이야기\n', '\n과거·현재·미래\n', '\n분야별 풀이\n', '\n내 상황 · ']
+    const copiedOrder = ['\n카드 소개\n','\n나의 이야기\n','\n과거·현재·미래\n','\n분야별 풀이\n','\n내 상황 · ']
       .map(heading => copiedTarot.indexOf(heading));
-    assert.ok(copiedGroupOrder.every((position, index) => position >= 0 && (index === 0 || position > copiedGroupOrder[index - 1])),
-      'copy follows the visible tab order and keeps the selected situation last');
-    assert.ok(copiedTarot.slice(introStart, introEnd).includes(selectedSource.firstCardMeaning));
-    assert.doesNotMatch(copiedTarot.slice(0, introStart) + copiedTarot.slice(introEnd), tarotExplanation,
-      'the clipboard keeps card explanations in their introduction section');
-    for (const source of selectedSource.sections) assert.ok(copiedTarot.includes(source.body), 'copy includes all source interpretations even while their panel and disclosure are closed');
-    for (const text of [selectedSource.record.body, selectedSource.record.action]) assert.equal(copiedTarot.split(text).length - 1, 1, 'the selected corpus body and advice are copied exactly once');
-    await page.locator('#result-dialog .modal-close').click();
+    assert.ok(copiedOrder.every((position,index) => position >= 0 && (!index || position > copiedOrder[index - 1])));
+    for (const group of selectedSource.summary.groups) for (const section of group.sections) {
+      for (const paragraph of section.paragraphs) assert.ok(copiedTarot.includes(paragraph), 'copy includes all original paragraphs on unseen pages');
+    }
+    for (const source of selectedSource.summary.detailSections) assert.ok(copiedTarot.includes(source.body));
+    for (const text of [selectedSource.record.body,selectedSource.record.action]) assert.equal(copiedTarot.split(text).length - 1, 1);
+    for (const line of currentModel.personalCopy) assert.ok(copiedTarot.includes(line), 'copy keeps every personal answer and both choices');
+    assert.ok(copiedTarot.slice(copiedOrder[0],copiedOrder[1]).includes(selectedSource.firstCardMeaning));
+    const sourcePage = currentModel.pages.find(item => item.chapterId === 'problem-detail-0' && item.paragraphs.length);
+    await goToReaderPage(sourcePage, currentModel.pages);
+    await inspectReaderLayout('selected source');
+    await page.screenshot({path:path.join(artifacts,'tarot-source-interpretation-mobile.png'),animations:'disabled'});
+    await page.locator('#result-reader-close').click();
     await page.locator('#action-button').click();
-    await page.locator('#result-dialog[open]').waitFor({ timeout: 15000 });
-    assert.equal(await page.locator('#summary-tab-cards').getAttribute('aria-selected'), 'true', 'reopening resets the view to card introductions');
-    assert.equal(await page.locator('#summary-panel-cards').isVisible(), true);
-    assert.equal(await page.locator('#result-context-select').inputValue(), 'money-agreement', 'reopening preserves the selected situation');
-    tarotViews.sourceInterpretation = { record: selectedSource.record.id, sections: selectedSource.sections.length, completeCopy: true, widths: [320, 390, 1280] };
+    await page.locator('#result-dialog[open]').waitFor();
+    await inspectReaderPage(sourcePage);
+    await openReaderMenu();
+    assert.equal(await page.locator('#result-context-select').inputValue(), 'money-agreement', 'reopening preserves the chosen situation');
+    await page.locator('#result-reader-menu-toggle').click();
+    tarotViews.sourceInterpretation = {record:selectedSource.record.id,completeCopy:true,domainChapters:50,contexts:3,widths:[320,390,750]};
     if (tarotOnly) {
-      assert.deepEqual(errors, []);
-      assert.deepEqual(failed, []);
-      console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, errors, failed }));
+      assert.deepEqual(errors,[]);
+      assert.deepEqual(failed,[]);
+      console.log(JSON.stringify({localPreviewOnly:true,tarotViews,errors,failed}));
       return;
     }
     const saju = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce', deviceScaleFactor: 1 });
@@ -528,9 +425,9 @@ const server = http.createServer((request, response) => {
     saju.on('response', response => { if (response.status() >= 400) failed.push([response.status(), response.url()]); });
     await saju.route('**/*', route => route.request().url().startsWith('http://127.0.0.1:') ? route.continue() : route.abort());
     const sajuEntryViews={},compatibilityEntryViews={},sajuNavigation={},sajuReadableViews={};
-    async function inspectReadableSurface(label,{text,body='',minimumBody=18,controls='',placeholders=false}={}) {
-      if(body)await expandCurrentStories(saju);
-      const view=await saju.evaluate(({text,body,minimumBody,controls,placeholders})=>{
+    async function inspectReadableSurface(label,{text,body='',minimumBody=18,minimumLabel=14,minimumInput=16,
+      minimumTargetWidth=44,minimumTargetHeight=44,controls='',placeholders=false}={}) {
+      const view=await saju.evaluate(({text,body,minimumBody,minimumLabel,minimumTargetWidth,minimumTargetHeight,controls,placeholders})=>{
         const canvas=document.createElement('canvas');canvas.width=canvas.height=1;
         const context=canvas.getContext('2d',{willReadFrequently:true});
         const rgba=value=>{
@@ -580,29 +477,29 @@ const server = http.createServer((request, response) => {
         const targets=controls?[...document.querySelectorAll(controls)].filter(shown).map(element=>{const box=element.getBoundingClientRect();return {target:element.id||element.className,height:box.height,width:box.width};}):[];
         return {samples: samples.length,minimumContrast:Math.min(...samples.map(item=>item.contrast)),
           contrastFailures:samples.filter(item=>item.contrast<4.5),unresolvedBackgrounds:samples.filter(item=>item.images.length),
-          smallText:samples.filter(item=>item.font<14),clippedText:samples.filter(item=>item.overflow||item.textOverflow==='ellipsis'||!['none','','unset'].includes(item.lineClamp)),
-          prose,smallProse:prose.filter(item=>item.font<minimumBody),smallTargets:targets.filter(item=>item.height<43.9||item.width<43.9),
+          smallText:samples.filter(item=>item.font<minimumLabel),clippedText:samples.filter(item=>item.overflow||item.textOverflow==='ellipsis'||!['none','','unset'].includes(item.lineClamp)),
+          prose,smallProse:prose.filter(item=>item.font<minimumBody),smallTargets:targets.filter(item=>item.height<minimumTargetHeight-.1||item.width<minimumTargetWidth-.1),
           minimumTargetHeight:targets.length?Math.min(...targets.map(item=>item.height)):null,
           horizontalOverflow:document.documentElement.scrollWidth>innerWidth,
           inputs:[...document.querySelectorAll('input[type=text],input[type=number],select')].filter(shown).map(element=>({id:element.id,font:parseFloat(getComputedStyle(element).fontSize),scheme:getComputedStyle(element).colorScheme}))};
-      },{text,body,minimumBody,controls,placeholders});
+      },{text,body,minimumBody,minimumLabel,minimumTargetWidth,minimumTargetHeight,controls,placeholders});
       assert.ok(view.samples>0,label+': representative text is visible');
       assert.deepEqual(view.unresolvedBackgrounds,[],label+': contrast uses the actual solid surfaces behind text');
       assert.deepEqual(view.contrastFailures,[],label+': text contrast is at least 4.5:1');
-      assert.deepEqual(view.smallText,[],label+': labels and explanatory text are at least 14px');
+      assert.deepEqual(view.smallText,[],label+': labels follow the selected readable size');
       assert.deepEqual(view.clippedText,[],label+': complete text remains visible without clamping or horizontal clipping');
-      if(body)assert.ok(view.prose.length>0,label+': the full reading body remains present');
+      if(body)assert.ok(view.prose.length>0,label+': the current story has readable body text');
       assert.deepEqual(view.smallProse,[],label+': reading text follows the normal/large size');
-      assert.deepEqual(view.smallTargets,[],label+': actionable controls have at least a 44px touch target');
+      assert.deepEqual(view.smallTargets,[],label+': actionable controls retain their intended touch target');
       assert.equal(view.horizontalOverflow,false,label+': the redesigned page stays inside the viewport');
-      assert.ok(view.inputs.every(input=>input.font>=16&&input.scheme==='dark'),label+': readable input text and native menus use the dark surface');
+      assert.ok(view.inputs.every(input=>input.font>=minimumInput&&input.scheme==='dark'),label+': readable input text and native menus use the dark surface');
       sajuReadableViews[label]={samples:view.samples,minimumContrast:view.minimumContrast,minimumBodyFont:view.prose.length?Math.min(...view.prose.map(item=>item.font)):null,minimumTargetHeight:view.minimumTargetHeight};
       return view;
     }
     const entryText='h1,h2,.intro-description,.compatibility-intro>p,.entry-benefits li,.entry-steps li,.form-step-title,.field-label,fieldset legend,.field-hint,.form-note,.saju-price-note,.saju-price strong,.product-option strong,.product-option small,.product-option b,.check-row span,.reading-service-nav strong,.reading-service-nav>a>span,.method-preview summary,button:not(:disabled),.back-link,.segmented span,.pair-calendar>label,.pair-privacy,.entry-heading>p,.flow-step-note,.flow-privacy,.flow-review-person h3,.flow-review dt,.flow-review dd,.flow-confirm-title';
     const entryControls='button,input[type=text],input[type=number],select,.check-row,.segmented label,.product-options>label,.reading-service-nav>a,.header-nav .back-link';
-    const readingText='.reading-domain-button,.reading-current-caption,.reading-current-title,.reading-item-count,.reading-item-action,.reading-body-heading,.reading-pager-label,.reading-page-position,.reading-swipe-hint,.reader-label,.reader-headline,.reader-card-title,.reader-prose p,.saju-summary-line,.saju-reading-score-title,.saju-reading-score-scale,.saju-wind-label,.saju-wind-value,.saju-reading-score-notice,.saju-reading-score-unavailable,.saju-reading-score-reason,.daeun-age,.daeun-dates,.daeun-time-notice,.daeun-sequence-note,.reading-summary-table th,.reading-summary-table td';
-    const compatibilityText='.reading-domain-button,.reading-current-caption,.reading-current-title,.reading-item-count,.reading-item-action,.reading-body-heading,.reading-pager-label,.reading-page-position,.reading-swipe-hint,.compatibility-people-title,.compatibility-person-name,.compatibility-summary-line,.compatibility-person-prose p,.compatibility-score-detail .reader-prose p,.compatibility-detail-score-value,.compatibility-score-detail-link,.compatibility-person-jumps a,.compatibility-person-scope,.compatibility-synthesis-people,.compatibility-score-heading h4,.compatibility-score-heading>p,.compatibility-score-eyebrow,.compatibility-score-number strong,.compatibility-score-number>span,.compatibility-score-number small,.compatibility-score-label,.compatibility-score-summary,.compatibility-score-item-heading h5,.compatibility-score-item-value,.compatibility-score-item-summary,.compatibility-score-notice';
+    const readingText='.story-label,.story-title,.story-body p,.story-context,.saju-wind-label,.saju-wind-value,.saju-reading-score-reason';
+    const compatibilityText='.story-label,.story-title,.story-body p,.story-context,.compatibility-score-eyebrow,.compatibility-score-number strong,.compatibility-score-number>span,.compatibility-score-number small,.compatibility-score-label,.compatibility-score-item-heading h5,.compatibility-score-item-value,.compatibility-score-notice';
     const sajuFlowViews={};
     const entrySizes=[['phone-small',{width:320,height:844}],['phone',{width:390,height:844}],['desktop',{width:1280,height:900}]];
     async function assertFlowStage(form,expected,label) {
@@ -759,779 +656,310 @@ const server = http.createServer((request, response) => {
       document.getElementById('compatibility-status').textContent='입력한 정보를 확인해 주세요.';document.getElementById('compatibility-open').disabled=false;
     });
     await inspectReadableSurface('compatibility entry feedback',{text:'#compatibility-error,#compatibility-status,#compatibility-open'});
-    await saju.setViewportSize({width:390,height:844});
-    for(const [kind,urlPath] of [['general','/__saju_fixture'],['pair','/__compatibility_fixture']]) {
-      await saju.goto(new URL(urlPath+'?map=1',url).href);
-      const overview=saju.locator('.reading-map');
-      const topics=overview.locator('.map-topic');
-      assert.equal(await topics.count(),4);
-      assert.equal(await saju.locator('.reading-pager:visible').count(),0,'overview shows the reading before controls');
-      assert.ok((await overview.locator('.map-lead').innerText()).trim());
-      for(const width of [320,390,1280]) {
-        await saju.setViewportSize({width,height:844});
-        await inspectReadableSurface(kind+' overview '+width,{text:'.map-title,.map-lead,.map-action p,.map-topic strong,.map-preview',controls:'.map-topic,.map-deep-link'});
-        await saju.screenshot({path:path.join(artifacts,'reading-map-'+kind+'-'+width+'.png'),fullPage:true});
-      }
-      for(const item of await topics.all()){
-        const id=(await item.getAttribute('href')).slice(1);
-        await item.click();
-        assert.equal(await overview.isVisible(),false);
-        assert.equal(await saju.locator('[id="'+id+'"]').isVisible(),true,id+' is directly readable');
-        await saju.locator('.map-return').click();
-        assert.equal(await overview.isVisible(),true);
-      }
+    // The production reader starts on a flat story. Contents, period choices
+    // and complete text are inspected through that same visible reading flow.
+    async function assertCurrentExplanation(page,currentAttribute,{requireBody=false}={}) {
+      const current=page.locator('['+currentAttribute+']');
+      assert.equal(await current.count(),1,'exactly one live story is mounted');
+      const state=await current.evaluate(element=>{
+        const shown=node=>{const box=node.getBoundingClientRect(),style=getComputedStyle(node);return box.width>0&&box.height>0&&style.display!=='none'&&style.visibility!=='hidden';};
+        const body=[...element.querySelectorAll('.story-body > p')],reader=element.closest('.story-reader');
+        const progress=reader.querySelector('.reading-progress'),counter=reader.querySelector('.story-position').textContent.match(/(\d+)\s*\/\s*(\d+)/);
+        return {id:element.id,source:element.dataset.storySource,topic:element.dataset.storyTopic,
+          title:element.querySelector('.story-title')?.textContent,titleCount:element.querySelectorAll('.story-title').length,
+          paragraphs:body.length,hiddenParagraphs:body.filter(p=>!shown(p)).map(p=>p.textContent),
+          oldStructure:element.querySelectorAll('.reading-map,.reader-card,.portrait-card,.compatibility-person-reading,details').length,
+          selected:reader.querySelector('.reading-page-select').value,
+          now:Number(progress.getAttribute('aria-valuenow')),max:Number(progress.getAttribute('aria-valuemax')),
+          counter:counter?.slice(1).map(Number),width:parseFloat(progress.firstElementChild.style.width),
+          overflow:document.documentElement.scrollWidth>innerWidth};
+      });
+      assert.ok(state.source&&state.topic&&state.title.trim());assert.equal(state.titleCount,1);
+      assert.equal(state.oldStructure,0,'nested source reports are absent from the selected story');
+      assert.ok(state.paragraphs<=2,'one story has at most two short paragraphs');
+      if(requireBody)assert.ok(state.paragraphs>0,'the selected story exposes its authored text directly');
+      assert.deepEqual(state.hiddenParagraphs,[]);assert.equal(state.selected,state.id);
+      assert.deepEqual(state.counter,[state.now,state.max]);assert.ok(state.now>=1&&state.now<=state.max);
+      assert.ok(Math.abs(state.width-state.now/state.max*100)<.001,'progress matches the current topic position');
+      assert.equal(state.overflow,false,'a story fits the viewport width');return state;
     }
-    await saju.setViewportSize({width:390,height:844});
-    await saju.goto(new URL('/__saju_fixture?map=1',url).href);
-    await saju.locator('#fixture-topic').selectOption('all');
-    const topicMap=saju.locator('.reading-map');
-    const dates=topicMap.getByRole('link',{name:'월별 적용 기간',exact:true});
-    await dates.click();
-    assert.equal(await saju.locator('#reading-month-periods dd:visible').count(),12);
-    await saju.locator('.map-return').click();
-    await topicMap.locator('.map-index > summary').click();
-    const monthIndex=topicMap.locator('.map-index-group').filter({has:saju.getByText('월별 세부 풀이',{exact:true})});
-    await monthIndex.locator('summary').click();
-    await monthIndex.getByLabel('월 선택').selectOption('reading-month-4');
-    await monthIndex.getByRole('link',{name:'재물운',exact:true}).click();
-    assert.ok(await saju.locator('[data-reader-current][data-reader-card="month-4-money"]').isVisible());
-    await saju.locator('.map-return').click();
-    const ageIndex=topicMap.locator('.map-index-group').filter({has:saju.getByText('10년 대운 세부 풀이',{exact:true})});
-    await ageIndex.locator('summary').click();
-    await ageIndex.getByLabel('나이 구간').selectOption({index:1});
-    const ageId=await ageIndex.getByLabel('나이 구간').inputValue();
-    await ageIndex.getByRole('link',{name:/문서/}).click();
-    assert.ok(await saju.locator('[id="'+ageId+'"] [data-reader-current]').isVisible());
-    await saju.goto(new URL('/__saju_fixture', url).href);
-    assert.equal(await saju.locator('#report-content > [data-reader-paged="true"]').count(),1,'the prepared report keeps its mounted pager host when attached after purchase');
     async function selectVisibleReading(page,pickerId,id,{keyboard=false}={}) {
-      const nav=page.locator('#'+pickerId+'-navigator');
-      const item=nav.locator('[data-reading-target="'+id+'"]');
-      assert.equal(await item.count(),1,id+': the item is available through the visible menu');
-      const list=nav.locator('.reading-item-picker'),toggle=list.locator(':scope > summary');
-      if(await list.getAttribute('open')===null)await toggle.click();
+      const picker=page.locator('#'+pickerId),nav=page.locator('#'+pickerId+'-navigator');
+      const options=await picker.locator('option').evaluateAll(nodes=>nodes.map(node=>node.value));
+      const target=options.indexOf(id);assert.ok(target>=0,id+': the entitled scene exists');
+      const choices=new Set(await nav.locator('[data-reading-target]').evaluateAll(nodes=>nodes.map(node=>node.dataset.readingTarget)));
+      let first=target;while(first>=0&&!choices.has(options[first]))first--;
+      assert.ok(first>=0,id+': a contents topic reaches this scene');
+      const dialog=nav.locator('dialog.story-menu'),toggle=nav.locator('.story-menu-button');
+      if(await dialog.getAttribute('open')===null)await toggle.click();
+      const item=nav.locator('[data-reading-target="'+options[first]+'"]');
       const domain=await item.getAttribute('data-reading-domain');
       const field=nav.locator('.reading-domain-button[data-reading-domain="'+domain+'"]');
       if(await field.getAttribute('aria-pressed')!=='true')await field.click();
-      assert.equal(await item.isVisible(),true,id+': the requested item is shown in its field');
+      const period=await item.getAttribute('data-reading-period');
+      if(period&&await nav.locator('.story-period-select').inputValue()!==period)await nav.locator('.story-period-select').selectOption(period);
+      assert.equal(await item.isVisible(),true,id+': its field and period reveal the requested topic');
       if(keyboard){await item.focus();await item.press('Enter');}else await item.click();
-      assert.equal(await page.locator('#'+pickerId).inputValue(),id);
-      assert.equal(await item.getAttribute('aria-current'),'page');
-      assert.equal(await list.getAttribute('open'),null,'choosing an item returns the screen to its reading');
-      assert.equal(await field.getAttribute('aria-pressed'),'true');
-      await assertCurrentExplanation(page,pickerId==='reading-page-select'?'data-reader-current':'data-compatibility-current');
+      assert.equal(await dialog.getAttribute('open'),null,'choosing a topic closes contents');
+      assert.equal(await toggle.evaluate(element=>element===document.activeElement),true,'contents returns keyboard focus to its opening button');
+      for(let index=first;index<target;index++)await page.locator('.story-next').click();
+      assert.equal(await picker.inputValue(),id);
+      return assertCurrentExplanation(page,pickerId==='reading-page-select'?'data-reader-current':'data-compatibility-current');
     }
-    async function expandCurrentStories(page) {
-      const current=page.locator('[data-reader-current],[data-compatibility-current]');
-      const toggles=current.locator('details.reading-story-details:not([open]) > summary:visible');
-      for(let count=0;count<20&&await toggles.count();count++)await toggles.first().click();
-      assert.equal(await toggles.count(),0,'each requested story can be opened through its visible disclosure');
+    async function followStoryAlias(id) {
+      await saju.evaluate(id=>{const link=document.createElement('a');link.id='fixture-story-alias';link.href='#'+id;link.textContent='풀이로 이동';document.body.append(link);},id);
+      await saju.locator('#fixture-story-alias').click();
+      await saju.locator('#fixture-story-alias').evaluate(link=>link.remove());
+      assert.equal(await saju.locator('.story-title').evaluate(element=>element===document.activeElement),true,'an old anchor reveals and focuses the visible scene title');
     }
-    async function assertCurrentExplanation(page,currentAttribute,{requireBody=false}={}) {
-      const current=page.locator('['+currentAttribute+']');
-      assert.equal(await current.count(),1,'exactly one reading is selected');
-      if(requireBody)await expandCurrentStories(page);
-      const state=await current.evaluate(element=>{
-        const paragraphs=[...element.querySelectorAll('.reader-prose > p,.compatibility-person-prose > p')]
-          .filter(paragraph=>!paragraph.closest('[hidden]'));
-        const shown=paragraph=>{
-          const box=paragraph.getBoundingClientRect(),style=getComputedStyle(paragraph);
-          if(box.width<=0||box.height<=0||style.display==='none'||style.visibility==='hidden')return false;
-          for(let parent=paragraph.parentElement;parent;parent=parent.parentElement)if(parent.tagName==='DETAILS'&&!parent.open)return false;
-          return true;
-        };
-        const hidden=paragraphs.filter(paragraph=>!shown(paragraph));
-        const summaries=[...element.querySelectorAll('.saju-two-line-summary,.compatibility-two-line-summary')]
-          .filter(summary=>!summary.closest('[hidden]'));
-        return {id:element.id,bodyDisclosures:element.querySelectorAll('details.reading-body-details').length,
-          paragraphs:paragraphs.length,hiddenParagraphs:hidden.map(paragraph=>paragraph.textContent.slice(0,50)),
-          hiddenWithoutDisclosure:hidden.filter(paragraph=>!paragraph.closest('details.reading-story-details:not([open])')).length,
-          hiddenSummaries:summaries.filter(summary=>!shown(summary)).length};
-      });
-      assert.equal(state.bodyDisclosures,0,state.id+': no obsolete nested body disclosure remains');
-      assert.equal(state.hiddenSummaries,0,state.id+': both summary units stay visible before opening the detailed story');
-      assert.equal(state.hiddenWithoutDisclosure,0,state.id+': every folded paragraph remains reachable through the story disclosure');
-      if(requireBody) {
-        assert.ok(state.paragraphs>0,state.id+': the body contains the authored explanation');
-        assert.deepEqual(state.hiddenParagraphs,[],state.id+': opening the detailed story exposes all of its paragraphs');
+    async function collectStories(page,pickerId,{firstId,topicOnly=false,restore=true}={}) {
+      const picker=page.locator('#'+pickerId),saved=await picker.inputValue();
+      await selectVisibleReading(page,pickerId,firstId||await picker.locator('option').first().getAttribute('value'));
+      const records=await page.evaluate(({pickerId,topicOnly})=>{
+        const picker=document.getElementById(pickerId),reader=picker.closest('.story-reader'),next=reader.querySelector('.story-next');
+        const current=()=>reader.querySelector('[data-reader-current],[data-compatibility-current]');
+        const topic=current().dataset.storyTopic,records=[];
+        for(let count=0;count<picker.options.length;count++) {
+          const scene=current();if(topicOnly&&scene.dataset.storyTopic!==topic)break;
+          const ids=[...scene.querySelectorAll('[id]')].map(node=>node.id);ids.push(scene.id);
+          records.push({id:scene.id,source:scene.dataset.storySource,topic:scene.dataset.storyTopic,kind:scene.dataset.storyKind,
+            data:{...scene.dataset},title:scene.querySelector('.story-title').textContent,label:scene.querySelector('.story-label').textContent,
+            context:scene.querySelector('.story-context')?.textContent||'',text:scene.textContent,uniqueIds:new Set(ids).size===ids.length,
+            summaries:[...scene.querySelectorAll('[data-story-summary-index]')].map(node=>({index:Number(node.dataset.storySummaryIndex),text:node.textContent})),
+            paragraphs:[...scene.querySelectorAll('.story-body > p')].map(node=>({key:node.dataset.storyParagraph,start:Number(node.dataset.storyStart),end:Number(node.dataset.storyEnd),text:node.textContent})),
+            scores:[...scene.querySelectorAll('.saju-reading-score')].map(panel=>({status:panel.dataset.readingScoreStatus,
+              reason:panel.querySelector('.saju-reading-score-reason')?.textContent||'',values:[...panel.querySelectorAll('.saju-wind-item')].map(row=>({key:row.dataset.wind,
+                value:Number(row.querySelector('[role="meter"]').getAttribute('aria-valuenow')),width:row.querySelector('.saju-wind-fill').style.width}))})),
+            graph:scene.querySelector('.compatibility-scoreboard')?{total:Number(scene.querySelector('[data-score-total]').textContent),
+              values:[...scene.querySelectorAll('.compatibility-score-meter')].map(meter=>Number(meter.getAttribute('aria-valuenow')))}:null});
+          if(next.disabled)break;next.click();
+        }
+        return records;
+      },{pickerId,topicOnly});
+      assert.ok(records.length);assert.ok(records.every(record=>record.uniqueIds),'current scenes have no duplicate IDs');
+      if(!topicOnly)assert.equal(records.length,await picker.locator('option').count(),'normal next reaches every entitled scene');
+      if(restore)await selectVisibleReading(page,pickerId,saved);return records;
+    }
+    function summaryLines(records) {
+      const lines=new Map();for(const part of records.flatMap(record=>record.summaries))lines.set(part.index,(lines.get(part.index)||'')+part.text);
+      return [...lines.values()];
+    }
+    function originalParagraphs(records) {
+      const paragraphs=new Map();
+      for(const part of records.filter(record=>record.kind==='prose').flatMap(record=>record.paragraphs)) {
+        const previous=paragraphs.get(part.key)||{text:'',end:0};
+        assert.equal(part.start,previous.end,'split passages preserve consecutive character offsets');
+        assert.equal(part.end-part.start,part.text.length);previous.text+=part.text;previous.end=part.end;paragraphs.set(part.key,previous);
       }
-      return state;
+      return [...paragraphs.values()].map(paragraph=>paragraph.text);
     }
-    await assertCurrentExplanation(saju,'data-reader-current',{requireBody:true});
+    function storyParts(records,item) {
+      const groups=new Map();for(const record of records){if(!groups.has(record.topic))groups.set(record.topic,[]);groups.get(record.topic).push(record);}
+      const choices=[...groups.values()].filter(group=>JSON.stringify(summaryLines(group))===JSON.stringify(item.summaryLines));
+      const exact=item.id&&choices.find(group=>group.some(record=>[record.source,record.topic,record.data.readerCard,record.data.portraitCard,record.data.daeunTopic,record.data.readingSupplement].includes(item.id)));
+      const complete=item.paragraphs&&choices.find(group=>JSON.stringify(originalParagraphs(group))===JSON.stringify(item.paragraphs));
+      const found=exact||complete||choices[0];assert.ok(found,(item.id||item.label||item.headline)+': its original summary is reachable');return found;
+    }
+    function assertSourceStory(parts,item,{scoreValue=false}={}) {
+      assert.deepEqual(summaryLines(parts),item.summaryLines,'both selected summary units survive the story sequence');
+      if(item.paragraphs)assert.deepEqual(originalParagraphs(parts),scoreValue?[item.value+'점 / 100점',...item.paragraphs]:item.paragraphs,'every complete authored paragraph remains in order');
+      if(item.readingScore) {
+        const panels=parts.flatMap(record=>record.scores);assert.equal(panels.length,1);assert.equal(parts.find(record=>record.kind==='summary').scores.length,1);
+        const score=item.readingScore;assert.equal(panels[0].status,score.status);
+        if(score.available)assert.deepEqual(panels[0].values,['tailwind','headwind'].map(key=>({key,value:score[key].value,width:score[key].value+'%'})));
+        else {assert.equal(panels[0].values.length,0);assert.equal(panels[0].reason,score.reason);}
+      }
+    }
     async function inspectReadingControls(label,pickerId,currentAttribute) {
-      const picker=saju.locator('#'+pickerId),current=saju.locator('['+currentAttribute+']'),nav=saju.locator('#'+pickerId+'-navigator');
-      assert.equal(await picker.isVisible(),false,'the long native picker is replaced by visible fields and an item list');
-      const options=await picker.locator('option').evaluateAll(nodes=>nodes.map(node=>node.value));
-      const list=nav.locator('.reading-item-picker');
-      assert.equal(await list.getAttribute('open'),null,'the fields start inside the closed contents menu');
-      await list.locator(':scope > summary').click();
-      const domains=nav.locator('.reading-domain-button:visible');
-      const domainIds=await domains.evaluateAll(nodes=>nodes.map(node=>node.dataset.readingDomain));
-      assert.ok(domainIds.length>=2,label+': opening contents exposes the available fields');
-      await domains.first().focus();await domains.first().press('ArrowRight');
-      assert.equal(await nav.locator('.reading-domain-button[aria-pressed="true"]').getAttribute('data-reading-domain'),domainIds[1]);
-      assert.equal(await domains.nth(1).evaluate(element=>element===document.activeElement),true,'field arrow navigation keeps keyboard focus visible');
-      await domains.nth(1).press('ArrowLeft');
-      assert.equal(await nav.locator('.reading-domain-button[aria-pressed="true"]').getAttribute('data-reading-domain'),domainIds[0]);
-      await selectVisibleReading(saju,pickerId,options[0]);
-      for(const id of options.slice(1,3)) {
-        await selectVisibleReading(saju,pickerId,id,{keyboard:true});
-        assert.equal(await current.getAttribute('id'),id);
-        assert.equal(await nav.locator('.reading-item-toggle').evaluate(element=>element===document.activeElement),true,'the collapsed item list retains a reachable focus target');
-      }
-      const controls=saju.locator('.reading-pager .reading-pager-step'),previous=controls.first(),next=controls.last();
-      const start=await current.getAttribute('id');await next.focus();
-      for(let step=0;step<2;step++) {
-        const before=await current.getAttribute('id');await next.press('Enter');
-        assert.notEqual(await current.getAttribute('id'),before);
-        await assertCurrentExplanation(saju,currentAttribute);
-        assert.equal(await next.evaluate(element=>element===document.activeElement),true,label+': repeated next presses retain focus');
-      }
-      await previous.focus();await previous.press('Enter');await previous.press('Enter');
-      assert.equal(await current.getAttribute('id'),start);assert.equal(await previous.evaluate(element=>element===document.activeElement),true);
-      const sizes=await saju.locator('.reading-pager button:visible,.reading-item-toggle:visible').evaluateAll(nodes=>nodes.map(element=>element.getBoundingClientRect().height));
-      assert.ok(sizes.every(height=>height>=44),label+': the visible navigation controls remain easy to tap');
-      assert.ok(await previous.evaluate(element=>parseFloat(getComputedStyle(element).outlineWidth)>=2));
-      sajuNavigation[label]={fieldArrowChoices:2,itemChoices:2,nextSteps:2,previousSteps:2,minimumControlHeight:Math.min(...sizes)};
-      await selectVisibleReading(saju,pickerId,options[0]);
+      const picker=saju.locator('#'+pickerId),nav=saju.locator('#'+pickerId+'-navigator'),dialog=nav.locator('dialog.story-menu');
+      const first=await picker.locator('option').first().getAttribute('value');await selectVisibleReading(saju,pickerId,first);
+      assert.equal(await picker.isVisible(),false);assert.equal(await dialog.getAttribute('open'),null);
+      await nav.locator('.story-menu-button').click();const domains=nav.locator('.reading-domain-button');
+      const ids=await domains.evaluateAll(nodes=>nodes.map(node=>node.dataset.readingDomain));assert.ok(ids.length>=2);
+      const before=await picker.inputValue();await domains.first().focus();await domains.first().press('ArrowRight');
+      assert.equal(await domains.nth(1).getAttribute('aria-pressed'),'true');assert.equal(await picker.inputValue(),before,'filtering contents does not turn the story behind it');
+      await domains.nth(1).press('ArrowLeft');assert.equal(await domains.first().getAttribute('aria-pressed'),'true');
+      await dialog.press('Escape');assert.equal(await dialog.getAttribute('open'),null);
+      const topicIds=await nav.locator('[data-reading-target]').evaluateAll(nodes=>nodes.slice(1,3).map(node=>node.dataset.readingTarget));
+      for(const id of topicIds)await selectVisibleReading(saju,pickerId,id,{keyboard:true});
+      await selectVisibleReading(saju,pickerId,first);const next=saju.locator('.story-next'),previous=saju.locator('.story-previous');
+      await next.focus();for(let count=0;count<2;count++){await next.press('Enter');await assertCurrentExplanation(saju,currentAttribute);assert.equal(await next.evaluate(node=>node===document.activeElement),true);}
+      await previous.focus();await previous.press('Enter');await previous.press('Enter');assert.equal(await picker.inputValue(),first);
+      sajuNavigation[label]={domainKeyboard:true,contentsFocus:true,nextSteps:2,previousSteps:2};
     }
-    await inspectReadingControls('general','reading-page-select','data-reader-current');
-    async function selectReadingPage(id) {
-      if(await saju.locator('.reading-item-button[data-reading-target="'+id+'"]').count())await selectVisibleReading(saju,'reading-page-select',id);
-      else await saju.locator('a[href="#'+id+'"]:visible').first().click();
-      await saju.locator('[data-reader-current][id="'+id+'"]').waitFor({state:'visible'});
-      await assertCurrentExplanation(saju,'data-reader-current');
+    const sajuScoreViews={},sajuScoreRegressions={},sajuDaeunAssumptionViews={},sajuSummaryViews={},sajuSupplementViews={};
+    const compatibilityPeople={},compatibilityScores={};
+    const storySizes=[['phone-small',{width:320,height:844}],['phone',{width:390,height:844}],['desktop',{width:1280,height:900}]];
+    async function inspectStorySurface(label,{compatibility=false,textSize='normal'}={}) {
+      await inspectReadableSurface(label,{text:compatibility?compatibilityText:readingText,body:'.story-body > p',minimumBody:textSize==='large'?21:18,
+        minimumLabel:compatibility?12:13,minimumTargetWidth:40,minimumTargetHeight:44,controls:'.story-previous,.story-next'});
     }
-    const sajuScoreViews={},sajuScoreRegressions={},sajuDaeunAssumptionViews={};
-    async function inspectSajuScores(label) {
-      const panels=await saju.locator('[data-reader-current] .saju-reading-score:visible').evaluateAll(elements=>elements.map(panel=>{
-        const box=panel.getBoundingClientRect();
-        const contained=(inner,outer)=>inner.left>=outer.left-1&&inner.right<=outer.right+1&&inner.top>=outer.top-1&&inner.bottom<=outer.bottom+1;
-        const fits=element=>{
-          const rect=element.getBoundingClientRect();
-          if(element.scrollWidth>element.clientWidth+1||element.scrollHeight>element.clientHeight+1)return false;
-          for(let parent=element.parentElement;parent&&parent!==document.body;parent=parent.parentElement) {
-            const style=getComputedStyle(parent),bounds=parent.getBoundingClientRect();
-            if((/hidden|clip/.test(style.overflowX)&&(rect.left<bounds.left-1||rect.right>bounds.right+1))||
-              (/hidden|clip/.test(style.overflowY)&&(rect.top<bounds.top-1||rect.bottom>bounds.bottom+1)))return false;
-          }
-          return ['none','','unset'].includes(getComputedStyle(element).webkitLineClamp)&&getComputedStyle(element).textOverflow!=='ellipsis';
-        };
-        const rows=Array.from(panel.querySelectorAll('.saju-wind-item')).map(row=>{
-          const meter=row.querySelector('.saju-wind-meter'),fill=meter.querySelector('.saju-wind-fill'),style=getComputedStyle(meter);
-          const track=meter.getBoundingClientRect(),filled=fill.getBoundingClientRect(),value=Number(meter.getAttribute('aria-valuenow'));
-          const width=meter.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight);
-          const name=meter.getAttribute('aria-label')||(meter.getAttribute('aria-labelledby')||'').split(/\s+/).map(id=>document.getElementById(id)?.textContent||'').join(' ');
-          return {key:row.dataset.wind,name,role:meter.getAttribute('role'),value,min:Number(meter.getAttribute('aria-valuemin')),max:Number(meter.getAttribute('aria-valuemax')),
-            text:row.textContent,visible:track.width>0&&track.height>0,inside:contained(track,box)&&contained(filled,track),
-            exact:fill.style.width===value+'%'&&Math.abs(filled.width-width*value/100)<=2};
+    async function inspectSajuScores(label,expected) {
+      const panel=saju.locator('[data-reader-current] > .saju-reading-score');assert.equal(await panel.count(),1);
+      const value=await panel.evaluate(element=>{
+        const box=element.getBoundingClientRect();
+        const rows=[...element.querySelectorAll('.saju-wind-item')].map(row=>{
+          const meter=row.querySelector('[role="meter"]'),fill=row.querySelector('.saju-wind-fill'),track=meter.getBoundingClientRect(),filled=fill.getBoundingClientRect(),bounds=row.getBoundingClientRect();
+          return {key:row.dataset.wind,value:Number(meter.getAttribute('aria-valuenow')),min:Number(meter.getAttribute('aria-valuemin')),max:Number(meter.getAttribute('aria-valuemax')),
+            width:fill.style.width,visible:track.width>0&&track.height>0,exact:Math.abs(filled.width-track.width*Number(meter.getAttribute('aria-valuenow'))/100)<=2,
+            text:row.textContent,left:bounds.left,right:bounds.right,top:bounds.top,bottom:bounds.bottom};
         });
-        return {status:panel.dataset.readingScoreStatus,rows,meters:panel.querySelectorAll('[role="meter"]').length,
-          reason:panel.querySelector('.saju-reading-score-reason')?.textContent.trim(),
-          inside:box.left>=-1&&box.right<=innerWidth+1,
-          overflow:panel.scrollWidth>panel.clientWidth+1||panel.scrollHeight>panel.clientHeight+1,
-          textFits:Array.from(panel.querySelectorAll('p,.saju-wind-label,.saju-wind-value')).every(fits)};
-      }));
-      assert.ok(panels.length>0,label+': every selected reading declares its score or unavailable reason');
-      for(const panel of panels) {
-        assert.ok(panel.inside&&!panel.overflow&&panel.textFits,label+': complete score labels, numbers and notices fit without clipping');
-        if(panel.status==='unavailable') {
-          assert.equal(panel.meters,0,label+': unsupported items have no numeric meters');
-          assert.equal(panel.rows.length,0);assert.ok(panel.reason);
-          continue;
-        }
-        assert.equal(panel.status,'available');assert.equal(panel.meters,2);
-        assert.deepEqual(panel.rows.map(row=>row.key),['tailwind','headwind']);
-        for(const row of panel.rows) {
-          assert.ok(Number.isInteger(row.value)&&row.value>=0&&row.value<=100,label+': scores stay within their independent 0–100 scales');
-          assert.ok(row.role==='meter'&&row.min===0&&row.max===100&&row.visible&&row.inside&&row.exact,label+': each accessible bar represents its exact numeric score');
-          assert.ok(row.name.includes(row.key==='tailwind'?'순풍':'역풍')&&row.text.includes(row.value+'점'),label+': direction and score remain readable without color');
-        }
-      }
-      assert.equal(await saju.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,label+': scores do not widen the page');
-      sajuScoreViews[label]={available:panels.filter(panel=>panel.status==='available').length,unavailable:panels.filter(panel=>panel.status==='unavailable').length};
-    }
-    async function inspectSajuSummaries(label,{score=true}={}) {
-      const current=saju.locator('[data-reader-current]');
-      const groups=await current.locator('.saju-two-line-summary:visible').evaluateAll(elements=>elements.map(group=>({
-        role:group.getAttribute('role'),label:group.getAttribute('aria-label'),
-        lines:Array.from(group.querySelectorAll('.saju-summary-line')).map(line=>{
-          const style=getComputedStyle(line),rect=line.getBoundingClientRect();
-          let clipped=false;
-          for(let parent=line.parentElement;parent&&parent!==document.body;parent=parent.parentElement) {
-            const parentStyle=getComputedStyle(parent),box=parent.getBoundingClientRect();
-            if((/hidden|clip/.test(parentStyle.overflowX)&&(rect.left<box.left-1||rect.right>box.right+1))||
-              (/hidden|clip/.test(parentStyle.overflowY)&&(rect.top<box.top-1||rect.bottom>box.bottom+1)))clipped=true;
-          }
-          return {text:line.textContent.trim(),font:parseFloat(style.fontSize),visible:rect.width>0&&rect.height>0&&style.visibility==='visible',
-            fits:line.scrollWidth<=line.clientWidth+1&&line.scrollHeight<=line.clientHeight+1&&!clipped,
-            wraps:!['nowrap','pre'].includes(style.whiteSpace),clamp:style.webkitLineClamp,overflow:style.textOverflow};
-        })
-      })));
-      assert.ok(groups.length>0,label+': the selected item has visible summaries');
-      assert.ok(groups.every(group=>group.role==='group'&&group.label==='두 줄 요약'&&group.lines.length===2),label+': every summary retains exactly two authored units');
-      assert.ok(groups.every(group=>group.lines.every(line=>line.text&&line.visible&&line.fits&&line.wraps&&['none','','unset'].includes(line.clamp)&&line.overflow!=='ellipsis')),label+': complete summary units wrap without cropping, clamping or ellipses');
-      assert.equal(await saju.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,label+': the selected reading fits the viewport');
-      if(score)await inspectSajuScores(label);
-      return groups[0].lines[0].font;
-    }
-    for (const topic of ['lifelong', 'annual', 'monthly', 'all']) {
-      await saju.locator('#fixture-topic').selectOption(topic);
-      await saju.locator('#report-content[data-ready="' + topic + '"]').waitFor();
-      assert.ok(await saju.locator('#reading-page-select option').evaluateAll(options=>options.filter(option=>option.closest('optgroup')?.label!=='생활 제안').length)<=60,'the primary picker stays compact and keeps practical suggestions separately');
-      assert.equal(await saju.locator('[data-reader-current]').count(),1,'one reading unit is selected');
-      const defaultPage=await saju.locator('[data-reader-current]').getAttribute('id');
-      assert.equal(await saju.locator('.report-chapter,.reading-full-text,.source-entry,[data-fact-id],a[href*="-evidence"],a[href*="-chapter-"]').count(),0,topic+': calculation material and evidence links are absent');
-      assert.ok(await saju.locator('#reading-page-select option').evaluateAll(options=>options.every(option=>!/근거|계산·해석|계산 단원|자료 출처/.test(option.textContent))),topic+': the picker has no evidence menus');
-      if(topic==='lifelong') await saju.screenshot({path:path.join(artifacts,'saju-portrait-mobile.png')});
-      if(topic==='monthly') {
-        await selectReadingPage('reading-timings');
-        assert.equal(await saju.locator('.reader-timing-navigation a:visible').count(),12);
-        const comparison=saju.locator('.timing-table-details');
-        await comparison.locator('summary').click();
-        assert.equal(await comparison.locator('tbody tr').count(),12);
-        assert.equal(await saju.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
-        await inspectReadableSurface('monthly comparison phone',{text:'.timing-table-details summary,.timing-table-details th,.timing-table-details td'});
-        await comparison.scrollIntoViewIfNeeded();
-        await saju.screenshot({path:path.join(artifacts,'saju-month-table-mobile.png')});
-        await comparison.locator('summary').click();
-        await selectReadingPage(defaultPage);
-      }
-      const personal=topic==='lifelong'||topic==='all';
-      const cardId=await saju.locator(personal?'.portrait-card':topic==='monthly'?'[data-reader-current] .reader-card':'.reader-card').first().getAttribute('id');
-      await selectReadingPage(cardId);
-      const card=saju.locator('[data-reader-current]');
-      const readerOrdered=await card.evaluate(element=>{
-        const label=element.querySelector('.portrait-card-label,.reader-card-label'),summary=element.querySelector(':scope > .saju-two-line-summary'),prose=element.querySelector(':scope > .reader-prose');
-        return label&&summary&&prose&&prose.querySelectorAll('p').length>=4&&
-          !!(label.compareDocumentPosition(summary)&Node.DOCUMENT_POSITION_FOLLOWING)&&!!(summary.compareDocumentPosition(prose)&Node.DOCUMENT_POSITION_FOLLOWING);
+        return {status:element.dataset.readingScoreStatus,reason:element.querySelector('.saju-reading-score-reason')?.textContent||'',rows,
+          inside:box.left>=-1&&box.right<=innerWidth+1,overflow:element.scrollWidth>element.clientWidth+1,height:box.height};
       });
-      assert.ok(readerOrdered,topic+': the selected unit retains topic, conclusion and all paragraphs');
-      await assertCurrentExplanation(saju,'data-reader-current',{requireBody:true});
-      assert.equal(await card.locator(':scope > .saju-two-line-summary').isVisible(),true);
-      assert.equal(await saju.locator('.portrait-card:visible,.reader-card:visible').count(),1);
-      await inspectSajuScores(topic+' paid reading');
-      assert.equal(await saju.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,topic+': the selected mobile reading fits');
-      await saju.locator('.reading-pager').scrollIntoViewIfNeeded();
-      await saju.screenshot({path:path.join(artifacts,'saju-'+topic+'-mobile.png')});
-      if(topic==='lifelong') {
-        await selectReadingPage('reading-daeun');
-        const periodHeading=await saju.locator('.daeun-period.is-current .daeun-age').getAttribute('id');
-        await saju.locator('.daeun-nav a[href="#'+periodHeading+'"]').click();
-        const situationId=await saju.locator('[data-reader-current] .daeun-topic').nth(4).getAttribute('id');
-        await selectReadingPage(situationId);
-        assert.equal(await saju.locator('.daeun-topic:visible').count(),1);
-        assert.equal(await saju.locator('.daeun-dates:visible').count(),1);
-        await saju.locator('.reading-pager').scrollIntoViewIfNeeded();
-        await saju.screenshot({path:path.join(artifacts,'saju-daeun-contracts-mobile.png')});
-      }
+      assert.equal(value.status,expected.status);assert.ok(value.inside&&!value.overflow);
+      if(expected.available) {
+        assert.equal(value.rows.length,2);assert.ok(value.height<=44,'the two independent meters occupy one compact line');
+        assert.ok(Math.abs(value.rows[0].top-value.rows[1].top)<2&&value.rows[1].left>=value.rows[0].right-1,'both directions share a single row without overlap');
+        for(const row of value.rows){assert.equal(row.value,expected[row.key].value);assert.equal(row.width,row.value+'%');assert.equal(row.min,0);assert.equal(row.max,100);assert.ok(row.visible&&row.exact&&row.text.includes(row.value+'점'));}
+      } else {assert.equal(value.rows.length,0);assert.equal(value.reason,expected.reason);}
+      sajuScoreViews[label]=value.rows.map(row=>row.value);return value;
     }
-    const sajuSummaryViews={};
-    await saju.locator('#fixture-topic').selectOption('all');
-    await saju.locator('#report-content[data-ready="all"]').waitFor();
-    const summaryTargets={
-      portrait:await saju.locator('.portrait-card').first().getAttribute('id'),
-      lifelong:await saju.locator('#reading-lifelong .reader-card').last().getAttribute('id'),
-      annual:await saju.locator('#reading-annual .reader-intro').getAttribute('id'),
-      spotlight:await saju.locator('.months-spotlight').getAttribute('id'),
-      monthCard:await saju.locator('#reading-month-11 .reader-card').first().getAttribute('id')
-    };
-    for(const [viewport,size] of [['phone-small',{width:320,height:844}],['phone',{width:390,height:844}],['desktop',{width:1280,height:900}]]) {
-      await saju.setViewportSize(size);
-      let normalFont;
-      for(const textSize of ['normal','large']) {
-        await saju.locator('#report-content').evaluate((report,value)=>{report.dataset.readingSize=value;},textSize);
-        const label=viewport+' '+textSize,checked=[];
-        const inspect=async family=>{checked.push(family);return inspectSajuSummaries(label+' '+family);};
-        await selectReadingPage('reading-summary');
-        const font=await inspect('portrait intro');
-        if(textSize==='normal')normalFont=font;
-        else assert.ok(font>normalFont,label+': the large-text setting actually enlarges summary text');
-        await selectReadingPage(summaryTargets.portrait);await inspect('portrait card');
-        if(viewport!=='phone') {
-          await saju.locator('.reading-pager').evaluate(element=>element.scrollIntoView({block:'start',behavior:'instant'}));
-          await saju.screenshot({path:path.join(artifacts,'saju-flow-general-'+viewport+'-'+textSize+'-summary.png')});
-          await saju.locator('.reading-item-toggle').click();
-          await inspectReadableSurface('general item menu '+label,{text:'.reading-domain-button,.reading-current-title,.reading-item-group-title,.reading-item-button',controls:'.reading-domain-button,.reading-item-toggle,.reading-item-button'});
-          await saju.screenshot({path:path.join(artifacts,'saju-flow-general-'+viewport+'-'+textSize+'-items.png')});
-          await saju.locator('.reading-item-toggle').click();
-        }
-        await assertCurrentExplanation(saju,'data-reader-current');
-        await inspectReadableSurface('general reading '+label,{text:readingText,body:'.reader-prose p',minimumBody:textSize==='large'?21:18,controls:'.reading-pager select,.reading-pager button,.reading-page-section-link'});
-        if(viewport!=='phone'&&textSize==='normal')await saju.locator('[data-reader-current]').screenshot({path:path.join(artifacts,'saju-depth-general-'+viewport+'.png')});
-        await saju.locator('[data-reader-current] .saju-reading-score').first().screenshot({path:path.join(artifacts,'saju-reading-scores-'+viewport+'-'+textSize+'.png')});
-        await saju.locator('.reading-pager').scrollIntoViewIfNeeded();
-        await saju.screenshot({path:path.join(artifacts,'saju-two-line-summaries-'+viewport+'-'+textSize+'.png')});
-        if(viewport!=='phone')await saju.screenshot({path:path.join(artifacts,'saju-readable-general-'+viewport+'-'+textSize+'.png')});
-        await selectReadingPage(summaryTargets.lifelong);await inspect('lifelong card');
-        await selectReadingPage(summaryTargets.annual);await inspect('annual intro');
-        await selectReadingPage(summaryTargets.spotlight);await inspect('month spotlight');
-        await selectReadingPage('reading-month-11');await inspect('month intro');
-        await selectReadingPage(summaryTargets.monthCard);await inspect('month card');
-        if(viewport!=='phone'&&textSize==='normal')await saju.locator('[data-reader-current]').screenshot({path:path.join(artifacts,'saju-depth-month-'+viewport+'.png')});
-        await selectReadingPage('reading-timings');
-        const comparison=saju.locator('.timing-table-details');
-        if(await comparison.getAttribute('open')===null)await comparison.locator('summary').click();
-        await inspectReadableSurface('monthly table '+label,{text:'.timing-table-details summary,.timing-table-details th,.timing-table-details td'});
-        await comparison.locator('summary').click();
-        await selectReadingPage('reading-daeun');await inspect('decade intro');
-        const periodHeading=await saju.locator('.daeun-period.is-current .daeun-age').getAttribute('id');
-        await saju.locator('.daeun-nav a[href="#'+periodHeading+'"]').click();
-        await inspect('decade period');
-        const topicId=await saju.locator('[data-reader-current] .daeun-topic').first().getAttribute('id');
-        await selectReadingPage(topicId);await inspect('decade topic');
-        if(viewport!=='phone'&&textSize==='normal')await saju.locator('[data-reader-current]').screenshot({path:path.join(artifacts,'saju-depth-decade-'+viewport+'.png')});
-        await selectReadingPage('reading-symbols');await inspect('symbols intro and items');
-        await selectReadingPage('reading-timings');await inspect('timing intro');
-        await saju.locator('.reader-timing-navigation a[href="#reading-timings-month-11"]').click();
-        await inspect('timing month');
-        const timingGroup=await saju.locator('[data-reader-current] .reader-timing-group').first().getAttribute('id');
-        await selectReadingPage(timingGroup);await inspect('timing points');
-        sajuSummaryViews[label]=checked;
-      }
+    async function inspectSummary(parts,item,label,{compatibility=false,textSize='normal'}={}) {
+      const id=parts.find(record=>record.kind==='summary').id,pickerId=compatibility?'compatibility-page-select':'reading-page-select';
+      await selectVisibleReading(saju,pickerId,id);
+      assert.equal(await saju.locator('.story-title').textContent(),item.summaryLines[0],'the first core sentence appears once as the title');
+      await inspectStorySurface(label,{compatibility,textSize});
+      if(item.readingScore)await inspectSajuScores(label,item.readingScore);
+      return saju.locator('.story-body > p').first().evaluate(node=>parseFloat(getComputedStyle(node).fontSize));
     }
-    const sajuSupplementViews={};
-    const supplementaryTargets=[
-      ['natal-hidden','reading-natal-supplement-hidden'],['natal-stages','reading-natal-supplement-stages'],
-      ['annual-hidden','reading-annual-supplement-hidden'],['month-stages','reading-month-11-supplement-stages'],
-    ];
-    for(const [viewport,size,textSize] of [
-      ['phone-small',{width:320,height:844},'large'],['desktop',{width:1280,height:900},'normal'],
-    ]) {
-      await saju.setViewportSize(size);
-      await saju.locator('#report-content').evaluate((report,value)=>{report.dataset.readingSize=value;},textSize);
-      const checked=[];
-      for(const [kind,id] of supplementaryTargets) {
-        if(kind==='month-stages') {
-          await selectReadingPage('reading-month-11');
-          const link=saju.locator('[data-reader-current] .reading-page-sections a[href="#'+id+'"]');
-          assert.equal(await link.count(),1,'the month overview retains a visible route to its additional explanation');
-          await link.click();
-        } else await selectReadingPage(id);
-        const current=saju.locator('[data-reader-current]');
-        assert.equal(await current.getAttribute('id'),id);
-        await assertCurrentExplanation(saju,'data-reader-current',{requireBody:true});
-        await inspectSajuSummaries('supplement '+viewport+' '+kind,{score:false});
-        const content=await current.evaluate(element=>{
-          const reading=globalThis.__sajuReadingFixture,supplements=reading.reader.supplements;
-          const item=[...supplements.lifelong,...supplements.annual,...supplements.months.flatMap(month=>month.cards)]
-            .find(card=>card.id===element.dataset.readingSupplement);
-          const copy=[item.label,'추가 해설',...item.summaryLines,
-            ...item.detailSections.flatMap(section=>[section.title,...section.paragraphs]),item.scopeNotice].join('\n');
-          return {actual:[...element.querySelectorAll(':scope > .reader-prose > p')].map(p=>p.textContent),expected:item.paragraphs,
-            headings:[...element.querySelectorAll('.reading-body-heading')].map(heading=>heading.textContent),
-            expectedHeadings:item.detailSections.map(section=>section.title),scope:element.querySelector(':scope > .reader-scope-note')?.textContent,
-            expectedScope:item.scopeNotice,copied:reading.copyByCategory.all.includes(copy)};
-        });
-        assert.deepEqual(content.actual,content.expected,id+': every source-authored paragraph is immediately present');
-        assert.deepEqual(content.headings,content.expectedHeadings,id+': the explanation order is preserved');
-        assert.equal(content.scope,content.expectedScope);assert.equal(content.copied,true,id+': copied text matches the visible reading');
-        assert.equal(await current.locator('.saju-reading-score,[role="meter"]').count(),0,
-          id+': classifications do not acquire invented numerical scores');
-        await inspectReadableSurface('supplement '+viewport+' '+kind,{text:readingText+',.reader-scope-note',
-          body:'.reader-prose p',minimumBody:textSize==='large'?21:18,controls:'.reading-pager button,.reading-item-toggle'});
-        assert.equal(await saju.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,id+': supplementary prose fits the viewport');
-        if(kind.startsWith('natal'))await current.screenshot({path:path.join(artifacts,'saju-supplement-'+kind+'-'+viewport+'.png')});
-        checked.push(kind);
-      }
-      let scopeNotices=0;
-      if(viewport==='phone-small') {
-        const scopes=await saju.evaluate(()=>globalThis.__sajuReadingFixture.reader.lifelong.cards
-          .filter(item=>item.scopeNotice).map(item=>({id:document.querySelector('[data-reader-card="'+item.id+'"]').id,text:item.scopeNotice})));
-        assert.equal(scopes.length,8,'all original life-topic scope notices are exercised');
-        for(const scope of scopes) {
-          await selectReadingPage(scope.id);
-          const note=saju.locator('[data-reader-current] > .reader-scope-note');
-          assert.equal(await note.isVisible(),true,scope.id+': its scope appears beside the selected explanation');
-          assert.equal(await note.textContent(),scope.text);
-          assert.equal(await saju.evaluate(text=>globalThis.__sajuReadingFixture.copyByCategory.lifelong.includes(text),scope.text),true);
-          scopeNotices++;
-        }
-        await inspectReadableSurface('life-topic scope notices phone-small',{text:'.reader-scope-note'});
-      }
-      const coverage=saju.locator('#reading-coverage');
-      assert.equal(await coverage.isVisible(),true,'interpretation scope stays visible outside the removed calculation panels');
-      const scopeText=await coverage.innerText();
-      const expectedScope=await saju.evaluate(()=>globalThis.__sajuReadingFixture.readingScope.paragraphs);
-      for(const paragraph of expectedScope) {
-        assert.ok(scopeText.includes(paragraph));
-        assert.equal(await saju.evaluate(text=>globalThis.__sajuReadingFixture.copyByCategory.all.includes(text),paragraph),true);
-      }
-      await inspectReadableSurface('general scope '+viewport,{text:'.reading-coverage p'});
-      await coverage.screenshot({path:path.join(artifacts,'saju-reading-scope-'+viewport+'.png')});
-      sajuSupplementViews[viewport]={readings:checked,scopeNotices,readingCoverage:true};
+    for(const [kind,urlPath,attribute] of [['general','/__saju_fixture','data-reader-current'],['pair','/__compatibility_fixture','data-compatibility-current']]) {
+      await saju.goto(new URL(urlPath,url).href);await saju.locator('#report-content[data-ready]').waitFor();
+      assert.equal(await saju.locator('.reading-map,.map-return,.reading-item-picker').count(),0,'first render directly presents a story without an overview step');
+      assert.equal(await saju.locator('dialog.story-menu').getAttribute('open'),null);
+      for(const [viewport,size] of storySizes){await saju.setViewportSize(size);await assertCurrentExplanation(saju,attribute,{requireBody:true});await inspectStorySurface(kind+' first story '+viewport,{compatibility:kind==='pair'});await saju.screenshot({path:path.join(artifacts,'saju-story-first-'+kind+'-'+viewport+'.png')});}
     }
-    await saju.locator('#report-content').evaluate(report=>{report.dataset.readingSize='normal';});
-    await saju.setViewportSize({width:1280,height:900});
-    await saju.locator('#fixture-topic').selectOption('lifelong');
-    await saju.locator('#report-content[data-ready="lifelong"]').waitFor();
-    await selectReadingPage(await saju.locator('.portrait-card').first().getAttribute('id'));
-    await saju.locator('.reading-pager').scrollIntoViewIfNeeded();
-    await saju.screenshot({path:path.join(artifacts,'saju-lifelong-desktop.png')});
-    // This exact birth has no natal stem combinations, branch combinations or
-    // clashes. Its authored character/decision readings still contain strengths
-    // and cautions; the previous pair-only rule dropped all of those signals.
-    await saju.goto(new URL('/__saju_fixture?score-case=original-zero',url).href);
-    await saju.locator('#report-content[data-ready="lifelong"]').waitFor();
-    await saju.locator('#fixture-topic').selectOption('all');
-    await saju.locator('#report-content[data-ready="all"]').waitFor();
-    const regression=await saju.evaluate(()=>{
-      const fixture=globalThis.__sajuScoreFixture;
-      return {key:fixture.key,birth:fixture.birth,nativeInteractionCount:fixture.nativeInteractionCount,
-        items:fixture.items.map(({key,selector,reading})=>({key,selector,score:reading.readingScore,
-          title:reading.title,headline:reading.headline,paragraphs:reading.paragraphs,summaryLines:reading.summaryLines}))};
+    await saju.goto(new URL('/__saju_fixture',url).href);await saju.locator('#report-content[data-ready="lifelong"]').waitFor();
+    assert.equal(await saju.locator('#report-content > .story-reader').count(),1);await inspectReadingControls('general','reading-page-select','data-reader-current');
+    for(const topic of ['lifelong','annual','monthly','all']) {
+      await saju.locator('#fixture-topic').selectOption(topic);await saju.locator('#report-content[data-ready="'+topic+'"]').waitFor();
+      const expected=await saju.evaluate(topic=>{const r=globalThis.__sajuReadingFixture;return topic==='annual'?r.reader.annual:topic==='monthly'?r.reader.months.find(item=>item.month===11):r.personPortrait;},topic);
+      assert.equal(await saju.locator('.story-title').textContent(),expected.summaryLines[0]);
+      await assertCurrentExplanation(saju,'data-reader-current',{requireBody:true});await inspectSajuScores(topic+' initial',expected.readingScore);
+      assert.equal(await saju.locator('.report-chapter,.reading-full-text,.source-entry,[data-fact-id],a[href*="-evidence"],a[href*="-chapter-"]').count(),0);
+      assert.ok(await saju.locator('#reading-page-select option').evaluateAll(options=>options.every(option=>!/근거|계산·해석|계산 단원|자료 출처/.test(option.textContent))));
+    }
+    const sourceJSON=await saju.evaluate(()=>JSON.stringify(globalThis.__sajuReadingFixture));
+    const allStories=await collectStories(saju,'reading-page-select');
+    assert.equal(await saju.evaluate(()=>JSON.stringify(globalThis.__sajuReadingFixture)),sourceJSON,'story navigation does not rewrite the original reading or copy model');
+    const model=await saju.evaluate(()=>{
+      const r=globalThis.__sajuReadingFixture,current=r.daeun.periods.find(period=>period.isCurrent)||r.daeun.periods[0];
+      return {examples:[['portrait',r.personPortrait],['portrait decisions',r.personPortrait.cards.find(item=>item.id==='portrait-decisions')],['lifelong',r.reader.lifelong],['annual',r.reader.annual],['month',r.reader.months.find(item=>item.month===11)],['month money',r.reader.months.find(item=>item.month===11).cards.find(item=>item.id.endsWith('-money'))],['decade',r.daeun],['decade period',current],['decade topic',current.topics[0]],['symbols',r.reader.symbols],['timing',r.reader.timings],['timing month',r.reader.timings.items.find(item=>item.month===11)]],
+        supplements:[...r.reader.supplements.lifelong,...r.reader.supplements.annual,...r.reader.supplements.months.find(item=>item.month===11).cards],
+        scopes:r.reader.lifelong.cards.filter(item=>item.scopeNotice),coverage:r.readingScope.paragraphs};
     });
-    assert.equal(regression.key,'original-zero');
-    assert.deepEqual(regression.birth,{year:1990,month:5,day:17,hour:8,minute:37});
-    assert.equal(regression.nativeInteractionCount,0,'the regression keeps the original no-combination/no-clash chart');
-    for(const item of regression.items) {
-      assert.equal(item.score.status,'available',item.key+': this named fixture has confirmed reading contexts');
-      assert.equal(item.score.calculation.rule,'confirmed-reading-cues-v2',item.key+': the regression uses authored reading cues instead of pair counts alone');
-      assert.ok(item.paragraphs.length>0&&item.summaryLines.length===2,item.key+': the score belongs to an existing authored reading');
-      // The lifelong introduction states strengths but has no direct caution
-      // sentence. A zero headwind there is legitimate and must not be filled in.
-      const authoredAxes=item.key==='lifelong-overview'?['tailwind']:['tailwind','headwind'];
-      const authoredText=[...item.paragraphs,item.title,item.headline].filter(Boolean).join('\n');
-      for(const key of authoredAxes) {
-        const signal=key==='tailwind'?'help':'care';
-        const cues=item.score.calculation.cues.filter(cue=>cue[signal]>0);
-        assert.ok(cues.length>0&&cues.every(cue=>cue.sources[signal].length>0&&cue.sources[signal].every(source=>source.anchor&&authoredText.includes(source.anchor))),
-          item.key+' '+key+': actual sentences in this reading support each positive cue before requiring a nonzero score');
-        assert.ok(item.score.calculation[key+'Numerator']>0,
-          item.key+' '+key+': this fixture supplies an authored context independently of natal pairs');
-        assert.ok(item.score[key].value>0,
-          item.key+' '+key+': actual positive source contexts must not disappear into a zero result');
-      }
-    }
-    for(const [viewport,size] of [['phone-small',{width:320,height:844}],['phone',{width:390,height:844}],['desktop',{width:1280,height:900}]]) {
-      await saju.setViewportSize(size);
+    for(const [,item] of model.examples)assertSourceStory(storyParts(allStories,item),item);
+    for(const [viewport,size] of storySizes) {
+      await saju.setViewportSize(size);let normalFont;
       for(const textSize of ['normal','large']) {
-        await saju.locator('#report-content').evaluate((report,value)=>{report.dataset.readingSize=value;},textSize);
-        const label='original-zero '+viewport+' '+textSize;
-        const values={};
-        for(const item of regression.items) {
-          const source=saju.locator(item.selector);
-          const pageId=await source.evaluate(element=>element.closest('[data-reader-page]').id);
-          await selectReadingPage(pageId);
-          await inspectSajuScores(label+' '+item.key);
-          const actual=await source.locator(':scope > .saju-reading-score .saju-wind-item').evaluateAll(rows=>rows.map(row=>({
-            key:row.dataset.wind,value:Number(row.querySelector('[role="meter"]').getAttribute('aria-valuenow')),
-            width:row.querySelector('.saju-wind-fill').style.width,text:row.textContent
-          })));
-          assert.deepEqual(actual.map(row=>[row.key,row.value,row.width]),['tailwind','headwind'].map(key=>[key,item.score[key].value,item.score[key].value+'%']),
-            label+' '+item.key+': displayed scores and bar widths come from the actual reading model');
-          assert.ok(actual.every(row=>row.text.includes(row.value+'점')),label+': positive scores remain explicit text');
-          const paragraphs=await source.locator(':scope > .reader-prose > p').allTextContents();
-          assert.deepEqual(paragraphs,item.paragraphs,label+' '+item.key+': the original strength and caution paragraphs remain intact');
-          values[item.key]=actual.map(row=>row.value);
-          if(item.key==='portrait-decisions'&&((viewport==='phone-small'&&textSize==='large')||(viewport==='desktop'&&textSize==='normal')))
-            await source.locator(':scope > .saju-reading-score').screenshot({path:path.join(artifacts,'saju-reading-scores-original-zero-'+viewport+'-'+textSize+'.png')});
-          if(item.key==='portrait-decisions'&&viewport==='desktop'&&textSize==='normal')
-            await source.screenshot({path:path.join(artifacts,'saju-reading-score-regression-context-desktop.png')});
+        await saju.locator('#report-content').evaluate((node,size)=>{node.dataset.readingSize=size;},textSize);
+        const checked=[];
+        for(const [family,item] of model.examples) {
+          const parts=storyParts(allStories,item),label=viewport+' '+textSize+' '+family;
+          const font=await inspectSummary(parts,item,label,{textSize});checked.push(family);
+          if(family==='portrait'){if(textSize==='normal')normalFont=font;else assert.ok(font>normalFont,'large text enlarges the actual story body');await saju.screenshot({path:path.join(artifacts,'saju-story-'+viewport+'-'+textSize+'.png')});}
         }
-        assert.equal(await saju.locator('.source-entry,[data-fact-id],a[href*="-evidence"],#reading-evidence').count(),0,label+': score corrections do not restore evidence UI');
-        sajuScoreRegressions[label]=values;
+        sajuSummaryViews[viewport+' '+textSize]=checked;
       }
     }
-    await saju.goto(new URL('/__saju_fixture?score-case=unknown-daeun',url).href);
-    await saju.locator('#report-content[data-ready="lifelong"]').waitFor();
-    const assumedDaeun=await saju.evaluate(()=>globalThis.__sajuScoreFixture.daeun);
-    assert.equal(assumedDaeun.natalTimeKnown,false);assert.equal(assumedDaeun.natalHour,null);
-    assert.equal(assumedDaeun.available,true);assert.equal(assumedDaeun.timeAssumed,true);
-    assert.deepEqual(assumedDaeun.assumedBirthTime,{hour:6,minute:0,timezone:'Asia/Seoul'});
-    assert.equal(assumedDaeun.notice,'태어난 시간을 몰라 대운은 오전 6시 00분을 기준으로 계산했어요.');
-    assert.equal(assumedDaeun.periodCount,9);
-    assert.equal(await saju.locator('#reading-daeun .daeun-period').count(),9,'the unknown-time reading renders all nine explicitly assumed periods');
-    async function inspectDaeunAssumption(label) {
-      const notices=saju.locator('#reading-daeun .daeun-time-notice:visible');
-      assert.equal(await notices.count(),1,label+': the assumption is visible once in the current reading context');
-      assert.equal(await notices.textContent(),assumedDaeun.notice);
-      const geometry=await notices.evaluate(element=>{
-        const box=element.getBoundingClientRect(),style=getComputedStyle(element);
-        return {inside:box.left>=-1&&box.right<=innerWidth+1,
-          fits:element.scrollWidth<=element.clientWidth+1&&element.scrollHeight<=element.clientHeight+1,
-          font:parseFloat(style.fontSize),
-          readingFont:parseFloat(getComputedStyle(document.getElementById('report-content')).getPropertyValue('--reading-font-size')),
-          unclipped:['none','','unset'].includes(style.webkitLineClamp)&&style.textOverflow!=='ellipsis'};
-      });
-      assert.ok(geometry.inside&&geometry.fits&&geometry.unclipped,label+': the complete 06:00 notice wraps without clipping');
-      assert.equal(geometry.font,geometry.readingFont,label+': the birth-time assumption follows the selected reading text size');
-      assert.equal(await saju.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,label+': the assumed-time reading fits the viewport');
+    // A period selector exposes one month or one ten-year interval, while all
+    // topics and scene values remain available through normal navigation.
+    await saju.locator('.story-menu-button').click();
+    const menu=saju.locator('dialog.story-menu');
+    for(const domain of ['monthly','daeun']) {
+      await menu.locator('.reading-domain-button[data-reading-domain="'+domain+'"]').click();
+      const period=menu.locator('.story-period-select');assert.equal(await period.isVisible(),true);
+      const values=await period.locator('option').evaluateAll(nodes=>nodes.map(node=>node.value));assert.ok(values.length>=10);
+      await period.selectOption(values[1]);
+      const visible=await menu.locator('[data-reading-target]:visible').evaluateAll(nodes=>nodes.map(node=>({id:node.dataset.readingTarget,period:node.dataset.readingPeriod})));
+      assert.ok(visible.length>0&&visible.length<40);assert.ok(visible.every(item=>item.period===values[1]));
+      const before=await saju.locator('#reading-page-select').inputValue();await period.selectOption(values[2]);assert.equal(await saju.locator('#reading-page-select').inputValue(),before);
+      sajuNavigation[domain]={periods:values.length,visibleTopics:visible.length};
     }
-    for(const [viewport,size,textSize] of [['phone-small',{width:320,height:844},'large'],['desktop',{width:1280,height:900},'normal']]) {
-      const label='unknown daeun '+viewport+' '+textSize;
-      await saju.setViewportSize(size);
-      await saju.locator('#report-content').evaluate((report,value)=>{report.dataset.readingSize=value;},textSize);
-      await selectReadingPage('reading-daeun');await inspectDaeunAssumption(label+' intro');
-      const periodHeading=await saju.locator('.daeun-period.is-current .daeun-age').getAttribute('id');
-      await saju.locator('.daeun-nav a[href="#'+periodHeading+'"]').click();
-      await inspectDaeunAssumption(label+' period');await inspectSajuScores(label+' period');
-      assert.equal(await saju.locator('.daeun-dates:visible').textContent(),assumedDaeun.currentPeriodLabel,'visible dates come from the actual 06:00 calculation');
-      await inspectReadableSurface('daeun '+viewport+' '+textSize,{text:readingText,controls:'.reading-pager select,.reading-pager button,.daeun-nav a'});
-      await saju.locator('#reading-daeun').screenshot({path:path.join(artifacts,'saju-daeun-assumed-six-'+viewport+'-'+textSize+'.png')});
-      await saju.locator('.reading-pager').evaluate(element=>element.scrollIntoView({block:'start',behavior:'instant'}));
-      await saju.screenshot({path:path.join(artifacts,'saju-readable-daeun-'+viewport+'-'+textSize+'.png')});
-      const topicId=await saju.locator('[data-reader-current] .daeun-topic').first().getAttribute('id');
-      await selectReadingPage(topicId);await inspectDaeunAssumption(label+' topic');
-      assert.equal(await saju.locator('.source-entry,[data-fact-id],a[href*="-evidence"]').count(),0,label+': an assumption notice does not restore calculation evidence');
-      sajuDaeunAssumptionViews[viewport]={...assumedDaeun,textSize};
+    await menu.locator('.story-menu-close').click();
+    for(const id of ['reading-lifelong','reading-annual','reading-months','person-portrait-topic-1']){await followStoryAlias(id);await assertCurrentExplanation(saju,'data-reader-current');}
+    for(const item of model.supplements) {
+      const parts=storyParts(allStories,item);assertSourceStory(parts,item);assert.ok(parts.some(part=>part.text.includes(item.scopeNotice)));
+      assert.equal(parts.flatMap(part=>part.scores).length,0,'a supplementary classification does not invent a score');
+      assert.ok(sourceJSON.includes(JSON.stringify(item.scopeNotice).slice(1,-1)));
     }
-    await saju.setViewportSize({width:390,height:844});
-    await saju.goto(new URL('/__compatibility_fixture', url).href);
-    await saju.locator('#report-content[data-ready="confirmed"]').waitFor();
+    for(const item of model.scopes){const parts=storyParts(allStories,item);assert.ok(parts.some(part=>part.text.includes(item.scopeNotice)));}
+    const coverage=allStories.filter(record=>record.source==='reading-coverage');for(const text of model.coverage)assert.ok(coverage.some(record=>record.text.includes(text)));
+    sajuSupplementViews.complete={readings:model.supplements.length,scopeNotices:model.scopes.length,coverage:true};
+    await saju.goto(new URL('/__saju_fixture?score-case=original-zero',url).href);await saju.locator('#report-content[data-ready]').waitFor();
+    const regression=await saju.evaluate(()=>globalThis.__sajuScoreFixture);assert.equal(regression.nativeInteractionCount,0);
+    const regressionStories=await collectStories(saju,'reading-page-select');
+    for(const {key,reading:item} of regression.items) {
+      assert.equal(item.readingScore.calculation.rule,'confirmed-reading-cues-v2');
+      const authored=[...item.paragraphs,item.title,item.headline].filter(Boolean).join('\n');
+      for(const axis of key==='lifelong-overview'?['tailwind']:['tailwind','headwind']){
+        const signal=axis==='tailwind'?'help':'care',cues=item.readingScore.calculation.cues.filter(cue=>cue[signal]>0);
+        assert.ok(cues.length&&cues.every(cue=>cue.sources[signal].every(source=>source.anchor&&authored.includes(source.anchor))));assert.ok(item.readingScore[axis].value>0);
+      }
+      const parts=storyParts(regressionStories,item);assertSourceStory(parts,item);
+      for(const [viewport,size] of storySizes){await saju.setViewportSize(size);for(const textSize of ['normal','large']){await saju.locator('#report-content').evaluate((node,size)=>{node.dataset.readingSize=size;},textSize);await inspectSummary(parts,item,'original-zero '+key+' '+viewport+' '+textSize,{textSize});}}
+      sajuScoreRegressions[key]={tailwind:item.readingScore.tailwind.value,headwind:item.readingScore.headwind.value,completeParagraphs:item.paragraphs.length};
+    }
+    await saju.goto(new URL('/__saju_fixture?score-case=unknown-daeun',url).href);await saju.locator('#report-content[data-ready]').waitFor();
+    const assumed=await saju.evaluate(()=>({meta:globalThis.__sajuScoreFixture.daeun,reading:globalThis.__sajuReadingFixture.daeun}));
+    assert.equal(assumed.meta.natalTimeKnown,false);assert.equal(assumed.meta.natalHour,null);assert.equal(assumed.meta.timeAssumed,true);
+    assert.deepEqual(assumed.meta.assumedBirthTime,{hour:6,minute:0,timezone:'Asia/Seoul'});assert.equal(assumed.meta.periodCount,9);
+    for(const [viewport,size] of [storySizes[0],storySizes[2]]) {
+      await saju.setViewportSize(size);const textSize=viewport==='phone-small'?'large':'normal';
+      await saju.locator('#report-content').evaluate((node,size)=>{node.dataset.readingSize=size;},textSize);
+      for(const period of assumed.reading.periods)for(const id of [period.id,period.topics[0].id]) {
+        await selectVisibleReading(saju,'reading-page-select',id);
+        const context=saju.locator('.story-context');assert.equal(await context.isVisible(),true);
+        const text=await context.textContent();assert.ok(text.includes(assumed.meta.notice)&&text.includes(period.periodLabel),'dates and the six-AM assumption accompany the selected period');
+        await assertCurrentExplanation(saju,'data-reader-current');
+      }
+      await inspectStorySurface('assumed daeun '+viewport,{textSize});await saju.screenshot({path:path.join(artifacts,'saju-story-assumed-daeun-'+viewport+'.png')});
+      sajuDaeunAssumptionViews[viewport]={...assumed.meta,textSize};
+    }
+    await saju.goto(new URL('/__compatibility_fixture',url).href);await saju.locator('#report-content[data-ready]').waitFor();
     await inspectReadingControls('compatibility','compatibility-page-select','data-compatibility-current');
-    async function selectCompatibilityPage(id) {
-      await selectVisibleReading(saju,'compatibility-page-select',id);
-      await saju.locator('[data-compatibility-current][id="'+id+'"]').waitFor({state:'visible'});
-      assert.equal(await saju.locator('[data-compatibility-current]').count(),1,'compatibility shows one selected reading page');
-    }
-    assert.equal(await saju.locator('#compatibility-page-select').inputValue(),'compatibility-synthesis','compatibility opens with the combined explanation and scores');
-    assert.match(await saju.locator('#fixture-zodiac').textContent(), /말띠.*양띠.*입춘/);
-    const zodiacCard=saju.locator('[data-reader-card="zodiac"]');
-    assert.equal(await zodiacCard.count(),1);
-    assert.match(await zodiacCard.textContent(), /말띠.*양띠/s);
-    assert.ok(await zodiacCard.locator('.reader-prose p').count()>=3);
-    await selectCompatibilityPage(await zodiacCard.getAttribute('id'));
-    await zodiacCard.scrollIntoViewIfNeeded();
-    assert.equal(await saju.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'the two zodiac reading fits on mobile');
-    await saju.screenshot({path:path.join(artifacts,'saju-zodiac-compatibility-mobile.png')});
-    await saju.locator('#fixture-pair').selectOption('uncertain');
-    await saju.locator('#report-content[data-ready="uncertain"]').waitFor();
-    assert.match(await saju.locator('#fixture-zodiac').textContent(), /토끼띠 \/ 용띠/);
-    assert.match(await zodiacCard.textContent(), /토끼띠 \/ 용띠/);
-    await selectCompatibilityPage(await zodiacCard.getAttribute('id'));
-    await zodiacCard.scrollIntoViewIfNeeded();
-    assert.equal(await saju.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'the two candidate labels wrap on mobile');
-    await saju.screenshot({path:path.join(artifacts,'saju-zodiac-boundary-mobile.png')});
-    await saju.setViewportSize({width:1280,height:900});
-    await saju.locator('#fixture-pair').selectOption('confirmed');
-    await selectCompatibilityPage(await zodiacCard.getAttribute('id'));
-    await zodiacCard.scrollIntoViewIfNeeded();
-    await saju.screenshot({path:path.join(artifacts,'saju-zodiac-compatibility-desktop.png')});
-    async function inspectCompatibilityPeople(label,personCount) {
-      await assertCurrentExplanation(saju,'data-compatibility-current',{requireBody:true});
-      const current=saju.locator('[data-compatibility-current]');
-      const geometry=await current.evaluate(page=>{
-        const contained=(inner,outer)=>inner.left>=outer.left-1&&inner.right<=outer.right+1&&inner.top>=outer.top-1&&inner.bottom<=outer.bottom+1;
-        function fits(element) {
-          const rect=element.getBoundingClientRect(),style=getComputedStyle(element);
-          if(!rect.width||!rect.height||style.visibility==='hidden'||element.scrollWidth>element.clientWidth+1||element.scrollHeight>element.clientHeight+1)return false;
-          for(let parent=element.parentElement;parent&&parent!==document.body;parent=parent.parentElement) {
-            const box=parent.getBoundingClientRect(),parentStyle=getComputedStyle(parent);
-            if((/hidden|clip/.test(parentStyle.overflowX)&&(rect.left<box.left-1||rect.right>box.right+1))||
-              (/hidden|clip/.test(parentStyle.overflowY)&&(rect.top<box.top-1||rect.bottom>box.bottom+1)))return false;
-          }
-          return !['nowrap','pre'].includes(style.whiteSpace)&&style.textOverflow!=='ellipsis'&&['none','','unset'].includes(style.webkitLineClamp);
-        }
-        const box=page.getBoundingClientRect();
-        const people=Array.from(page.querySelectorAll('.compatibility-person-reading')).map(person=>{
-          const rect=person.getBoundingClientRect();
-          return {key:person.dataset.personKey,marker:person.dataset.personMarker,name:person.querySelector('.compatibility-person-name').textContent,
-            left:rect.left,right:rect.right,top:rect.top,bottom:rect.bottom,inside:contained(rect,box)};
-        });
-        const groups=Array.from(page.querySelectorAll('.compatibility-two-line-summary')).map(group=>({role:group.getAttribute('role'),label:group.getAttribute('aria-label'),
-          lines:Array.from(group.querySelectorAll('.compatibility-summary-line')).map(line=>({text:line.textContent.trim(),fits:fits(line)}))}));
-        const prose=Array.from(page.querySelectorAll('.compatibility-person-prose p'));
-        return {people,groups,bodyFont:parseFloat(getComputedStyle(prose[0]).fontSize),summaryFont:parseFloat(getComputedStyle(page.querySelector('.compatibility-summary-line')).fontSize),
-          proseFits:prose.length>0&&prose.every(fits),labelsFit:Array.from(page.querySelectorAll('.compatibility-person-name,.compatibility-people-title')).every(fits),
-          horizontalOverflow:document.documentElement.scrollWidth>innerWidth||page.scrollWidth>page.clientWidth+1,
-          insideViewport:box.left>=-1&&box.right<=innerWidth+1};
-      });
-      assert.equal(geometry.people.length,personCount,label+': both people are present on a comparison page');
-      assert.equal(geometry.groups.length,personCount||1,label+': each person or synthesis has its own summary');
-      assert.ok(geometry.groups.every(group=>group.role==='group'&&group.label==='두 줄 요약'&&group.lines.length===2&&group.lines.every(line=>line.text&&line.fits)),label+': two complete summary units wrap without clipping');
-      assert.ok(geometry.proseFits&&geometry.labelsFit,label+': names, headings and full paragraphs remain readable');
-      assert.equal(geometry.horizontalOverflow,false,label+': the reading fits the available width');
-      assert.ok(geometry.insideViewport,label+': the complete reading card fits the viewport width');
-      if(personCount) {
-        assert.deepEqual(geometry.people.map(person=>person.key),['self','partner'],label+': A precedes B in reading order');
-        assert.deepEqual(geometry.people.map(person=>person.marker),['A','B']);
-        assert.deepEqual(geometry.people.map(person=>person.name),['A · 길게 입력한 첫 번째 예시 이름','B · 길게 입력한 두 번째 예시 이름']);
-        assert.ok(geometry.people.every(person=>person.inside),label+': both person cards stay inside the reading');
-        const [a,b]=geometry.people;
-        if((await saju.viewportSize()).width===1280)assert.ok(b.left>=a.right-1&&Math.abs(a.top-b.top)<=1,label+': desktop places the matching A/B items side by side');
-        else assert.ok(b.top>=a.bottom-1,label+': a phone stacks A above B');
+    assert.equal(await saju.locator('#compatibility-page-select').inputValue(),'compatibility-synthesis');
+    for(const pair of ['confirmed','uncertain']) {
+      await saju.locator('#fixture-pair').selectOption(pair);await saju.locator('#report-content[data-ready="'+pair+'"]').waitFor();
+      const source=await saju.evaluate(()=>globalThis.__compatibilityReadingFixture),records=await collectStories(saju,'compatibility-page-select');
+      assert.match(await saju.locator('#fixture-zodiac').textContent(),pair==='confirmed'?/말띠.*양띠.*입춘/:/토끼띠 \/ 용띠/);
+      const graphs=records.filter(record=>record.graph);assert.equal(graphs.length,1,'the full score panel is in the ordinary next sequence');
+      assert.deepEqual(graphs[0].graph,{total:source.score.total,values:source.score.items.map(item=>item.value)});
+      for(const [index,person] of source.people.entries())for(const item of [person,...person.cards]) {
+        const parts=storyParts(records,item);assertSourceStory(parts,item);assert.ok(parts.every(part=>part.data.personMarker===(index===0?'A':'B')));
+        assert.ok(parts[0].label.includes(index===0?'A · 길게 입력한 첫 번째 예시 이름':'B · 길게 입력한 두 번째 예시 이름'));
       }
-      return geometry;
-    }
-    const compatibilityPeople={};
-    for(const [viewport,size] of [['phone-small',{width:320,height:844}],['phone',{width:390,height:844}],['desktop',{width:1280,height:900}]]) {
-      await saju.setViewportSize(size);
-      for(const textSize of ['normal','large']) {
-        await saju.locator('#fixture-pair').selectOption('confirmed');
-        await saju.locator('#report-content').evaluate((report,value)=>{report.dataset.readingSize=value;},textSize);
-        const topics=viewport==='phone-small'?['overview','decisions','relationships','work','pressure','adjustment']:['overview'];
-        const label=viewport+' '+textSize;
-        for(const topic of topics) {
-          await selectCompatibilityPage('compatibility-people-'+topic);
-          if(topic==='overview') {
-            await assertCurrentExplanation(saju,'data-compatibility-current',{requireBody:true});
-            const jumps=saju.locator('[data-compatibility-current] .compatibility-person-jumps a');
-            assert.equal(await jumps.count(),2,'both complete personal stories have a direct jump');
-            for(const index of [1,0]) {
-              const link=jumps.nth(index),href=await link.getAttribute('href');await link.click();
-              assert.equal(await saju.locator('[data-compatibility-current]').getAttribute('id'),'compatibility-people-overview');
-              assert.equal(await saju.locator(href).evaluate(element=>element===document.activeElement),true,'an A/B jump focuses that person without changing the item');
-              await assertCurrentExplanation(saju,'data-compatibility-current',{requireBody:true});
-            }
-            if(viewport!=='phone') {
-              await saju.locator('.reading-pager').evaluate(element=>element.scrollIntoView({block:'start',behavior:'instant'}));
-              await saju.screenshot({path:path.join(artifacts,'saju-flow-compatibility-'+viewport+'-'+textSize+'-people-summary.png')});
-              await saju.locator('.reading-item-toggle').click();
-              await inspectReadableSurface('compatibility item menu '+label,{text:'.reading-domain-button,.reading-current-title,.reading-item-group-title,.reading-item-button',controls:'.reading-domain-button,.reading-item-toggle,.reading-item-button'});
-              await saju.screenshot({path:path.join(artifacts,'saju-flow-compatibility-'+viewport+'-'+textSize+'-items.png')});
-              await saju.locator('.reading-item-toggle').click();
-            }
+      assertSourceStory(storyParts(records,source.synthesis),source.synthesis);
+      for(const item of source.score.items){const parts=records.filter(record=>record.source==='compatibility-score-detail-'+item.id);assertSourceStory(parts,item,{scoreValue:true});assert.equal(summaryLines(parts).join('\n'),item.summary);}
+      for(const text of source.readingScope.paragraphs)assert.ok(records.filter(record=>record.source==='compatibility-reading-coverage').some(record=>record.text.includes(text)));
+      const zodiac=records.filter(record=>record.data.readerCard==='zodiac');assert.ok(zodiac.length);assert.match(zodiac.map(record=>record.text).join(' '),pair==='confirmed'?/말띠.*양띠/s:/토끼띠 \/ 용띠/);
+      for(const [viewport,size] of storySizes) {
+        await saju.setViewportSize(size);
+        for(const textSize of ['normal','large']) {
+          await saju.locator('#report-content').evaluate((node,size)=>{node.dataset.readingSize=size;},textSize);
+          for(const [index,person] of source.people.entries()) {
+            const parts=storyParts(records,person);await inspectSummary(parts,person,pair+' '+viewport+' '+textSize+' person '+index,{compatibility:true,textSize});
+            await saju.screenshot({path:path.join(artifacts,'saju-story-person-'+pair+'-'+index+'-'+viewport+'-'+textSize+'.png')});
           }
-          const geometry=await inspectCompatibilityPeople(label+' '+topic,2);
-          if(topic==='overview') {
-            await inspectReadableSurface('compatibility people '+label,{text:compatibilityText,body:'.compatibility-person-prose p',minimumBody:textSize==='large'?21:18,controls:'.reading-pager select,.reading-pager button,.compatibility-person-jumps a'});
-            compatibilityPeople[label]={topics,bodyFont:geometry.bodyFont,summaryFont:geometry.summaryFont};
-            if(textSize==='large') {
-              assert.ok(geometry.bodyFont>compatibilityPeople[viewport+' normal'].bodyFont,label+': the large setting increases the body text');
-              assert.ok(geometry.summaryFont>compatibilityPeople[viewport+' normal'].summaryFont,label+': the large setting increases the summary text');
-            }
-            if(viewport!=='phone')await saju.locator('[data-compatibility-current]').screenshot({path:path.join(artifacts,'saju-compatibility-people-'+viewport+'-'+textSize+'.png')});
-            if(viewport!=='phone'&&textSize==='normal')await saju.locator('[data-compatibility-current]').screenshot({path:path.join(artifacts,'saju-depth-people-'+viewport+'.png')});
-            if(viewport!=='phone') {
-              await saju.locator('.reading-pager').evaluate(element=>element.scrollIntoView({block:'start',behavior:'instant'}));
-              await saju.screenshot({path:path.join(artifacts,'saju-readable-compatibility-'+viewport+'-'+textSize+'.png')});
-            }
-          }
-        }
-        await selectCompatibilityPage('compatibility-synthesis');
-        await inspectCompatibilityPeople(label+' synthesis',0);
-        await inspectReadableSurface('compatibility synthesis '+label,{text:compatibilityText,body:'.compatibility-person-prose p',minimumBody:textSize==='large'?21:18});
-        const coverage=saju.locator('#compatibility-reading-coverage');
-        assert.equal(await coverage.isVisible(),true,label+': moving between people and synthesis keeps the interpretation scope');
-        const expectedScope=await saju.evaluate(()=>globalThis.__compatibilityReadingFixture.readingScope.paragraphs);
-        const scopeText=await coverage.innerText();
-        for(const paragraph of expectedScope)assert.ok(scopeText.includes(paragraph));
-        await inspectReadableSurface('compatibility scope '+label,{text:'.reading-coverage p'});
-        if(viewport!=='phone'&&textSize==='normal')await coverage.screenshot({path:path.join(artifacts,'saju-compatibility-scope-'+viewport+'.png')});
-        if(viewport!=='phone'&&textSize==='normal')await saju.locator('[data-compatibility-current]').screenshot({path:path.join(artifacts,'saju-compatibility-synthesis-'+viewport+'.png')});
-        assert.equal(await saju.locator('#compatibility-reading-evidence,.compatibility-evidence-link,.compatibility-score-details,[data-fact-id],a[href*="-evidence"]').count(),0,label+': compatibility has no calculation material or evidence links');
-        assert.ok(await saju.locator('#compatibility-page-select option').evaluateAll(options=>options.every(option=>!/근거|계산|자료|출처/.test(option.textContent))),label+': compatibility has no evidence menus');
-      }
-    }
-    await saju.setViewportSize({width:320,height:844});
-    await saju.locator('#fixture-pair').selectOption('uncertain');
-    await saju.locator('#report-content').evaluate(report=>{report.dataset.readingSize='large';});
-    await selectCompatibilityPage('compatibility-people-overview');
-    await inspectCompatibilityPeople('unknown birth time phone-small large',2);
-    await selectCompatibilityPage('compatibility-synthesis');
-    await inspectCompatibilityPeople('unknown birth time phone-small large synthesis',0);
-    const compatibilityScores={};
-    for(const [viewport,size] of [['phone-small',{width:320,height:844}],['phone',{width:390,height:844}],['desktop',{width:1280,height:900}]]) {
-      await saju.setViewportSize(size);
-      await saju.locator('#report-content').evaluate(report=>{report.dataset.readingSize='normal';});
-      compatibilityScores[viewport]={};
-      for(const pair of ['confirmed','uncertain']) {
-        await saju.locator('#fixture-pair').selectOption(pair);
-        await saju.locator('#report-content[data-ready="'+pair+'"]').waitFor();
-        await selectCompatibilityPage('compatibility-scores');
-        const scoreboard=saju.locator('section.compatibility-scoreboard');
-        await scoreboard.waitFor({state:'visible'});
-        assert.equal(await scoreboard.count(),1,'one score summary is rendered per pair');
-        assert.equal(await scoreboard.locator('article[data-score-item]').count(),4,'all four score components remain available');
-        assert.equal(await scoreboard.locator('.compatibility-score-meter[role="meter"]').count(),4,'each component has its own accessible meter');
-        const geometry=await scoreboard.evaluate(board=>{
-          const box=board.getBoundingClientRect();
-          const contained=(inner,outer)=>inner.left>=outer.left-1&&inner.right<=outer.right+1&&inner.top>=outer.top-1&&inner.bottom<=outer.bottom+1;
-          const total=board.querySelector('strong[data-score-total]');
-          const meters=Array.from(board.querySelectorAll('article[data-score-item]')).map(item=>{
-            const meter=item.querySelector('.compatibility-score-meter[role="meter"]'),fill=meter?.querySelector('.compatibility-score-fill');
-            if(!meter||!fill)return {valid:false};
-            const trackBox=meter.getBoundingClientRect(),fillBox=fill.getBoundingClientRect(),style=getComputedStyle(meter);
-            const value=Number(meter.getAttribute('aria-valuenow'));
-            const contentWidth=meter.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight);
-            return {value,min:Number(meter.getAttribute('aria-valuemin')),max:Number(meter.getAttribute('aria-valuemax')),
-              valid:Number.isInteger(value)&&value>=0&&value<=100,
-              visible:trackBox.width>0&&trackBox.height>0&&getComputedStyle(meter).visibility==='visible',
-              inside:contained(trackBox,item.getBoundingClientRect())&&contained(item.getBoundingClientRect(),box)&&contained(fillBox,trackBox),
-              fillMatches:Math.abs(fillBox.width-contentWidth*value/100)<=2};
+          await inspectSummary(storyParts(records,source.synthesis),source.synthesis,pair+' '+viewport+' '+textSize+' synthesis',{compatibility:true,textSize});
+          await selectVisibleReading(saju,'compatibility-page-select',graphs[0].id);
+          const geometry=await saju.locator('.compatibility-scoreboard').evaluate(board=>{
+            const box=board.getBoundingClientRect();return {total:Number(board.querySelector('[data-score-total]').textContent),inside:box.left>=-1&&box.right<=innerWidth+1,
+              meters:[...board.querySelectorAll('.compatibility-score-meter')].map(meter=>{const track=meter.getBoundingClientRect(),fill=meter.querySelector('.compatibility-score-fill').getBoundingClientRect(),value=Number(meter.getAttribute('aria-valuenow'));return {value,min:meter.getAttribute('aria-valuemin'),max:meter.getAttribute('aria-valuemax'),visible:track.width>0&&track.height>0,exact:Math.abs(fill.width-track.width*value/100)<=2};})};
           });
-          const summaries=Array.from(board.querySelectorAll('article[data-score-item]')).map(item=>{
-            const summary=item.querySelector('.compatibility-score-item-summary');
-            if(!summary)return {id:item.dataset.scoreItem,visible:false};
-            const rect=summary.getBoundingClientRect(),style=getComputedStyle(summary);
-            const contentHeight=rect.height-parseFloat(style.paddingTop)-parseFloat(style.paddingBottom)-parseFloat(style.borderTopWidth)-parseFloat(style.borderBottomWidth);
-            return {id:item.dataset.scoreItem,height:contentHeight,lineHeight:parseFloat(style.lineHeight),
-              meaningUnits:summary.textContent.trim().split(/\n+/).map(line=>line.trim()).filter(Boolean),
-              visible:rect.width>0&&rect.height>0&&style.visibility==='visible',
-              unclipped:summary.scrollWidth<=summary.clientWidth+1&&summary.scrollHeight<=summary.clientHeight+1&&
-                style.textOverflow!=='ellipsis'&&['none','','unset'].includes(style.webkitLineClamp)&&
-                contained(rect,item.getBoundingClientRect())&&contained(rect,box)};
-          });
-          const clippedAncestors=[];
-          for(let parent=board.parentElement;parent&&parent!==document.body;parent=parent.parentElement){
-            const style=getComputedStyle(parent),rect=parent.getBoundingClientRect();
-            if((/hidden|clip/.test(style.overflowX)&&(box.left<rect.left-1||box.right>rect.right+1))||
-              (/hidden|clip/.test(style.overflowY)&&(box.top<rect.top-1||box.bottom>rect.bottom+1)))clippedAncestors.push(parent.id||parent.className||parent.tagName);
-          }
-          return {total:Number(total?.textContent.trim()),meters,summaries,
-            selectedPage:board.hasAttribute('data-compatibility-current')&&document.getElementById('compatibility-page-select').value==='compatibility-scores',
-            totalVisible:!!total&&total.getBoundingClientRect().width>0&&contained(total.getBoundingClientRect(),box),
-            documentOverflow:document.documentElement.scrollWidth>innerWidth,
-            boardOverflow:board.scrollWidth>board.clientWidth+1||board.scrollHeight>board.clientHeight+1,
-            clippedAncestors,
-            insideViewport:box.left>=-1&&box.right<=innerWidth+1,
-            clippedText:Array.from(board.querySelectorAll('h2,h3,h4,h5,h6,p,strong,small,summary,dt,dd')).filter(element=>element.clientWidth>0&&element.scrollWidth>element.clientWidth+1).length};
-        });
-        const label=pair+' '+viewport;
-        assert.ok(geometry.selectedPage,label+': scores remain available through the reading picker');
-        assert.ok(Number.isInteger(geometry.total)&&geometry.total>=0&&geometry.total<=100,label+': the total is an explicit 0–100 score');
-        assert.ok(geometry.totalVisible,label+': the total is visible inside its score summary');
-        assert.ok(geometry.meters.every(meter=>meter.valid&&meter.min===0&&meter.max===100&&meter.visible&&meter.inside&&meter.fillMatches),label+': all four bars fit and represent their exact values');
-        assert.equal(geometry.summaries.length,4,label+': all four bars have a summary');
-        for(const summary of geometry.summaries) {
-          assert.ok(summary.visible,label+' '+summary.id+': the summary is visible at regular text size');
-          assert.equal(summary.meaningUnits.length,2,label+' '+summary.id+': the summary keeps its two complete meaning units');
-          assert.ok(summary.lineHeight>0&&summary.height>=2*summary.lineHeight-1,label+' '+summary.id+': the two summary units can wrap naturally at a readable size');
-          assert.ok(summary.unclipped,label+' '+summary.id+': both summary lines fit without clipping');
-        }
-        assert.equal(geometry.documentOverflow,false,label+': the page does not overflow horizontally');
-        assert.equal(geometry.boardOverflow,false,label+': no score content is clipped by its own container');
-        assert.deepEqual(geometry.clippedAncestors,[],label+': no report ancestor clips the score summary');
-        assert.ok(geometry.insideViewport,label+': the complete score summary fits the viewport width');
-        assert.equal(geometry.clippedText,0,label+': long labels and explanations remain readable');
-        const values={total:geometry.total,items:geometry.meters.map(meter=>meter.value)};
-        if(compatibilityScores['phone-small'][pair])assert.deepEqual(values,compatibilityScores['phone-small'][pair],label+': layout changes preserve every score');
-        compatibilityScores[viewport][pair]=values;
-        await inspectReadableSurface('compatibility scores '+label+' normal',{text:compatibilityText,body:'.compatibility-score-summary,.compatibility-score-item-summary',minimumBody:18});
-        await scoreboard.scrollIntoViewIfNeeded();
-        await scoreboard.screenshot({path:path.join(artifacts,'saju-compatibility-scores-'+pair+'-'+viewport+'.png')});
-        const scoreStories=await saju.evaluate(()=>globalThis.__compatibilityReadingFixture.score.items.map(item=>({id:item.id,value:item.value,summaryLines:item.summaryLines,paragraphs:item.paragraphs,headings:item.detailSections.map(section=>section.title)})));
-        for(const item of scoreStories) {
-          await scoreboard.locator('[data-score-item="'+item.id+'"] .compatibility-score-detail-link').click();
-          const detail=saju.locator('[data-compatibility-current]');
-          assert.equal(await detail.getAttribute('id'),'compatibility-score-detail-'+item.id,'a score bar links to its own complete reading');
-          await assertCurrentExplanation(saju,'data-compatibility-current',{requireBody:true});
-          assert.deepEqual(await detail.locator('.reader-prose > p').allTextContents(),item.paragraphs,'the score story preserves every calculated-input explanation');
-          assert.deepEqual(await detail.locator('.reading-body-heading').allTextContents(),item.headings,'the complete score story has its authored headings');
-          assert.deepEqual(await detail.locator('.compatibility-summary-line').allTextContents(),item.summaryLines,'the score story keeps both summary units above its full prose');
-          assert.equal(await detail.locator('.compatibility-detail-score-value').textContent(),item.value+'점 / 100점');
-          assert.equal(await detail.locator('[role="meter"]').count(),0,'score details retain the one original four-bar overview');
-          if(item.id==='temperament') {
-            await inspectReadableSurface('compatibility score detail '+label,{text:compatibilityText,body:'.compatibility-score-detail .reader-prose p',minimumBody:18,controls:'.compatibility-score-detail-link'});
-            if(pair==='confirmed'&&viewport!=='phone')await detail.screenshot({path:path.join(artifacts,'saju-depth-score-'+viewport+'.png')});
-          }
-          await detail.locator('a[href="#compatibility-scores"]').click();
-          assert.equal(await saju.locator('[data-compatibility-current]').getAttribute('id'),'compatibility-scores');
-        }
-        if(pair==='confirmed') {
-          await saju.locator('#report-content').evaluate(report=>{report.dataset.readingSize='large';});
-          await inspectReadableSurface('compatibility scores '+label+' large',{text:compatibilityText,body:'.compatibility-score-summary,.compatibility-score-item-summary',minimumBody:21});
-          const enlargedSummaries=await scoreboard.locator('.compatibility-score-item-summary').evaluateAll(nodes=>nodes.map(node=>{
-            const style=getComputedStyle(node);
-            return {units:node.textContent.trim().split(/\n+/).map(line=>line.trim()).filter(Boolean).length,
-              complete:node.scrollWidth<=node.clientWidth+1&&node.scrollHeight<=node.clientHeight+1&&style.textOverflow!=='ellipsis'&&['none','','unset'].includes(style.webkitLineClamp)};
-          }));
-          assert.ok(enlargedSummaries.every(summary=>summary.units===2&&summary.complete),label+': large text preserves both complete score summary units');
-          if(viewport!=='phone')await scoreboard.screenshot({path:path.join(artifacts,'saju-readable-compatibility-scores-'+viewport+'-large.png')});
-          await saju.locator('#report-content').evaluate(report=>{report.dataset.readingSize='normal';});
+          assert.equal(geometry.total,source.score.total);assert.equal(geometry.meters.length,4);assert.ok(geometry.inside);
+          assert.deepEqual(geometry.meters.map(meter=>meter.value),source.score.items.map(item=>item.value));assert.ok(geometry.meters.every(meter=>meter.visible&&meter.exact&&meter.min==='0'&&meter.max==='100'));
+          await inspectStorySurface(pair+' '+viewport+' '+textSize+' scores',{compatibility:true,textSize});
+          await saju.screenshot({path:path.join(artifacts,'saju-story-score-'+pair+'-'+viewport+'-'+textSize+'.png')});
+          // Each bar's explanation is now its own reachable story, so no hidden
+          // duplicate summary or obsolete back-link is clicked on the chart.
+          for(const item of source.score.items){const parts=records.filter(record=>record.source==='compatibility-score-detail-'+item.id);await inspectSummary(parts,item,pair+' '+viewport+' '+textSize+' '+item.id,{compatibility:true,textSize});}
+          compatibilityPeople[pair+' '+viewport+' '+textSize]={people:2,separateStories:true,completeProse:true};
+          compatibilityScores[pair+' '+viewport+' '+textSize]={total:geometry.total,items:geometry.meters.map(meter=>meter.value)};
         }
       }
+      for(const id of ['compatibility-scores','compatibility-score-title','compatibility-score-temperament-summary']){await followStoryAlias(id);assert.equal(await saju.locator('.story-scene[data-compatibility-current]').getAttribute('data-story-source'),'compatibility-scores');}
+      assert.equal(await saju.locator('.source-entry,[data-fact-id],a[href*="-evidence"]').count(),0);
     }
     const sajuSwipeViews={};
     for(const [kind,fixture,pickerId,currentAttribute] of [
@@ -1566,7 +994,7 @@ const server = http.createServer((request, response) => {
             };
             for(const name of ['pointerdown','pointermove','pointerup','pointercancel','gotpointercapture','lostpointercapture'])document.addEventListener(name,record,true);
           },currentAttribute);
-          const picker=swipe.locator('#'+pickerId),current=swipe.locator('['+currentAttribute+']'),pager=swipe.locator('.reading-pager');
+          const picker=swipe.locator('#'+pickerId),current=swipe.locator('['+currentAttribute+']'),pager=swipe.locator('.story-steps');
           const first=await current.getAttribute('id');
           const controls=pager.locator('.reading-pager-step');
           await controls.last().click();
@@ -1577,7 +1005,7 @@ const server = http.createServer((request, response) => {
           // reading text rather than only over blank card padding.
           async function paragraphPoints(direction) {
             await assertCurrentExplanation(swipe,currentAttribute,{requireBody:true});
-            const paragraph=current.locator('.reader-prose p:visible').first();
+            const paragraph=current.locator('.story-body > p:visible').first();
             await paragraph.evaluate(element=>element.scrollIntoView({block:'center',behavior:'instant'}));
             return paragraph.evaluate((element,direction)=>{
               const walker=document.createTreeWalker(element,NodeFilter.SHOW_TEXT);
@@ -1624,9 +1052,11 @@ const server = http.createServer((request, response) => {
             swipeStage='native vertical scroll';
             points=await paragraphPoints(-1);
             const from={x:points.from.x,y:Math.max(230,points.from.y)},to={x:points.from.x+3,y:Math.max(230,points.from.y)-160};
-            const before=await swipe.evaluate(()=>scrollY);await gesture(from,to);
-            await swipe.waitForFunction(before=>scrollY>before+40,before);
-            verticalScroll=(await swipe.evaluate(()=>scrollY))-before;
+            const before=await swipe.evaluate(()=>({y:scrollY,available:document.documentElement.scrollHeight-innerHeight-scrollY}));await gesture(from,to);
+            // A short story can fit without vertical overflow. When it has room
+            // to scroll, native movement still works and never turns a story.
+            if(before.available>40)await swipe.waitForFunction(before=>scrollY>before+10,before.y);
+            verticalScroll=(await swipe.evaluate(()=>scrollY))-before.y;
             assert.equal(await current.getAttribute('id'),first,label+': vertical touch scrolling does not turn the page');
             await swipe.evaluate(async()=>{
               let last=scrollY,stable=0;const deadline=performance.now()+1200;
@@ -1639,7 +1069,7 @@ const server = http.createServer((request, response) => {
             swipeStage='existing text selection';
             // A user's existing selection remains usable instead of becoming a
             // page turn. The selection itself is created only in this fixture.
-            await current.locator('.reader-prose p:visible').first().evaluate(element=>{
+            await current.locator('.story-body > p:visible').first().evaluate(element=>{
               const range=document.createRange();range.selectNodeContents(element);
               getSelection().removeAllRanges();getSelection().addRange(range);
             });
@@ -1685,7 +1115,7 @@ const server = http.createServer((request, response) => {
           await slide.goto(new URL(fixture,url).href);
           await slide.locator('#report-content[data-ready]').waitFor();
           await slide.evaluate(textSize=>{document.documentElement.dataset.reducedMotion='false';document.getElementById('report-content').dataset.readingSize=textSize;},textSize);
-          const current=slide.locator('['+currentAttribute+']'),pager=slide.locator('.reading-pager'),steps=pager.locator('.reading-pager-step');
+          const current=slide.locator('['+currentAttribute+']'),pager=slide.locator('.story-steps'),steps=pager.locator('.reading-pager-step');
           const first=await current.getAttribute('id');
           const settled=()=>slide.waitForFunction(()=>!document.querySelector('.reading-slide-outgoing,.reading-slide-incoming,.reading-slide-dragging')
             &&![...document.querySelectorAll('[data-reader-current],[data-compatibility-current]')].some(el=>el.style.transform&&el.style.transform!=='none'),null,{timeout:2500});
@@ -1720,7 +1150,7 @@ const server = http.createServer((request, response) => {
           }
           async function points(direction,distance=120) {
             await assertCurrentExplanation(slide,currentAttribute,{requireBody:true});
-            const paragraph=current.locator('.reader-prose p:visible').first();
+            const paragraph=current.locator('.story-body > p:visible').first();
             await paragraph.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));
             return paragraph.evaluate((el,{direction,distance})=>{
               const walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);let text,rect;
@@ -1766,10 +1196,10 @@ const server = http.createServer((request, response) => {
           }
           motionStage='previous and next controls';
           await steps.last().click();assert.equal(await current.getAttribute('id'),second);await inspectSlide(1);
-          assert.equal(await slide.evaluate(()=>document.activeElement?.textContent),'다음',label+': the next control retains focus');
+          assert.equal(await slide.evaluate(()=>document.activeElement?.getAttribute('aria-label')),'다음 이야기',label+': the next control retains focus');
           await steps.last().click();await settled();
           await steps.first().click();assert.equal(await current.getAttribute('id'),second);await inspectSlide(-1);
-          assert.equal(await slide.evaluate(()=>document.activeElement?.textContent),'이전',label+': the previous control retains focus');
+          assert.equal(await slide.evaluate(()=>document.activeElement?.getAttribute('aria-label')),'이전 이야기',label+': the previous control retains focus');
           await steps.first().click();assert.equal(await current.getAttribute('id'),first);await settled();
 
           if(input==='mouse') {

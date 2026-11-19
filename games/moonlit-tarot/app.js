@@ -1,8 +1,9 @@
 import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261114-tarot-first-person1';
 import { TarotFX, TarotAudio } from './fx.js';
 import { TarotPayment, getTarotPrice } from './payment.js?v=20261114-tarot-copy1';
-import { createPersonalReading } from './personal-reading-ui.js?v=20261114-tarot-first-person1';
-import { renderSectionSummary, installSummaryExpiryGuard } from './reading-summary-view.js?v=20261113-tarot-summary1';
+import { createPersonalReading } from './personal-reading-ui.js?v=20261120-tarot-chapters1';
+import { createReadingReader } from './reading-reader.js?v=20261120-tarot-chapters1';
+import { buildSummaryPages, buildCardPages } from './reading-pages.js?v=20261120-tarot-chapters1';
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -25,6 +26,7 @@ let voiceNoticeShown = false;
 let billingReady = false;
 let readingExpiryTimer;
 let personalReading;
+let resultContext = null;
 const billing = new TarotPayment({
   enabled: document.documentElement.dataset.billing === 'ojjuda',
   onBalance: updatePaymentStatus,
@@ -599,53 +601,9 @@ async function revealCard(index) {
   }
 }
 
-function renderReadingSections(container, sections, fallback = '', headingTag = 'h3', cardNames = []) {
-  container.replaceChildren();
-  if (!Array.isArray(sections) || !sections.length) {
-    appendReadingParagraphs(container, [], fallback, cardNames);
-    return;
-  }
-  sections.forEach((part, index) => {
-    const section = document.createElement('section');
-    section.className = 'reading-part';
-    if (part.id) section.dataset.sectionId = part.id;
-    if (part.categoryId) section.dataset.categoryId = part.categoryId;
-    const heading = document.createElement(headingTag);
-    const number = document.createElement('span');
-    number.className = 'reading-part-number';
-    number.textContent = String(part.number || index + 1).padStart(2, '0');
-    heading.append(number, document.createTextNode(part.title));
-    section.append(heading);
-    if (part.subtitle) {
-      const subtitle = document.createElement(headingTag === 'h3' ? 'h4' : 'h5');
-      subtitle.className = 'reading-part-subtitle';
-      subtitle.textContent = part.subtitle;
-      section.append(subtitle);
-    }
-    renderSectionSummary(section, part, { appendParagraphs: appendReadingParagraphs, setText: setReadingText, cardNames });
-    container.append(section);
-  });
-}
-
 function narrativeParagraphs(paragraphs, fallback = '') {
   const content = Array.isArray(paragraphs) && paragraphs.length ? paragraphs : String(fallback).split(/\n\s*\n/);
   return content.filter(text => typeof text === 'string' && text.trim());
-}
-
-function readableParagraphs(text) {
-  if (text.length < 160) return [text];
-  const parts = [];
-  let start = 0, sentences = 0;
-  for (const match of text.matchAll(/[.!?。！？…]+[”’"'」』)\]]*\s+/gu)) {
-    const end = match.index + match[0].length;
-    sentences++;
-    if ((end - start < 100 && sentences < 3) || text.length - end < 40) continue;
-    parts.push(text.slice(start, end));
-    start = end;
-    sentences = 0;
-  }
-  parts.push(text.slice(start));
-  return parts;
 }
 
 function setReadingText(container, text, cardNames = []) {
@@ -664,47 +622,16 @@ function setReadingText(container, text, cardNames = []) {
   container.append(document.createTextNode(text.slice(start)));
 }
 
-function appendReadingParagraphs(container, paragraphs, fallback = '', cardNames = []) {
-  narrativeParagraphs(paragraphs, fallback).forEach(text => {
-    readableParagraphs(text).forEach(part => {
-      const paragraph = document.createElement('p');
-      setReadingText(paragraph, part, cardNames);
-      container.append(paragraph);
-    });
-  });
-}
-
-function renderReadingParagraphs(container, paragraphs, fallback = '', cardNames = []) {
-  container.replaceChildren();
-  appendReadingParagraphs(container, paragraphs, fallback, cardNames);
-}
-
 function showReading(slot = state.lastReading) {
   if (expireDisplayedReading() || slot < 0 || slot >= state.revealed || state.busy) return;
   const data = state.drawn[state.openOrder[slot]];
   const reading = getReading(data, state.topic, slot);
   state.lastReading = slot;
-  $('#reading-position').textContent = `${['첫 번째', '두 번째', '세 번째'][slot]} 자리 · ${POSITIONS[slot].label}`;
-  const cardNames = [data.name, reading.displayName].filter(Boolean);
-  setReadingText($('#reading-introduction'), reading.introduction || '', cardNames);
-  $('#reading-introduction').hidden = !reading.introduction;
-  $('#reading-title').textContent = reading.displayName || data.name;
-  $$('#reading-dialog details').forEach(detail => { detail.open = false; });
-  $('#reading-name-help').hidden = !reading.nameGuide;
-  $('#reading-name-guide').textContent = reading.nameGuide || '';
-  applyArtwork($('#reading-art'), data);
-  $('#reading-art').setAttribute('aria-label', `${reading.displayName || data.name} 카드`);
-  renderReadingParagraphs($('#reading-sections'), reading.paragraphs, reading.text, cardNames);
-  const detailSections = reading.detailSections || reading.sections;
-  $('#reading-card-detail').hidden = !detailSections?.length;
-  renderReadingSections($('#reading-detail-sections'), detailSections);
-  $('#reading-source-link').href = reading.reference.url;
-  $('#reading-source-link').textContent = `${reading.reference.label} ↗`;
-  $('#reading-source-note').hidden = !reading.sourceNote;
-  $('#reading-source-note-body').textContent = reading.sourceNote?.body || '';
-  if (reading.sourceNote) $('#reading-source-note-link').href = reading.sourceNote.reference.url;
-  else $('#reading-source-note-link').removeAttribute('href');
-  $('#reading-next span').textContent = state.revealed < 3 ? '다음 카드 펼치기' : '풀이 보기';
+  if (!cardReader.setPages(buildCardPages(data, reading, {
+    positionLabel: `${['첫 번째', '두 번째', '세 번째'][slot]} 자리 · ${POSITIONS[slot].label}`
+  }), { preserve: false })) return;
+  $('#reading-date').textContent = TOPICS.find(topic => topic.id === state.topic).label;
+  $('#reading-finish').textContent = state.revealed < 3 ? '다음 카드 펼치기' : '종합 풀이 보기';
   $('#reading-open span').textContent = state.revealed < 3 ? '이 카드의 이야기 자세히 읽기' : '종합 점괘 자세히 보기';
   $('#reading-open').hidden = false;
   $('#reading-open').disabled = false;
@@ -725,188 +652,44 @@ function summaryGroups(summary) {
     : [{ id: 'problem', label: '문제 해결', sections: summary.sections || [] }];
 }
 
-function selectSummaryGroup(id, focus = false) {
-  $$('#summary-tabs [role="tab"]').forEach(tab => {
-    const selected = tab.dataset.group === id;
-    tab.setAttribute('aria-selected', String(selected));
-    tab.tabIndex = selected ? 0 : -1;
-    document.getElementById(tab.getAttribute('aria-controls')).hidden = !selected;
-    if (selected && focus) tab.focus();
-  });
-}
-
-function selectDomainCategory(panel, categoryId) {
-  const select = panel.querySelector('#summary-domain-category');
-  if (!select || ![...select.options].some(option => option.value === categoryId)) return;
-  select.value = categoryId;
-  panel.dataset.category = categoryId;
-  const visible = [];
-  panel.querySelectorAll('#summary-domain-sections > .reading-part').forEach(section => {
-    section.hidden = section.dataset.categoryId !== categoryId;
-    section.classList.remove('is-domain-first', 'is-domain-last');
-    if (!section.hidden) visible.push(section);
-  });
-  visible[0]?.classList.add('is-domain-first');
-  visible[visible.length - 1]?.classList.add('is-domain-last');
-}
-
-function renderDomainCategories(panel, group, cardNames) {
-  const controls = document.createElement('div');
-  controls.className = 'domain-controls';
-  const label = document.createElement('label');
-  label.htmlFor = 'summary-domain-category';
-  label.textContent = '풀이 분야';
-  const total = document.createElement('p');
-  total.id = 'summary-domain-total';
-  total.className = 'domain-total';
-  total.textContent = `${group.sections.length}개 풀이 · ${group.categories.length}개 분야`;
-  const select = document.createElement('select');
-  select.id = 'summary-domain-category';
-  select.setAttribute('aria-describedby', total.id);
-  group.categories.forEach(category => {
-    const option = document.createElement('option');
-    option.value = category.id;
-    option.textContent = `${category.label} · ${category.count}개`;
-    select.append(option);
-  });
-  controls.append(label, total, select);
-  panel.append(controls);
-  if (group.description) {
-    const description = document.createElement('p');
-    description.id = 'summary-domain-description';
-    description.className = 'domain-description';
-    description.textContent = group.description;
-    panel.append(description);
-  }
-  const sections = document.createElement('div');
-  sections.id = 'summary-domain-sections';
-  sections.className = 'domain-sections';
-  renderReadingSections(sections, group.sections, '', 'h3', cardNames);
-  panel.append(sections);
-  selectDomainCategory(panel, group.categories[0].id);
-}
-
 const SUMMARY_DETAIL_TITLE = '함께 읽는 종합 해석';
-
-function renderSummaryDetails(panel, sections, cardNames, id = 'summary-detail', heading = SUMMARY_DETAIL_TITLE) {
-  if (!Array.isArray(sections) || !sections.length) return;
-  const details = document.createElement('details');
-  details.id = id;
-  details.className = 'reading-source';
-  const title = document.createElement('summary');
-  title.textContent = heading;
-  const content = document.createElement('div');
-  content.id = `${id}-sections`;
-  content.className = 'reading-sections';
-  renderReadingSections(content, sections, '', 'h3', cardNames);
-  details.append(title, content);
-  panel.append(details);
+const readerOptions = {
+  canRead: () => !expireDisplayedReading(),
+  renderText: (node, text) => setReadingText(node, text, state.openOrder.map(index => state.drawn[index]?.name).filter(Boolean)),
+  renderArtwork: applyArtwork
+};
+function finishCardReading() {
+  if (expireDisplayedReading()) return;
+  closeDialog('reading-dialog');
+  if (state.phase === 'complete') void showResults();
+  else if (state.phase === 'reading') focusUnopenedCard();
 }
+const cardReader = createReadingReader({
+  ...readerOptions, dialog: $('#reading-dialog'), prefix: 'reading', onFinish: finishCardReading
+});
+const resultReader = createReadingReader({
+  ...readerOptions, dialog: $('#result-dialog'), prefix: 'result', onFinish: () => closeDialog('result-dialog')
+});
+const resultActions = document.createElement('div');
+resultActions.className = 'reader-actions';
+resultActions.innerHTML = `<button id="copy-result" class="secondary-button" type="button">${icon('copy')}전체 풀이 복사</button><button id="restart-result" class="secondary-button" type="button">${icon('reset')}<span>다른 주제 고르기</span></button>`;
+resultReader.setMenuActions(resultActions);
+const cardFinish = document.createElement('button');
+cardFinish.type = 'button';
+cardFinish.id = 'reading-finish';
+cardFinish.className = 'secondary-button';
+cardFinish.textContent = '다음 카드 펼치기';
+cardFinish.addEventListener('click', finishCardReading);
+cardReader.setMenuActions(cardFinish);
 
-function appendCardReference(parent, reference) {
-  if (!reference?.url) return;
-  const paragraph = document.createElement('p');
-  const link = document.createElement('a');
-  link.href = reference.url;
-  link.target = '_blank';
-  link.rel = 'noopener noreferrer';
-  link.textContent = `${reference.label || '참고한 자료 읽기'} ↗`;
-  paragraph.append(link);
-  parent.append(paragraph);
-}
-
-function renderCardIntroductions(panel, group, cardNames) {
-  if (group.description) {
-    const description = document.createElement('p');
-    description.className = 'card-introduction-description';
-    description.textContent = group.description;
-    panel.append(description);
-  }
-  const entries = document.createElement('div');
-  entries.id = 'card-introductions';
-  renderReadingSections(entries, group.sections, '', 'h3', cardNames);
-  group.sections.forEach((part, index) => {
-    const section = entries.children[index];
-    const card = DECK.find(value => value.id === part.cardId);
-    if (card) {
-      const art = document.createElement('div');
-      art.className = 'result-card-art card-introduction-art';
-      art.setAttribute('role', 'img');
-      art.setAttribute('aria-label', `${card.name} 카드 그림`);
-      applyArtwork(art, card);
-      const heading = section.querySelector('h3');
-      const intro = document.createElement('div');
-      intro.className = 'card-introduction-heading';
-      heading.before(intro);
-      intro.append(art, heading);
-    }
-    if (part.nameGuide) {
-      const details = document.createElement('details');
-      details.className = 'reading-name-help';
-      const title = document.createElement('summary');
-      title.textContent = '카드 이름 더 알아보기';
-      const description = document.createElement('p');
-      description.textContent = part.nameGuide;
-      details.append(title, description);
-      section.append(details);
-    }
-    renderSummaryDetails(section, part.detailSections, cardNames, `card-source-${index}`, '카드의 뜻과 주의점 더 보기');
-    const references = document.createElement('details');
-    references.className = 'reading-source card-introduction-reference';
-    const title = document.createElement('summary');
-    title.textContent = '참고 자료와 다른 해석';
-    references.append(title);
-    appendCardReference(references, part.reference);
-    if (part.sourceNote) {
-      const explanation = document.createElement('p');
-      explanation.textContent = part.sourceNote.body;
-      references.append(explanation);
-      appendCardReference(references, part.sourceNote.reference);
-    }
-    section.append(references);
-  });
-  panel.append(entries);
-  renderSummaryDetails(panel, group.detailSections, cardNames, 'card-connections-detail', '세 카드를 함께 읽는 법');
-  if (group.basisParagraphs?.length) {
-    const details = document.createElement('details');
-    details.id = 'card-reading-basis';
-    details.className = 'reading-source';
-    const title = document.createElement('summary');
-    title.textContent = '풀이 방식과 범위';
-    details.append(title);
-    appendReadingParagraphs(details, group.basisParagraphs);
-    panel.append(details);
-  }
-}
-
-function renderSummaryGroups(summary, cardNames) {
-  const tabs = $('#summary-tabs');
-  const panels = $('#summary-text');
-  tabs.replaceChildren();
-  panels.replaceChildren();
-  const groups = summaryGroups(summary);
-  groups.forEach(group => {
-    const tab = document.createElement('button');
-    tab.type = 'button';
-    tab.id = `summary-tab-${group.id}`;
-    tab.dataset.group = group.id;
-    tab.setAttribute('role', 'tab');
-    tab.setAttribute('aria-controls', `summary-panel-${group.id}`);
-    tab.textContent = group.label;
-    const panel = document.createElement('div');
-    panel.id = `summary-panel-${group.id}`;
-    panel.className = 'summary-panel';
-    panel.setAttribute('role', 'tabpanel');
-    panel.setAttribute('aria-labelledby', tab.id);
-    panel.tabIndex = 0;
-    if (group.id === 'cards') renderCardIntroductions(panel, group, cardNames);
-    else if (group.id === 'domains' && group.categories?.length) renderDomainCategories(panel, group, []);
-    else renderReadingSections(panel, group.sections, '', 'h3', []);
-    if (group.id === 'problem') renderSummaryDetails(panel, summary.detailSections, []);
-    tabs.append(tab);
-    panels.append(panel);
-  });
-  selectSummaryGroup(groups[0].id);
+function updateResultPages({ report, picker, changed }) {
+  if (!resultContext || expireDisplayedReading() || state.phase !== 'complete') return false;
+  const pages = buildSummaryPages(resultContext.summary, { cards: resultContext.cards, personalReport: report });
+  const startId = changed ? pages.find(page => page.groupId === 'personal')?.id : undefined;
+  if (!resultReader.setPages(pages, { startId, preserve: !changed })) return false;
+  resultReader.setMenuTools(picker);
+  if (changed && startId) return resultReader.show(startId);
+  return true;
 }
 
 function buildResults() {
@@ -915,11 +698,8 @@ function buildResults() {
   const topic = TOPICS.find(t => t.id === state.topic);
   const readingDate = !billing.adminPreview && billing.record?.readingDay ? new Date(`${billing.record.readingDay}T12:00:00+09:00`) : new Date();
   $('#result-date').textContent = `${new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: 'long', day: 'numeric' }).format(readingDate)} · ${topic.label}${billing.adminPreview ? ' · 관리자 모드' : ''}`;
-  $('#result-title').textContent = '나를 위한 종합 점괘';
-  renderSummaryGroups(summary, drawn.map(card => card.name));
+  resultContext = { summary, cards: drawn };
   if (personalReading?.mount({ cards: drawn, topicId: state.topic }) === false) return;
-  $('#summary-ritual').textContent = summary.ritual;
-  $('#summary-ritual').closest('.ritual').hidden = !!summary.ritualInReading;
   showOverallOracle(summary);
 }
 
@@ -950,7 +730,6 @@ function showResults() {
   if ('speechSynthesis' in window) speechSynthesis.cancel();
   state.summaryReady = true;
   showOverallOracle();
-  selectSummaryGroup('cards');
   openDialog('result-dialog');
 }
 
@@ -1061,15 +840,10 @@ function reset({ clearPaid = true } = {}) {
     card.label.textContent = '';
     card.button.querySelector('.reveal-number').hidden = true;
   });
-  ['reading-position', 'reading-introduction', 'reading-title', 'reading-name-guide', 'reading-sections', 'reading-detail-sections', 'reading-source-note-body', 'result-date', 'summary-tabs', 'summary-text', 'summary-ritual'].forEach(id => { document.getElementById(id).replaceChildren(); });
-  $$('#reading-dialog details').forEach(detail => { detail.open = false; });
-  $('#reading-card-detail').hidden = true;
-  ['--art-image', '--art-size', '--art-x', '--art-y'].forEach(name => $('#reading-art').style.removeProperty(name));
-  $('#reading-art').removeAttribute('aria-label');
-  $('#reading-source-link').removeAttribute('href');
-  $('#reading-source-note-link').removeAttribute('href');
-  $('#reading-source-note').hidden = true;
-  $('#reading-name-help').hidden = true;
+  resultContext = null;
+  cardReader.reset();
+  resultReader.reset();
+  resultReader.setMenuTools(null);
   $('#result-dialog').querySelectorAll('textarea').forEach(node => node.remove());
   $('#intro-controls').hidden = false;
   $('#play-controls').hidden = true;
@@ -1113,34 +887,9 @@ $('#action-button').addEventListener('click', () => {
 $('#restart-small').addEventListener('click', reset);
 $('#restart-result').addEventListener('click', reset);
 $('#copy-result').addEventListener('click', copyResult);
-$('#summary-tabs').addEventListener('click', event => {
-  const tab = event.target.closest('[role="tab"]');
-  if (!tab || expireDisplayedReading()) return;
-  selectSummaryGroup(tab.dataset.group);
-});
-$('#summary-tabs').addEventListener('keydown', event => {
-  const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
-  if (!keys.includes(event.key)) return;
-  const tabs = $$('#summary-tabs [role="tab"]');
-  const current = tabs.indexOf(event.target);
-  if (current < 0 || expireDisplayedReading()) return;
-  event.preventDefault();
-  const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1
-    : (current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
-  selectSummaryGroup(tabs[next].dataset.group, true);
-});
-$('#summary-text').addEventListener('change', event => {
-  if (event.target.id !== 'summary-domain-category' || expireDisplayedReading()) return;
-  selectDomainCategory($('#summary-panel-domains'), event.target.value);
-});
 $('#reading-open').addEventListener('click', () => {
   if (state.phase === 'complete') void showResults();
   else showReading();
-});
-$('#reading-next').addEventListener('click', () => {
-  closeDialog('reading-dialog');
-  if (state.phase === 'complete') void showResults();
-  else if (state.phase === 'reading') focusUnopenedCard();
 });
 $$('[data-topic]').forEach(button => button.addEventListener('click', () => {
   if (state.phase !== 'intro' || state.busy) return;
@@ -1339,8 +1088,6 @@ personalReading = createPersonalReading({
     cards: state.openOrder.map(index => state.drawn[index])
   }),
   canRead: () => !expireDisplayedReading(),
-  renderSections: renderReadingSections,
-  renderText: setReadingText
+  onReport: updateResultPages
 });
-installSummaryExpiryGuard(expireDisplayedReading);
 void initializeBilling();

@@ -87,6 +87,21 @@ test('form controls, links, disclosure headings and editable content keep their 
   assert.deepEqual(h.calls,[],'the picker area itself is not a swipe surface');
 });
 
+test('dragging the open contents dialog never moves the story behind it',t=>{
+  for(const pointerType of ['touch','mouse','pen']) {
+    const h=reader(t),dialog=h.doc.createElement('dialog');
+    dialog.className='story-menu';dialog.open=true;
+    dialog.innerHTML='<header><h2>풀이 목차</h2></header><div class="story-menu-list"></div>';
+    h.container.append(dialog);
+    for(const target of [dialog,dialog.querySelector('h2'),dialog.querySelector('.story-menu-list')]) {
+      const move=h.drag({target,pointerType,dx:-140});
+      assert.equal(h.index(),1,'the modal contents keep the current story unchanged');
+      assert.deepEqual(h.calls,[],'neither the heading nor the empty modal area is a page-turn surface');
+      assert.equal(move.defaultPrevented,false,'the dialog keeps its own pointer gesture');
+    }
+  }
+});
+
 test('pressing page controls, including a double click, preserves the active slide until navigation prepares its replacement',t=>{
   let visualOffset=84;const prepared=[];
   const motion={cancel(){visualOffset=0;},prepare(){prepared.push(visualOffset);visualOffset=0;},dispose(){}};
