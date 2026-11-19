@@ -25,12 +25,13 @@ async function editorBundle() {
       stdin: {
         contents: `
           import {createRoot} from 'react-dom/client';
-          import {ExchangeProfileEditor} from './src/app/exchange-profile';
+          import {ExchangeProfileEditor, PeerProfile} from './src/app/exchange-profile';
           let root;
           window.mountEditor = () => {
             root = createRoot(document.getElementById('root'));
             root.render(<ExchangeProfileEditor onSaved={() => window.profileSaved()}/>);
           };
+          window.showPeerProfile = profile => root.render(<PeerProfile profile={profile}/>);
           window.unmountEditor = () => { root?.unmount(); root = null; };
           window.mountEditor();
         `,
@@ -115,6 +116,12 @@ async function fixture(t, {fields = {}, save} = {}) {
       window.mountEditor();
       await waitFor(form, 'the saved profile should reopen');
     },
+    async showPeer() {
+      window.showPeerProfile({fields: copy(state.profile.fields), age: null, gender: null});
+      await waitFor(() => window.document.querySelector('.exchange-facts'), 'the shared profile should render');
+      return Object.fromEntries([...window.document.querySelectorAll('.exchange-facts > div')].map(row =>
+        [row.querySelector('dt').textContent, row.querySelector('dd').textContent]));
+    },
   };
 }
 
@@ -163,6 +170,41 @@ test('editing profile fields trims text, deletes cleared values, and preserves v
   assert.equal(f.control('자기소개').value, '반가워요!\n함께 산책해요.');
   assert.equal(f.control('나이').checked, true);
   assert.equal(f.control('성별').checked, true);
+});
+
+test('religion can be entered, edited, cleared, reopened, and displayed in the shared profile', async t => {
+  const f = await fixture(t, {fields: {job: '책방지기', bio: '그대로 남길 소개'}});
+  assert.equal(f.control('종교').type, 'text');
+  assert.equal(f.control('종교').required, false);
+  assert.equal(f.control('종교').value, '');
+
+  await f.set('종교', '  천주교  ');
+  f.submit();
+  await waitFor(() => f.state.successes === 1, 'a newly entered religion should save');
+  assert.equal(f.saves()[0].p_data.fields.religion, '천주교');
+  await f.reopen();
+  assert.equal(f.control('종교').value, '천주교');
+  assert.deepEqual(await f.showPeer(), {직업: '책방지기', 종교: '천주교', 자기소개: '그대로 남길 소개'});
+
+  await f.reopen();
+  await f.set('종교', '  기독교 · 개신교  ');
+  f.submit();
+  await waitFor(() => f.state.successes === 2, 'an edited religion should replace the saved value');
+  assert.equal(f.saves()[1].p_data.fields.religion, '기독교 · 개신교');
+  await f.reopen();
+  assert.equal(f.control('종교').value, '기독교 · 개신교');
+  assert.deepEqual(await f.showPeer(), {직업: '책방지기', 종교: '기독교 · 개신교', 자기소개: '그대로 남길 소개'});
+
+  await f.reopen();
+  await f.set('종교', '   ');
+  f.submit();
+  await waitFor(() => f.state.successes === 3, 'clearing religion should remove the saved value');
+  assert.equal(Object.hasOwn(f.saves()[2].p_data.fields, 'religion'), false);
+  assert.equal(Object.hasOwn(f.state.profile.fields, 'religion'), false);
+  await f.reopen();
+  assert.equal(f.control('종교').value, '');
+  assert.deepEqual(await f.showPeer(), {직업: '책방지기', 자기소개: '그대로 남길 소개'});
+  assert.equal(f.saves().length, 3);
 });
 
 test('an RPC failure keeps the draft, shows the error near save, and allows retry', async t => {
