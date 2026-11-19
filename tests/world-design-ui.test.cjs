@@ -160,6 +160,7 @@ world=world.slice(0,boot)+`
   await fits('Hub '+width);
  }
  // Read rendered colors, not only the theme attribute or illustration URL.
+ const placeAppearances={};
  for(const appearance of ['light','dark']){
   await page.emulateMedia({colorScheme:appearance});
   const samples=[];
@@ -167,11 +168,25 @@ world=world.slice(0,boot)+`
    await selectCalendarDate(page,date);
    const colors=await palette(page,{park:'.agit-park-open',pajang:'.agit-pajang-open'});
    assert.equal(colors.theme,theme);assert.equal(colors.body,colors.bg,'Agit background follows '+theme);
-   assert.equal(colors.nodes.park.background,colors.accent,'Park entrance follows the shared accent');
-   assert.equal(colors.nodes.pajang.background,colors.accent,'Pajang entrance follows the shared accent');
+   const placeAccents=await page.evaluate(()=>Object.fromEntries(['park','pajang'].map(name=>{
+    const banner=document.querySelector('.agit-'+name+'-banner'),swatch=document.createElement('span');
+    swatch.hidden=true;swatch.style.backgroundColor='var(--place-accent)';banner.append(swatch);
+    const accent=getComputedStyle(swatch).backgroundColor;swatch.remove();return [name,accent];
+   })));
+   for(const name of ['park','pajang']){
+    assert.notEqual(placeAccents[name],'rgba(0, 0, 0, 0)',name+' has its own visible accent');
+    assert.equal(colors.nodes[name].background,placeAccents[name],name+' entrance uses its own accent');
+    if(samples.length)assert.deepEqual(colors.nodes[name],samples[0].nodes[name],name+' keeps its identity across calendar themes in '+appearance);
+   }
+   assert.notEqual(colors.nodes.park.background,colors.nodes.pajang.background,'Park and Pajang remain visually distinct in '+appearance);
    samples.push(colors);
   }
-  distinctPalettes(samples,'Agit '+appearance,['bg','accent','nodes.park.background','nodes.pajang.background']);
+  distinctPalettes(samples,'Agit '+appearance,['bg','accent']);
+  placeAppearances[appearance]=samples[0].nodes;
+ }
+ for(const name of ['park','pajang']){
+  assert.notEqual(placeAppearances.light[name].background,placeAppearances.dark[name].background,name+' entrance background adapts to dark mode');
+  assert.notEqual(placeAppearances.light[name].color,placeAppearances.dark[name].color,name+' entrance text adapts to dark mode');
  }
  await page.emulateMedia({colorScheme:'light'});await page.evaluate(()=>OjjudaThemes.sync());
  await page.locator('.bottomnav [data-tab=my]').click();assert.equal(await page.locator('[data-ju-shop-open]').count(),0);
