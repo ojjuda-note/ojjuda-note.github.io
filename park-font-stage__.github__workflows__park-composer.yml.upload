@@ -1,0 +1,103 @@
+name: Writing composer checks
+
+on:
+  pull_request:
+    paths:
+      - 'note/**'
+      - 'park/**'
+      - 'groups/**'
+      - 'shared/viewport/**'
+      - 'features/wallet/ju-decorations.*'
+      - 'app/world/**'
+      - 'world.html'
+      - 'tests/note-composer-settings.test.cjs'
+      - 'tests/note-preview-photo.test.cjs'
+      - 'tests/park-*.test.cjs'
+      - 'tests/mobile-viewport-ui.test.cjs'
+      - 'tests/guest-access-ui.test.cjs'
+      - 'tests/group-board-dom.test.cjs'
+      - 'tests/group-composer-ui.test.cjs'
+      - 'tests/package*.json'
+      - '.github/workflows/park-composer.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'note/**'
+      - 'park/**'
+      - 'groups/**'
+      - 'shared/viewport/**'
+      - 'features/wallet/ju-decorations.*'
+      - 'app/world/**'
+      - 'world.html'
+      - 'tests/note-composer-settings.test.cjs'
+      - 'tests/note-preview-photo.test.cjs'
+      - 'tests/park-*.test.cjs'
+      - 'tests/mobile-viewport-ui.test.cjs'
+      - 'tests/guest-access-ui.test.cjs'
+      - 'tests/group-board-dom.test.cjs'
+      - 'tests/group-composer-ui.test.cjs'
+      - 'tests/package*.json'
+      - '.github/workflows/park-composer.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: park-composer-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  composer:
+    name: Park and group writing options and mobile layout
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      OJJUDA_COPY_PROOF_DIR: ${{ github.workspace }}/tests/artifacts/park-composer/world
+      MOBILE_VIEWPORT_QA_DIR: ${{ github.workspace }}/tests/artifacts/park-composer/viewport
+      GUEST_PROOF_DIR: ${{ github.workspace }}/tests/artifacts/park-composer/guest
+      GROUP_COMPOSER_QA_DIR: ${{ github.workspace }}/tests/artifacts/park-composer/groups
+      PARK_FONT_PROOF_DIR: ${{ github.workspace }}/tests/artifacts/park-composer/fonts
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install locked test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Check values, attachments, account boundaries and iframe lifecycle
+        run: npm --prefix tests run test:park-composer:unit
+      - name: Check group drafts, post types and existing form values
+        run: node tests/group-board-dom.test.cjs
+      - name: Install Chromium
+        id: browser
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Check Park brush lettering, numerals and punctuation
+        if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
+        run: node tests/park-calligraphy-finals-ui.test.cjs
+      - name: Check the local heart font and administrator previews
+        if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
+        run: node tests/park-heart-font-ui.test.cjs
+      - name: Check the embedded Park toolbar and navigation
+        if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
+        run: node tests/park-note-chat-ui.test.cjs
+      - name: Check keyboard viewport and active text visibility
+        if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
+        run: node tests/mobile-viewport-ui.test.cjs
+      - name: Check guest restrictions and login return
+        if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
+        run: node tests/guest-access-ui.test.cjs
+      - name: Check group writing tools, attachments and keyboard layout
+        if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
+        run: node tests/group-composer-ui.test.cjs
+      - name: Save composer screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: park-composer-screens
+          path: tests/artifacts/park-composer/
+          if-no-files-found: ignore
+          retention-days: 7
