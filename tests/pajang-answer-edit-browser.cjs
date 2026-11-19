@@ -85,10 +85,12 @@ function installFixture(data) {
           if(action==='edit-history-answer'||action==='edit-answer'){
             control.calls.push({action,data:structuredClone(body),headers:{...headers}});
             const answer=historyAnswers.find(item=>item.day===body.day&&item.slot===body.slot);
-            if(!answer||answer.body!==body.previousBody)return {data:null,error:{code:'PT412',message:'answer changed'}};
-            answer.body=body.body;
-            for(const row of feed)if(row.peer===data.owner&&row.day===body.day&&row.slot===body.slot)row.body=body.body;
-            if(body.day===state.day&&body.slot===state.slot)state.me.body=body.body;
+            // Fixture-only marker: real masking remains authoritative on the server.
+            const savedBody=body.body.replaceAll('금칙','❤️❤️');
+            if(!answer||(answer.body!==body.previousBody&&answer.body!==savedBody))return {data:null,error:{code:'PT412',message:'answer changed'}};
+            answer.body=savedBody;
+            for(const row of feed)if(row.peer===data.owner&&row.day===body.day&&row.slot===body.slot)row.body=savedBody;
+            if(body.day===state.day&&body.slot===state.slot)state.me.body=savedBody;
             return ok(state);
           }
         }
@@ -188,12 +190,13 @@ async function assertFits(page,dialog,width) {
       if(width!==320)await page.screenshot({path:path.join(artifacts,`answer-edit-${width}.png`),animations:'disabled'});
     }
     await page.setViewportSize({width:390,height:844});
-    const revisedPrivate='비 오는 날 함께 들었던 노래와 웃음까지 기억하고 싶어요.';
+    const revisedPrivate='가'.repeat(218)+'금칙',savedPrivate='가'.repeat(218)+'❤️❤️';
     await dialog.getByLabel('내 이야기',{exact:true}).fill(revisedPrivate);
     await dialog.getByRole('button',{name:'수정 저장하기',exact:true}).click();
     await listDialog().waitFor();
     await listDialog().locator('summary').click();
-    await listDialog().getByText(revisedPrivate,{exact:true}).waitFor();
+    await listDialog().getByText(savedPrivate,{exact:true}).waitFor();
+    assert.equal(await listDialog().getByText(revisedPrivate,{exact:true}).count(),0,'the refreshed list shows the canonical server body');
     assert.equal(page.url(),originalUrl,'saving returns to the original settings/list route');
     let control=await page.evaluate(()=>({calls:answerEditFixture.calls,reads:answerEditFixture.historyReads,snapshot:answerEditFixture.snapshot()}));
     assert.ok(control.reads>=2,'the returned private list is read again');
@@ -201,12 +204,18 @@ async function assertFits(page,dialog,width) {
       day:sample.privateDay,slot:sample.privateSlot,body:revisedPrivate,previousBody:sample.privateBody,expectedPerson:sample.owner
     },headers:{Authorization:'Bearer answer-owner-token'}});
     assert.equal(control.snapshot.state.me.body,sample.currentBody,'editing older history does not overwrite the current answer');
+    assert.equal(control.snapshot.historyAnswers[2].body,savedPrivate);
     assert.equal(control.snapshot.historyAnswers[2].day,sample.privateDay,'the original writing date is retained');
     assert.equal(confirmations.length,0,'successful saving needs no discard confirmation');
 
     checkpoint='dirty-back';
     await listDialog().locator('article').filter({hasText:sample.privateQuestion}).getByRole('button',{name:'답변 수정',exact:true}).click();
     dialog=editDialog();await dialog.waitFor();
+    assert.equal(await dialog.getByLabel('내 이야기',{exact:true}).inputValue(),savedPrivate);
+    assert.equal(await dialog.locator('#history-answer-count').textContent(),'219 / 220');
+    await dialog.getByLabel('내 이야기',{exact:true}).fill(savedPrivate+'나');
+    assert.equal(await dialog.locator('#history-answer-count').textContent(),'220 / 220');
+    assert.equal(await dialog.getByRole('button',{name:'수정 저장하기',exact:true}).isEnabled(),true,'saved hearts remain editable at the logical limit');
     const draft='아직 저장하지 않은 개인적인 기억이에요.';
     await dialog.getByLabel('내 이야기',{exact:true}).fill(draft);
     const before=await page.evaluate(()=>({events:answerEditFixture.historyEvents,modal:history.state.pajangNavigation.modal}));
@@ -232,11 +241,13 @@ async function assertFits(page,dialog,width) {
     assert.equal(await dialog.locator('time').getAttribute('datetime'),sample.publicDay);
     assert.match(await dialog.locator('.sub').first().textContent(),/오후/);
     assert.equal(await dialog.getByLabel('내 이야기',{exact:true}).inputValue(),sample.publicBody);
-    const revisedPublic='노을이 비치던 강변을 함께 천천히 걷고 싶어요.';
+    const revisedPublic='노을이 비치던 금칙 강변을 함께 천천히 걷고 싶어요.';
+    const savedPublic='노을이 비치던 ❤️❤️ 강변을 함께 천천히 걷고 싶어요.';
     await dialog.getByLabel('내 이야기',{exact:true}).fill(revisedPublic);
     await dialog.getByRole('button',{name:'수정 저장하기',exact:true}).click();
     await dialog.waitFor({state:'hidden'});
-    await page.locator('#answers .answercard .quote').filter({hasText:revisedPublic}).waitFor();
+    await page.locator('#answers .answercard .quote').filter({hasText:savedPublic}).waitFor();
+    assert.equal(await page.locator('#answers .answercard .quote').filter({hasText:revisedPublic}).count(),0);
     assert.equal(await page.getByRole('dialog').count(),0,'feed editing returns directly to the feed');
     assert.equal(await page.locator('#answers .answercard').filter({hasText:'나무가 많은 동네 길이 생각나요.'}).count(),1,'another member answer is retained');
     assert.equal(await page.evaluate(()=>answerEditFixture.snapshot().state.me.body),sample.currentBody);
@@ -268,7 +279,7 @@ async function assertFits(page,dialog,width) {
     await page.getByRole('button',{name:'내 답변 수정하기',exact:true}).waitFor();
     assert.deepEqual(await page.evaluate(()=>answerEditFixture.unexpected),[]);
     assert.deepEqual(errors,[]);
-    console.log('PASS: private history and own feed edits, retained question/date/current answer, list/feed refresh, one dirty-Back confirmation, current edit API, member entry, 320/390/750 layouts and screenshots; mocked transport only.');
+    console.log('PASS: masked private history and own feed edits, canonical list/feed refresh and editable length limits, retained question/date/current answer, one dirty-Back confirmation, current edit API, member entry, 320/390/750 layouts and screenshots; mocked transport only.');
     await context.close();
   } catch(error) {
     if(page)await page.screenshot({path:path.join(artifacts,`answer-edit-failure-${checkpoint}.png`),fullPage:true}).catch(()=>{});

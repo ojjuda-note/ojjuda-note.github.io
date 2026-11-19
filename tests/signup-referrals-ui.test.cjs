@@ -12,7 +12,7 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..'),origin=
   await context.addInitScript(()=>{
    const f=window.referralFixture={signups:[],searches:[],people:[{id:'00000000-0000-4000-8000-000000000001',nickname:'민준'},{id:'00000000-0000-4000-8000-000000000002',nickname:'민준이'}],pending:[],defer:false,fail:false};
    const client={auth:{onAuthStateChange(){},async getSession(){return{data:{session:null}};},async getUser(){return{data:{user:null}};},async signUp(args){f.signups.push(args);return{data:{session:null}};}},async rpc(name,args){
-    if(name==='has_banned')return{data:false};
+    if(name==='mask_banned')return{data:args.t};
     if(name!=='search_signup_referrers')throw Error('Unexpected RPC '+name);
     f.searches.push(args);if(f.defer)return new Promise(resolve=>f.pending.push(resolve));
     return f.fail?{error:{message:'synthetic failure'}}:{data:args.p_query==='없음'?[]:f.people};

@@ -36,8 +36,8 @@ const searchTitle = '오쭈다 아지트 | 게임·타로·사주·익명카드'
           async updateUser(args) { fixture.passwordUpdates.push({ owner: fixture.user?.id, ...args }); return { data: { user: fixture.user } }; },
           async signOut() { fixture.user = null; return { error: null }; }
         },
-        from() { return { select() { return this; }, eq() { return this; }, async maybeSingle() { return { data: null }; } }; },
-        async rpc(name) { if (name === 'has_banned') return { data: false }; assertRpc(name); return { data: true }; }
+        from(table) { return { select() { return this; }, eq() { return this; }, async maybeSingle() { return { data: table === 'profiles' ? {id:user.id,nickname:user.user_metadata.nickname} : null }; } }; },
+        async rpc(name,args) { if (name === 'mask_banned') return { data: args.t }; assertRpc(name); return { data: true }; }
       };
       function assertRpc(name) { if (name !== 'ensure_member_for_note') throw Error('Unexpected fixture RPC: ' + name); }
       window.supabase = { createClient: () => client };

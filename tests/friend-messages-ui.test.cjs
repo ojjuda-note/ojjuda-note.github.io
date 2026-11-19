@@ -27,7 +27,7 @@ function fixtureBoot(){
   }
   if(name==='send_friend_message'){
    if(state.pause)return new Promise(resolve=>state.pending=resolve);
-   if(!state.requests.has(args.p_request)){const m={id:id(20+state.items.length),sender_id:D.user.id,recipient_id:args.p_recipient,body:args.p_body,created_at:'2026-10-20T10:03:00Z'};state.requests.set(args.p_request,m);state.items.push(m);}
+   if(!state.requests.has(args.p_request)){const m={id:id(20+state.items.length),sender_id:D.user.id,recipient_id:args.p_recipient,body:args.p_body.replace('ㅅㅂ','❤️❤️'),created_at:'2026-10-20T10:03:00Z'};state.requests.set(args.p_request,m);state.items.push(m);}
    if(state.offlineAfterSend){state.offlineAfterSend=false;return {error:{message:'synthetic connection lost'}};}
    return {data:{ok:true,id:state.requests.get(args.p_request).id}};
   }
@@ -63,6 +63,9 @@ world=world.slice(0,boot)+'('+fixtureBoot.toString()+')();\n'+world.slice(world.
  await page.locator('.fm-input').fill('작성 중인 쪽지');await page.evaluate(()=>messageFixture.render());assert.equal(await page.locator('.fm-input').inputValue(),'작성 중인 쪽지','app redraw preserves the draft');
  await page.locator('.fm-input').fill('이따가 같이 해요!');await page.locator('.fm-send').click();await page.waitForFunction(()=>document.querySelector('.fm-status').textContent==='쪽지를 보냈어요.');assert.equal(await page.locator('.fm-body').last().textContent(),'이따가 같이 해요!');
  assert.equal(await page.locator('.fm-input').inputValue(),'');
+ await page.locator('.fm-input').fill('반가워 ㅅㅂ 친구야');await page.locator('.fm-send').click();await page.waitForFunction(()=>document.querySelector('.fm-status').textContent==='쪽지를 보냈어요.');
+ assert.equal(await page.locator('.fm-body').last().textContent(),'반가워 ❤️❤️ 친구야','the sent message displays the server canonical text');
+ assert.equal(await page.locator('.fm-input').inputValue(),'','automatic masking is a successful send');
  await page.screenshot({path:path.join(proof,'friend-notes-mobile.png')});
  await page.evaluate(()=>messageFixture.offlineAfterSend=true);await page.locator('.fm-input').fill('한 번만 도착하는 쪽지');await page.locator('.fm-send').click();await page.waitForFunction(()=>document.querySelector('.fm-status').textContent.includes('전송을 확인하지'));
  assert.equal(await page.locator('.fm-input').inputValue(),'한 번만 도착하는 쪽지');await page.locator('.fm-send').click();await page.waitForFunction(()=>document.querySelector('.fm-status').textContent==='쪽지를 보냈어요.');

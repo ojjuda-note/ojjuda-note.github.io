@@ -548,6 +548,7 @@ async function checkNavigation(page){
         <main></main><script>document.querySelector('main').innerHTML=OjjudaAgitHub.markup({},{});</script></html>`});
       if(pathname==='/shared/navigation/section-back.js')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../../shared/navigation/section-back.js'))});
       if(pathname==='/shared/location/location.js')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../../shared/location/location.js'))});
+      if(pathname==='/shared/content/text-length.mjs')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../../shared/content/text-length.mjs'))});
       const file=pathname.slice(project.length)||'index.html';
       if(legacyLocationPage&&file==='location.mjs')return route.fulfill({contentType:'text/javascript',body:'export async function prepareLocation(state){return state;}'});
       if(!['station.html','station.css','support.css','radar-motion.css','member.mjs','member-main.mjs','load-station.mjs','location.mjs','letterroom.css','dialog-surface.css','assets/favicon.svg','shell.css','entry-design.css','entry-design.mjs','shell.mjs','account-toolbar.mjs','account-toolbar.css','signal-purchase.css','index.html','entry.mjs','preview.mjs','preview.css','questions.mjs','regions.json','dialog.mjs','feed.html'].includes(file))return route.abort();

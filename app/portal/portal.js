@@ -46,7 +46,6 @@
 
   let authMode = 'login';
   let signupNickname = null;
-  let generatedSignupNickname = null;
   let session = null;
   let authReady = false;
   let pendingDestination = null;
@@ -55,6 +54,7 @@
   let identityVersion = 0;
   let pendingIdentity = null;
   let authEventVersion = 0;
+  let authIdentityEventVersion = 0;
   let authViewVersion = 0;
   let enteringNote = false;
   let recoveryPending = /(?:^|[?&])reset=1(?:&|$)/.test(location.search.slice(1))
@@ -86,7 +86,7 @@
   function messageFor(error) {
     const text = String(error?.message || error || '').toLowerCase();
     if (text.includes('nickname_unavailable')) return '닉네임을 만들지 못했어요. 잠시 후 다시 시도해 주세요.';
-    if (text.includes('nickname_not_allowed')) return '사용할 수 없는 닉네임이에요. 다른 이름을 입력해 주세요.';
+    if (nicknameTaken(error)) return '이미 사용 중인 닉네임이에요. 다른 이름을 입력해 주세요.';
     if (text.includes('invalid_signup_referrer')) return '추천인 정보가 바뀌었어요. 다시 찾아 확인해 주세요.';
     if (text.startsWith('추천인')) return error.message;
     if (text.includes('rejoin_wait_3_days')) return '탈퇴 후 3일(72시간)이 지난 뒤 다시 가입할 수 있어요.';
@@ -112,6 +112,18 @@
     return '처리하지 못했어요. 잠시 후 다시 시도해 주세요.';
   }
 
+  // Keep this IIFE aligned with shared/content/text-length.mjs.
+  const nicknameLength = value => [...String(value ?? '').replaceAll('❤️❤️', '♥')].length;
+  function syncNicknameLimit() {
+    nickname.maxLength = 12 + nickname.value.length - nicknameLength(nickname.value);
+  }
+  nickname.addEventListener('input', syncNicknameLimit);
+
+  function nicknameTaken(error) {
+    const text = String(error?.message || '').toLowerCase();
+    return text.includes('nickname') && (error?.code === '23505' || /already|conflict|_key/.test(text));
+  }
+
   function ensureSignupNickname(captureInput = false) {
     if (captureInput) signupNickname = nickname.value.trim();
     if (signupNickname === null) {
@@ -122,25 +134,27 @@
       else for (let i = 0; i < random.length; i++) random[i] = Math.floor(Math.random() * 256);
       signupNickname = words[random[0] % words.length]
         + Array.from(random.slice(1), value => alphabet[value % alphabet.length]).join('');
-      generatedSignupNickname = signupNickname;
     }
     nickname.value = signupNickname;
+    syncNicknameLimit();
     return signupNickname;
   }
 
+  async function canonicalNickname(candidate, isCurrent) {
+    const { data, error } = await client.rpc('mask_banned', { t: candidate });
+    if (!isCurrent()) return null;
+    if (error) throw error;
+    if (typeof data !== 'string' || !data.trim() || nicknameLength(data.trim()) > 12)
+      throw new Error('nickname_unavailable');
+    return data.trim();
+  }
+
   async function prepareSignupNickname(currentView) {
-    // Only regenerate rejected candidates; never retry the account creation.
-    for (let attempt = 0; attempt < 4; attempt++) {
-      const candidate = ensureSignupNickname();
-      const { data, error } = await client.rpc('has_banned', { t: candidate });
-      if (!currentView()) return null;
-      if (error) throw new Error('nickname_unavailable');
-      if (data === false) return candidate;
-      if (data !== true) throw new Error('nickname_unavailable');
-      if (candidate !== generatedSignupNickname) throw new Error('nickname_not_allowed');
-      signupNickname = null;
-    }
-    throw new Error('nickname_unavailable');
+    const name = await canonicalNickname(ensureSignupNickname(), currentView);
+    if (name === null) return null;
+    signupNickname = nickname.value = name;
+    syncNicknameLimit();
+    return name;
   }
 
   function setBusy(value) {
@@ -360,6 +374,7 @@
   function showNicknameSetup(candidate, notice) {
     openAuth('nickname', 'note');
     nickname.value = candidate || '';
+    syncNicknameLimit();
     feedback.textContent = notice;
     nickname.focus();
   }
@@ -380,12 +395,13 @@
     enteringNote = true;
     const expectedUserId = session.user.id;
     const expectedIdentityVersion = identityVersion;
+    const expectedAuthEventVersion = authIdentityEventVersion;
     const expectedViewVersion = authViewVersion;
     const noteButton = document.querySelector('[data-destination="note"]');
     if (noteButton) noteButton.disabled = true;
     const release = () => { if (noteButton) noteButton.disabled = false; enteringNote = false; };
     const accountChanged = () => session?.user?.id !== expectedUserId || identityVersion !== expectedIdentityVersion
-      || authViewVersion !== expectedViewVersion;
+      || authIdentityEventVersion !== expectedAuthEventVersion || authViewVersion !== expectedViewVersion;
     try {
       const { data: identity, error: identityError } = await verifyCurrentUser();
       if (accountChanged()) return;
@@ -407,9 +423,15 @@
         feedback.textContent = '로그인을 다시 확인해 주세요.';
         return;
       }
-      const candidate = overrideNickname === undefined
+      let candidate = overrideNickname === undefined
         ? String(identity.user.user_metadata?.nickname || '').trim()
         : String(overrideNickname).trim();
+      if (overrideNickname !== undefined) {
+        const name = await canonicalNickname(candidate, () => !accountChanged());
+        if (name === null || accountChanged()) return;
+        candidate = nickname.value = name;
+        syncNicknameLimit();
+      }
       const { data, error } = await client.rpc('ensure_member_for_note', { p_nickname: candidate });
       if (accountChanged()) return;
       if (error) {
@@ -422,6 +444,17 @@
         showNicknameSetup(candidate, '공원 연결을 확인하지 못했어요. 다시 시도해 주세요.');
         return;
       }
+      const { data: profile, error: profileError } = await client.from('profiles')
+        .select('id,nickname').eq('id', expectedUserId).maybeSingle();
+      if (accountChanged()) return;
+      if (profileError || profile?.id !== expectedUserId || typeof profile.nickname !== 'string'
+          || !profile.nickname.trim() || nicknameLength(profile.nickname) > 12) {
+        showNicknameSetup(candidate, '저장한 닉네임을 확인하지 못했어요. 다시 시도해 주세요.');
+        return;
+      }
+      nickname.value = profile.nickname;
+      syncNicknameLimit();
+      $('account-badge').textContent = `${profile.nickname}님`;
       const notePath = destinations.note + (returnCard ? `&card=${encodeURIComponent(returnCard)}` : '');
       clearReturnDestination();
       location[replace ? 'replace' : 'assign'](notePath);
@@ -530,7 +563,7 @@
     let signupIdentity = null, recoveryDetails = null, signupReferrer = null;
     if (authMode === 'signup' || authMode === 'nickname') {
       const name = authMode === 'signup' ? ensureSignupNickname(true) : nickname.value.trim();
-      if (!name || name.length > 12) {
+      if (!name || nicknameLength(name) > 12) {
         feedback.textContent = '닉네임을 1~12자로 입력해 주세요.';
         nickname.focus();
         return;
@@ -595,7 +628,14 @@
 
     const requestView = authViewVersion;
     const currentView = () => dialog.open && authViewVersion === requestView;
-    let nicknameRejected = false;
+    const requestIdentity = identityVersion, requestAuthEvent = authIdentityEventVersion;
+    const currentSignup = () => {
+      if (!currentView()) return false;
+      if (identityVersion === requestIdentity && authIdentityEventVersion === requestAuthEvent) return true;
+      feedback.textContent = '로그인 상태가 바뀌었어요. 다시 확인해 주세요.';
+      return false;
+    };
+    let duplicateNickname = false;
     setBusy(true);
     try {
       if (authMode === 'login') {
@@ -610,9 +650,9 @@
         goToDestination(destination);
       } else if (authMode === 'signup') {
         await referral?.verify(signupReferrer);
-        if (!currentView()) return;
-        const name = await prepareSignupNickname(currentView);
-        if (!currentView() || !name) return;
+        if (!currentSignup()) return;
+        const name = await prepareSignupNickname(currentSignup);
+        if (!currentSignup() || !name) return;
         const destination = pendingDestination || entryDestination || 'world';
         const confirmationUrl = authReturnUrl(destination);
         const { data, error } = await client.auth.signUp({
@@ -634,7 +674,7 @@
         });
         if (!currentView()) return;
         if (error) throw error;
-        signupNickname = generatedSignupNickname = null;
+        signupNickname = null;
         referral?.reset();
         for (const input of $('signup-identity-slot').querySelectorAll('input')) input.value = '';
         $('signup-result').textContent = '';
@@ -680,7 +720,7 @@
     } catch (error) {
       console.warn('계정 처리 실패:', error);
       if (!currentView()) return;
-      nicknameRejected = error.message === 'nickname_not_allowed';
+      duplicateNickname = nicknameTaken(error);
       if (authMode === 'direct-reset' && !/invalid_recovery_password|recovery_password_mismatch/.test(error.message || '')) setAuthMode('forgot', messageFor(error));
       else feedback.textContent = messageFor(error);
     } finally {
@@ -689,7 +729,7 @@
         passwordConfirm.value = '';
       }
       setBusy(false);
-      if (nicknameRejected && currentView()) nickname.focus();
+      if (duplicateNickname && currentView()) nickname.focus();
     }
   }
 
@@ -718,7 +758,7 @@
     clearRecoveryGrant();
     recoveryCompleted = false;
     form.reset();
-    signupNickname = generatedSignupNickname = null;
+    signupNickname = null;
     referral?.reset(); referral?.setActive(false);
     feedback.textContent = '';
     if ($('signup-result')) $('signup-result').textContent = '';
@@ -772,6 +812,7 @@
     console.error('오쭈다 계정 연결 정보를 확인해 주세요.');
   } else {
     client.auth.onAuthStateChange((event, current) => {
+      if ((session?.user?.id || null) !== (current?.user?.id || null)) authIdentityEventVersion++;
       authEventVersion++;
       // Supabase warns against awaiting another auth operation in this callback.
       setTimeout(() => {

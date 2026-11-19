@@ -5,6 +5,7 @@ import {
   MAX_PROFILE_CUSTOM_LENGTH,MAX_PROFILE_GROUP_SELECTIONS,
 } from "../lib/profile-preferences.mjs";
 import regionCatalog from "../../regions.json";
+import {maskedTextLength,textInputMaxLength} from "../../../../shared/content/text-length.mjs";
 import {InterestArt} from "./interest-art";
 import {I} from "./icons";
 
@@ -56,7 +57,7 @@ function labelsFor(preferences:Preferences,key:GroupKey):string[]{
 function addCustom(preferences:Preferences,key:GroupKey,draft:string):{preferences:Preferences;error:string}{
   const value=draft.trim();
   if(!value)return {preferences,error:""};
-  if([...value].length>MAX_PROFILE_CUSTOM_LENGTH)return {preferences,error:"직접 입력은 40자까지 적어 주세요."};
+  if(maskedTextLength(value)>MAX_PROFILE_CUSTOM_LENGTH)return {preferences,error:"직접 입력은 40자까지 적어 주세요."};
   const preset=profilePreferenceGroups.find(group=>group.key===key)!.options.find(option=>option.label===value);
   if(preset?preferences[key].includes(preset.key):preferences.custom[key].includes(value))return {preferences,error:""};
   if(preferences[key].length+preferences.custom[key].length>=MAX_PROFILE_GROUP_SELECTIONS)return {preferences,error:"이 항목은 32개까지 고를 수 있어요."};
@@ -105,14 +106,15 @@ export function ProfileForm({person,isNew,onSave,busy}:{person:Person|null;isNew
   const read=usePublicPreferences(person?.id||"",person?.id||"",0,!isNew);
   const [preferences,setPreferences]=useState<Preferences>(emptyProfilePreferences);
   const [drafts,setDrafts]=useState(blankDrafts),[customError,setCustomError]=useState("");
+  const [loadedScope,setLoadedScope]=useState("");
   useEffect(()=>{
-    if(read.status==="ready"){setPreferences(read.preferences);setDrafts(blankDrafts());setCustomError("");}
+    if(read.status==="ready"){setPreferences(read.preferences);setDrafts(blankDrafts());setCustomError("");setLoadedScope(read.scope);}
   },[read.scope,read.status]);
   const [province,city=""]=region.split(" ");
   const knownProvince=Object.hasOwn(districts,province);
   const previousRegion=person?.region;
   const legacyRegion=previousRegion&&!Object.hasOwn(districts,previousRegion.split(" ")[0]);
-  const disabled=busy||read.status!=="ready";
+  const disabled=busy||read.status!=="ready"||loadedScope!==read.scope;
   function add(key:GroupKey){
     const result=addCustom(preferences,key,drafts[key]);setCustomError(result.error);
     if(!result.error){setPreferences(result.preferences);setDrafts(previous=>({...previous,[key]:""}));}
@@ -125,11 +127,12 @@ export function ProfileForm({person,isNew,onSave,busy}:{person:Person|null;isNew
       if(result.error){setCustomError(result.error);return;}
       next=result.preferences;
     }
-    setPreferences(next);setDrafts(blankDrafts());setCustomError("");
+    // Keep typed values editable until the server accepts the complete profile.
+    setCustomError("");
     onSave({name:name.trim(),region,interest,consent,profilePerson:person?.id??null,preferences:next,preferencesVersion:read.version});
   }
   return <form className="profileform public-profile-form" onSubmit={submit}>
-    <label>닉네임<input value={name} maxLength={12} placeholder="오쭈다 닉네임 사용" disabled={busy} onChange={event=>setName(event.target.value)}/></label>
+    <label>닉네임<input value={name} maxLength={textInputMaxLength(name,12)} placeholder="오쭈다 닉네임 사용" disabled={busy} onChange={event=>setName(event.target.value)}/></label>
     <div className="fieldrow">
       <label>공개할 활동 지역<select value={knownProvince?province:region} disabled={busy} onChange={event=>setRegion(event.target.value)}>
         <option value="">공개하지 않음</option>
@@ -142,7 +145,7 @@ export function ProfileForm({person,isNew,onSave,busy}:{person:Person|null;isNew
     </div>
     <ReadStatus read={read}/>
     {read.status==="ready"&&<PreferenceFields value={preferences} onChange={setPreferences} drafts={drafts}
-      onDraft={(key,value)=>{setDrafts(previous=>({...previous,[key]:value}));setCustomError("");}} onAdd={add} disabled={busy}/>}
+      onDraft={(key,value)=>{setDrafts(previous=>({...previous,[key]:value}));setCustomError("");}} onAdd={add} disabled={disabled}/>}
     {customError&&<p className="error" role="alert">{customError}</p>}
     <details className="preference-group profile-art-choice"><summary><span><strong>대표 취향 · 프로필 그림</strong><small>{interests.find(option=>option.key===interest)?.name||"선택하지 않음"}</small></span><I n="chevron" s={16}/></summary>
       <fieldset disabled={busy} aria-label="대표 취향"><div className="interestgrid">{interests.map(option=><button type="button" key={option.key} className={interest===option.key?"selected":""} aria-pressed={interest===option.key} onClick={()=>setInterest(interest===option.key?"":option.key)}><InterestArt interest={option.key}/>{option.name}</button>)}</div></fieldset>

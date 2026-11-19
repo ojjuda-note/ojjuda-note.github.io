@@ -1,5 +1,6 @@
 (() => {
 'use strict';
+window.OjjudaWordMask?.watchInputs(document,'input[maxlength]:not([type=search]),textarea[maxlength]');
 const Age=(() => {
  'use strict';
  const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -70,7 +71,7 @@ let mediaBytes=0,mediaActive=0,mediaGeneration=0;
 const MEDIA_CACHE_LIMIT=48*1024*1024,MEDIA_PARALLEL=3;
 const currentRoom=()=>rooms.find(r=>r.id===roomId), activeRooms=()=>rooms.filter(r=>!r.deleting&&r.age_eligible!==false);
 function notify(message){$('#toast').textContent=message;$('#toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),3200);}
-function failure(e){if(e?.code==='P0001'&&e?.message==='banned_word')return '금칙어가 포함되어 있어 등록할 수 없어요.';if(e?.code==='42501')return e.message||'권한이 없어요. 다시 로그인하거나 그룹 가입 상태를 확인해 주세요.';if(e?.code==='22P02')return '초대코드나 입력한 내용을 확인해 주세요.';if(e?.code==='23514'||e?.code==='23502')return '필수 항목과 글자 수를 확인해 주세요.';return e?.message||'연결하지 못했어요. 다시 시도해 주세요.';}
+function failure(e){if(e?.code==='42501')return e.message||'권한이 없어요. 다시 로그인하거나 그룹 가입 상태를 확인해 주세요.';if(e?.code==='22P02')return '초대코드나 입력한 내용을 확인해 주세요.';if(e?.code==='23514'||e?.code==='23502')return '필수 항목과 글자 수를 확인해 주세요.';return e?.message||'연결하지 못했어요. 다시 시도해 주세요.';}
 async function rpc(name,args,read=false){
  const id=user?.id;if(!id)throw Error('로그인해 주세요.');
  const key=JSON.stringify([id,mutationRun,name,args]);let request=read?reads.get(key):null;

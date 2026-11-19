@@ -28,6 +28,14 @@
   let inertState=[],previousOverflow='',targetInquiry=null,source='note',getScreen=()=>source,getAppVersion=()=>'',tabs,title,view='inquiries';
   let onWithdrawal=null,withdrawalFooter,withdrawalDetails,withdrawalSummary,withdrawalButton,withdrawalOwner=null;
   const validId=value=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+  const maskedTextLength=value=>[...String(value??'').replaceAll('❤️❤️','♥')].length;
+  function limitText(field,limit) {
+    const sync=()=>{
+      field.maxLength=limit+field.value.length-maskedTextLength(field.value);
+      field.setCustomValidity(maskedTextLength(field.value)>limit?`${limit.toLocaleString('ko-KR')}자 이내로 적어 주세요.`:'');
+    };
+    field.addEventListener('input',sync);sync();
+  }
   function bugDiagnostics(kind) {
     if(kind!=='bug')return {};
     try { const diagnostics=window.OjjudaDiagnostics?.snapshot(source);return diagnostics?{diagnostics}:{}; }
@@ -106,7 +114,7 @@
       content.append(el('h3','내 문의'),el('p','아지트 문의함이에요. 문의는 본인과 운영팀만 볼 수 있어요.','support-help'));
       if(!user){const link=el('a','대문에서 로그인','button');link.href='/';content.append(link);return;}
       const form=el('form',undefined,'support-form'),label=el('label','문의 내용'),field=el('textarea');
-      field.id='note-inquiry-body';field.maxLength=2000;field.required=true;field.rows=5;label.htmlFor=field.id;
+      field.id='note-inquiry-body';limitText(field,2000);field.required=true;field.rows=5;label.htmlFor=field.id;
       const send=el('button','문의 보내기','button primary');send.type='submit';
       form.append(label,field,el('small','2,000자 이내 · 24시간 동안 최대 3건'),send);content.append(form);
       const requestId=crypto.randomUUID();
@@ -154,7 +162,7 @@
     for(const [code,label]of[['bug','고장 났어요'],['idea','이런 기능이 있으면 좋겠어요'],['other','기타']]){
       const row=el('label'),input=el('input');input.type='radio';input.name='support-feedback-kind';input.value=code;input.checked=code==='bug';row.append(input,el('span',label));choices.append(row);
     }
-    const label=el('label','의견 내용'),field=el('textarea');field.id='support-feedback-body';label.htmlFor=field.id;field.maxLength=2000;field.required=true;field.rows=5;
+    const label=el('label','의견 내용'),field=el('textarea');field.id='support-feedback-body';label.htmlFor=field.id;limitText(field,2000);field.required=true;field.rows=5;
     field.placeholder='어느 화면에서 무엇을 했을 때 어떻게 됐는지 적어 주세요.';
     const diagnosticNotice=el('p','고장 신고에는 최근 5분의 오류 기록이 함께 전달돼요. 비밀번호와 입력 내용은 포함하지 않아요.','support-help');
     diagnosticNotice.id='support-diagnostics-notice';
@@ -273,7 +281,7 @@
         for(const item of data||[]){
           const row=inquiryRow(item),form=el('form',undefined,'support-form'),label=el('label','답변'),field=el('textarea');
           const draft=drafts.get(item.id),expectedUpdatedAt=draft?draft.expectedUpdatedAt:item.updated_at;
-          field.id=`reply-${item.id}`;label.htmlFor=field.id;field.defaultValue=item.reply||'';field.value=draft?draft.value:field.defaultValue;field.rows=4;field.maxLength=2000;field.required=true;
+          field.id=`reply-${item.id}`;label.htmlFor=field.id;field.defaultValue=item.reply||'';field.value=draft?draft.value:field.defaultValue;field.rows=4;limitText(field,2000);field.required=true;
           replyFields.set(item.id,{field,expectedUpdatedAt});
           const send=el('button',item.reply?'답변 수정':'답변 등록','button primary');send.type='submit';const feedback=el('p','');feedback.setAttribute('role','status');
           form.append(label,field,send,feedback);row.append(form);rows.append(row);
@@ -285,12 +293,16 @@
             try {
               await adminRpc('admin_reply_inquiry',{p_id:item.id,p_reply:reply,p_expected_updated_at:expectedUpdatedAt});
               if(!current(n))return;
-              saved=true;field.defaultValue=reply;field.value=reply;
+              // The server may mask parts of the reply. A void save response is
+              // not a canonical copy: show only the reply read back below.
+              saved=true;field.defaultValue='';field.value='';
+              field.placeholder='저장된 답변을 다시 불러오는 중이에요.';
+              feedback.textContent='답변을 저장했어요. 저장된 내용을 불러오는 중이에요.';
               // A host refresh failure must not turn a committed reply into a save error.
               try {await onChanged();} catch {/* The reply has already been saved. */}
             }
             catch(error){if(current(n))feedback.textContent=error?.code==='40001'?'다른 관리자가 답변을 바꿨어요. 문의를 다시 불러와 주세요.':'답변을 저장하지 못했어요. 입력은 유지됩니다.';}
-            finally {pending=false;if(current(n)){lock(false);if(saved)await load(true);}}
+            finally {pending=false;if(current(n)){lock(false);if(saved){field.disabled=true;send.disabled=true;await load(true);}}}
           });
         }
         const pagination=el('div',undefined,'support-filter');
