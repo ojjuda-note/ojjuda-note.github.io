@@ -9,6 +9,7 @@ const inviteScript = fs.readFileSync(path.join(root, 'shared/auth/invite-referra
 const tick = () => new Promise(resolve => setImmediate(resolve));
 const services = {
   agit: { label: '아지트', path: '/world.html?tab=hub' },
+  arcade: { label: '오락실', path: '/world.html?tab=arcade' },
   park: { label: '공원', path: '/world.html?place=park' },
   pajang: { label: '파장', path: '/features/pajang/' }
 };
