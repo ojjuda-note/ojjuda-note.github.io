@@ -22,6 +22,7 @@
 | 바람의 궁수 | `games/forest-archer/` | `game-action` |
 | 나사 풀기 | `games/screw/` | `flat-drill-clear* (운영 보정 도구)` |
 | 맞고 | `games/matgo/` | `matgo` |
+| 원카드 | `games/onecard/` | `onecard` Edge Function + 비공개 `ojjuda_onecard_internal` 방 저장소. 혼자 컴퓨터 대전, 2~5명 온라인 대전 |
 | 포커 | `games/poker/` | `poker` |
 | 탱크 | `games/tank/` | `tank` |
 | 뱅 | `games/bang/` | `bang` |

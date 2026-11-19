@@ -1,5 +1,6 @@
 /house-test/qa/
 /tests/node_modules
+/tests/onecard-artifacts/
 
 /.qa/
 /.openai/
