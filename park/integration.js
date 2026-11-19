@@ -17,6 +17,20 @@
   const visible = selector => !!document.querySelector(selector);
   const overlayOpen = () => visible('.dialog-backdrop:not([hidden]), .nn-backdrop:not([hidden]), .note-photo-lightbox:not([hidden]), dialog[open]');
   const composerOpen = () => visible('#composer-backdrop:not([hidden])');
+  const guestEntry = document.getElementById('park-guest-entry');
+  function syncGuestEntry() {
+    if (!guestEntry) return;
+    // Use the feed's resolved identity and route; never flash a guest gate while
+    // Auth is loading or interrupt a card, account screen, or compose deep link.
+    const show = authKnown && !session?.user && feedMode === 'all' && !feedTerm && !feed.hidden
+      && detail.hidden && management.hidden && !document.body.classList.contains('note-my-open')
+      && !initialCardId && !initialParkCompose && !composerOpen();
+    if (guestEntry.hidden === show) guestEntry.hidden = !show;
+  }
+  document.getElementById('park-entry-browse')?.addEventListener('click', () => {
+    if (!guestEntry || guestEntry.hidden || feed.hidden) return;
+    list.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  });
 
   function canLeave() {
     if (window.OjjudaNoteSupport?.canLeave?.() === false) return false;
@@ -407,6 +421,7 @@
     const writing = composerOpen();
     const cardOpen = !detail.hidden;
     const navigation = navigationAction();
+    syncGuestEntry();
     syncAdminSettings();
     syncSettingsBack();
     const compose = document.querySelector('.write-fab');if(compose&&compose.hidden!==cardOpen)compose.hidden=cardOpen;
@@ -509,3 +524,4 @@
   reportState();
   send({ type: 'ojjuda:park-ready' });
 })();
+

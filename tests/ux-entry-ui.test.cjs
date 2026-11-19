@@ -35,7 +35,7 @@ world=world.slice(0,boot)+'my();window.entryFixture={tab:()=>g.tab===\'place\'?g
    }
    if(mode==='normal'){
     assert.equal(await page.locator('.world-feature[href*="sitemap"]').count(),0);
-    await page.locator('[data-destination=world]').click();await page.locator('#auth-dialog').waitFor({state:'visible'});
+    await page.locator('.account-landing [data-open-auth="login"]').click();await page.locator('#auth-dialog').waitFor({state:'visible'});
     assert.equal(await page.getByRole('link',{name:'둘러보기',exact:true}).isVisible(),true,'browse is available during normal login');
     const placement=await page.evaluate(()=>({login:document.getElementById('auth-submit').getBoundingClientRect().bottom,browse:document.getElementById('guest-browse').getBoundingClientRect().top}));
     assert.ok(placement.browse>=placement.login,'browse is below the login button');
@@ -51,7 +51,7 @@ world=world.slice(0,boot)+'my();window.entryFixture={tab:()=>g.tab===\'place\'?g
     await page.locator('#entry-status').waitFor({state:'visible',timeout:12000});
     assert.equal(await page.getByRole('button',{name:'다시 시도',exact:true}).isVisible(),true);
     if(mode==='identity-missing'){
-     await page.locator('[data-destination=world]').click();assert.equal(await page.locator('#auth-dialog').isVisible(),true);
+     await page.locator('.account-landing [data-open-auth="login"]').click();assert.equal(await page.locator('#auth-dialog').isVisible(),true);
      await page.locator('#signup-tab').click();assert.equal(await page.locator('#auth-submit').isDisabled(),true,'missing validation code must fail closed');
      await page.locator('[data-close-dialog]').click();
     }
@@ -65,3 +65,4 @@ world=world.slice(0,boot)+'my();window.entryFixture={tab:()=>g.tab===\'place\'?g
   console.log('PASS: current four-menu routes, Hub after login, missing identity/portal scripts, slow account timeout and guest recovery');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});
+

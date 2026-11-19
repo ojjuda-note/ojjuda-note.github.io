@@ -73,7 +73,7 @@ function PreferenceFields({value,onChange,drafts,onDraft,onAdd,disabled}:{
       <legend>원하는 인연</legend>
       <p className="preference-help">여러 개 골라도 괜찮아요. 선택한 내용은 파장 회원에게 보여요.</p>
       <div className="preference-chips intent-choices">{relationshipIntents.map(intent=><button key={intent.key} type="button"
-        aria-pressed={value.relationship_intents.includes(intent.key)} title={intent.description}
+        aria-label={intent.label} aria-pressed={value.relationship_intents.includes(intent.key)} title={intent.description}
         onClick={()=>onChange({...value,relationship_intents:value.relationship_intents.includes(intent.key)?value.relationship_intents.filter(key=>key!==intent.key):[...value.relationship_intents,intent.key]})}>
         {intent.label}</button>)}</div>
     </fieldset>
@@ -85,7 +85,7 @@ function PreferenceFields({value,onChange,drafts,onDraft,onAdd,disabled}:{
         <fieldset className="preference-group-body" disabled={disabled} aria-label={group.label}>
           <div className="preference-chips">{group.options.map(option=>{
             const selected=value[key].includes(option.key);
-            return <button type="button" key={option.key} aria-pressed={selected}
+            return <button type="button" key={option.key} aria-label={option.label} aria-pressed={selected}
               disabled={!selected&&value[key].length+value.custom[key].length>=MAX_PROFILE_GROUP_SELECTIONS}
               onClick={()=>onChange({...value,[key]:selected?value[key].filter(item=>item!==option.key):[...value[key],option.key]})}>{option.label}</button>;
           })}</div>

@@ -1,5 +1,6 @@
 import {call, client, sameMember, requireMember, showGate, answeredRound} from './member.mjs?v=20261119-guest-account1';
 import {mountStation, prepareProgram} from './load-station.mjs?v=20261119-guest-account1';
+import {enhanceGuestGate} from './entry-design.mjs?v=20261119-invitation2';
 import {prepareLocation} from './location.mjs?v=20261119-kma-current1';
 import {themeFor, interests} from './questions.mjs?v=rounds1';
 
@@ -244,4 +245,5 @@ if (entry) {
     }
   }
   catch { showGate('질문을 불러오지 못했어요. 잠시 후 다시 열어 주세요.'); }
-}
+} else enhanceGuestGate();
+
