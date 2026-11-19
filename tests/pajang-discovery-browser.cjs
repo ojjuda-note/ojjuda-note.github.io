@@ -536,7 +536,7 @@ function clientFixture(hash) {
     assert.equal(await accountHome.getAttribute('href'),'/world.html');
     assert.equal(await accountHome.getAttribute('target'),'_top');
     const settings=page.getByRole('region',{name:'파장 설정',exact:true});
-    assert.deepEqual(await settings.getByRole('heading',{level:2}).allTextContents(),['내 계정','내 활동','이용 안내','계정 관리']);
+    assert.deepEqual(await settings.getByRole('heading',{level:2}).allTextContents(),['내 계정','내 활동','이용 안내','앱 다운로드','계정 관리']);
     await settings.getByRole('button',{name:'내가 남긴 답변',exact:true}).click();
     const ownAnswers=page.getByRole('dialog',{name:'내가 남긴 답변',exact:true});
     await ownAnswers.getByText('내 책방 답변').waitFor();
@@ -561,7 +561,7 @@ function clientFixture(hash) {
         const {top,bottom,left,right,height}=el.getBoundingClientRect();
         return {top,bottom,left,right,height};
       }));
-      assert.equal(rows.length,11,'all account settings use the shared list rows');
+      assert.equal(rows.length,14,'all account settings and app downloads use the shared list rows');
       for(const [index,row] of rows.entries()){
         assert.ok(row.height>=44,`settings row ${index+1} has a full touch target at ${width}px`);
         assert.ok(row.left>=0&&row.right<=width+1,'settings rows stay within the viewport');
