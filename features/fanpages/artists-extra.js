@@ -1341,7 +1341,7 @@
       concept: '성장을 노래하는 NCT의 여섯 멤버 유닛.',
       official: 'https://www.smentertainment.com/', youtube: 'https://www.youtube.com/@NCTDREAM',
       photo: 'NCT Dream at DREAM()SCAPE Press Conference.png', photoLabel: 'DREAM()SCAPE 기자회견 · 당시 사진', photoYear: '2024', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
-      checkedAt: '2026.11.17',
+      checkedAt: '2026.11.19',
       music: [
         {
           "title": "DREAM AFTER DREAM",
@@ -1375,9 +1375,9 @@
       appearances: [
         {
           "date": "2026-11-22",
-          "title": "TV아사히 드림페스티벌 헤드라이너 출연",
-          "sub": "K아레나 요코하마 · 전일정 매진(11/11 공식 공지) · 개별 출연 시각 미공개",
-          "href": "https://dreamfestival.jp/"
+          "title": "TV아사히 드림페스티벌 2026 · NCT DREAM 출연",
+          "sub": "15:00 JST 공연 시작 · K아레나 요코하마 · NCT JNJM·해찬 솔로 포함 60분 무대(개별 출연 시각 미공개) · 전일정 매진",
+          "href": "https://avexnet.jp/contents/NCT12-XXXX-XXXX/news/1135918"
         },
         {
           "date": "2026-12-07",
@@ -1396,6 +1396,12 @@
           "title": "DREAM AFTER DREAM 일본 발매 이벤트 · 교토",
           "sub": "교토 시내 · 시간·상세 장소는 당첨자 추후 안내 · 2차 응모 11/23 23:59 JST까지 · 조건은 공식 공지 확인",
           "href": "https://www.nct-jp.net/news/detail.php?id=1137067"
+        },
+        {
+          "date": "2026-12-28",
+          "title": "후지TV TWO · NCT DREAM CLOSE TO YOU : LIVE",
+          "sub": "21:00~22:00 JST/KST · 후지TV TWO 10주년 특별 라이브 방송 · 유료 채널 및 스카파! 가입자 대상 온라인 시청 · 1주일 다시보기",
+          "href": "https://otn.fujitv.co.jp/nctdream/"
         }
       ],
       news: [
@@ -1410,6 +1416,12 @@
           "tag": "굿즈",
           "title": "WELCOME, DREAMERS 팝업 MD 위버스 예약판매 시작 · 11/22 포토카드 특전 종료",
           "href": "https://shop.weverse.io/ko/shop/KRW/artists/131/notices/15003"
+        },
+        {
+          "date": "2026.11.13",
+          "tag": "굿즈",
+          "title": "일본 SMTOWN 공식몰 WELCOME, DREAMERS MD 예약판매 발표 · 11/16~22",
+          "href": "https://nct-jp.net/ja/news/detail.php?id=1137274"
         },
         {
           "date": "2026.11.13",
@@ -1446,9 +1458,20 @@
           "tag": "공연",
           "title": "11.22 TV아사히 드림 페스티벌 출연 발표",
           "href": "https://nct-jp.net/en/news/detail.php?id=1135918"
+        },
+        {
+          "date": "2026.10.27",
+          "tag": "방송",
+          "title": "후지TV TWO 12/28 NCT DREAM 10주년 특별 라이브 방송 발표",
+          "href": "https://otn.fujitv.co.jp/nctdream/"
         }
       ],
       merch: [
+        {
+          "title": "WELCOME, DREAMERS 일본 수입 공식 MD",
+          "sub": "SMTOWN 일본 공식몰 · 2026.11.16 15:00~11.22 23:59 JST 예약 · 2027.02 말부터 순차 발송(일부 인형류 03 중순) · 재고 확인",
+          "href": "https://shop-smtown.jp/category/nctdream_welcome"
+        },
         {
           "title": "DREAM AFTER DREAM POP-UP [WELCOME, DREAMERS] 공식 MD",
           "sub": "Weverse Global · 11.16 15:00 예약판매 시작~품절 시 · 11.22 23:59까지 7만 원 이상 한 주문당 랜덤 포토카드 1장 · 출고 2027.01.26/02.17 · 재고는 판매처 확인",
