@@ -9,7 +9,7 @@
   const dedicated = Object.freeze({
     agit: Object.freeze(['messages','groups','photo-stages','drinking-prompts','fortune-purchases','trash-messages']),
     park: Object.freeze(['cards','risk','map','note-users','spam','trash-cards']),
-    pajang: Object.freeze(['pajang-answers','pajang-chats'])
+    pajang: Object.freeze(['pajang-answers','pajang-questions','pajang-chats'])
   });
   const common = Object.freeze(['overview','visitors','users','suspended','referrals','settings','reports','feedback',
     'errors','connections','activity','notice','words','assets','rewards','trash-all','trash-accounts','trash-other']);
