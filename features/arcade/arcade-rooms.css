@@ -10,3 +10,10 @@
 .arcade-room-feed[data-room-list]{max-height:none;overflow:visible;margin-top:16px}.arcade-room-feed .arcade-room-card{background:var(--surface,#fff)}.arcade-room-feed .arcade-room-card.mine{background:var(--accent-soft,#e7eee4)}
 
 .arcade-room-game img{display:block;margin:0 auto 3px}.arcade-room-feed .arcade-room-card{scroll-margin-block:12px 90px}
+
+/* The world sidebar also styles room actions and small buttons. Keep the
+   shared status row and exit / entry row intact in that shell. */
+.arcade-room-card .arcade-room-actions>.arcade-room-state{grid-column:1/-1}
+.arcade-room-card .arcade-room-actions>.arcade-room-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-column:1/-1;gap:6px;min-width:0;width:100%}
+.arcade-room-card .arcade-room-buttons>.arcade-cancel{grid-column:auto;text-align:center}
+.arcade-room-card .arcade-room-buttons>.btn.sm{min-height:44px;min-width:0;font-size:13px;white-space:normal}
