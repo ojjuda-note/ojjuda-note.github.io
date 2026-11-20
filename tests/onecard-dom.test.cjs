@@ -32,6 +32,7 @@ async function createPublicRoom(s, title = '친구와 원카드') {
   assert.equal(s.find('#room-title').textContent, title);
   assert.equal(s.find('#room-code-display').textContent, `#${s.client.room.room_no}`);
   assert.equal(s.find('#onecard-app').hidden, true);
+  assert.deepEqual(s.all('#lobby .lobby-controls > button').map(button=>button.id), ['lobby-back','start-room'], 'exit precedes host start in DOM and keyboard order');
   return s.client.room;
 }
 async function joinPublicRoom(s, number) {
@@ -275,7 +276,9 @@ async function check(name, fn) {
     assert.equal(s.find('#draw-button').disabled, true);
     assert.ok(s.find('#sheet.game-result-dialog .game-result-card'));
     assert.equal(s.all('.result-players > div').length, 5);
-    assert.equal(s.all('.game-result-actions button').length, 3);
+    assert.deepEqual(s.all('.game-result-actions button').map(button=>button.textContent), ['오락실로','게임판 보기','다시 한 판']);
+    assert.deepEqual(s.all('.game-result-actions button').map(button=>button.dataset.gameResultAction), ['exit','secondary','primary']);
+    assert.equal(s.w.document.activeElement, s.find('[data-game-result-action=primary]'), 'replay keeps its existing keyboard focus');
     s.button('다시 한 판'); await until(() => !s.find('#draw-button').disabled, 'fresh round');
     assert.equal(s.saved.players[0].hand.length, 7);
     s.click('#menu-button'); s.button('새 게임'); s.button('나가기');
@@ -480,6 +483,7 @@ async function check(name, fn) {
     for (const s of group) { await s.poll(); await until(() => s.find('#sheet').open && s.find('.game-result-metric')?.textContent.includes('승리'), 'all clients receive result'); }
     assert.equal(host.find('#onecard-result-title').textContent, '게임 종료');
     assert.equal(group[1].find('#onecard-result-title').textContent, '승리!');
+    for(const s of group) assert.deepEqual(s.all('.game-result-actions button').map(button=>button.textContent), ['오락실로','게임판 보기','대기실로'], 'host, winner and eliminated guests share the same result action order');
     host.button('대기실로');
     assert.equal(host.all('#room-players .lobby-player:not(.is-bot)').length, 5, 'elimination preserves membership');
     assert.equal(host.find('#start-room').disabled, false, 'eliminated host can rematch');

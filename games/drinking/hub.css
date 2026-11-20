@@ -122,3 +122,6 @@ body:has(#play-modes:not([hidden])) {
   .directory-head { gap:16px; }
   .create-link { width:100%; }
 }
+
+.room-actions { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0; }
+.room-actions > button, .room-actions > #start { min-width:0;width:100%;margin:0;overflow-wrap:anywhere; }

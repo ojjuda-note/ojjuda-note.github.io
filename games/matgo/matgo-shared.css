@@ -125,3 +125,6 @@ table.sc{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0 10px}
 
 /* Flip faces follow the same timeline as their moving card. */
 .fly .flight-face{position:absolute;inset:0;display:block;border-radius:inherit}
+
+#matgo-start .matgo-entry-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+#matgo-start .matgo-entry-actions>button{min-width:0;width:100%;margin:0;overflow-wrap:anywhere}

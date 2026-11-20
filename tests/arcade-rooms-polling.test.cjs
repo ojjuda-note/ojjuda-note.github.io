@@ -278,6 +278,22 @@ test('a waiting room that disappears cannot arm a later unrelated playing room',
   assert.equal(f.opened.length, 0);
 });
 
+test('waiting room actions keep cancel before entry while member, visitor and full-room gates stay intact', async t => {
+  const f = fixture(t);
+  const own = room({ kind: 'tank', native: true }), visitor = room({ room_no: 18, native: true, is_member: false, is_host: false });
+  const full = room({ room_no: 19, native: true, is_member: false, is_host: false, players: 2 });
+  f.state.extra = [own, visitor, full]; await f.start();
+  const buttons = no => [...f.list().querySelectorAll(`[data-arcade-action][data-room="${no}"]`)];
+  assert.deepEqual(buttons(17).map(button => button.dataset.arcadeAction), ['cancel', 'join']);
+  assert.equal(buttons(17)[0].parentElement, buttons(17)[1].parentElement);
+  assert.equal(buttons(17)[1].disabled, false);
+  assert.deepEqual(buttons(18).map(button => button.dataset.arcadeAction), ['join']);
+  assert.equal(buttons(18)[0].disabled, false);
+  assert.equal(buttons(19)[0].disabled, true);
+  buttons(17)[1].click(); await tick();
+  assert.equal(f.opened.length, 1); assert.equal(f.opened[0].value.room_no, 17);
+});
+
 test('rapid native room cancellations send one request and a failed attempt can be retried', async t => {
   let attempts = 0, resolveCancel, rejectCancel;
   const f = fixture(t, {
@@ -289,6 +305,7 @@ test('rapid native room cancellations send one request and a failed attempt can 
   const own = room({kind: 'tank', native: true});
   f.state.extra = [own];
   await f.start();
+  assert.deepEqual([...f.list().querySelectorAll('.arcade-room-buttons button')].map(button => button.dataset.arcadeAction), ['cancel', 'join']);
   const cancel = () => f.list().querySelector('[data-arcade-action="cancel"]').click();
   for (let i = 0; i < 5; i++) cancel();
   assert.equal(attempts, 1);

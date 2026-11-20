@@ -23,7 +23,7 @@
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/games/matgo/matgo-shared.css?v=20261117-matgo-double-speed">
+<link rel="stylesheet" href="/games/matgo/matgo-shared.css?v=20261120-service-actions1">
 <script src="../config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
 <script src="/games/matgo/matgo-access.js?v=20261106-source-folders3"></script>
@@ -46,8 +46,8 @@ body.matgo-locked>:not(#matgo-gate):not(#matgo-entry-loading){display:none!impor
 <link rel="stylesheet" href="/games/matgo/matgo-opponent.css?v=20261106-source-folders3">
 <link rel="stylesheet" href="/shared/games/multiplayer-entry.css?v=20261109-unified-multiplayer-ui2">
 <script src="/shared/games/multiplayer-entry.js?v=20261112-arcade-entry-return1" defer></script>
-<link rel="stylesheet" href="/shared/games/game-results.css?v=20261116-yut-destinations">
-<script src="/shared/games/game-results.js?v=20261116-yut-destinations"></script>
+<link rel="stylesheet" href="/shared/games/game-results.css?v=20261120-service-actions1">
+<script src="/shared/games/game-results.js?v=20261120-service-actions1"></script>
 <style>.modal>.card:has(> .game-result-card){padding:0;background:transparent;border:0;box-shadow:none;width:min(430px,100%);max-width:430px}</style>
 <link rel="stylesheet" href="/shared/games/arcade-return.css?v=20261112-arcade-entry-return1">
 </head>
@@ -68,7 +68,7 @@ import {cpuPortraitHTML} from "./matgo/matgo-opponent.mjs?v=20261106-source-fold
 import {createVentControls} from "./matgo/matgo-deck-tools.mjs?v=20261106-source-folders3";
 import {CARDS,isPi,piVal,score,Game,soloTierLabel,aiChooseCard,aiGoStop,aiChoose,aiChooseGukjin,seededRandom} from "./matgo/matgo-engine.mjs?v=20261112-matgo-gold-tiers";
 import {floorLayout,heldPairMonths,piClaimMessage,positionGoStopPrompt} from "./matgo/matgo-view.mjs?v=20261106-source-folders3";
-import {createWallet} from "./matgo/matgo-wallet.mjs?v=20261117-matgo-double-speed";
+import {createWallet} from "./matgo/matgo-wallet.mjs?v=20261120-service-actions1";
 import {createFlightArt} from "./matgo/matgo-flight-art.mjs?v=20261106-source-folders3";
 (async () => {
 'use strict';
@@ -488,7 +488,7 @@ function mount(){
   logEl=$('#log');
   $('#tazza-mode').onclick=()=>{if(tazza.starting||ui.dealing||!access.allowed())return;tazza.toggle();syncTazza();toast(tazza.queued?'다음 판 예약 완료 · 지금 패는 그대로, 다음 판 시작 때 5쭈를 사용해요.':'타짜모드 예약을 취소했어요.',1800);};
   vent.mount();syncTazza();
-  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261117-matgo-double-speed&open='+Date.now());};
+  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261120-service-actions1&open='+Date.now());};
   $('#exit').onclick=()=>{if(window.parent!==window)window.parent.postMessage({type:'ojjuda:matgo:close'},location.origin);else location.href='../world.html?tab=arcade';};
   document.querySelectorAll('.menu-options button').forEach(b=>b.addEventListener('click',()=>document.querySelector('.game-menu').open=false));
   $('#money').onclick=()=>showRefill();
