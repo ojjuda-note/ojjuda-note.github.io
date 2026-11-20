@@ -81,10 +81,26 @@ async function fixture(context, source, rpc) {
       for (const source of ['world','note']) {
         const current = await fixture(context, source, rpc); fixtures.push(current);
         const { page } = current;
-        const entry = page.locator('.ju-charge-entry');
-        assert.equal(await entry.count(), 1);
-        assert.equal(await entry.evaluate(node => node.parentElement.nextElementSibling.querySelector('.my-menu-title').textContent), '도움말');
-        assert.equal(await entry.evaluate(node => getComputedStyle(node).borderTopWidth), '0px');
+        // World uses the compact settings row; Park retains its native My-menu row.
+        // Both carry the same charge-open contract and must remain keyboard/touch reachable.
+        const entry = source === 'world'
+          ? page.locator('.world-settings-page .ojjuda-settings-row[data-ju-charge-open]')
+          : page.locator('.ju-charge-entry[data-ju-charge-open]');
+        assert.equal(await entry.count(), 1, source + ': one charge entry');
+        if (source === 'world') {
+          assert.equal(await entry.locator('.ojjuda-settings-label').textContent(), '쭈 충전');
+          assert.equal(await entry.evaluate(node => node.closest('.ojjuda-settings-group').querySelector('h3').textContent), '이용 설정');
+          assert.equal(await entry.evaluate(node => node.closest('.ojjuda-settings-group').nextElementSibling.querySelector('h3').textContent), '이용 안내');
+        } else {
+          assert.equal(await entry.evaluate(node => node.parentElement.nextElementSibling.querySelector('.my-menu-title').textContent), '도움말');
+          assert.equal(await entry.evaluate(node => getComputedStyle(node).borderTopWidth), '0px');
+        }
+        assert.equal(await entry.getAttribute('aria-haspopup'), 'dialog');
+        assert.ok(await entry.evaluate(node => {
+          const rect = node.getBoundingClientRect();
+          return rect.width >= 44 && rect.height >= 44 && rect.left >= -1
+            && rect.right <= innerWidth + 1 && rect.top >= -1 && rect.bottom <= innerHeight + 1;
+        }), source + ': charge entry remains a reachable touch target');
         if (process.env.JU_CHARGE_QA_DIR) {
           fs.mkdirSync(process.env.JU_CHARGE_QA_DIR, { recursive: true });
           await page.screenshot({ path: path.join(process.env.JU_CHARGE_QA_DIR, `${source}-menu-${viewport.width}.png`), fullPage: true });
