@@ -202,7 +202,7 @@ async function oneScreen(page, label, playing = false) {
   if (playing) await page.waitForFunction(() => {
     const orbit = document.querySelector('#direction-orbit');
     return orbit && !orbit.hidden && orbit.dataset.ready === 'true' &&
-      [orbit, ...orbit.querySelectorAll('.orbit-track, .orbit-marker')].every(node => {
+      [orbit, ...orbit.querySelectorAll('.orbit-marker')].every(node => {
         const box = node.getBoundingClientRect();
         return getComputedStyle(node).visibility === 'visible' && box.width > 0 && box.height > 0;
       });
@@ -213,7 +213,7 @@ async function oneScreen(page, label, playing = false) {
     const scroller = document.querySelector('#hand-scroll'), style = scroller && getComputedStyle(scroller);
     const orbit = document.querySelector('#direction-orbit');
     const motion = playing ? { hidden: orbit.hidden, ready: orbit.dataset.ready, state: orbit.dataset.state, ariaHidden: orbit.getAttribute('aria-hidden'),
-      boxes: [orbit, orbit.querySelector('.orbit-track'), ...orbit.querySelectorAll('.orbit-marker')].map(node => ({ ...rect(node), className: node.className, pointerEvents: getComputedStyle(node).pointerEvents, visibility: getComputedStyle(node).visibility })),
+      boxes: [orbit, ...orbit.querySelectorAll('.orbit-marker')].map(node => ({ ...rect(node), className: node.getAttribute('class'), pointerEvents: getComputedStyle(node).pointerEvents, visibility: getComputedStyle(node).visibility })),
       controls: ['sort-number', 'sort-color', 'draw-pile', 'draw-button', 'menu-button'].map(id => {
         const node = document.getElementById(id), box = rect(node), hit = document.elementFromPoint((box.left + box.right) / 2, (box.top + box.bottom) / 2);
         return { id, reachable: node === hit || node.contains(hit) };
@@ -231,7 +231,7 @@ async function oneScreen(page, label, playing = false) {
   if (playing) {
     assert.equal(report.motion.hidden, false, `${label}: direction cue is present during play`);
     assert.equal(report.motion.ariaHidden, 'true', `${label}: decoration does not duplicate accessible direction text`);
-    assert.equal(report.motion.boxes.length, 5, `${label}: track and all three moving markers exist`);
+    assert.equal(report.motion.boxes.length, 3, `${label}: direction cue and both moving markers exist`);
     for (const box of report.motion.boxes) {
       assert.equal(box.pointerEvents, 'none', `${label}: orbit never captures touch or mouse input`);
       assert.equal(box.visibility, 'visible', `${label}: the complete direction cue is actually visible: ${JSON.stringify({ box, ready: report.motion.ready, state: report.motion.state })}`);
@@ -461,6 +461,28 @@ async function scenario(name, fn) {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.waitForFunction(() => document.querySelector('#direction-orbit').dataset.state === 'reduced');
     orbitStill(await orbitFrames(page, 200), 'reduced-motion orbit');
+    const marker = page.locator('#direction-orbit .orbit-marker').nth(1), flow = marker.locator('.orbit-flow');
+    const originalStyle = await flow.getAttribute('style');
+    const paintBounds = await marker.boundingBox();
+    assert.ok(paintBounds, 'the stationary ribbon has measurable bounds');
+    const paintClip = { x: Math.floor(paintBounds.x) - 8, y: Math.floor(paintBounds.y) - 8, width: Math.ceil(paintBounds.width) + 16, height: Math.ceil(paintBounds.height) + 16 };
+    const capturePaint = name => page.screenshot({ clip: paintClip, path: path.join(ARTIFACTS, name) });
+    const visiblePaint = await capturePaint('direction-orbit-painted-visible.png');
+    let hiddenPaint, repeatedHiddenPaint;
+    try {
+      await flow.evaluate(node => node.style.setProperty('visibility', 'hidden', 'important'));
+      // Let the SVG compositing layer present the hidden frame before capture.
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      hiddenPaint = await capturePaint('direction-orbit-painted-hidden-1.png');
+      repeatedHiddenPaint = await capturePaint('direction-orbit-painted-hidden-2.png');
+    } finally {
+      await flow.evaluate((node, style) => {
+        if (style === null) node.removeAttribute('style');
+        else node.setAttribute('style', style);
+      }, originalStyle);
+    }
+    assert.ok(hiddenPaint.equals(repeatedHiddenPaint), 'the hidden orbit captures have a stationary background');
+    assert.ok(!visiblePaint.equals(hiddenPaint), 'the visible orbit paints actual pixels above its background');
     await page.locator('#sort-color').click(); await page.locator('#onecard-button').click(); await pressCard(page, 'S-Q');
     await page.waitForFunction(() => document.querySelector('#direction-orbit').dataset.direction === 'counterclockwise');
     assert.match(await page.locator('#direction').textContent(), /반시계/);

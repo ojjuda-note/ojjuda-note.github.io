@@ -163,7 +163,8 @@ async function check(name, fn) {
     const orbit = s.find('#direction-orbit');
     assert.equal(orbit.hidden, true); assert.equal(orbit.dataset.state, 'idle');
     assert.equal(orbit.getAttribute('aria-hidden'), 'true');
-    assert.equal(orbit.querySelectorAll('.orbit-marker').length, 3);
+    assert.equal(orbit.querySelectorAll('.orbit-marker').length, 2);
+    assert.equal(orbit.querySelector('.orbit-track'), null, 'the direction cue has no full oval outline');
     await resume(s);
     assert.equal(orbit.hidden, false); assert.equal(orbit.dataset.state, 'running');
     assert.equal(orbit.dataset.direction, 'clockwise');
