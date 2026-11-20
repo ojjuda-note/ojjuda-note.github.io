@@ -28,7 +28,7 @@
   group:'1.2.2',
   chacha_rush:'1.1.2',
   byeolcheonji:'1.0.5',
-  festival:'1.6.2',
+  festival:'1.6.3',
   restaurants:'1.13.10',
   recommendations:'1.7.2',
   archery:'3.4.2',
