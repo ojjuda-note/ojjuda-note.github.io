@@ -164,6 +164,8 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
         for(const target of tabs)assert.equal(await page.locator('.adm-menu-group .adm-menu-link[data-v="'+target+'"]').count(),owner===id?1:0,'dedicated menu '+target+' only belongs to '+owner);
       }
       for(const target of ['users','settings','reports','feedback','notice','activity'])assert.ok(await page.locator('.adm-menu-group .adm-menu-link[data-v="'+target+'"]').count()>0,'shared operation '+target+' remains in '+id);
+      assert.equal(await page.locator('.adm-menu-group[data-group="headquarters"] .adm-menu-link').getAttribute('href'),
+        '/admin/operations.html'+(id==='agit'?'':'?from='+id),'organization keeps the current administrator service');
       if(id==='pajang'){
         await mounted('pajang-answers');assert.equal(await page.evaluate(()=>fixture.options['pajang-answers'].view),'answers');
         await tab('pajang-chats');await mounted('pajang-chats');assert.equal(await page.evaluate(()=>fixture.options['pajang-chats'].view),'chats');
@@ -173,7 +175,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     assert.equal(await page.locator('.adm-navigation').evaluate(node => node.scrollWidth <= node.clientWidth), true,
       'file folders fit the mobile width');
     await page.locator('[data-admin-folder="all"]').click();
-    assert.equal(await page.locator('.adm-menu-group:not([hidden])').count(),5);
+    assert.equal(await page.locator('.adm-menu-group:not([hidden])').count(),6);
     await page.getByLabel('기능 찾기').fill('포토땅');
     assert.equal(await page.locator('.adm-menu-group:not([hidden])').count(),1,'search narrows the group list');
     assert.equal(await page.locator('.adm-menu-link:not([hidden])').filter({hasText:'포토땅따먹기'}).count(),1);
