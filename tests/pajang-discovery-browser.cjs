@@ -504,6 +504,7 @@ async function checkNavigation(page){
   await choose('내 파장');await heading('내 파장').waitFor();
   const settings=page.getByRole('region',{name:'파장 설정',exact:true});
   const helpMenu=settings.locator('details').filter({has:page.locator('summary').filter({hasText:'도움말'})});
+  assert.equal(await helpMenu.evaluate(el=>el.open),false,'a fresh settings page starts with Help collapsed');
   await helpMenu.locator('summary').click();
   assert.equal(await helpMenu.getAttribute('open'),'','Help expands before its child actions are used');
   const organization=helpMenu.getByRole('link',{name:'조직도',exact:true});
@@ -1013,15 +1014,23 @@ async function checkNavigation(page){
     assert.deepEqual(await settings.locator('[aria-labelledby="account-activity-title"] .ojjuda-settings-label').allTextContents(),
       ['답변 공개 설정','내가 남긴 답변','신호 구매','쭈 충전'],'signal purchase stays directly above coin charging in My Pajang activities');
     assert.equal(await settings.getByRole('button',{name:'쭈 충전',exact:true}).getAttribute('aria-controls'),'ju-charge-dialog','settings exposes the shared coin charge dialog');
+    const helpMenu=settings.locator('details').filter({has:page.locator('summary').filter({hasText:'도움말'})});
+    const helpRows=helpMenu.locator(':scope > .ojjuda-settings-body > .ojjuda-settings-row');
+    const topRows=settings.locator('.ojjuda-settings-list > .ojjuda-settings-row, .ojjuda-settings-list > details.ojjuda-settings-details > summary.ojjuda-settings-row');
+    assert.equal(await helpMenu.count(),1,'settings has one Help disclosure');
+    assert.equal(await helpMenu.evaluate(el=>el.open),false,'Help is a collapsed top-level menu on entry');
+    assert.deepEqual(await helpRows.locator('.ojjuda-settings-label').allTextContents(),['사용법','조직도'],'usage and organization are the two Help children');
+    for(const index of [0,1])assert.equal(await helpRows.nth(index).isVisible(),false,'collapsed Help hides both children');
+    const readRowBounds=elements=>elements.map(el=>{
+      const {top,bottom,left,right,height}=el.getBoundingClientRect();
+      return {top,bottom,left,right,height};
+    });
     for(const width of [320,390]){
       await page.setViewportSize({width,height:844});
       assert.ok(await settings.evaluate(el=>el.scrollWidth<=document.documentElement.clientWidth));
       assert.ok(await accountHome.evaluate(el=>el.getBoundingClientRect().height>=44));
-      const rows=await settings.locator('.ojjuda-settings-list > .ojjuda-settings-row').evaluateAll(elements=>elements.map(el=>{
-        const {top,bottom,left,right,height}=el.getBoundingClientRect();
-        return {top,bottom,left,right,height};
-      }));
-      assert.equal(rows.length,16,'account settings, signal purchase, coin charging and the three app entries use the shared list rows');
+      const rows=await topRows.evaluateAll(readRowBounds);
+      assert.equal(rows.length,16,'the 16 top-level settings rows include the Help summary and exclude its nested actions');
       for(const [index,row] of rows.entries()){
         assert.ok(row.height>=44,`settings row ${index+1} has a full touch target at ${width}px`);
         assert.ok(row.left>=0&&row.right<=width+1,'settings rows stay within the viewport');
@@ -1030,6 +1039,20 @@ async function checkNavigation(page){
       }
       await accountPage.evaluate(el=>el.scrollIntoView({block:'start',behavior:'instant'}));
       await accountPage.screenshot({path:path.join(dir,'account-settings-'+width+'.png'),animations:'disabled'});
+      await helpMenu.locator('summary').click();
+      assert.equal(await helpMenu.evaluate(el=>el.open),true,'the Help summary expands its children');
+      const childRows=await helpRows.evaluateAll(readRowBounds);
+      assert.equal(childRows.length,2);
+      for(const [index,row] of childRows.entries()){
+        assert.equal(await helpRows.nth(index).isVisible(),true,'expanded Help exposes both child actions');
+        assert.ok(row.height>=44,`Help child ${index+1} has a full touch target at ${width}px`);
+        assert.ok(row.left>=0&&row.right<=width+1,'expanded Help children stay within the viewport');
+        if(index)assert.ok(row.top>=childRows[index-1].bottom-1,'Help children stack vertically without overlap');
+      }
+      assert.equal(await topRows.count(),16,'expanding Help never counts nested actions as top-level settings');
+      await helpMenu.locator('summary').click();
+      assert.equal(await helpMenu.evaluate(el=>el.open),false);
+      for(const index of [0,1])assert.equal(await helpRows.nth(index).isVisible(),false,'closing Help hides both children again');
     }
     await settings.getByRole('button',{name:'로그아웃',exact:true}).click();
     const logout=page.getByRole('dialog',{name:'로그아웃',exact:true});
