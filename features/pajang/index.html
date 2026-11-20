@@ -43,7 +43,7 @@
   <script src="/app/world/world-themes.js?v=20261119-auto-theme1"></script>
   <script src="/app/world/world-weather.js?v=20261119-kma-current1" defer></script>
   <script type="module" src="./shell.mjs?v=20261119-service-header1"></script>
-  <script type="module" src="./entry.mjs?v=20261120-organization-help1"></script>
+  <script type="module" src="./entry.mjs?v=20261120-answer-policy1"></script>
 <script src="/shared/navigation/section-back.js?v=20261119-history1" data-return-to="hub" defer></script></head>
 <body>
   <header class="pajang-mast"><div class="pajang-mast-inner ojjuda-service-header">
@@ -87,13 +87,13 @@
         <fieldset id="answer-fields">
         <label for="mine">나의 답변</label>
         <textarea id="mine" rows="3" maxlength="220" required placeholder="이번 질문에 대한 내 생각을 적어 주세요." aria-describedby="publication-note"></textarea>
-        <p class="publication-note" id="publication-note">답변을 공개하면 작성일을 포함해 1년(365일) 동안 파장 회원이 질문과 내 답변을 함께 볼 수 있어요.</p>
+        <p class="publication-note" id="publication-note">이 답변을 공개하면 다른 파장 회원이 질문과 답변을 작성일을 포함해 최대 365일간 볼 수 있어요(한국 시간 기준).</p>
         </fieldset>
-        <button type="submit">답변 공개하고 파장 메인으로</button>
+        <button type="submit">365일간 공개하고 파장 메인으로</button>
         <button type="button" class="cancel-form" id="cancel-form">취소</button>
       </form>
       <output id="my-answer" role="status"></output>
-      <small id="demo-note">내 답변은 최근 1년 동안 파장 회원에게 보여요. 차단한 회원과는 서로 볼 수 없어요.</small>
+      <small id="demo-note">답변은 공개할 때 안내받은 기간에만 다른 파장 회원에게 보여요. 차단한 회원과는 서로 볼 수 없어요.</small>
     </section>
     <details class="sample-radar"><summary>예시 레이더 보기</summary>
     <section class="panel" aria-label="예시 인연 레이더">

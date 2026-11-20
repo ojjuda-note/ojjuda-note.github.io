@@ -336,7 +336,7 @@ function clientFixture(hash) {
     if(mode==='new'||mode==='unanswered'){state.me.body='';entry.body='';}
     window.feedCalls=[];window.heldGender=null;window.releaseFeed=null;
     const messages=[{id:'1',src:'peer1',dst:'me',body:'안녕하세요!',at:1}];
-    window.authCalls=0;window.artCalls=[];window.memberCalls=[];window.sendIds=[];window.programCalls=0;
+    window.authCalls=0;window.artCalls=[];window.memberCalls=[];window.answerWrites=[];window.sendIds=[];window.programCalls=0;
     window.accountWrites=[];window.profileReads=[];window.adminChecks=0;
     let authSession=mode==='guest'?null:{user:{id:mode==='switched'?'next-member':'member'},access_token:'fixture-token'};
     const authListeners=new Set();
@@ -388,6 +388,8 @@ function clientFixture(hash) {
           state.locationEnabled=localStorage.locationEnabled!=='false';state.locationVersion=Number(localStorage.locationVersion||0);
           if(!state.locationEnabled)state.radarOn=false;
           window.memberCalls.push(p.p_action);
+          if(['join','participate','answer','edit-answer'].includes(p.p_action))
+            window.answerWrites.push({action:p.p_action,...structuredClone(p.p_data)});
           if(['entry','state'].includes(p.p_action) && mode==='denied')return Promise.resolve({error:{code:'42501'}});
           if(p.p_action==='state'&&!entry.joined)return Promise.resolve({error:{code:'42501',message:'먼저 파장에 참여해 주세요.'}});
           if(p.p_action==='entry')return Promise.resolve({data:entry});
@@ -692,7 +694,7 @@ async function checkNavigation(page){
       await page.evaluate(()=>window.finishFlight());
       await page.locator(ready).waitFor();
       assert.equal(await scene.isVisible(),false);
-      if(!member)assert.match(await page.locator('#publication-note').textContent(),/1년\(365일\)/);
+      if(!member)assert.match(await page.locator('#publication-note').textContent(),/작성일을 포함해 최대 365일간.*한국 시간 기준/);
       if(member){releasePicture?.();await page.unroute(picture);}
       await page.emulateMedia({reducedMotion:'no-preference'});
       if(!member){
@@ -782,6 +784,10 @@ async function checkNavigation(page){
     await editor.getByLabel('내 이야기').fill('같이 산책하고 따뜻한 차를 마셔요.');
     await editor.getByRole('button',{name:'수정 저장하기'}).click();
     await editor.waitFor({state:'detached'});
+    const editWrite=await page.evaluate(()=>window.answerWrites.at(-1));
+    assert.equal(editWrite.action,'edit-answer');
+    assert.equal(Object.hasOwn(editWrite,'archive'),false);
+    assert.equal(Object.hasOwn(editWrite,'publicationPolicy'),false);
     await cards.filter({hasText:'같이 산책하고 따뜻한 차를 마셔요.'}).waitFor();
     await revise.click();
     assert.equal(await editor.getByLabel('내 이야기').inputValue(),'같이 산책하고 따뜻한 차를 마셔요.');
@@ -1174,7 +1180,10 @@ async function checkNavigation(page){
     await checkCompass(page,'#scope','.rose b','#marks button:nth-child(2)');
     await page.locator('#write').click();await page.locator('[name=consent]').check();
     await page.locator('#mine').fill('한 번 열린 화면에서 답변을 남겨요.');
-    await page.locator('#answer-form [type=submit]').click();await nav.waitFor();
+    await page.locator('#answer-form').getByRole('button',{name:'365일간 공개하고 오늘로',exact:true}).click();await nav.waitFor();
+    const joinWrite=await page.evaluate(()=>window.answerWrites.find(w=>w.action==='join'));
+    assert.equal(joinWrite.archive,true);
+    assert.equal(joinWrite.publicationPolicy,'year-v1');
     assert.equal(await page.evaluate(()=>window.entryMarker===document.querySelector('.pajang-mast')),true,'answer submission stays in the same document');
     assert.equal(entryDocuments.length-beforeEntry,1,'a new member answers and enters without a second navigation');
     const focusedQuestion=questionCard.getByRole('heading',{level:1});
@@ -1199,6 +1208,9 @@ async function checkNavigation(page){
     await page.locator('[name=consent]').check();await page.getByRole('button',{name:'참여하고 내 파장 보기'}).click();
     await page.getByRole('heading',{name:'내 파장'}).waitFor();
     assert.equal(await page.evaluate(()=>window.beforeJoin===document.querySelector('.pajang-mast')),true,'member entry preserves the document');
+    const joinOnlyWrite=await page.evaluate(()=>window.answerWrites.find(w=>w.action==='participate'));
+    assert.equal(Object.hasOwn(joinOnlyWrite,'archive'),false);
+    assert.equal(Object.hasOwn(joinOnlyWrite,'publicationPolicy'),false);
     assert.ok(page.url().includes('station.html?tab=profile'));
     assert.equal(await page.evaluate(()=>window.memberCalls.filter(v=>v==='state').length),0,'join uses server response');
     await page.evaluate(()=>{delete sessionStorage.accepted;});
@@ -1222,7 +1234,15 @@ async function checkNavigation(page){
     await page.evaluate(()=>{sessionStorage.fixtureMode='unanswered';});
     await page.goto(origin+project+'station.html');
     await questionCard.getByRole('button',{name:'내 답변 쓰기'}).click();
-    await page.getByRole('dialog').waitFor();
+    const newAnswerDialog=page.getByRole('dialog');
+    await newAnswerDialog.waitFor();
+    assert.match(await newAnswerDialog.textContent(),/작성일을 포함해 최대 365일간.*한국 시간 기준/);
+    await newAnswerDialog.getByLabel('내 이야기').fill('새롭게 공개하기로 선택한 답변');
+    await newAnswerDialog.getByRole('button',{name:'365일간 공개하기',exact:true}).click();
+    await newAnswerDialog.waitFor({state:'detached'});
+    const answerWrite=await page.evaluate(()=>window.answerWrites.find(w=>w.action==='answer'));
+    assert.equal(answerWrite.archive,true);
+    assert.equal(answerWrite.publicationPolicy,'year-v1');
     for(const mode of ['guest','denied']){
       await page.evaluate(m=>{sessionStorage.fixtureMode=m;},mode);
       await page.goto(origin+project+'station.html');
