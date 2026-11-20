@@ -24,6 +24,12 @@
     const abort = new AbortController(), signal = abort.signal;
     const on = (node, type, handler, options = {}) => node.addEventListener(type, handler, { ...options, signal });
     const teamMap = new Map((Array.isArray(payload.teams) ? payload.teams : []).filter(t => typeof t?.team === 'string').map(t => [t.team, t]));
+    const assignments = publicMode ? null : payload.ai_assignments;
+    const departmentIds = new Map((Array.isArray(payload.departments) ? payload.departments : [])
+      .filter(d => typeof d?.name === 'string' && typeof (d.department_id || d.id) === 'string')
+      .map(d => [d.name, d.department_id || d.id]));
+    const departmentAgents = new Map((Array.isArray(assignments?.departments) ? assignments.departments : [])
+      .filter(a => typeof a?.department_id === 'string').map(a => [a.department_id, a]));
     const records = [], byId = new Map();
     let destroyed = false, scale = 1, selected = null, width = 0, height = 0, resizeFrame = 0, initialFrame = 0;
     let matches = [], searchTimer = 0, lastTrigger = null, suppressClick = false;
@@ -154,9 +160,46 @@
       else { const ul = el('ul'); content.forEach(text => ul.append(el('li', '', text))); section.append(ul); }
       detailBody.append(section);
     }
+    function assignedAgent(r) {
+      if (!assignments) return null;
+      if (r === chief) return assignments.coordinator || null;
+      if (r === leadership[2]) return assignments.auditor || null;
+      for (let current = r; current && current !== chief; current = current.parent) {
+        const departmentId = current.team?.department_id || departmentIds.get(current.node.name);
+        if (departmentId) return departmentAgents.get(departmentId) || null;
+      }
+      return null;
+    }
+    function appendAgent(r) {
+      if (publicMode) return;
+      const agent = assignedAgent(r);
+      if (!agent) {
+        if (r === chief || r === leadership[2] || departmentIds.has(r.node.name)) appendSection('담당 AI', '배정 확인 필요');
+        return;
+      }
+      const name = typeof agent.name === 'string' ? agent.name.trim() : '';
+      const id = typeof agent.agent_id === 'string' ? agent.agent_id.trim() : '';
+      if (!name || !id) { appendSection('담당 AI', '배정 확인 필요'); return; }
+      const linked = typeof agent.automation_id === 'string' && agent.automation_id.trim();
+      const executionStates = {
+        scheduled: linked ? '예약 활성 · 실행 결과 미검증' : '실행 미연결',
+        paused: linked ? '일시중지' : '실행 미연결',
+        unconnected: '실행 미연결'
+      };
+      const execution = Object.hasOwn(executionStates, agent.execution_status) ? executionStates[agent.execution_status] : '상태 미확인';
+      const details = [name, '담당 ID: ' + id,
+        '배정: ' + (agent.assignment_status === 'assigned' ? '완료' : agent.assignment_status === 'pending' ? '대기' : '확인 필요'),
+        '자동 실행: ' + execution];
+      const verified = new Date(agent.verified_at);
+      if (agent.verified_at && !Number.isNaN(verified.getTime())) details.push('확인: ' + new Intl.DateTimeFormat('ko-KR', {
+        timeZone: 'Asia/Seoul', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false
+      }).format(verified));
+      appendSection('담당 AI', details);
+    }
     function openDetails(r) {
       hideResults(); markSelected(r); kicker.textContent = level(r.node.level); detailTitle.textContent = r.node.name; detailBody.replaceChildren();
       if (r.path.length) detailBody.append(el('p', 'detail-path', r.path.join(' › ')));
+      appendAgent(r);
       appendSection('담당 업무', r.team?.mission || list(r.node.detail));
       if (r.owner && r.owner !== r) {
         const section = el('section', 'detail-section'); section.append(el('h3', '', '담당 팀'));
@@ -307,9 +350,10 @@
     });
     document.fonts?.ready.then(() => { if (!destroyed) redraw(); });
     return {
-      destroy() { destroyed = true; abort.abort(); observer.disconnect(); cancelAnimationFrame(resizeFrame); cancelAnimationFrame(initialFrame); clearTimeout(searchTimer); if (dialog.open) dialog.close(); pointers.clear(); records.length = 0; byId.clear(); teamMap.clear(); host.replaceChildren(); },
+      destroy() { destroyed = true; abort.abort(); observer.disconnect(); cancelAnimationFrame(resizeFrame); cancelAnimationFrame(initialFrame); clearTimeout(searchTimer); if (dialog.open) dialog.close(); pointers.clear(); records.length = 0; byId.clear(); teamMap.clear(); departmentIds.clear(); departmentAgents.clear(); host.replaceChildren(); },
       fit, locate
     };
   }
   window.OjjudaOrganizationChart = { mount };
 })();
+
