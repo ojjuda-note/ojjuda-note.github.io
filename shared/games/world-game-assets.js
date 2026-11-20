@@ -5,7 +5,7 @@
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
-  onecard:'2.4.0',
+  onecard:'2.4.1',
   croc:'1.5.0',
   liar:'1.7.0',
   king:'1.12.0',

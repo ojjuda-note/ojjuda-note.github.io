@@ -22,7 +22,7 @@
 | 바람의 궁수 | `games/forest-archer/` | `game-action` |
 | 나사 풀기 | `games/screw/` | `flat-drill-clear* (운영 보정 도구)` |
 | 맞고 | `games/matgo/` | `matgo` |
-| 원카드 | `games/onecard/` | `onecard` Edge Function + 비공개 `ojjuda_onecard_internal` 방·결과 저장소. 파스텔 캠핑장 배경과 방향 바꾸기 8장을 포함한 4색 전용 카드 58장, 항상 5명. `orbit.mjs` 현재 진행 방향을 따라 플레이어 바깥 둘레를 도는 모션(위치를 유지해 반전, 화면 숨김·메뉴·동작 줄이기 시 정지). `hand.mjs` 손패 가로 드래그·숫자순/색상순 정렬, `campsite-pastel.webp`·`campsite-pastel-portrait.webp` 가로·세로 전용 정적 장면. 로그인 컴퓨터 대전·온라인 대전의 월 최고 연승을 공통 게임순위에 연결. 비로그인·기존 로컬 저장은 연습. 함께하는 플레이·공통 대전방·3D 그림 `assets/design/games/onecard.webp`·`guide.html#game-onecard` 사용법 연동 |
+| 원카드 | `games/onecard/` | `onecard` Edge Function + 비공개 `ojjuda_onecard_internal` 방·결과 저장소. 파스텔 캠핑장 배경과 방향 바꾸기 8장을 포함한 4색 전용 카드 58장, 항상 5명. `orbit.mjs` 큼직한 아이보리 빛띠 두 개가 현재 진행 방향을 따라 플레이어 바깥 둘레를 도는 모션(위치를 유지해 반전, 화면 숨김·메뉴·동작 줄이기 시 정지). `hand.mjs` 손패 가로 드래그·숫자순/색상순 정렬, `campsite-pastel.webp`·`campsite-pastel-portrait.webp` 가로·세로 전용 정적 장면. 로그인 컴퓨터 대전·온라인 대전의 월 최고 연승을 공통 게임순위에 연결. 비로그인·기존 로컬 저장은 연습. 함께하는 플레이·공통 대전방·3D 그림 `assets/design/games/onecard.webp`·`guide.html#game-onecard` 사용법 연동 |
 | 포커 | `games/poker/` | `poker` |
 | 탱크 | `games/tank/` | `tank` |
 | 뱅 | `games/bang/` | `bang` |
