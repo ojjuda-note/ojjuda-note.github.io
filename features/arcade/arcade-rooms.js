@@ -1,8 +1,8 @@
 (function () {
   'use strict';
-  const games = { onecard: ['▦', '원카드'], drinking: ['🍻', '술게임'], bang: ['🤠', '뱅!'], tank: ['🪖', '탱크게임'], tour: ['🌏', '마블'], ttang: ['🟣', '월드땅따먹기'], janggi: ['🀄', '장기'], chess: ['♟️', '체스'], carom4: ['🎱', '4구'], carom3: ['🎯', '3구'], pool8: ['🎱', '포켓볼'], matgo: ['🎴', '맞고'], poker: ['♠️', '세븐포커'], roulette: ['🎡', '룰렛'] };
+  const games = { onecard: ['▦', '원카드'], yut: ['♧', '윷놀이'], drinking: ['🍻', '술게임'], bang: ['🤠', '뱅!'], tank: ['🪖', '탱크게임'], tour: ['🌏', '마블'], ttang: ['🟣', '월드땅따먹기'], janggi: ['🀄', '장기'], chess: ['♟️', '체스'], carom4: ['🎱', '4구'], carom3: ['🎯', '3구'], pool8: ['🎱', '포켓볼'], matgo: ['🎴', '맞고'], poker: ['♠️', '세븐포커'], roulette: ['🎡', '룰렛'] };
   const drinkingKinds = new Set(['drinking','croc','liar','king','minority','mission','bottle','bomb','stopwatch','truth','initial','fingers','imagevote','updown']);
-  const nativeGames = new Set(['onecard','bang','tank','tour','ttang','poker','roulette']);
+  const nativeGames = new Set(['onecard','yut','bang','tank','tour','ttang','poker','roulette']);
   const drinkingLink = (shortcut = false) => `<a class="btn pri" data-drinking-hub${shortcut ? ' data-drinking-shortcut' : ''} href="/games/drinking/?mode=multi">술게임 입장</a>`;
   const ACTIVE_POLL_MS = 4000, IDLE_POLL_MS = 6000;
   const layouts = [['eheh', '상마상마'], ['hehe', '마상마상'], ['ehhe', '상마마상'], ['heeh', '마상상마']];
@@ -70,10 +70,10 @@
     function card(room) {
       const [, name] = games[room.kind] || ['', '게임'];
       const artwork = /^(carom|pool)/.test(room.kind) ? 'carom4' : Object.hasOwn(games, room.kind) ? room.kind : 'tank';
-      const artworkUrl = room.kind === 'onecard' ? '/assets/design/games/onecard.webp?v=20261120-onecard7' : `/assets/design/games/${artwork}.svg`;
+      const artworkUrl = room.kind === 'yut' ? '/games/yut/cover.webp?v=1' : room.kind === 'onecard' ? '/assets/design/games/onecard.webp?v=20261120-onecard7' : `/assets/design/games/${artwork}.svg`;
       const playing = room.status === 'playing';
       let action = room.is_member ? (playing ? '새 게임' : room.native ? '대기실 열기' : '대기 중') : playing ? '대전 중' : '참여';
-      if (room.kind === 'onecard' && room.is_member && playing) action = '게임 이어하기';
+      if (['onecard','yut'].includes(room.kind) && room.is_member && playing) action = '게임 이어하기';
       if (openingRoom?.roomNo === room.room_no) action = '입장 중…';
       return `<article class="arcade-room-card${room.is_member ? ' mine' : ''}">
         <div class="arcade-room-game"><img src="${artworkUrl}" alt="" width="36" height="28"><b>${name}</b></div>
@@ -269,7 +269,7 @@
         if (form.elements.title.value === previousTitle) form.elements.title.value = games[value][1] + ' 같이 한 판 해요';
         previousTitle = games[value][1] + ' 같이 한 판 해요';
         form.querySelector('[data-create-layout]').hidden = value !== 'janggi';
-        const min=value==='onecard'?5:value==='bang'?4:2,max=value==='onecard'?5:value==='bang'?7:value==='tank'?12:value==='tour'?8:['poker','roulette'].includes(value)?4:2;
+        const min=value==='onecard'?5:value==='bang'?4:2,max=value==='onecard'?5:value==='bang'?7:value==='tank'?12:['tour','yut'].includes(value)?8:['poker','roulette'].includes(value)?4:2;
         form.querySelector('[data-create-capacity]').hidden=min===max;
         form.elements.capacity.innerHTML=Array.from({length:max-min+1},(_,i)=>`<option value="${i+min}"${i+min===(value==='onecard'?5:Math.min(4,max))?' selected':''}>${i+min}명</option>`).join('');
       };

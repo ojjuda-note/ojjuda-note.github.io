@@ -262,3 +262,37 @@ dialog .primary{width:100%}#dialog-body>.secondary{margin:4px 3px 0 0}
     inset 0 0 0 4px #372418,inset 0 0 0 6px #deb77b77;
 }
 .resolved #first-seat-heading {color:#ffe49e}
+
+/* Public multiplayer uses the same room list and entrance as the arcade. */
+#public-room-host{margin-top:16px;text-align:left}
+#public-room-host .arcade-rooms{padding:0;border:0;background:none;margin-bottom:0}
+#public-room-host .arcade-rooms-head p{display:none}
+#public-room-host .arcade-room-filters{grid-template-columns:minmax(0,1fr)}
+#public-room-host .arcade-rooms h3{font-family:inherit;color:var(--entry-ink);font-size:17px}
+#public-room-host .btn,#sheet .btn{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:9px 12px;border:1px solid var(--entry-line,#dce3d8);border-radius:10px;background:var(--entry-soft,#edf3e9);color:var(--entry-ink,#243b30);font-family:inherit;font-size:13px;font-weight:600;line-height:1.4;cursor:pointer}
+#public-room-host .btn.pri,#sheet .btn.pri{background:var(--entry-accent,#467c57);border-color:transparent;color:#fff}
+#public-room-host .inp{padding:10px 12px;border:1px solid var(--entry-line);border-radius:10px;background:#fff;color:var(--entry-ink);font:inherit}
+#public-room-host .arcade-room-game img{width:36px;height:30px;object-fit:contain}
+#public-room-host .arcade-room-retry{margin:6px 0 10px;font-size:12px}
+#public-room-host .arcade-room-feed{margin-top:12px}
+#public-room-host .arcade-room-card{grid-template-columns:36px minmax(0,1fr) auto;gap:8px}
+#online-lobby .room-code-row{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;color:var(--entry-muted);text-align:left}
+#online-lobby .room-code-row .ge-secondary{width:auto;min-height:38px;margin:0;padding:7px 10px;font-size:12px}
+#online-lobby .room-players{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;list-style:none;margin:18px 0;padding:0;text-align:left}
+#online-lobby .lobby-player{display:flex;align-items:center;gap:9px;min-width:0;padding:12px 10px;border:1px solid var(--entry-line);border-radius:12px;background:#fff}
+#online-lobby .lobby-player.is-empty{background:var(--entry-soft)}
+#online-lobby .lobby-player>div{min-width:0}
+#online-lobby .lobby-player strong{display:block;color:var(--entry-ink);font-size:13px;overflow-wrap:anywhere}
+#online-lobby .lobby-player small{display:block;margin-top:3px;color:var(--entry-muted);font-size:11px}
+#online-lobby .team-dot{flex:none;width:26px;height:26px;color:var(--team);border-color:var(--team)}
+#online-lobby .message{font-size:12px;line-height:1.6;color:var(--entry-muted)}
+body[data-mp-entry="true"] #sheet{background:#fbfcf8;color:#243b30;border-color:#d7dfd3}
+body[data-mp-entry="true"] #sheet :is(p,label){color:#59685b}
+body[data-mp-entry="true"] #sheet :is(select,input){background:#fff;color:#243b30;border-color:#d7dfd3}
+body[data-mp-entry="true"] #sheet .dialog-title h2{font-family:inherit;font-size:20px}
+body[data-mp-entry="true"] #sheet .dialog-title h2:before{display:none}
+#sheet .arcade-room-form .game-details{margin:12px 0;padding:10px 0;border-top:1px solid #d7dfd3}
+#sheet .arcade-room-form .game-details summary{cursor:pointer;font-size:13px}
+#sheet .arcade-room-form .roster-line{grid-template-columns:70px minmax(0,1fr) 70px;gap:6px;font-size:12px}
+#sheet .arcade-room-form .mfoot{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+@media(max-width:360px){#online-lobby .room-players{grid-template-columns:minmax(0,1fr)}#public-room-host .arcade-room-card{grid-template-columns:minmax(0,1fr) auto}#public-room-host .arcade-room-game{display:none}}

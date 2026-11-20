@@ -3,7 +3,8 @@ import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect
 import {createBoard,PAWN_HOP_MS} from './board.mjs?v=29';
 import {createToss,drawRack,drawFirstSeatStick} from './toss.mjs?v=15';
 import {createTableSounds} from './sound.mjs?v=5';
-import {openRoom,roomCode} from './room.mjs?v=21';
+import {openRoom,roomCode} from './room.mjs?v=20261120-yut-lobby1';
+import {createYutLobby} from './lobby.mjs?v=20261120-yut-lobby1';
 import {ANIMALS,animalFor,drawZodiac} from './zodiac.mjs?v=6';
 
 const $=id=>document.getElementById(id), board=createBoard($('board'),chooseTile,choosePawn,dropPawn), toss=createToss($('toss-canvas'));
@@ -22,6 +23,8 @@ const rack=$('rack-canvas'),rackContext=rack.getContext('2d');
 let rackFaces=null,rackSeed=null,paintedFaces='',roomSetup=null,botTimer=null;
 let localRound=0,lastResultKey='';
 let hold=null,releasedShuffle=null;
+let roomUI=null,directory=null,directoryPending=null,entryEpoch=0,entryKind='computer',startingRoom=false,roomIssue='';
+let directoryGeneration=0,pageClose=null,returnToPublic=false;
 const tossLayer=$('toss-layer');
 const castButton=button('윷 던지기','primary cast-btn',event=>{
   // Assistive activation has no preceding press. Pointer releases are handled below.
@@ -72,12 +75,15 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)endHold();}
 
 function showTable(){
   if($('setup').hidden)return;
+  disposeRooms();
   $('setup').hidden=true;$('entry-controls').replaceChildren();
   document.body.dataset.mpEntry='false';$('tabletop').hidden=false;
   window.dispatchEvent(new window.Event('resize'));
 }
 function showEntry(kind){
+  disposeRooms();
   closePanel();$('tabletop').hidden=true;$('setup').hidden=false;
+  $('yut-entry').hidden=false;$('online-lobby').hidden=true;
   document.body.dataset.mpEntry='true';
   const controls=$('entry-controls');controls.replaceChildren();setupControls(controls,true,kind);
 }
@@ -747,23 +753,165 @@ function setupControls(target,entry,kind=local.computerTeams?.length?'computer':
   const start=button('',entry?'ge-primary':'primary',()=>{
     const count=Number(teams.value);
     const setup={count,counts:counts.slice(0,count),animals:animals.slice(0,count),offset:animals[0],mode:mode.select.value};
-    if(kind==='online'){roomSetup=setup;void connect(null);return;}
     const play=()=>resetLocal(setup,kind==='computer');
     if(local.revision&&local.phase!=='won')confirmPanel('새 판을 시작할까요?','진행 중인 한 기기 게임을 끝내고 새 판을 시작해요.',play);else play();
   });
-  const join=button('방 코드로 참가',entry?'ge-secondary':'secondary',joinPanel);
   const recordNote=element('p','한 기기에서는 첫 번째 팀('+TEAMS[0].name+' 팀)의 승패가 내 월간 연승에 반영돼요.','ge-copy');
+  const offlinePanel=element('div'),onlinePanel=entry?element('div'):null;
+  if(onlinePanel){
+    onlinePanel.id='public-room-host';
+    onlinePanel.innerHTML='<section class="arcade-rooms" data-arcade-rooms aria-label="윷놀이 대전방"></section><a id="login-link" class="ge-secondary" href="/?auth=login&amp;next=world" hidden>오쭈다 로그인하기</a><p id="online-account-note" class="ge-hint" role="status"></p>';
+  }
   function refresh(){
     for(const item of kinds.children)item.setAttribute('aria-pressed',String(item.dataset.kind===kind));
-    start.textContent=kind==='online'?'초대방 만들기':entry?'게임 시작하기':'게임 시작';join.hidden=kind!=='online';
+    start.textContent=entry?'게임 시작하기':'게임 시작';
     recordNote.hidden=kind!=='together';
+    offlinePanel.hidden=kind==='online';
+    if(onlinePanel)onlinePanel.hidden=kind!=='online';
+    if(entry){entryKind=kind;if(kind==='online')void mountRooms();else disposeRooms();}
   }
   for(const [value,title,entryTitle] of [['computer','컴퓨터 대결','컴퓨터 대전'],['together','한 기기','같은 기기'],['online','온라인 멀티','온라인 대전']]){
-    const item=button(entry?entryTitle:title,entry?'':'secondary',()=>{kind=value;refresh();});item.dataset.kind=value;kinds.append(item);
+    const item=button(entry?entryTitle:title,entry?'':'secondary',()=>{if(!entry&&value==='online'){showEntry('online');return;}kind=value;refresh();});item.dataset.kind=value;kinds.append(item);
   }
   const options=element('details',undefined,entry?'ge-more':'game-details');
   options.append(element('summary','팀별 동물·말 수'),roster);
-  actions.append(start,join);refresh();target.append(kinds,settingsRow,recordNote,...(entry?[actions,options]:[options,actions]));
+  actions.append(start);offlinePanel.append(settingsRow,recordNote,...(entry?[actions,options]:[options,actions]));
+  target.append(kinds,offlinePanel);if(onlinePanel)target.append(onlinePanel);refresh();
+}
+function disposeRooms(){entryEpoch++;roomUI?.dispose();roomUI=null;}
+function onlineNote(text){const note=$('online-account-note');if(note)note.textContent=text;}
+function onlineMessage(error){
+  const code=String(error?.code||error?.message||'');
+  if(/not_signed_in/.test(code))return '로그인하면 대전방을 만들고 참여할 수 있어요.';
+  if(/room_(not_found|unavailable)|host_unavailable/.test(code))return '이미 닫힌 방이에요. 다른 방을 골라 주세요.';
+  if(/blocked/.test(code))return '이 방에는 참여할 수 없어요. 다른 방을 골라 주세요.';
+  if(/host_key_lost|identity/.test(code))return '방을 만든 창에서 다시 열어 주세요.';
+  if(/[가-힣]/.test(code))return code;
+  return window.OjjudaArcadeRooms?.message(error)||'연결하지 못했어요. 잠시 후 다시 시도해 주세요.';
+}
+async function ensureDirectory(){
+  if(directory)return directory;
+  if(directoryPending)return directoryPending;
+  const generation=directoryGeneration;
+  const pending=(async()=>{
+    const client=await window.OjjudaGetClient();
+    if(generation!==directoryGeneration)throw Error('unavailable');
+    directory=createYutLobby(client,{onAuthChange:()=>{
+      if(!directory)return;
+      if(net?.directory){void leaveRoom();return;}
+      if(entryKind==='online'&&!$('setup').hidden){disposeRooms();void mountRooms();}
+    }});
+    return directory;
+  })();
+  directoryPending=pending;
+  try{return await pending;}finally{if(directoryPending===pending)directoryPending=null;}
+}
+function defaultRoomSetup(count){
+  return {count,counts:Array.from({length:count},(_,i)=>local.pawns[i]?.length??DEFAULT_PIECES),
+    animals:Array.from({length:count},(_,i)=>animalFor(i,0,local.zodiacOffset,local.teamAnimals)),
+    offset:local.zodiacOffset,mode:local.mode??DEFAULT_MODE};
+}
+function publicSetupForm(form){
+  const details=element('details',undefined,'game-details'),content=element('div'),roster=element('div',undefined,'roster');
+  const mode=setupSelect('room-mode',[['island','장애물 놀이'],['easy','쉬운 놀이']],local.mode??DEFAULT_MODE);
+  const label=element('label','놀이 방식');label.htmlFor=mode.id;
+  const settings=defaultRoomSetup(TEAMS.length);
+  details.append(element('summary','놀이 설정'),content);content.append(label,mode,roster);
+  function draw(){
+    const count=Number(form.elements.capacity.value)||2;roster.replaceChildren();
+    for(let t=0;t<count;t++){
+      const row=element('div',undefined,'roster-line'),name=element('span',TEAMS[t].name+' 팀');
+      const animal=setupSelect('room-animal-'+t,ANIMALS.map((n,i)=>[i,n]),settings.animals[t]);
+      const pieces=setupSelect('room-pieces-'+t,[2,3,4].map(n=>[n,n+'개']),settings.counts[t]);
+      animal.setAttribute('aria-label',TEAMS[t].name+' 팀 동물');pieces.setAttribute('aria-label',TEAMS[t].name+' 팀 말 수');
+      animal.onchange=()=>{settings.animals[t]=Number(animal.value);};pieces.onchange=()=>{settings.counts[t]=Number(pieces.value);};
+      row.append(name,animal,pieces);roster.append(row);
+    }
+  }
+  form.elements.capacity.addEventListener('change',draw);
+  form.querySelector('[data-create-capacity]').after(details);queueMicrotask(()=>{if(form.isConnected)draw();});
+  return count=>({...settings,count,mode:mode.value,offset:settings.animals[0],counts:settings.counts.slice(0,count),animals:settings.animals.slice(0,count)});
+}
+async function mountRooms(){
+  const host=$('public-room-host');
+  if(!host||host.hidden||$('setup').hidden||net||pendingRoom)return;
+  if(roomUI){roomUI.sync();return;}
+  const revision=++entryEpoch;
+  onlineNote('대전방을 불러오는 중이에요.');
+  try{
+    const client=await ensureDirectory();await client.enter();
+    if(revision!==entryEpoch||!host.isConnected||host.hidden||net||pendingRoom)return;
+    if(!window.OjjudaArcadeRooms)throw Error('대전방 화면을 불러오지 못했어요. 새로고침해 주세요.');
+    let readSetup=defaultRoomSetup;
+    roomUI=window.OjjudaArcadeRooms.create({
+      fixedKind:'yut',getUserId:()=>directory===client?client.userId:null,
+      readRooms:signal=>client.list(signal),notify:onlineNote,
+      renderModal:(markup,title)=>{openPanel(title,'arcade-room');body.innerHTML=markup;body.querySelector('.mhead')?.remove();const form=$('arcade-room-form');if(form)readSetup=publicSetupForm(form);},
+      closeModal:closePanel,goArcade:()=>{},canOpen:()=>!$('setup').hidden&&!net,
+      onCreateNative:async(kind,params)=>{if(kind!=='yut')throw Error('invalid_request');if(!await connectPublic({create:params,setup:readSetup(params.capacity)}))throw Error('unavailable');},
+      onOpen:async item=>{if(!await connectPublic({roomNo:item.room_no}))throw Error('unavailable');},
+      onFreshGame:async item=>{if(!await connectPublic({roomNo:item.room_no}))throw Error('unavailable');},
+      onCancelNative:item=>client.cancel(item)
+    });
+    $('login-link').hidden=!!client.userId;onlineNote(client.userId?'':'로그인하면 대전방을 만들고 참여할 수 있어요.');roomUI.sync();
+  }catch(error){
+    if(revision!==entryEpoch||!host.isConnected||host.hidden)return;
+    onlineNote(onlineMessage(error));
+    const retry=button('다시 불러오기','ge-secondary',()=>{retry.remove();void mountRooms();});host.append(retry);
+  }
+}
+function publicRoomAddress(roomNo){
+  const url=new URL(location.href);url.hash='';url.searchParams.delete('create');url.searchParams.set('mode','online');
+  if(roomNo)url.searchParams.set('room',String(roomNo));else url.searchParams.delete('room');
+  try{history.replaceState(null,'',url.pathname+url.search);}catch{}
+}
+function publicInviteUrl(){const url=new URL('/games/yut/',location.href);url.searchParams.set('room',String(net.room_no));return url.href;}
+function renderPublicLobby(){
+  if(!net?.directory||net.game)return;
+  disposeRooms();closePanel();$('setup').hidden=false;$('tabletop').hidden=true;document.body.dataset.mpEntry='true';
+  $('yut-entry').hidden=true;$('online-lobby').hidden=false;
+  const target=$('online-lobby-body'),capacity=net.setup?.count??2;
+  target.replaceChildren(element('p',net.title||'윷놀이 같이 한 판 해요','ge-copy'));
+  const meta=element('div',undefined,'room-code-row');meta.append(element('span',`방 #${net.room_no} · ${net.seats.length}/${capacity}명`));
+  const copy=button('초대 링크 복사','ge-secondary',async()=>{
+    try{await navigator.clipboard.writeText(publicInviteUrl());copy.textContent='복사했어요';}
+    catch{openPanel('친구 초대','invite');const input=element('input');input.value=publicInviteUrl();input.readOnly=true;input.setAttribute('aria-label','초대 링크');body.append(input);input.focus();input.select();}
+  });meta.append(copy);target.append(meta);
+  const players=element('ol',undefined,'room-players');players.setAttribute('aria-label','참가자');
+  for(let seat=0;seat<capacity;seat++){
+    const key=net.seats[seat],member=net.players?.find(p=>p.key===key),name=member?.name||net.names?.[key];
+    const row=element('li',undefined,'lobby-player'+(key?'':' is-empty'));
+    row.append(dot(seat));const text=element('div');text.append(element('strong',key?(name||TEAMS[seat].name+' 팀'):'참가 대기'));
+    text.append(element('small',key?`${TEAMS[seat].name} 팀${seat===net.seat?' · 나':''}${member?.is_host||key===net.host?' · 방장':''}`:TEAMS[seat].name+' 팀'));
+    row.append(text);players.append(row);
+  }
+  target.append(players);
+  const status=roomIssue||net.status||(net.isHost?(net.seats.length<capacity?'시작하면 빈자리는 컴퓨터가 채워요.':'모두 모였어요. 게임을 시작하세요.'):'방장이 시작하면 게임판이 열려요.');
+  target.append(message(status));
+  if(net.isHost)target.append(button(startingRoom?'시작하는 중…':'게임 시작','ge-primary',async()=>{
+    if(startingRoom||!room)return;startingRoom=true;roomIssue='';renderPublicLobby();
+    try{await room.start(2,DEFAULT_MODE,DEFAULT_PIECES,true);}
+    catch(error){roomIssue=onlineMessage(error);}
+    finally{startingRoom=false;if(net?.directory&&!net.game)renderPublicLobby();}
+  },startingRoom||pendingRoom||!room||!net.connected));
+  target.append(button('방 나가기','ge-secondary',()=>void leaveRoom()));
+}
+async function connectPublic(options){
+  if(pendingRoom||room)return false;
+  const id=++attempt;pendingRoom=true;roomIssue='';disposeRooms();openPanel('온라인 방 연결','loading');body.append(message('방을 연결하고 있어요.'));
+  try{
+    const client=await ensureDirectory();if(!await client.enter())throw Error('not_signed_in');
+    if(id!==attempt)return false;
+    const update=view=>{if(id===attempt)networkUpdate(view);};
+    const active=options.create?await client.create(options.create,options.setup||defaultRoomSetup(options.create.capacity),update):await client.join(options.roomNo,update);
+    if(id!==attempt){await active.close();return false;}
+    room=active;net=active.view();pendingRoom=false;publicRoomAddress(net.room_no);
+    if(net.game){showTable();closePanel();}else renderPublicLobby();renderHUD();return true;
+  }catch(error){
+    if(id!==attempt)return false;
+    pendingRoom=false;net=null;roomGame=false;showEntry('online');
+    openPanel('방 연결을 확인해 주세요','error');body.append(message(onlineMessage(error)),button('다시 연결','primary',()=>void connectPublic(options)),button('방 목록으로','secondary',()=>{closePanel();void mountRooms();}));return false;
+  }
 }
 function joinPanel(){
   openPanel('친구 방 참가','join');
@@ -794,9 +942,11 @@ function copyValue(title,value,input){
 }
 function lobbyPanel(){
   if(!net)return;
+  if(net.directory&&!net.game){renderPublicLobby();return;}
   openPanel('온라인 대기실','lobby');
   const capacity=net.setup?.count??TEAMS.length;
   const seat=net.seat<0?'자리 확인 중':TEAMS[net.seat].name+' 팀';
+  if(net.directory)body.append(message(`방 #${net.room_no} · ${net.title}`));
   body.append(message('접속 '+net.seats.length+'/'+capacity+'팀 · 내 자리 '+seat));
   if(net.isHost&&!net.game){
     const label=element('label','친구 초대');label.htmlFor='invite';
@@ -842,9 +992,10 @@ function lobbyPanel(){
 let lastLobby='';
 function networkUpdate(v){
   net=v;
-  const signature=JSON.stringify([v.seats,v.status,!!v.game,v.seat,v.connected]);
+  if(v.directory&&v.closed){const issue=v.status;void leaveRoom().then(()=>onlineNote(issue||'방이 닫혔어요. 다른 방을 골라 주세요.'));return;}
+  const signature=JSON.stringify([v.seats,v.status,!!v.game,v.seat,v.connected,v.names,v.title]);
   if(v.game&&(!shown||!roomGame||v.game.revision!==game.revision||v.game.phase!==game.phase||v.game.firstSeatAt!==game.firstSeatAt)){const first=!roomGame;roomGame=true;showTable();if(first&&panel==='lobby')closePanel();void showState(v.game,!first);}
-  if(signature!==lastLobby){lastLobby=signature;if(panel==='lobby'&&dialog.open)lobbyPanel();renderHUD();}
+  if(signature!==lastLobby){lastLobby=signature;if(v.directory&&!v.game)renderPublicLobby();else if(panel==='lobby'&&dialog.open)lobbyPanel();renderHUD();}
 }
 let roomGame=false;
 async function connect(host){
@@ -862,15 +1013,45 @@ async function connect(host){
   }
 }
 async function leaveRoom(){
-  ++attempt;pendingRoom=false;const old=room;room=null;net=null;roomGame=false;lastLobby='';setRoomAddress(null);closePanel();void showState(local,false);renderHUD();
+  const wasPublic=!!net?.directory;
+  ++attempt;pendingRoom=false;const old=room;room=null;net=null;roomGame=false;lastLobby='';startingRoom=false;roomIssue='';
+  if(wasPublic)publicRoomAddress(null);else setRoomAddress(null);
+  closePanel();void showState(local,false);renderHUD();
+  if(wasPublic)showEntry('online');
   if(old)await old.close().catch(()=>{});
+  if(wasPublic)roomUI?.refresh();
 }
 $('settings').onclick=()=>settings();$('team-title').onclick=standings;$('close').onclick=closePanel;
+body.addEventListener('click',event=>{if(event.target.closest('[data-act="close"]'))closePanel();});
 dialog.addEventListener('close',()=>{if(!dialog.open){panel='';renderHUD();}});
 dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closePanel();}});
 reduced.addEventListener?.('change',()=>{if(hold)toss.shuffle(reduced.matches);else if(reduced.matches&&casting){toss.cancel();sounds.stop();}});
 void showState(local,false);
 const invite=new URLSearchParams(location.hash.slice(1));const embedded=document.querySelector('meta[name="yut-invite-room"]')?.content;
-showEntry(invite.has('room')||roomCode(embedded)?'online':undefined);
+const entryQuery=new URLSearchParams(location.search),publicRoom=entryQuery.get('room');
+showEntry(invite.has('room')||roomCode(embedded)||entryQuery.get('mode')==='online'||publicRoom?'online':undefined);
 if(invite.has('room'))void connect(invite.get('room'));
 else if(roomCode(embedded))void connect(embedded);
+else if(publicRoom&&/^[1-9]\d{0,15}$/.test(publicRoom)&&Number.isSafeInteger(Number(publicRoom)))void connectPublic({roomNo:Number(publicRoom)});
+else if(entryQuery.get('create')==='1')void (async()=>{
+  try{
+    const client=await ensureDirectory();await client.enter();
+    let pending;try{pending=JSON.parse(sessionStorage.getItem('ojjuda-yut-create')||'null');}catch{}
+    if(!pending||pending.owner!==client.userId||Date.now()-pending.createdAt>300000||Date.now()<pending.createdAt)return;
+    if(await connectPublic({create:pending,setup:defaultRoomSetup(pending.capacity)}))sessionStorage.removeItem('ojjuda-yut-create');
+  }catch(error){onlineNote(onlineMessage(error));}
+})();
+for(const link of document.querySelectorAll('.mp-entry-back,.rail-btn.back'))link.addEventListener('click',event=>{
+  if(!net?.directory)return;event.preventDefault();const href=link.href;void leaveRoom().finally(()=>location.assign(href));
+});
+window.addEventListener('pagehide',()=>{
+  disposeRooms();returnToPublic=!!net?.directory||entryKind==='online';
+  const previous=directory,previousRoom=room;
+  directory=null;directoryPending=null;directoryGeneration++;++attempt;pendingRoom=false;
+  room=null;net=null;roomGame=false;lastLobby='';
+  pageClose=Promise.allSettled([previousRoom?.close(),previous?.close()]);
+});
+window.addEventListener('pageshow',event=>{
+  if(!event.persisted)return;
+  if(returnToPublic){publicRoomAddress(null);showEntry('online');void pageClose?.then(()=>roomUI?.refresh());}
+});
