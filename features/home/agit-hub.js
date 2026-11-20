@@ -192,7 +192,7 @@
         const [label,emoji]=target?[`${target.name} 페이지 들어가기`,'🚪']:
           id==='quiz'?(quizMode(date)==='chosung'?['초성 퀴즈','🔤']:['상식 퀴즈','💡']):missionLabels[id];
         const finished=isComplete(settings,id,date);
-        return `<button type="button" class="agit-quest-card agit-quest-card--${i+1}${finished?' is-done':''}" data-act="agit-task" data-v="${id}" aria-label="${finished?'완료한 미션':'오늘의 미션'}: ${label}">
+        return `<button type="button" class="agit-quest-card agit-quest-card--${i+1}${finished?' is-done':''}" data-act="agit-task" data-v="${id}"${finished?' disabled':''} aria-label="${finished?'완료한 미션':'오늘의 미션'}: ${label}">
           <span class="agit-quest-number">0${i+1}</span>
           <span class="agit-quest-emoji" aria-hidden="true">${finished?'✓':emoji}</span>
           <strong class="agit-quest-name">${label}</strong>

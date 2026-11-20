@@ -28,6 +28,7 @@ assert.doesNotMatch(html, hub.quizMode(day)==='chosung'?/상식 퀴즈/:/초성 
 const missionView = new JSDOM(html).window.document;
 assert.equal(missionView.querySelectorAll('.agit-quest-grid').length, 1, 'all missions share one box');
 assert.equal(missionView.querySelectorAll('.agit-quest-grid > button').length, 5);
+assert.equal(missionView.querySelectorAll('.agit-quest-card:disabled').length, 0, 'unfinished missions remain clickable');
 assert.equal(missionView.querySelectorAll('.agit-quest-next').length, 0, 'no extra explanatory paragraph');
 assert.equal(hub.complete(settings, 'trivia', day), false, 'the two quiz formats share one mission');
 assert.equal(hub.complete(settings, 'chosung', day), false);
@@ -42,6 +43,15 @@ assert.equal(result.won, true);
 assert.equal(hub.isComplete(settings, 'baseball', day), true);
 html = hub.markup(settings, games, day);
 assert.match(html, /aria-valuemax="5" aria-valuenow="5"/);
+const completedMissionView = new JSDOM(html).window.document;
+assert.equal(completedMissionView.querySelectorAll('.agit-quest-card:disabled').length, 5, 'finished missions are still shown but no longer offer a dead-end tap');
+assert.equal(completedMissionView.querySelectorAll('.agit-quest-card.is-done').length, 5);
+const partiallyCompletedSettings = {};
+hub.complete(partiallyCompletedSettings, 'quiz', day);
+const partialMissionView = new JSDOM(hub.markup(partiallyCompletedSettings, games, day)).window.document;
+assert.equal(partialMissionView.querySelectorAll('.agit-quest-card:disabled').length, 1);
+assert.equal(partialMissionView.querySelector('[data-act="agit-task"][data-v="quiz"]').disabled, true);
+assert.equal(partialMissionView.querySelector('[data-act="agit-task"][data-v="visit"]').disabled, false);
 assert.equal((html.match(/data-act="agit-task"/g) || []).length, 5);
 assert.equal(hub.isComplete(settings, 'park', '2026-11-11'), false, 'completion resets next day');
 
