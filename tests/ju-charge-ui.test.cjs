@@ -96,6 +96,7 @@ async function fixture(context, source, rpc) {
           assert.equal(await entry.evaluate(node => getComputedStyle(node).borderTopWidth), '0px');
         }
         assert.equal(await entry.getAttribute('aria-haspopup'), 'dialog');
+        await entry.scrollIntoViewIfNeeded();
         assert.ok(await entry.evaluate(node => {
           const rect = node.getBoundingClientRect();
           return rect.width >= 44 && rect.height >= 44 && rect.left >= -1
