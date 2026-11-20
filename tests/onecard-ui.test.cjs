@@ -471,6 +471,8 @@ async function scenario(name, fn) {
     let hiddenPaint, repeatedHiddenPaint;
     try {
       await flow.evaluate(node => node.style.setProperty('visibility', 'hidden', 'important'));
+      // Let the SVG compositing layer present the hidden frame before capture.
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
       hiddenPaint = await capturePaint('direction-orbit-painted-hidden-1.png');
       repeatedHiddenPaint = await capturePaint('direction-orbit-painted-hidden-2.png');
     } finally {
