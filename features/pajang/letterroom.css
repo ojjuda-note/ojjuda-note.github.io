@@ -276,3 +276,8 @@ footer,.footerbrand {color:var(--ink-2)}
 :root[data-theme=dark] .account-menu>.account-withdraw,
 :root[data-theme=dark] .account-withdraw svg,:root[data-theme=dark] .account-action-form .account-warning {color:#f0a1a7}
 :root[data-theme=dark] .notice,:root[data-theme=dark] .error {color:#f7b6a8;background:#482e28}
+
+/* The same answer-scope selector appears before saving in both authoring surfaces. */
+label.publication-scope {display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin:8px 0 4px;font-weight:700}
+label.publication-scope select {width:auto;max-width:100%;min-height:44px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:4px 8px;font:inherit}
+.publication-scope + .publication-note {margin:4px 0 10px;color:var(--ink-2);font-size:.875rem;line-height:1.45}

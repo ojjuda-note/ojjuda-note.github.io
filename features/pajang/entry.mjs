@@ -102,6 +102,7 @@ async function start(firstEntry) {
   let timer;
   let refreshing = null;
   let mode = 'answer';
+  const publication = $('entry-publication');
 
   function paint() {
     $('slot-label').textContent = (entry.slot === 'am' ? '오전' : '오후') + ' 질문';
@@ -125,6 +126,8 @@ async function start(firstEntry) {
       }
       if (entry.day !== current.day || entry.slot !== current.slot) {
         mine.value = '';
+        publication.value = 'year';
+        paintPublication();
         status.textContent = '새 시간대의 질문이 열렸어요.';
       }
       entry = current;
@@ -163,6 +166,12 @@ async function start(firstEntry) {
   const write = $('write');
   const browse = $('browse');
   const answerFields = $('answer-fields');
+  function paintPublication() {
+    const roundOnly = publication.value === 'round';
+    $('publication-note').textContent = roundOnly ? '다른 파장 회원은 이 질문과 답변을 다음 질문이 열리기 전까지만 볼 수 있어요.' : '다른 파장 회원이 이 질문과 답변을 작성일을 포함해 최대 365일간 볼 수 있어요(한국 시간 기준).';
+    if(mode !== 'feed')submit.textContent = roundOnly ? '이번 회차에만 공개하고 오늘로' : '365일간 공개하고 오늘로';
+  }
+  publication.onchange = paintPublication;
   function openForm(destination) {
     mode = destination;
     if (destination === 'feed' && entry.joined) return enterMain(feed);
@@ -172,7 +181,8 @@ async function start(firstEntry) {
     form.hidden = false;
     answerFields.hidden = joiningOnly;
     answerFields.disabled = joiningOnly;
-    submit.textContent = joiningOnly ? '참여하고 '+nextName+' 보기' : '365일간 공개하고 오늘로';
+    if(joiningOnly)submit.textContent = '참여하고 '+nextName+' 보기';
+    else paintPublication();
     write.setAttribute('aria-expanded', String(!joiningOnly));
     (!entry.joined ? form.elements.consent : mine).focus();
   }
@@ -202,9 +212,11 @@ async function start(firstEntry) {
     }
     submit.disabled = true;
     const joiningOnly = mode === 'feed';
+    const roundOnly = publication.value === 'round';
+    publication.disabled = true;
     status.textContent = joiningOnly ? '참여 정보를 확인하고 있어요.' : '답변을 저장하고 있어요.';
     try {
-      const data = joiningOnly ? {} : {body, day:entry.day, slot:entry.slot, archive:true, publicationPolicy:"year-v1"};
+      const data = joiningOnly ? {} : {body, day:entry.day, slot:entry.slot, ...(roundOnly ? {archive:false} : {archive:true, publicationPolicy:"year-v1"})};
       if (!joiningOnly && entry.question) data.questionId = entry.question.id;
       if (!entry.joined) {
         const {province, city, interest, consent} = form.elements;
@@ -218,6 +230,7 @@ async function start(firstEntry) {
       updates?.postMessage('saved');
       enterMain(joiningOnly ? feed : main,saved);
     } catch (error) {
+      publication.disabled = false;
       status.textContent = error.message || '저장하지 못했어요. 다시 시도해 주세요.';
       if (error.code === 'PT409') await refresh();
       submit.disabled = false;

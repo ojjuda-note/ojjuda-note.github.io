@@ -27,7 +27,7 @@
   <link id="entry-style" rel="stylesheet" href="./preview.css?v=compass8">
   <link rel="stylesheet" href="./shell.css?v=flight1">
   <link rel="stylesheet" href="/app/world/world-themes.css?v=20261119-auto-theme1">
-  <link rel="stylesheet" href="./letterroom.css?v=20261119-auto-theme1">
+  <link rel="stylesheet" href="./letterroom.css?v=20261121-publication-default1">
   <link rel="stylesheet" href="./radar-motion.css?v=20261119-auto-theme1">
   <link rel="stylesheet" href="/features/account/settings-list.css?v=20261119-guest-account1">
   <link rel="stylesheet" href="/note/notifications.css?v=20261117-inbox-keyboard1">
@@ -43,7 +43,7 @@
   <script src="/app/world/world-themes.js?v=20261119-auto-theme1"></script>
   <script src="/app/world/world-weather.js?v=20261119-kma-current1" defer></script>
   <script type="module" src="./shell.mjs?v=20261119-service-header1"></script>
-  <script type="module" src="./entry.mjs?v=20261120-answer-policy1"></script>
+  <script type="module" src="./entry.mjs?v=20261121-publication-default1"></script>
 <script src="/shared/navigation/section-back.js?v=20261119-history1" data-return-to="hub" defer></script>
   <script src="/shared/analytics/growth-attribution.js?v=20261121-campaign1" defer></script>
 </head>
@@ -89,7 +89,8 @@
         <fieldset id="answer-fields">
         <label for="mine">나의 답변</label>
         <textarea id="mine" rows="3" maxlength="220" required placeholder="이번 질문에 대한 내 생각을 적어 주세요." aria-describedby="publication-note"></textarea>
-        <p class="publication-note" id="publication-note">이 답변을 공개하면 다른 파장 회원이 질문과 답변을 작성일을 포함해 최대 365일간 볼 수 있어요(한국 시간 기준).</p>
+        <label class="publication-scope" for="entry-publication"><span>답변 공개 기간</span><select id="entry-publication" name="publicationScope" aria-describedby="publication-note"><option value="year" selected>365일 공개</option><option value="round">이번 회차만 공개</option></select></label>
+        <p class="publication-note" id="publication-note">다른 파장 회원이 이 질문과 답변을 작성일을 포함해 최대 365일간 볼 수 있어요(한국 시간 기준).</p>
         </fieldset>
         <button type="submit">365일간 공개하고 파장 메인으로</button>
         <button type="button" class="cancel-form" id="cancel-form">취소</button>
