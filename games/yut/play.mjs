@@ -416,9 +416,9 @@ function showResult(reopen=false){
     resetLocal({count:s.pawns.length,offset:s.zodiacOffset,counts:s.pawns.map(p=>p.length),animals:s.teamAnimals,mode:s.mode},!!s.computerTeams?.length);
   };
   const actions=[
-    {label:net?'온라인 대전':'다시 한 판',onClick:replay,autofocus:true},
-    {label:'윷판 보기'},
-    {label:'오락실로',onClick:()=>location.assign('/world.html?tab=arcade')}
+    {label:'오락실로',role:'exit',onClick:()=>location.assign('/world.html?tab=arcade')},
+    {label:'윷판 보기',role:'secondary'},
+    {label:net?'온라인 대전':'다시 한 판',role:'primary',onClick:replay,autofocus:true}
   ];
   const title=name+' 승리!',metric='말 '+count+'개 모두 골인';
   const summary=roundSummary(s,net?net.seat:0);
@@ -429,7 +429,9 @@ function showResult(reopen=false){
     openPanel(title,'result');body.append(message(metric),summary);
     const monthly=element('a','이번 달 1~10위 · 내 순위','secondary');
     monthly.href='/features/arcade/monthly-ranking.html?game=yut';monthly.target='_blank';monthly.rel='noopener';body.append(monthly);
-    for(const action of actions)body.append(button(action.label,'secondary',action.onClick??closePanel));
+    const controls=element('div',undefined,'game-result-actions');
+    for(const action of actions){const control=button(action.label,'secondary',action.onClick??closePanel);control.dataset.gameResultAction=action.role;controls.append(control);}
+    body.append(controls);
   }
 }
 function dispatch(action){
@@ -888,13 +890,15 @@ function renderPublicLobby(){
   target.append(players);
   const status=roomIssue||net.status||(net.isHost?(net.seats.length<capacity?'시작하면 빈자리는 컴퓨터가 채워요.':'모두 모였어요. 게임을 시작하세요.'):'방장이 시작하면 게임판이 열려요.');
   target.append(message(status));
-  if(net.isHost)target.append(button(startingRoom?'시작하는 중…':'게임 시작','ge-primary',async()=>{
+  const controls=element('div',undefined,'room-actions');
+  controls.append(button('방 나가기','ge-secondary',()=>void leaveRoom()));
+  if(net.isHost)controls.append(button(startingRoom?'시작하는 중…':'게임 시작','ge-primary',async()=>{
     if(startingRoom||!room)return;startingRoom=true;roomIssue='';renderPublicLobby();
     try{await room.start(2,DEFAULT_MODE,DEFAULT_PIECES,true);}
     catch(error){roomIssue=onlineMessage(error);}
     finally{startingRoom=false;if(net?.directory&&!net.game)renderPublicLobby();}
   },startingRoom||pendingRoom||!room||!net.connected));
-  target.append(button('방 나가기','ge-secondary',()=>void leaveRoom()));
+  target.append(controls);
 }
 async function connectPublic(options){
   if(pendingRoom||room)return false;
@@ -948,6 +952,8 @@ function lobbyPanel(){
   const seat=net.seat<0?'자리 확인 중':TEAMS[net.seat].name+' 팀';
   if(net.directory)body.append(message(`방 #${net.room_no} · ${net.title}`));
   body.append(message('접속 '+net.seats.length+'/'+capacity+'팀 · 내 자리 '+seat));
+  const actions=element('div',undefined,'form-actions room-actions');
+  actions.append(button('방 나가기','secondary',()=>confirmPanel('방 나가기',net.isHost?'이 방의 게임을 끝낼까요?':'현재 방에서 나갈까요?',leaveRoom)));
   if(net.isHost&&!net.game){
     const label=element('label','친구 초대');label.htmlFor='invite';
     const link=element('input');link.id=label.htmlFor;link.readOnly=true;
@@ -979,15 +985,13 @@ function lobbyPanel(){
     body.append(message((portable?'':web?'친구에게 초대 링크를 보내세요. ':'친구에게 게임 파일과 방 코드를 보내세요. ')+'게임 중에는 방장 창을 열어 두세요.'));
     const start=fill=>{room?.start(2,DEFAULT_MODE,DEFAULT_PIECES,fill);if(net?.game)closePanel();};
     const full=net.seats.length===capacity;
-    const actions=element('div',undefined,'form-actions');
     if(!net.setup)actions.append(button('모인 팀으로 시작','primary',()=>start(false),net.seats.length<2||!net.connected));
     else if(full)actions.append(button('게임 시작','primary',()=>start(false),!net.connected));
     else actions.append(button('빈 '+(capacity-net.seats.length)+'팀은 컴퓨터로 시작','secondary',()=>start(true),!net.connected));
-    body.append(actions);
-  }else if(net.game)body.append(button('게임 보기','primary',closePanel));
+  }else if(net.game)actions.append(button('게임 보기','primary',closePanel));
   else body.append(message('방장이 시작하면 게임판이 열려요.'));
   if(net.status)body.append(message(net.status));
-  body.append(button('방 나가기','secondary',()=>confirmPanel('방 나가기',net.isHost?'이 방의 게임을 끝낼까요?':'현재 방에서 나갈까요?',leaveRoom)));
+  body.append(actions);
 }
 let lastLobby='';
 function networkUpdate(v){
