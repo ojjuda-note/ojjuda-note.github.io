@@ -4,6 +4,7 @@ const {harness,fixedNow,pause,deferred,waitFor,assertNoReadingScores,assertNoCal
   assertReadingScores,assertReadingScoreCopy}=require('./helpers/saju-ui-harness.cjs');
 const {visible,currentStory,chooseStory,followStory,collectStories,collectCurrentTopic,
   assertOriginalParagraphs,assertSummaryAndScore,storiesForItem}=require('./helpers/saju-story-ui.cjs');
+const {retainedCard,isRemovedGeneralStory}=require('./helpers/saju-selected-readings.cjs');
 
 async function model(h,topic=h.$('report-content').dataset.topic,year=Number(h.$('report-content').dataset.year)||2026) {
   const [{analyzeFortune},{buildDetailedReading},{analyzeDaeun}]=await Promise.all([
@@ -84,7 +85,7 @@ test('reader settings, text size and topic navigation preserve the story and act
   assert.equal(h.state.starts.length,1);assert.equal(h.state.charges,1);
 });
 
-test('the initial personal story has one conclusion, one short paragraph and visible meters while every full topic remains readable',async t=>{
+test('the initial personal story stays concise and every selected topic keeps its complete prose and actual meters',async t=>{
   const h=await harness();t.after(h.close);h.fill({hour:8,minute:37});h.submit();await h.ready();
   const host=h.$('report-content'),result=h.$('result'),first=currentStory(host),{reading}=await model(h);
   assert.equal(first.querySelectorAll('.story-title').length,1);
@@ -95,8 +96,9 @@ test('the initial personal story has one conclusion, one short paragraph and vis
   assert.equal(first.querySelectorAll('.saju-wind-meter[role="meter"]').length,2);
   assert.equal(host.querySelector('.reading-map,.map-return,.report-opening,details.reading-story-details'),null);
   assert.ok([...result.querySelectorAll('button,a,select,summary')].filter(visible).length<=6,'the closed result exposes only its reading/navigation controls');
-  const scenes=collectStories(host),cards=reading.reader.lifelong.cards;
-  assert.ok(cards.length>=16);
+  const scenes=collectStories(host),cards=reading.reader.lifelong.cards.filter(retainedCard);
+  assert.equal(cards.length,12);assert.ok(scenes.every(scene=>!isRemovedGeneralStory(scene)));
+  assert.equal(host.querySelector('dialog.story-menu details'),null,'reading choices are direct, without expandable subject groups');
   for(const item of cards) {
     const parts=storiesForItem(scenes,item);assertOriginalParagraphs(parts,item.paragraphs,item.id);assertSummaryAndScore(parts,item,item.id);
     assert.ok(item.factIds.every(id=>id.startsWith('natal.')),'the actual lifelong model contains no unpaid period');
@@ -122,7 +124,8 @@ test('portrait topics and original anchors retain complete explanations and neve
   host.querySelector('.story-menu-close').click();assert.equal(host.querySelector('dialog.story-menu').open,false);
   assertNoCalculationUI(h);assert.equal(h.state.starts.length,1);assert.equal(h.state.charges,1);
   const text=await copy(h);assert.ok(text.endsWith(reading.copyByCategory.lifelong));
-  assert.ok(text.indexOf(portrait.headline)<text.indexOf(reading.reader.lifelong.headline));
+  assert.ok(text.includes(portrait.headline));
+  assert.equal(text.includes(reading.reader.lifelong.paragraphs.join('\n')),false,'the replaced lifelong introduction is absent from copy');
 });
 
 test('monthly readers begin with the actual current month and can read the next month directly',async t=>{
@@ -138,19 +141,24 @@ test('monthly readers begin with the actual current month and can read the next 
   assert.equal(h.state.charges,1);
 });
 
-test('the paid monthly stories preserve calculated periods, opportunities and cautions with their complete copy',async t=>{
+test('paid months keep their selected opportunities and cautions while duplicate timing panels are absent',async t=>{
   const h=await harness();t.after(h.close);h.fill({topic:'monthly',hour:8,minute:37});h.submit();await h.ready('monthly',2026);
   const host=h.$('report-content'),{reading}=await model(h);
-  for(const item of reading.reader.timings.items) {
-    followStory(host,`reading-timings-month-${item.month}`);
-    assert.equal(currentStory(host).dataset.month,String(item.month));
-    assert.ok(currentStory(host).querySelector('.story-context').textContent.includes(item.periodLabel));
-    const parts=collectCurrentTopic(host);assertOriginalParagraphs(parts,item.paragraphs,item.title);assertSummaryAndScore(parts,item,item.title);
+  for(const month of reading.reader.months) {
+    followStory(host,`reading-month-${month.month}-summary`);
+    assert.equal(currentStory(host).dataset.storySource,`reading-month-${month.month}`);
+    const period=reading.months.find(item=>item.month===month.month);
+    assert.ok(currentStory(host).querySelector('.story-context').textContent.includes(period.periodLabel));
+    const parts=collectCurrentTopic(host);assertOriginalParagraphs(parts,month.paragraphs,month.title);assertSummaryAndScore(parts,month,month.title);
+    for(const item of month.cards.filter(card=>['opportunities','cautions'].some(key=>card.id===`month-${month.month}-${key}`))) {
+      followStory(host,`reading-month-${month.month}-topic-${month.cards.indexOf(item)+1}`);
+      assert.equal(currentStory(host).dataset.readerCard,item.id);
+      const own=collectCurrentTopic(host);
+      assertOriginalParagraphs(own,item.paragraphs,item.id);assertSummaryAndScore(own,item,item.id);
+    }
   }
   const text=await copy(h);assert.ok(text.endsWith(reading.copyByCategory.monthly));
-  for(const item of reading.reader.timings.items)for(const point of [...item.cautions,...item.opportunities,...item.people,...item.documents]) {
-    assert.ok(text.includes(point.label));assert.ok(text.includes(point.text));
-  }
+  for(const item of reading.reader.timings.items)assert.equal(text.includes(item.paragraphs.join('\n')),false,'the removed timing report does not survive in copy');
   assert.equal(h.state.starts.length,1);assert.equal(h.state.charges,1);
 });
 
@@ -181,20 +189,23 @@ test('copy contains only the opened reading and its scores without birth inputs 
   const {reading}=await model(h);assert.ok(text.endsWith(reading.copyByCategory.lifelong));
 });
 
-test('every paid category keeps all actual interpretations and practical suggestions in its complete copy',async t=>{
+test('every paid category copies its selected interpretations and omits removed suggestion blocks',async t=>{
   const h=await harness({adminPreview:true});t.after(h.close);h.fill({hour:8,minute:37});h.submit();await h.ready();
+  const {expectedGeneralCopyGroups,authoredCopyBody}=await import('./helpers/saju-copy-policy.mjs');
   for(const topic of ['lifelong','annual','monthly','all']) {
     if(topic!=='lifelong'){h.pickReport(topic,2026);h.$('open-product').click();await h.ready(topic,2026);}
     const host=h.$('report-content'),{reading}=await model(h),text=await copy(h);
     assert.ok(text.endsWith(reading.copyByCategory[topic]));assertNoCalculationUI(h);assertReadingScores(host);
     const overviews=topic==='all'?[reading.reader.lifelong,reading.reader.annual,...reading.reader.months]:topic==='monthly'?reading.reader.months:[reading.reader[topic]];
-    for(const overview of overviews)for(const item of overview.cards)for(const value of [...item.summaryLines,...item.paragraphs])assert.ok(text.includes(value));
+    const groups=expectedGeneralCopyGroups(reading),selected=topic==='all'?Object.values(groups).flat():groups[topic];
+    for(const item of selected)for(const value of [...(item.summaryLines||[]),...(item.paragraphs||[])])assert.ok(text.includes(value),'copy retains each selected summary and paragraph exactly');
+    for(const overview of overviews)for(const item of overview.cards.filter(item=>!retainedCard(item)))assert.equal(text.includes(authoredCopyBody(item)),false,'copy does not restore a discarded overlapping card');
     const advice=topic==='all'?[...reading.adviceByCategory.lifelong,...reading.adviceByCategory.annual,...reading.months.flatMap(month=>month.advice)]
       :topic==='monthly'?reading.months.flatMap(month=>month.advice):reading.adviceByCategory[topic];
     assert.ok(advice.length>0);
     for(const item of advice) {
-      assert.ok(text.includes(item.title));assert.ok(text.includes(item.action));assert.ok(text.includes(item.caution));
-      assert.ok(choices(h).some(button=>button.textContent===item.title),'every grounded suggestion remains in the visible contents choices');
+      assert.equal(text.includes([item.title,item.action,item.caution].join('\n')),false,'the removed stand-alone suggestion block stays out of copy');
+      assert.equal(choices(h).some(button=>button.textContent===item.title),false,'removed suggestions do not survive as contents choices');
     }
     assert.equal(host.querySelector('.advice-notice,.advice-why'),null);assert.match(reading.adviceNotice,/오쭈다가 쓴 생활 제안/);
   }

@@ -3,9 +3,10 @@ import {createReadingProgress} from './reader-presentation.mjs?v=20261120-saju-c
 import {attachReadingSwipe} from './reading-swipe.mjs?v=20261120-saju-story2';
 import {createReadingMotion} from './reading-motion.mjs?v=20261114-saju-slide1';
 import {compactTopicScenes} from './topic-reading.mjs?v=20261120-saju-topic1';
+import {selectRepresentativeReadings} from './representative-reader.mjs?v=20261120-saju-prune1';
 
 const SUMMARY='.saju-two-line-summary,.compatibility-two-line-summary';
-const SEMANTIC=['readerCard','portraitCard','daeunTopic','readingSupplement','personKey','personMarker','compatibilityTopic','month'];
+const SEMANTIC=['readerCard','portraitCard','daeunTopic','readingSupplement','personKey','personMarker','compatibilityTopic','month','readingOverview','adviceId','timingKind'];
 const SKIP='nav,button,select,option,.report-section-heading,.portrait-summary-table,.timing-table-details,.reader-inline-links,.reader-detail-link,.compatibility-person-jumps,.compatibility-reading-guide,.month-navigation-label,.month-heading,.daeun-period-summary,.reader-timing-heading';
 const LABEL='.reader-card-label,.portrait-card-label,.reader-label,.month-spotlight-label,.compatibility-person-name,.compatibility-people-title,.reader-timing-kind';
 const DATES='.month-period,.daeun-dates,.reader-timing-period,.daeun-time-notice';
@@ -56,7 +57,7 @@ function contextsFor(element) {
 }
 
 /** Flatten authored reading units; no calculations, copy data or purchases change. */
-export function collectStoryScenes(pages,{defaults=new Map()}={}) {
+export function collectStoryScenes(pages,{defaults=new Map(),mode='general'}={}) {
   const registered=new Set(pages.map(page=>page.element));
   const scenes=[],aliases=new Map(),menuTargets=new Set(),topics=[];
   let paragraphSerial=0;
@@ -202,6 +203,7 @@ export function collectStoryScenes(pages,{defaults=new Map()}={}) {
     }
   }
   scenes.splice(0,scenes.length,...compactTopicScenes(scenes,aliases));
+  scenes.splice(0,scenes.length,...selectRepresentativeReadings(scenes,aliases,{mode}));
   for(const [element,page] of defaults)if(element?.id) {
     const first=aliases.get(page?.id||page?.element?.id);if(first)aliases.set(element.id,first);
   }
@@ -221,7 +223,7 @@ export function collectStoryScenes(pages,{defaults=new Map()}={}) {
 
 /** Only the current flat scene is mounted; the source report never stays visible. */
 export function createStoryReader(container,{pages,initialPage,defaults=new Map(),mode='general'}={}) {
-  const doc=container.ownerDocument,model=collectStoryScenes(pages,{defaults});
+  const doc=container.ownerDocument,model=collectStoryScenes(pages,{defaults,mode});
   if(!model.scenes.length)throw new Error('읽을 이야기를 준비하지 못했어요. 다시 불러와 주세요.');
   const prefix=mode==='compatibility'?'compatibility':'reading';
   const select=node(doc,'select','reading-page-select');select.id=mode==='compatibility'?'compatibility-page-select':'reading-page-select';select.hidden=true;

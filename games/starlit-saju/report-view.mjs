@@ -3,8 +3,8 @@ import {applyReadingSummaryViews} from './reading-summary-view.mjs?v=20261113-sa
 import {applyReadingScoreViews} from './reading-score-view.mjs?v=20261120-saju-story2';
 import {createCompatibilityScoreboard,createCompatibilityScoreDetails} from './compatibility-score-view.mjs?v=20261114-saju-copy1';
 import {appendReadingDetail} from './reading-detail.mjs?v=20261114-saju-depth1';
-import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261120-saju-topic1';
-import {createStoryReader} from './story-reader.mjs?v=20261120-saju-topic1';
+import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261120-saju-prune1';
+import {createStoryReader} from './story-reader.mjs?v=20261120-saju-prune1';
 
 const readingPagers=new WeakMap();
 const pagerDocuments=new WeakSet();
@@ -337,6 +337,7 @@ function moreAdvice(advice, sectionId) {
   const suggestions=adviceView(advice,sectionId);
   if (!suggestions) return null;
   const details=node('details','reading-more-advice');
+  details.dataset.readingOverview='advice';
   details.append(node('summary','full-reading-toggle','생활에 적용해 보기'),suggestions);
   return details;
 }
@@ -660,6 +661,7 @@ function sourcesView(topic,year) {
 function monthSpotlight(overviews, currentMonth, year) {
   const start=currentMonth||1;
   const spotlight=node('section','months-spotlight');
+  spotlight.dataset.readingOverview='monthly-spotlight';
   spotlight.setAttribute('aria-label',currentMonth?'지금부터 이어지는 월별 흐름':`${year}년의 시작`);
   spotlight.append(node('p','reader-label',currentMonth?'지금부터 이어지는 흐름':`${year}년의 시작`));
   const cards=node('div','month-spotlight-cards');
@@ -858,6 +860,7 @@ function timingsView(timings, reading, fortune) {
     const headingId=`reading-timings-month-${item.month}`;
     links.append(readingLink(`${item.month}월`,headingId,'reader-topic-link'));
     const article=node('details','reader-timing-card');
+    article.dataset.readingOverview='timing';
     article.open=item.month===initiallyOpen;
     article.dataset.month=String(item.month);
     article.dataset.origin=item.origin||timings.origin;
@@ -1139,6 +1142,8 @@ function buildReadingPager(root,{reading,fortune,topic}) {
   const lifelong=find('reading-lifelong');
   if(lifelong) {
     const intro=lifelong.querySelector('.portrait-intro')||lifelong.querySelector('.reader-intro');
+    const earlierIntro=lifelong.querySelector('.portrait-previous .reader-intro');
+    if(earlierIntro)earlierIntro.dataset.readingOverview='legacy-lifelong';
     const first=add(intro,'나의 성격 요약','평생운 · 나의 성격',{showHeading:true});
     defaults.set(lifelong,first);
     const portraitCards=new Map(all(lifelong,'.portrait-card').map(element=>[element.dataset.portraitCard,element]));

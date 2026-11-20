@@ -4,6 +4,7 @@ const {
   harness, fixedNow, PROFILE_USER_A, PROFILE_USER_B, pause, deferred, waitFor, selectReadingItem, assertNoReadingScores, assertNoCalculationUI, assertReadingScores, assertReadingScoreCopy
 } = require('./helpers/saju-ui-harness.cjs');
 const {currentStory,chooseStory,followStory,collectStories}=require('./helpers/saju-story-ui.cjs');
+const {isRemovedGeneralStory}=require('./helpers/saju-selected-readings.cjs');
 
 const choices=h=>[...h.$('report-content').querySelectorAll('.reading-item-button')];
 const monthChoices=h=>choices(h).filter(button=>/^reading-month-\d+$/.test(button.dataset.readingTarget));
@@ -129,6 +130,8 @@ test('the explicit thirty-ju full purchase opens all three readings and each can
   const ids=[...h.$('report-content').querySelectorAll('[id]')].map(item=>item.id);
   assert.equal(new Set(ids).size,ids.length,'the combined view has no duplicate section IDs');
   const scenes=collectStories(host),scores=scenes.flatMap(scene=>scene.scores);
+  assert.ok(scenes.every(scene=>!isRemovedGeneralStory(scene)),'full payment never restores the deliberately removed overlapping readings');
+  assert.equal(host.querySelector('dialog.story-menu details'),null,'purchased choices do not require expanding a topic group');
   assert.ok(scores.length>0);
   for(const score of scores) {
     if(score.status==='unavailable') {

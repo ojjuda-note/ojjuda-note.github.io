@@ -1,5 +1,6 @@
-import {createStoryReader} from './story-reader.mjs?v=20261120-saju-topic1';
+import {createStoryReader} from './story-reader.mjs?v=20261120-saju-prune1';
 import {appendReadingDetail,readingDetailText} from './reading-detail.mjs?v=20261114-saju-depth1';
+import {keepCompatibilityPersonTopic} from './reading-selection.mjs?v=20261120-saju-prune1';
 
 const PERSON_KEYS=['self','partner'];
 const TOPIC_IDS=['decisions','relationships','work','pressure','adjustment'];
@@ -111,7 +112,7 @@ export function compatibilityPeopleText(value,names=[]) {
   for(const [index,person] of reading.people.entries()) {
     lines.push(labels[index]+' · 성격과 특징',...person.summaryLines,...readingDetailText(person));
     if(person.scopeNotice)lines.push(person.scopeNotice);
-    for(const card of person.cards)lines.push('',labels[index]+' · '+card.label,...card.summaryLines,...readingDetailText(card));
+    for(const card of person.cards)if(keepCompatibilityPersonTopic(card.topicId))lines.push('',labels[index]+' · '+card.label,...card.summaryLines,...readingDetailText(card));
     lines.push('');
   }
   const synthesis=reading.synthesis;

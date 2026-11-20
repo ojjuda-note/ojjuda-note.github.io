@@ -4,6 +4,7 @@ import { calculateSaju } from '../games/starlit-saju/engine.mjs';
 import { analyzeFortune } from '../games/starlit-saju/fortune-data.mjs';
 import { buildDetailedReading } from '../games/starlit-saju/readings.mjs';
 import { getReadingSources } from '../games/starlit-saju/sources.mjs';
+import {expectedGeneralCopyGroups,expectedGeneralCard,authoredCopyBody} from './helpers/saju-copy-policy.mjs';
 
 const now = new Date('2026-11-13T00:00:00+09:00');
 function reading(input, year = 2026) {
@@ -24,15 +25,21 @@ test('the complete reading retains every fact internally and copies all three vi
       assert.equal(row.value,report.facts.find(fact=>fact.id===row.factId).text,row.factId);
       assert.ok(!report.copyByCategory.all.includes(row.label+': '+row.value),row.factId);
     }
-    for (const overview of [report.reader.lifelong,report.reader.annual,...report.reader.months]) {
-      for(const item of [overview,...overview.cards]) {
-        assert.ok(report.copyByCategory.all.includes(item.title));
-        for(const paragraph of item.paragraphs)assert.ok(report.copyByCategory.all.includes(paragraph));
+    for(const item of Object.values(expectedGeneralCopyGroups(report)).flat()) {
+      if(item.title)assert.ok(report.copyByCategory.all.includes(item.title));
+      for(const paragraph of item.paragraphs||[])assert.ok(report.copyByCategory.all.includes(paragraph));
+      for(const line of item.summaryLines||[])assert.ok(report.copyByCategory.all.includes(line));
+    }
+    assert.equal(report.copyByCategory.all.includes(authoredCopyBody(report.reader.lifelong)),false,'the duplicate legacy overview is removed');
+    for(const overview of [report.reader.lifelong,report.reader.annual,...report.reader.months]) {
+      for(const item of overview.cards.filter(item=>!expectedGeneralCard(item.id))) {
+        assert.equal(report.copyByCategory.all.includes(authoredCopyBody(item)),false,'discarded overlapping readings do not return in the combined copy');
       }
     }
     const advice = [...report.adviceByCategory.lifelong, ...report.adviceByCategory.annual, ...report.months.flatMap(month => month.advice)];
-    for (const item of advice) for (const field of ['title', 'why', 'action', 'caution']) {
-      assert.equal(report.copyByCategory.all.includes(item[field]),field!=='why',`${item.id}.${field}`);
+    for(const item of advice) {
+      assert.equal(report.copyByCategory.all.includes([item.title,item.action,item.caution].join('\n')),false,item.id);
+      assert.equal(report.copyByCategory.all.includes(item.why),false,`${item.id}: calculation reasons remain internal`);
     }
     assert.equal(report.copyText, report.copyByCategory.all);
   }

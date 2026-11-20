@@ -856,6 +856,7 @@ const server = http.createServer((request, response) => {
     // Share the outcome-based Saju validator: omitted body units must remain
     // complete in this same topic's visible summary; unique prose stays intact.
     const {assertOriginalParagraphs:assertVisibleProse}=require('./helpers/saju-story-ui.cjs');
+    const {isRemovedGeneralStory,removedGeneralCards,removedCompatibilityCards}=require('./helpers/saju-selected-readings.cjs');
     function storyParts(records,item) {
       const groups=new Map();for(const record of records){if(!groups.has(record.topic))groups.set(record.topic,[]);groups.get(record.topic).push(record);}
       const choices=[...groups.values()].filter(group=>JSON.stringify(summaryLines(group))===JSON.stringify(item.summaryLines));
@@ -951,10 +952,12 @@ const server = http.createServer((request, response) => {
     assert.equal(await saju.evaluate(()=>JSON.stringify(globalThis.__sajuReadingFixture)),sourceJSON,'story navigation does not rewrite the original reading or copy model');
     const model=await saju.evaluate(()=>{
       const r=globalThis.__sajuReadingFixture,current=r.daeun.periods.find(period=>period.isCurrent)||r.daeun.periods[0];
-      return {examples:[['portrait',r.personPortrait],['portrait decisions',r.personPortrait.cards.find(item=>item.id==='portrait-decisions')],['lifelong',r.reader.lifelong],['annual',r.reader.annual],['month',r.reader.months.find(item=>item.month===11)],['month money',r.reader.months.find(item=>item.month===11).cards.find(item=>item.id.endsWith('-money'))],['decade',r.daeun],['decade period',current],['decade topic',current.topics[0]],['symbols',r.reader.symbols],['timing',r.reader.timings],['timing month',r.reader.timings.items.find(item=>item.month===11)]],
+      return {examples:[['portrait',r.personPortrait],['portrait decisions',r.personPortrait.cards.find(item=>item.id==='portrait-decisions')],['lifelong money',r.reader.lifelong.cards.find(item=>item.id==='natal-money')],['annual',r.reader.annual],['month',r.reader.months.find(item=>item.month===11)],['month money',r.reader.months.find(item=>item.month===11).cards.find(item=>item.id.endsWith('-money'))],['decade',r.daeun],['decade period',current],['decade topic',current.topics[0]],['symbols',r.reader.symbols]],
         supplements:[...r.reader.supplements.lifelong,...r.reader.supplements.annual,...r.reader.supplements.months.find(item=>item.month===11).cards],
         scopes:r.reader.lifelong.cards.filter(item=>item.scopeNotice),coverage:r.readingScope.paragraphs};
     });
+    assert.ok(allStories.every(record=>!isRemovedGeneralStory(record)),'removed duplicate sources are absent from the complete next sequence');
+    assert.equal(await saju.locator('dialog.story-menu details').count(),0,'the purchased contents contains no expandable subject groups');
     for(const [,item] of model.examples)assertSourceStory(storyParts(allStories,item),item);
     for(const [viewport,size] of storySizes) {
       await saju.setViewportSize(size);let normalFont;
@@ -985,14 +988,14 @@ const server = http.createServer((request, response) => {
     }
     await menu.locator('.story-menu-close').click();
     for(const id of ['reading-lifelong','reading-annual','reading-months','person-portrait-topic-1']){await followStoryAlias(id);await assertCurrentExplanation(saju,'data-reader-current');}
+    const coverage=allStories.filter(record=>record.source==='reading-coverage');
     for(const item of model.supplements) {
-      const parts=storyParts(allStories,item);assertSourceStory(parts,item);assert.ok(parts.some(part=>part.text.includes(item.scopeNotice)));
-      assert.equal(parts.flatMap(part=>part.scores).length,0,'a supplementary classification does not invent a score');
-      assert.ok(sourceJSON.includes(JSON.stringify(item.scopeNotice).slice(1,-1)));
+      assert.equal(allStories.some(record=>record.kind!=='scope'&&record.data.readingSupplement===item.id),false,'supplemental explanation is removed rather than folded');
+      assert.equal(coverage.some(record=>record.text.includes(item.scopeNotice)),false,'an explanation of a deleted supplement does not become another guidance page');
     }
-    for(const item of model.scopes){const parts=storyParts(allStories,item);assert.ok(parts.some(part=>part.text.includes(item.scopeNotice)));}
-    const coverage=allStories.filter(record=>record.source==='reading-coverage');for(const text of model.coverage)assert.ok(coverage.some(record=>record.text.includes(text)));
-    sajuSupplementViews.complete={readings:model.supplements.length,scopeNotices:model.scopes.length,coverage:true};
+    for(const item of model.scopes){const parts=removedGeneralCards.has(item.id)?coverage:storyParts(allStories,item);assert.ok(parts.some(part=>part.text.includes(item.scopeNotice)));}
+    for(const text of model.coverage)assert.ok(coverage.some(record=>record.text.includes(text)));
+    sajuSupplementViews.complete={removedReadings:model.supplements.length,scopeNotices:model.scopes.length,coverage:true};
     await saju.goto(new URL('/__saju_fixture?score-case=original-zero',url).href);await saju.locator('#report-content[data-ready]').waitFor();
     const regression=await saju.evaluate(()=>globalThis.__sajuScoreFixture);assert.equal(regression.nativeInteractionCount,0);
     const regressionStories=await collectStories(saju,'reading-page-select');
@@ -1002,6 +1005,11 @@ const server = http.createServer((request, response) => {
       for(const axis of key==='lifelong-overview'?['tailwind']:['tailwind','headwind']){
         const signal=axis==='tailwind'?'help':'care',cues=item.readingScore.calculation.cues.filter(cue=>cue[signal]>0);
         assert.ok(cues.length&&cues.every(cue=>cue.sources[signal].every(source=>source.anchor&&authored.includes(source.anchor))));assert.ok(item.readingScore[axis].value>0);
+      }
+      if(key==='lifelong-overview') {
+        assert.ok(regressionStories.every(record=>record.data.readingOverview!=='legacy-lifelong'));
+        sajuScoreRegressions[key]={tailwind:item.readingScore.tailwind.value,headwind:item.readingScore.headwind.value,displayed:false};
+        continue;
       }
       const parts=storyParts(regressionStories,item);assertSourceStory(parts,item);
       for(const [viewport,size] of storySizes){await saju.setViewportSize(size);for(const textSize of ['normal','large']){await saju.locator('#report-content').evaluate((node,size)=>{node.dataset.readingSize=size;},textSize);await inspectSummary(parts,item,'original-zero '+key+' '+viewport+' '+textSize,{textSize});}}
@@ -1029,6 +1037,7 @@ const server = http.createServer((request, response) => {
     for(const pair of ['confirmed','uncertain']) {
       await saju.locator('#fixture-pair').selectOption(pair);await saju.locator('#report-content[data-ready="'+pair+'"]').waitFor();
       const source=await saju.evaluate(()=>globalThis.__compatibilityReadingFixture),records=await collectStories(saju,'compatibility-page-select');
+      assert.ok(records.every(record=>!removedCompatibilityCards.has(record.data.readerCard)&&record.source!=='compatibility-reading-overview'));
       assert.match(await saju.locator('#fixture-zodiac').textContent(),pair==='confirmed'?/말띠.*양띠.*입춘/:/토끼띠 \/ 용띠/);
       const graphs=records.filter(record=>record.graph);assert.equal(graphs.length,1,'the full score panel is in the ordinary next sequence');
       assert.deepEqual(graphs[0].graph,{total:source.score.total,values:source.score.items.map(item=>item.value)});

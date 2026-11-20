@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {expectedGeneralCard,authoredCopyBody} from './helpers/saju-copy-policy.mjs';
 import assert from 'node:assert/strict';
 import { calculateSaju } from '../games/starlit-saju/engine.mjs';
 import { analyzeFortune } from '../games/starlit-saju/fortune-data.mjs';
@@ -86,7 +87,7 @@ test('confirmed combinations and clashes remain separate conditions, including w
   }
 });
 
-test('annual and monthly cards no longer duplicate whole guidance paragraphs across topics, and their complete text stays in copy',()=>{
+test('annual and monthly models stay complete while copies keep opportunities and cautions without the parallel response card',()=>{
   const inputs=[sample,{year:2002,month:11,day:9,hour:17,minute:40},{year:1987,month:12,day:11,hour:22,minute:15},{year:2024,month:2,day:4,hour:null}];
   for(const input of inputs) {
     const {report}=reading(input);
@@ -94,7 +95,10 @@ test('annual and monthly cards no longer duplicate whole guidance paragraphs acr
       const paragraphs=overview.cards.flatMap(card=>card.paragraphs);
       assert.equal(new Set(paragraphs).size,paragraphs.length,`${input.year}/${input.month}/${input.day}: ${overview.title} should not repeat a domain's guidance in the opportunity/caution/response cards`);
       const copy=overview.month?report.copyByCategory.monthly:report.copyByCategory.annual;
-      for(const card of flowCards(overview))for(const paragraph of card.paragraphs)assert.ok(copy.includes(paragraph),'deduplication must not silently cut the new situation from saved/copied text');
+      for(const card of flowCards(overview)) {
+        if(expectedGeneralCard(card.id))for(const paragraph of card.paragraphs)assert.ok(copy.includes(paragraph),'retained opportunity and caution stories stay complete in copy');
+        else assert.ok(!copy.includes(authoredCopyBody(card)),'the removed response card stays out of copy');
+      }
     }
   }
 });
