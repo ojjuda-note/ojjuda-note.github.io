@@ -219,7 +219,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { date: "2027-04-04", title: "2027 aespa 일본 돔 투어 · 오사카 2회", sub: "교세라돔 오사카 · 16:00(JST) 공연 시작 · MY-J 선예매 2026.11.16~11.29(추첨)", href: "https://aespa-official.jp/news/dometour2027-fc/" }
     ],
     campaigns: [
-      { kind: "프로모션", date: "2026.11.20", title: "LINE MUSIC × aespa · KISS N TELL 리믹스 재생 캠페인", sub: "12.31 23:59(JST) 응모 마감 · 1,120회 이상 재생·My推し 설정 등 조건 · 추첨 3명", href: "https://aespa-official.jp/news/kissntell-remix-linemusic/" },
+      { kind: "콜라보", date: "2026.11.20", title: "LINE MUSIC × aespa · KISS N TELL 리믹스 재생 캠페인", sub: "12.31 23:59(JST) 응모 마감 · 1,120회 이상 재생·My推し 설정 등 조건 · 추첨 3명", href: "https://aespa-official.jp/news/kissntell-remix-linemusic/" },
       { kind: "콜라보", date: "2026.11.13", title: "Eartha Kitt × aespa · Santa Baby", sub: "원곡 보컬과 협업한 디지털 싱글 · Primary Wave Music / SM", href: "https://www.yna.co.kr/amp/view/AKR20261113047000005" },
       { kind: "콜라보", date: "2026.11.13", title: "☆Taku Takahashi (m-flo) × aespa", sub: "〈KISS N TELL〉 리믹스 협업 · 11월 20일 정식 공개", href: "https://aespa-official.jp/news/kissntell-remix-release/" },
       { kind: "콜라보", date: "2026.11.13", title: "Setlog × aespa", sub: "〈KISS N TELL〉 리믹스 사전 체험 · 기간 한정 영상 효과", href: "https://aespa-official.jp/news/kissntell-remix/" },
