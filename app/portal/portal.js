@@ -19,6 +19,7 @@
     ? (window.ojjudaSupabase || (window.ojjudaSupabase = window.supabase.createClient(config.supabaseUrl, config.supabaseKey)))
     : null;
   window.OjjudaSiteUsage?.configure({ client });
+  window.OjjudaGrowthAttribution?.configure({ client });
 
   const dialog = $('auth-dialog');
   const form = $('auth-form');
@@ -214,7 +215,10 @@
     const entrySpace = syncEntryIdentity(guestDestination);
     $('guest-browse').href = destinationPath(guestDestination) + (guestDestination === 'note' ? '&guest=1' : '');
     const isSignup = mode === 'signup';
-    if (isSignup) prepareSignupFields();
+    if (isSignup) {
+      prepareSignupFields();
+      window.OjjudaGrowthAttribution?.startSignup();
+    }
     else referral?.setActive(false);
     const isForgot = mode === 'forgot';
     const isReset = mode === 'reset' || mode === 'direct-reset';
@@ -656,6 +660,9 @@
         if (!currentSignup() || !name) return;
         const destination = pendingDestination || entryDestination || 'world';
         const confirmationUrl = authReturnUrl(destination);
+        let campaignMetadata = {};
+        try { campaignMetadata = await window.OjjudaGrowthAttribution?.signupMetadata() || {}; } catch {}
+        if (!currentSignup()) return;
         const { data, error } = await client.auth.signUp({
           email: address,
           password: secret,
@@ -668,6 +675,7 @@
               gender_code: signupIdentity.genderCode,
               phone_number: signupIdentity.phone,
               age_14_or_older: true,
+              ...campaignMetadata,
               ...(signupReferrer?.code ? {referrer_code:signupReferrer.code}
                 : signupReferrer ? { referrer_id: signupReferrer.id, referrer_nickname: signupReferrer.nickname } : {})
             },

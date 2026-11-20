@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - 'shared/analytics/site-usage.js'
+      - 'shared/analytics/growth-attribution.js'
+      - 'app/portal/portal.js'
+      - 'park/route.js'
       - 'games/moonlit-tarot/app.js'
       - 'games/moonlit-tarot/index.html'
       - 'games/starlit-saju/app.js'
@@ -14,13 +17,18 @@ on:
       - 'world.html'
       - 'index.html'
       - 'supabase/migrations/*fortune_visit_analytics*'
+      - 'supabase/migrations/*campaign_signup_attribution*'
       - 'tests/fortune-visit-*'
       - 'tests/site-usage*'
+      - 'tests/campaign-attribution*'
       - 'tests/package*.json'
       - '.github/workflows/fortune-visit-analytics.yml'
   pull_request:
     paths:
       - 'shared/analytics/site-usage.js'
+      - 'shared/analytics/growth-attribution.js'
+      - 'app/portal/portal.js'
+      - 'park/route.js'
       - 'games/moonlit-tarot/app.js'
       - 'games/moonlit-tarot/index.html'
       - 'games/starlit-saju/app.js'
@@ -30,8 +38,10 @@ on:
       - 'world.html'
       - 'index.html'
       - 'supabase/migrations/*fortune_visit_analytics*'
+      - 'supabase/migrations/*campaign_signup_attribution*'
       - 'tests/fortune-visit-*'
       - 'tests/site-usage*'
+      - 'tests/campaign-attribution*'
       - 'tests/package*.json'
       - '.github/workflows/fortune-visit-analytics.yml'
 
@@ -58,7 +68,10 @@ jobs:
       - name: Check collection, privacy and chart data
         run: |
           node --check shared/analytics/site-usage.js
+          node --check shared/analytics/growth-attribution.js
           node --check admin/visitors.js
+          node tests/campaign-attribution-db.test.cjs
+          node tests/campaign-attribution-client.test.cjs
           node --test tests/fortune-visit-*.test.cjs tests/site-usage*-db.test.cjs
           node tests/site-usage-ui.test.cjs
           node tests/inline-scripts.test.cjs
@@ -66,4 +79,6 @@ jobs:
       - name: Install browser
         run: cd tests && npx playwright install --with-deps chromium
       - name: Check visit charts on mobile and desktop
-        run: node tests/site-usage-responsive.test.cjs
+        run: |
+          node tests/site-usage-responsive.test.cjs
+          node tests/campaign-attribution-ui.test.cjs

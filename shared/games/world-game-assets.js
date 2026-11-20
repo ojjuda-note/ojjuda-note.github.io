@@ -1,11 +1,11 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261120-service-actions2'
+ const revision='20261121-campaign1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
-  onecard:'2.4.2',
+  onecard:'2.4.3',
   croc:'1.5.1',
   liar:'1.7.1',
   king:'1.12.1',
@@ -23,8 +23,8 @@
   partyroulette:'1.6.1',
   drinking:'1.26.2',
   shapematch:'1.3.1',
-  tarot:'1.12.2',
-  saju:'2.17.3',
+  tarot:'1.12.3',
+  saju:'2.17.4',
   group:'1.2.2',
   chacha_rush:'1.1.2',
   byeolcheonji:'1.0.5',
