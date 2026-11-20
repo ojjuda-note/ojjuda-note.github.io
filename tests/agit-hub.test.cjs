@@ -296,17 +296,17 @@ test('finished mission cards remain visible without dead-end taps',()=>{
   const cards=html=>[...html.matchAll(/<button[^>]*class="agit-quest-card[^>]*>/g)].map(hit=>hit[0]);
   const start=cards(hub.markup(settings,{},date));
   assert.equal(start.length,5);
-  assert.equal(start.filter(card=>/\\sdisabled\\b/.test(card)).length,0,'new missions can all be started');
+  assert.equal(start.filter(card=>/\sdisabled\b/.test(card)).length,0,'new missions can all be started');
   assert.equal(hub.complete(settings,'quiz',date),true);
   const partial=cards(hub.markup(settings,{},date));
-  assert.equal(partial.filter(card=>/\\sdisabled\\b/.test(card)).length,1,'only finished mission loses the action');
-  assert.match(partial.find(card=>card.includes('data-v="quiz"')),/\\sdisabled\\b/);
-  assert.doesNotMatch(partial.find(card=>card.includes('data-v="visit"')),/\\sdisabled\\b/);
+  assert.equal(partial.filter(card=>/\sdisabled\b/.test(card)).length,1,'only finished mission loses the action');
+  assert.match(partial.find(card=>card.includes('data-v="quiz"')),/\sdisabled\b/);
+  assert.doesNotMatch(partial.find(card=>card.includes('data-v="visit"')),/\sdisabled\b/);
   for(const id of missionIds.filter(id=>id!=='quiz'))hub.complete(settings,id,date);
   const finished=cards(hub.markup(settings,{},date));
-  assert.equal(finished.filter(card=>/\\sdisabled\\b/.test(card)).length,5);
+  assert.equal(finished.filter(card=>/\sdisabled\b/.test(card)).length,5);
   assert.ok(finished.every(card=>card.includes('is-done')&&card.includes('완료한 미션')));
-  assert.match(fs.readFileSync(path.join(__dirname,'../features/home/agit-hub.css'),'utf8'),/\\.agit-quest-card:hover:not\\(:disabled\\)/);
+  assert.match(fs.readFileSync(path.join(__dirname,'../features/home/agit-hub.css'),'utf8'),/\.agit-quest-card:hover:not\(:disabled\)/);
 });
 
 test('occasion headline and Ojjuda copy replace the everyday greeting',()=>{
