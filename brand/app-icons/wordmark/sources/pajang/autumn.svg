@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="파장 가을 앱 아이콘">
+  <title>파장 · 가을</title>
+  <desc>큰 한글 이름과 계절 장식. Bagel Fat One 기반 OFL 서브셋을 윤곽선으로 렌더링했습니다.</desc>
+  <defs>
+    <radialGradient id="glow"><stop stop-color="#FFFFFF" stop-opacity=".085"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient>
+    <linearGradient id="ink" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#FFFCF2"/><stop offset="1" stop-color="#F9E8CE"/></linearGradient>
+    <g id="letters"><g transform="rotate(-3 512 513)"><g transform="translate(162.605650 655.163277) scale(0.39435028 -0.39435028)"><path transform="translate(0 0)" d="M501 700Q501 741 528.0 769.0Q555 797 601 797Q646 797 672.0 768.5Q698 740 698 698V456L714 451Q722 484 742.0 503.5Q762 523 793 523Q828 523 851.0 496.5Q874 470 874 426Q874 380 849.0 354.5Q824 329 793 329Q767 329 749.5 343.0Q732 357 722 376Q715 388 706.5 384.5Q698 381 698 367V24Q698 -14 671.0 -40.0Q644 -66 601 -66Q558 -66 529.5 -40.0Q501 -14 501 24ZM102 86Q49 86 25.0 116.5Q1 147 1 201Q1 255 24.0 285.0Q47 315 93 315Q73 370 73.0 425.5Q73 481 93 530Q9 530 9 627Q9 674 29.5 699.5Q50 725 93 725H381Q423 725 442.5 699.5Q462 674 462 627Q462 530 385 530Q401 487 401.0 426.5Q401 366 385 315Q433 315 455.0 285.0Q477 255 477 201Q477 147 454.0 116.5Q431 86 376 86ZM200 348Q202 329 208.5 322.0Q215 315 234 315H248Q262 315 267.5 320.5Q273 326 273 344V501Q273 530 248 530H212Q180 530 184 496Z"/><path transform="translate(897 0)" d="M526 701Q526 742 552.0 767.5Q578 793 624 793Q668 793 693.0 767.0Q718 741 718 699V567L733 562Q740 592 757.0 609.5Q774 627 803 627Q833 627 853.5 603.5Q874 580 874 539Q874 497 852.0 474.0Q830 451 803 451Q779 451 763.5 464.0Q748 477 740 494Q734 505 726.0 502.5Q718 500 718 486V367Q718 329 692.0 303.0Q666 277 624 277Q581 277 553.5 303.0Q526 329 526 367ZM13 376Q13 406 28.0 431.0Q43 456 68 481Q98 513 122.5 539.5Q147 566 167 594H125Q82 594 55.5 615.0Q29 636 29 683Q29 729 55.5 751.5Q82 774 125 774H389Q432 774 459.0 751.5Q486 729 486 683Q486 636 459.0 615.0Q432 594 389 594H348L326 538Q400 545 445.5 507.5Q491 470 491 402Q491 355 466.0 328.0Q441 301 391 301Q351 301 324.5 326.5Q298 352 298 392Q298 421 304.5 439.0Q311 457 311 473Q311 491 298 491Q291 491 286.0 486.0Q281 481 275 471Q248 421 225.5 376.5Q203 332 176.5 305.0Q150 278 112 278Q71 278 42.0 307.0Q13 336 13 376ZM413 -76Q299 -76 234.0 -52.0Q169 -28 142.0 12.0Q115 52 115 101Q115 140 127.5 172.5Q140 205 172.0 228.5Q204 252 262.5 265.0Q321 278 413 278Q503 278 561.0 265.0Q619 252 651.5 228.5Q684 205 697.0 172.5Q710 140 710 101Q710 52 683.5 12.0Q657 -28 592.5 -52.0Q528 -76 413 -76ZM280 172Q280 163 290.0 157.0Q300 151 327.0 148.0Q354 145 406 145Q483 145 510.5 151.5Q538 158 538 172Q538 189 510.5 195.0Q483 201 406 201Q354 201 327.0 198.0Q300 195 290.0 189.0Q280 183 280 172Z"/></g></g></g>
+    <clipPath id="letter-mask"><use xlink:href="#letters"/></clipPath>
+  </defs>
+  <rect width="1024" height="1024" fill="#783D59"/>
+  <circle cx="512" cy="478" r="425" fill="url(#glow)"/>
+  <use xlink:href="#letters" transform="translate(0 10)" fill="#F6BD70" fill-opacity=".7"/>
+  <rect x="100" y="240" width="824" height="520" fill="url(#ink)" clip-path="url(#letter-mask)"/>
+  <g transform="translate(718 275) rotate(31) scale(1.03)">
+      <path d="M0 -47C43 -35 53 -3 0 49C-43 9 -42 -25 0 -47Z" fill="#E9A263"/>
+      <path d="M0 37Q5 1 0 -32" fill="none" stroke="#FFF5D9" stroke-opacity=".55" stroke-width="4" stroke-linecap="round"/>
+    </g><g transform="translate(767 295) rotate(80) scale(0.63)">
+      <path d="M0 -47C43 -35 53 -3 0 49C-43 9 -42 -25 0 -47Z" fill="#F8D08D"/>
+      <path d="M0 37Q5 1 0 -32" fill="none" stroke="#FFF5D9" stroke-opacity=".55" stroke-width="4" stroke-linecap="round"/>
+    </g><path d="M335 746Q478 769 651 740" fill="none" stroke="#F6BD70" stroke-width="13" stroke-linecap="round"/><g transform="translate(310 741) rotate(-53) scale(0.38)">
+      <path d="M0 -47C43 -35 53 -3 0 49C-43 9 -42 -25 0 -47Z" fill="#E1A475"/>
+      <path d="M0 37Q5 1 0 -32" fill="none" stroke="#FFF5D9" stroke-opacity=".55" stroke-width="4" stroke-linecap="round"/>
+    </g>
+</svg>

@@ -4,7 +4,7 @@
   if (window.OjjudaAppIdentity) return;
 
   // Pages replaces only iconRevision. The installed manifest URL stays stable.
-  const iconRevision = 'seasonal-v1-autumn-a93ca4a62190';
+  const iconRevision = 'seasonal-v1-autumn-d0c431c01ed9';
   const manifestRevision = '20261119-illustrated-icons-1';
   const apps = {
     agit: {
