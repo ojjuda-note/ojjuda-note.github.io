@@ -41,6 +41,7 @@ test('random start draws from every multiplayer game the joined players can play
     const f=await screen({rpc:(_name,args)=>args.p_action==='mine'?{room:{...current}}:{...current}});
     t.after(()=>f.close());
     await until(()=>!f.find('#lobby').hidden);
+    assert.deepEqual([...f.find('.room-actions').querySelectorAll('button')].map(button=>button.id), ['leave','start'], 'room exit stays before host start');
     const all=Array.from(f.find('#games').children,tile=>tile.dataset.game);
     assert.ok(all.includes('partyroulette'));
     const pool=size<2?[]:all.filter(kind=>size>=3||!threeRequired.includes(kind));
@@ -694,4 +695,28 @@ test('previous roulette selection can be replaced in an existing lobby',async t=
   f.click('[data-game="bottle"]');
   await until(()=>!f.find('#start').disabled);
   assert.match(f.find('#selected-game').textContent,/술병/);
+});
+
+
+// Run each native footer through its real renderer. A changed round host must
+// retain replay authority while both host and guests see exit first.
+test('native drinking result footers keep exit before replay and preserve host authority', async t => {
+  for(const kind of ['croc','liar','king','minority','bomb'])for(const me of [0,1]){
+    const state={code:'NATIVE',title:'같이 한 판',players:['친구','이번 방장','참가자'],me,hostSeat:1,capacity:3,
+      phase:'done',revision:2,round:1,turn:0,hints:[],totals:[0,3,0],liar:0,word:'사과',
+      pressed:[2],trap:2,loser:0,king:1,number:1,recipient:0,mission:'손뼉 치기',accepted:[],
+      choices:['아침','저녁'],votes:[0,1,1],game:{}};
+    const scripts=kind==='bomb'?['/games/party-live/room.js']:
+      kind==='minority'?['/games/party-vote/room.js']:[`/games/${kind}/room.js`];
+    const f=await screen({url:`/games/${kind}/?room=NATIVE`,scripts,
+      prepare(w){w.PartyFX={quiet(){},play(){},startBite(){}};w.PartyLiveGame={view:()=>'<h1>라운드 결과</h1>'};},
+      rpc(){return state;}});
+    try{
+      await until(()=>f.find('.drinking-round-actions'),'result footer');
+      const buttons=[...f.find('.drinking-round-actions').querySelectorAll('button')];
+      assert.deepEqual(buttons.map(button=>button.dataset.do),me===1?['leave','again']:['leave'],`${kind} member ${me}`);
+      if(me===1){buttons.at(-1).click();await until(()=>f.calls.some(call=>call.args.p_action==='again'&&call.settled),'existing replay request');}
+      assert.deepEqual(f.errors,[]);
+    }finally{f.close();}
+  }
 });
