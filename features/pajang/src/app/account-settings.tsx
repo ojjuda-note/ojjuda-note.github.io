@@ -71,7 +71,15 @@ export function AccountSettings({profileId,onOpen}:{profileId:string;onOpen:(act
         <button type="button" className="ojjuda-settings-row" onClick={()=>void showSupport()} disabled={supportBusy} aria-haspopup="dialog">
           <span className="ojjuda-settings-label">문의·의견</span><span className="ojjuda-settings-arrow" aria-hidden="true">›</span>
         </button>
-        {row("help","사용법")}
+        <details className="ojjuda-settings-details">
+          <summary className="ojjuda-settings-row"><span className="ojjuda-settings-label">도움말</span><span className="ojjuda-settings-arrow" aria-hidden="true">›</span></summary>
+          <div className="ojjuda-settings-body">
+            {row("help","사용법")}
+            <a className="ojjuda-settings-row" href="/features/organization/?from=pajang" target="_top">
+              <span className="ojjuda-settings-label">조직도</span><span className="ojjuda-settings-arrow" aria-hidden="true">›</span>
+            </a>
+          </div>
+        </details>
         <a className="ojjuda-settings-row" href="/terms.html?from=pajang">
           <span className="ojjuda-settings-label">이용약관</span><span className="ojjuda-settings-arrow" aria-hidden="true">›</span>
         </a>

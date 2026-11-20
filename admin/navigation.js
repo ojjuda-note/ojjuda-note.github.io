@@ -5,8 +5,6 @@
     { id:'status', label:'운영 현황', items:[
       ['account','overview','운영 요약'],['account','visitors','방문·이용 통계'],
       ['operations','errors','오류 현황'] ] },
-    { id:'headquarters', label:'운영본부', items:[
-      ['operations','organization','조직도'] ] },
     { id:'members', label:'회원·ZU', items:[
       ['account','users','가입자 관리'],['account','suspended','정지 계정'],
       ['trash','trash-accounts','탈퇴 계정'],['account','referrals','추천인'],
@@ -54,9 +52,7 @@
     const search=(item.label+' '+groupLabel).toLocaleLowerCase('ko-KR');
     const hidden=query&&!search.includes(query)?' hidden':'';
     const label=`<span>${escape(item.label)}</span><span class="adm-menu-count" data-admin-count="${item.area}:${item.tab}"${count?'':' hidden'}>${count?count.toLocaleString('ko-KR'):''}</span>`;
-    const link=item.tab==='organization'
-      ? `<a class="adm-menu-link${current?' is-current':''}" href="/admin/operations.html${service==='agit'?'':'?from='+service}"${current?' aria-current="page"':''}>${label}</a>`
-      : `<button type="button" class="adm-menu-link${current?' is-current':''}" data-act="adm-open" data-area="${item.area}" data-v="${item.tab}"${current?' aria-current="page"':''}>${label}</button>`;
+    const link=`<button type="button" class="adm-menu-link${current?' is-current':''}" data-act="adm-open" data-area="${item.area}" data-v="${item.tab}"${current?' aria-current="page"':''}>${label}</button>`;
     return `<div class="adm-menu-item" data-admin-nav-item data-search="${escape(search)}"${hidden}>
       ${link}
       <button type="button" class="adm-menu-pin${pinned?' is-pinned':''}" data-act="adm-pin" data-area="${item.area}" data-v="${item.tab}" aria-label="${escape(item.label)} 즐겨찾기 ${pinned?'해제':'추가'}" aria-pressed="${pinned}" title="즐겨찾기 ${pinned?'해제':'추가'}">${pinned?'★':'☆'}</button>

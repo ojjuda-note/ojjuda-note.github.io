@@ -8,7 +8,7 @@
     return `<details class="my-menu-group" data-my-group="park"><summary class="my-menu-summary"><span class="my-menu-icon" aria-hidden="true">▤</span><span class="my-menu-copy"><span class="my-menu-title">공원 활동</span></span></summary><div class="my-menu-body park-menu-actions">${[['feed','공원 카드'],['saved','메모함'],['mine','내 카드'],['events','내 이벤트'],['event-new','이벤트 만들기'],['settings','회원정보'],['blocked','공원 차단 목록'],['glasses','스마트 글래스 미리보기']].map(([action,label])=>`<button type="button" class="btn" data-park-action="${action}">${label}</button>`).join('')}</div></details>`;
   }
   window.OjjudaParkNotes = {menuMarkup,install(app) {
-    const frameVersion = '20261119-entry1' + (app.version ? '-' + app.version : '');
+    const frameVersion = '20261120-organization-help1' + (app.version ? '-' + app.version : '');
     let frame=null,panel=null,owner=null,routed=false,initial=window.performance?.getEntriesByType?.('navigation')[0]?.type!=='back_forward',pending=null,overlayOpen=false,composerOpen=false,cardOpen=false,stopFrameNavigation=()=>{};
     let cacheTimer=null,frameVisible=false,pendingSnapshot=null;
     let currentNavigation='feed';
@@ -120,7 +120,11 @@
       panel=next;panel.hidden=false;panel.removeAttribute('aria-hidden');owner=app.userId();overlayOpen=composerOpen=cardOpen=false;
       const view=initial&&entryUrl.searchParams.get('view')==='glasses'?'glasses':'cards';
       const url=new URL(view==='glasses'?'/park/glasses.html':'/park/',location.origin);url.searchParams.set('embedded','1');url.searchParams.set('v',frameVersion);
-      if(initial){for(const key of ['card','keep','compose'])if(entryUrl.searchParams.has(key))url.searchParams.set(key,entryUrl.searchParams.get(key));initial=false;}
+      if(initial){
+        for(const key of ['card','keep','compose'])if(entryUrl.searchParams.has(key))url.searchParams.set(key,entryUrl.searchParams.get(key));
+        if(entryUrl.searchParams.get('view')==='settings')pending='settings';
+        initial=false;
+      }
       frame=document.createElement('iframe');frame.title='공원 카드';frame.allow='geolocation; clipboard-write; web-share';frame.dataset.view=view;frame.src=url.pathname+url.search;
       frameVisible=true;
       panel.querySelector('[data-park-app-slot]').replaceChildren(frame);loading(true);
