@@ -236,7 +236,9 @@ const server = http.createServer((request, response) => {
           const button = document.getElementById(prefix + '-' + name), box = button.getBoundingClientRect();
           const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
           return {id:button.id,width:box.width,height:box.height,inside:box.left >= -1 && box.right <= innerWidth + 1
-            && box.top >= -1 && box.bottom <= innerHeight + 1,hit:hit === button || button.contains(hit)};
+            && box.top >= -1 && box.bottom <= innerHeight + 1,hit:hit === button || button.contains(hit),
+            left:box.left,top:box.top,right:box.right,bottom:box.bottom,
+            hitElement:hit ? {tag:hit.tagName,id:hit.id,className:hit.className} : null};
         });
         const prose = [...body.querySelectorAll('.reader-paragraph,.reader-summary-line')].map(node => {
           const style = getComputedStyle(node);
@@ -250,7 +252,14 @@ const server = http.createServer((request, response) => {
       }, prefix);
       assert.equal(geometry.horizontalOverflow, false, label + ': the reader has no horizontal overflow');
       assert.equal(geometry.titleClear, true, label + ': the full title stays clear of the close button');
-      assert.ok(geometry.controls.every(control => control.inside && control.hit && control.width >= 43.9 && control.height >= 43.9),
+      const reachableControls = geometry.controls.every(control => control.inside && control.hit && control.width >= 43.9 && control.height >= 43.9);
+      if (!reachableControls) {
+        const name = 'tarot-controls-failure-' + label.replace(/[^a-z0-9-]+/gi, '-');
+        fs.writeFileSync(path.join(artifacts, name + '.json'), JSON.stringify(geometry, null, 2));
+        await page.screenshot({path:path.join(artifacts, name + '.png'),animations:'disabled'});
+        console.error('Tarot control geometry:', JSON.stringify(geometry.controls));
+      }
+      assert.ok(reachableControls,
         label + ': the previous, next, contents and close controls stay reachable with 44px targets');
       assert.ok(geometry.bodyHeight > 100 && /auto|scroll/.test(geometry.scrollStyle), label + ': long content has its own usable scroll area');
       assert.ok(geometry.prose.length && geometry.prose.every(item => item.text && item.font >= 16 && item.fits
