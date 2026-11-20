@@ -245,7 +245,12 @@ const server = http.createServer((request, response) => {
           return {text:node.textContent, font:parseFloat(style.fontSize), fits:node.scrollWidth <= node.clientWidth + 1
             && node.scrollHeight <= node.clientHeight + 1, clamp:style.webkitLineClamp, ellipsis:style.textOverflow === 'ellipsis'};
         });
-        return {horizontalOverflow:document.documentElement.scrollWidth > innerWidth + 1
+        const dialogBox=dialog.getBoundingClientRect(), dialogStyle=getComputedStyle(dialog);
+        const viewportDiagnostics={innerWidth,innerHeight,visualWidth:visualViewport?.width,visualHeight:visualViewport?.height,
+          mqDesktop:matchMedia('(min-width:601px)').matches,
+          dialog:{left:dialogBox.left,top:dialogBox.top,right:dialogBox.right,bottom:dialogBox.bottom},
+          style:{width:dialogStyle.width,height:dialogStyle.height,position:dialogStyle.position,margin:dialogStyle.margin,top:dialogStyle.top,bottom:dialogStyle.bottom}};
+        return {viewportDiagnostics,horizontalOverflow:document.documentElement.scrollWidth > innerWidth + 1
           || dialog.scrollWidth > dialog.clientWidth + 1 || body.scrollWidth > body.clientWidth + 1,
           titleClear,controls,prose,scrollable:body.scrollHeight > body.clientHeight + 1,
           bodyHeight:body.clientHeight,scrollStyle:getComputedStyle(body).overflowY};
