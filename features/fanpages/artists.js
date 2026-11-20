@@ -155,9 +155,9 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "공식 커뮤니티", sub: "Berriz", href: "https://link.berriz.in/web/main/IVE" }
     ],
     news: [
-      { date: "11.11", tag: "굿즈", title: "DICON D'FESTA THE ORIGIN · IVE 공식 화보집 일본 예약 시작(11/22 마감)", href: "https://prtimes.jp/main/html/rd/p/000000688.000022823.html" },
       { date: "11.16", tag: "후보", title: "〈BANG BANG〉 2027 그래미 ‘베스트 아시안 팝 퍼포먼스’ 후보", href: "https://www.grammy.com/songs/bang-bang-2/" },
       { date: "11.15", tag: "수상", title: "MMA2026 ‘올해의 베스트송’ 대상 등 총 5관왕", href: "https://www.melon.com/mma/result.htm?mmaYear=2026" },
+      { date: "11.11", tag: "굿즈", title: "DICON D'FESTA THE ORIGIN · IVE 공식 화보집 일본 예약 시작(11/22 마감)", href: "https://prtimes.jp/main/html/rd/p/000000688.000022823.html" },
       { date: "11.07", tag: "영상", title: "〈Looks Can Kill〉 안무 연습 비하인드 공개", href: "https://www.youtube.com/watch?v=sheag2-3h_o" },
       { date: "10.29", tag: "행사", title: "〈Looks Can Kill〉 구매자 추첨 이벤트·특전 일정 발표", href: "https://www.sonymusic.co.jp/artist/IVE/info/588141" },
       { date: "10.26", tag: "앨범", title: "미니 5집 〈Looks Can Kill〉 정식 발매", href: "https://www.starship-ent.com/musician/ive" },
