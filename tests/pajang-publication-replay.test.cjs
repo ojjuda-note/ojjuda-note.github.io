@@ -46,7 +46,7 @@ const { PGlite } = require('@electric-sql/pglite');
           values(mine.id,today,active_window.slot,val,stamp,
             coalesce(question #>> '{q,0}',pajang_private.legacy_prompt(today,active_window.slot)),
             (p_data->'archive') is not distinct from 'true'::jsonb)
-          on conflict(person,day,slot) do nothing;
+     on conflict(person,day,slot) do nothing;
           perform pajang_private.answer_is_visible(a.day,a.slot,a.archived,today,active_window.slot)
             from pajang_private.visible_answers a;
         end if;
