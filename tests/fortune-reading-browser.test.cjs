@@ -245,7 +245,12 @@ const server = http.createServer((request, response) => {
           return {text:node.textContent, font:parseFloat(style.fontSize), fits:node.scrollWidth <= node.clientWidth + 1
             && node.scrollHeight <= node.clientHeight + 1, clamp:style.webkitLineClamp, ellipsis:style.textOverflow === 'ellipsis'};
         });
-        return {horizontalOverflow:document.documentElement.scrollWidth > innerWidth + 1
+        const dialogBox=dialog.getBoundingClientRect(), dialogStyle=getComputedStyle(dialog);
+        const viewportDiagnostics={innerWidth,innerHeight,visualWidth:visualViewport?.width,visualHeight:visualViewport?.height,
+          mqDesktop:matchMedia('(min-width:601px)').matches,
+          dialog:{left:dialogBox.left,top:dialogBox.top,right:dialogBox.right,bottom:dialogBox.bottom},
+          style:{width:dialogStyle.width,height:dialogStyle.height,position:dialogStyle.position,margin:dialogStyle.margin,top:dialogStyle.top,bottom:dialogStyle.bottom}};
+        return {viewportDiagnostics,horizontalOverflow:document.documentElement.scrollWidth > innerWidth + 1
           || dialog.scrollWidth > dialog.clientWidth + 1 || body.scrollWidth > body.clientWidth + 1,
           titleClear,controls,prose,scrollable:body.scrollHeight > body.clientHeight + 1,
           bodyHeight:body.clientHeight,scrollStyle:getComputedStyle(body).overflowY};
@@ -257,7 +262,7 @@ const server = http.createServer((request, response) => {
         const name = 'tarot-controls-failure-' + label.replace(/[^a-z0-9-]+/gi, '-');
         fs.writeFileSync(path.join(artifacts, name + '.json'), JSON.stringify(geometry, null, 2));
         await page.screenshot({path:path.join(artifacts, name + '.png'),animations:'disabled'});
-        console.error('Tarot control geometry:', JSON.stringify(geometry.controls));
+        console.error('Tarot control geometry:', JSON.stringify({ viewport: geometry.viewportDiagnostics, controls: geometry.controls }));
       }
       assert.ok(reachableControls,
         label + ': the previous, next, contents and close controls stay reachable with 44px targets');
@@ -453,6 +458,16 @@ const server = http.createServer((request, response) => {
       ['small-phone',{width:320,height:640}], ['mobile',{width:390,height:844}], ['desktop',{width:750,height:750}]
     ]) {
       await page.setViewportSize(viewport);
+      // Chromium may retain the old top-layer <dialog> dimensions for one paint
+      // while a live reading is open. Verify that responsive layout really settled
+      // before hit-testing; a persistent off-screen control still fails.
+      await page.waitForFunction(size => {
+        const dialog = document.getElementById('result-dialog');
+        const bounds = dialog?.getBoundingClientRect();
+        return innerWidth === size.width && innerHeight === size.height
+          && !!bounds && bounds.top >= -1 && bounds.left >= -1
+          && bounds.bottom <= size.height + 1 && bounds.right <= size.width + 1;
+      }, viewport, { timeout: 3500 });
       await goToReaderPage(longPage, selectedSource.pages);
       tarotViews.reader.layouts[label] = await inspectReaderLayout(label);
       await page.screenshot({path:path.join(artifacts,'tarot-reader-' + label + '.png'),animations:'disabled'});

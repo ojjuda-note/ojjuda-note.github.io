@@ -26,6 +26,8 @@ async function fixture(context, source, rpc) {
   if (source === 'world') {
     await page.setContent('<base href="https://fixture.test/"><meta name="viewport" content="width=device-width,initial-scale=1"><main class="main" id="world-my"></main>');
     for (const match of world.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)) await page.addStyleTag({ content: match[1] });
+    // The production settings rows live in this linked stylesheet, not in World inline CSS.
+    await page.addStyleTag({ content: read('features/account/settings-list.css') });
     await page.evaluate(() => {
       window.$ = { coins: 70, settings: { accent: 'pink', theme: 'light', defaultVis: 'all', notify: {} }, me: { nick: '검사 회원', bio: '', mood: '😊', moodText: '' }, album: [] };
       window.D = { online: true, user: { id: 'synthetic-user', email: 'test@example.invalid' } };
@@ -81,10 +83,31 @@ async function fixture(context, source, rpc) {
       for (const source of ['world','note']) {
         const current = await fixture(context, source, rpc); fixtures.push(current);
         const { page } = current;
-        const entry = page.locator('.ju-charge-entry');
-        assert.equal(await entry.count(), 1);
-        assert.equal(await entry.evaluate(node => node.parentElement.nextElementSibling.querySelector('.my-menu-title').textContent), '도움말');
-        assert.equal(await entry.evaluate(node => getComputedStyle(node).borderTopWidth), '0px');
+        // World uses the compact settings row; Park retains its native My-menu row.
+        // Both carry the same charge-open contract and must remain keyboard/touch reachable.
+        const entry = source === 'world'
+          ? page.locator('.world-settings-page .ojjuda-settings-row[data-ju-charge-open]')
+          : page.locator('.ju-charge-entry[data-ju-charge-open]');
+        assert.equal(await entry.count(), 1, source + ': one charge entry');
+        if (source === 'world') {
+          assert.equal(await entry.locator('.ojjuda-settings-label').textContent(), '쭈 충전');
+          assert.equal(await entry.evaluate(node => node.closest('.ojjuda-settings-group').querySelector('h3').textContent), '이용 설정');
+          assert.equal(await entry.evaluate(node => node.closest('.ojjuda-settings-group').nextElementSibling.querySelector('h3').textContent), '이용 안내');
+        } else {
+          assert.equal(await entry.evaluate(node => node.parentElement.nextElementSibling.querySelector('.my-menu-title').textContent), '도움말');
+          assert.equal(await entry.evaluate(node => getComputedStyle(node).borderTopWidth), '0px');
+        }
+        assert.equal(await entry.getAttribute('aria-haspopup'), 'dialog');
+        // Hit-test the real control after Playwright scrolls the appropriate
+        // nested settings scroller; a viewport-only bounding-box check mistakes
+        // scrollable content for an unreachable entry.
+        const targetSize = await entry.evaluate(node => {
+          const rect = node.getBoundingClientRect();
+          return { width: rect.width, height: rect.height };
+        });
+        assert.ok(targetSize.width >= 44 && targetSize.height >= 44,
+          source + ': charge entry keeps a 44px touch target (' + JSON.stringify(targetSize) + ')');
+        await entry.click({ trial: true });
         if (process.env.JU_CHARGE_QA_DIR) {
           fs.mkdirSync(process.env.JU_CHARGE_QA_DIR, { recursive: true });
           await page.screenshot({ path: path.join(process.env.JU_CHARGE_QA_DIR, `${source}-menu-${viewport.width}.png`), fullPage: true });

@@ -173,6 +173,19 @@ dialog.tarot-reader::backdrop { background: #080a15d9; backdrop-filter: blur(7px
 .tarot-reader .reader-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: 100%; margin: 0; }
 .tarot-reader .reader-actions .secondary-button { width: 100%; min-width: 0; min-height: 48px; margin: 0; padding: 12px; font-size: 14px; line-height: 1.6; }
 .tarot-reader :is(button, a, select, input):focus-visible { outline: 2px solid #e3c69a; outline-offset: 3px; }
+/* Keep the top-layer reader centered after desktop/tablet viewport changes.
+   The 16px inset protects 44px navigation targets at the 750×750 QA size. */
+@media (min-width: 601px) {
+  dialog.tarot-reader {
+    position: fixed;
+    inset: 0;
+    width: min(750px, calc(100vw - 32px));
+    height: min(750px, calc(100dvh - 32px));
+    max-width: calc(100vw - 32px);
+    max-height: calc(100dvh - 32px);
+    margin: auto;
+  }
+}
 @media (max-width: 600px) {
   dialog.tarot-reader { width: 100vw; height: 100svh; height: 100dvh; max-width: 100vw; max-height: 100svh; max-height: 100dvh; border: 0; border-radius: 0; }
   .tarot-reader .reader-header { padding: max(10px, env(safe-area-inset-top, 0px)) 18px 0; }
