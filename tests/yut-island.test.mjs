@@ -165,6 +165,30 @@ test('duplicate results are spent one at a time; captures preserve unused result
   g=ordinary();g.pawns[1][0]=[4];g=roll(roll(g,faces(4)),faces(1));
   g=move(g,0,false,4);assert.equal(g.lastMove.captured,1);assert.equal(g.phase,'move');assert.deepEqual(g.pendingRolls,[1]);
 });
+test('yut and mo captures on carry keep the pair but never grant a second capture bonus',()=>{
+  for(const steps of [4,5])for(const captureFirst of [false,true]){
+    const game=ordinary();game.eventTiles={[steps]:'carry'};
+    const destination=Array.from({length:steps},(_,i)=>i+1);
+    game.pawns[1]=[[...destination],[...destination],[],[]];
+    let next=roll(game,faces(steps));
+    assert.equal(next.team,0);assert.equal(next.phase,'roll','yut/mo earns its throw before moving');
+    next=roll(next,faces(1));
+    if(!captureFirst)next=move(next,3,false,1);
+    next=move(next,2,false,steps);
+    assert.deepEqual(next.pawns[0],[[...destination],[],[...destination],captureFirst?[]:[1]]);
+    assert.deepEqual(next.pawns[1],[[],[],[],[]],'the complete opposing stack returns home');
+    assert.equal(next.lastMove.pickedUp,0,'the first reserve joins the third pawn');
+    if(captureFirst){
+      assert.equal(next.phase,'move','only the unspent result remains; no extra throw is offered');
+      assert.deepEqual(next.pendingRolls,[1]);
+      assert.equal(roll(next,faces(2)),next);
+      next=move(next,3,false,1);
+    }
+    assert.equal(next.team,1,'the opponent plays after both earned moves are spent');
+    assert.equal(next.turn,2);assert.equal(next.phase,'roll');assert.deepEqual(next.pendingRolls,[]);
+    assert.deepEqual(next.pawns[0],[[...destination],[],[...destination],[1]]);
+  }
+});
 test('retired obstacle squares are ordinary even on a saved shortcut',()=>{
   const g=ordinary();
   g.eventTiles={2:'home',4:'back'};g.islandTiles={21:'whirl',1:'breeze'};

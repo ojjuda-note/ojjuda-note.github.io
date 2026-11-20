@@ -391,7 +391,8 @@ async function showState(s,animate=true){
     for(const [i,node] of remaining.entries()){
       if(token!==motion)return;
       land(node,node===HOME||node===FINISH?0:PAWN_HOP_MS,i+dropAt+1);
-      draw(s,movingAt(node));await delay(pauseAt(node,i+dropAt+1));
+      // Resolve captures and carried teammates together on the final landing frame.
+      draw(s,i===remaining.length-1?undefined:movingAt(node));await delay(pauseAt(node,i+dropAt+1));
     }
   }else if(rolled){
     sounds.quickThrow();showBonus(s);
