@@ -42,7 +42,26 @@ export function enhanceGuestGate(){
   art.append(season,water,reflection,envelope);opening.append(copy,art);
   const footer=make('div','pajang-invitation-footer');
   message.classList.add('pajang-entry-access');
-  footer.append(account,message);invitation.append(opening,footer);
+  const settings=make('section','ojjuda-settings pajang-public-settings');
+  settings.setAttribute('aria-label','파장 설정');
+  const list=make('div','ojjuda-settings-list');
+  const detail=label=>{
+    const menu=make('details','ojjuda-settings-details');
+    const summary=make('summary','ojjuda-settings-row');
+    const arrow=make('span','ojjuda-settings-arrow','›');arrow.setAttribute('aria-hidden','true');
+    summary.append(make('span','ojjuda-settings-label',label),arrow);
+    const body=make('div','ojjuda-settings-body');menu.append(summary,body);
+    return {menu,body};
+  };
+  const settingsMenu=detail('설정'),helpMenu=detail('도움말');
+  const organization=make('a','ojjuda-settings-row');
+  organization.href='/features/organization/?from=pajang';organization.target='_top';
+  const arrow=make('span','ojjuda-settings-arrow','›');arrow.setAttribute('aria-hidden','true');
+  organization.append(make('span','ojjuda-settings-label','조직도'),arrow);
+  helpMenu.body.append(organization);settingsMenu.body.append(helpMenu.menu);
+  if(new URLSearchParams(location.search).get('tab')==='profile')settingsMenu.menu.open=true;
+  list.append(settingsMenu.menu);settings.append(list);
+  footer.append(account,message,settings);invitation.append(opening,footer);
   gate.replaceChildren(invitation);
   return true;
 }

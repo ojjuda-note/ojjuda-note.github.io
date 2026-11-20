@@ -53,7 +53,7 @@
     showManagement('공원 설정');
     settingsContext = true;
     const owner = session?.user?.id || null;
-    const settings = node('div', 'park-settings');
+    const settings = node('div', 'park-settings ojjuda-settings');
     settings.setAttribute('data-park-settings-root', '');
     const group = title => {
       const section = node('section', 'park-settings-group');
@@ -106,9 +106,19 @@
       account.append(actions);
     }
     const help = group('이용 안내');
+    help.classList.add('ojjuda-settings-list');
     row(help, 'support', '문의·의견', () => navigate('support'));
     link(help, 'terms', '이용약관', '/terms.html?from=park');
     link(help, 'privacy', '개인정보처리방침', '/privacy.html?from=park');
+    const helpMenu = node('details', 'ojjuda-settings-details');
+    const helpTitle = node('summary', 'park-settings-row ojjuda-settings-row');
+    const helpArrow = node('span', 'ojjuda-settings-arrow', '›');
+    helpArrow.setAttribute('aria-hidden', 'true');
+    helpTitle.append(node('span', 'ojjuda-settings-label', '도움말'), helpArrow);
+    const helpBody = node('div', 'ojjuda-settings-body');
+    link(helpBody, 'guide', '사용법', '/guide.html?from=park');
+    link(helpBody, 'organization', '조직도', '/features/organization/?from=park');
+    helpMenu.append(helpTitle, helpBody); help.append(helpMenu);
     const apps = group('앱 다운로드');
     apps.classList.add('app-store-downloads');
     const pending = node('div', 'park-settings-row app-store-pending');
@@ -486,7 +496,7 @@
     if (url.origin !== location.origin) return;
     if (link.matches('.brand')) { event.preventDefault(); navigate('feed'); return; }
     if (url.pathname === '/world.html' && !url.search) { event.preventDefault(); navigate('world'); return; }
-    if (url.pathname === '/world.html' || url.pathname === '/' || url.pathname === '/guide.html') {
+    if (url.pathname === '/world.html' || url.pathname === '/' || url.pathname === '/guide.html' || url.pathname === '/features/organization/') {
       event.preventDefault();
       if (canLeave()) (hosted ? parent : window).location.assign(url.pathname + url.search + url.hash);
     }

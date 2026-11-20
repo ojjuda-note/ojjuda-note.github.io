@@ -135,10 +135,11 @@ test('leaving a shared card before startup completes never reopens the old link'
 });
 
 test('World URL normalization preserves the first Park entry options exactly once', () => {
-  for(const [query,pathname,options] of [
+  for(const [query,pathname,options,expectedNavigation=[]] of [
     ['compose=memo','/park/',{compose:'memo'}],
     ['card=10000000-0000-4000-8000-000000000001&keep=memo','/park/',{card:'10000000-0000-4000-8000-000000000001',keep:'memo'}],
-    ['view=glasses','/park/glasses.html',{}]
+    ['view=glasses','/park/glasses.html',{}],
+    ['view=settings','/park/',{},['settings']]
   ]){
     const f=fixture('?place=park&'+query);
     try{
@@ -147,11 +148,20 @@ test('World URL normalization preserves the first Park entry options exactly onc
       const first=f.frame(),url=new URL(first.src);
       assert.equal(url.pathname,pathname);
       for(const [key,value] of Object.entries(options))assert.equal(url.searchParams.get(key),value);
+      const navigations=[];
+      const ready=frame=>{
+        frame.contentWindow.OjjudaParkFull={navigate:action=>navigations.push(action)};
+        f.window.dispatchEvent(new f.window.MessageEvent('message',{origin:'https://fixture.test',source:frame.contentWindow,data:{type:'ojjuda:park-ready'}}));
+      };
+      ready(first);
+      assert.deepEqual(navigations,expectedNavigation,'settings return opens its real Park settings');
       f.render('my');f.render('park');
       assert.notEqual(f.frame(),first,'a cold frame is recreated after leaving');
       const next=new URL(f.frame().src);
       assert.equal(next.pathname,'/park/');
       for(const key of ['card','keep','compose','view'])assert.equal(next.searchParams.has(key),false,'entry options do not replay');
+      ready(f.frame());
+      assert.deepEqual(navigations,expectedNavigation,'settings entry does not replay after leaving');
       assert.equal(f.window.history.state.retained,true);
     }finally{f.dom.window.close();}
   }

@@ -503,7 +503,17 @@ async function checkNavigation(page){
   await choose('마음함');await heading('마음함').waitFor();
   await choose('내 파장');await heading('내 파장').waitFor();
   const settings=page.getByRole('region',{name:'파장 설정',exact:true});
-  await settings.getByRole('button',{name:'사용법',exact:true}).click();
+  const helpMenu=settings.locator('details').filter({has:page.locator('summary').filter({hasText:'도움말'})});
+  await helpMenu.locator('summary').click();
+  assert.equal(await helpMenu.getAttribute('open'),'','Help expands before its child actions are used');
+  const organization=helpMenu.getByRole('link',{name:'조직도',exact:true});
+  await organization.waitFor({state:'visible'});
+  const organizationUrl=new URL(await organization.getAttribute('href'),page.url());
+  assert.equal(organizationUrl.origin,origin,'organization stays on the current service origin');
+  assert.equal(organizationUrl.pathname,'/features/organization/');
+  assert.deepEqual([...organizationUrl.searchParams],[['from','pajang']],'public organization keeps only the allowed Pajang return source');
+  assert.equal(await organization.getAttribute('target'),'_top');
+  await helpMenu.getByRole('button',{name:'사용법',exact:true}).click();
   const help=page.getByRole('dialog',{name:'파장 이용 안내'});
   await help.waitFor();
   const profileUrl=page.url();
