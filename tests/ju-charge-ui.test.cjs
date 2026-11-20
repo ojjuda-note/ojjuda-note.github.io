@@ -96,12 +96,16 @@ async function fixture(context, source, rpc) {
           assert.equal(await entry.evaluate(node => getComputedStyle(node).borderTopWidth), '0px');
         }
         assert.equal(await entry.getAttribute('aria-haspopup'), 'dialog');
-        await entry.scrollIntoViewIfNeeded();
-        assert.ok(await entry.evaluate(node => {
+        // Hit-test the real control after Playwright scrolls the appropriate
+        // nested settings scroller; a viewport-only bounding-box check mistakes
+        // scrollable content for an unreachable entry.
+        const targetSize = await entry.evaluate(node => {
           const rect = node.getBoundingClientRect();
-          return rect.width >= 44 && rect.height >= 44 && rect.left >= -1
-            && rect.right <= innerWidth + 1 && rect.top >= -1 && rect.bottom <= innerHeight + 1;
-        }), source + ': charge entry remains a reachable touch target');
+          return { width: rect.width, height: rect.height };
+        });
+        assert.ok(targetSize.width >= 44 && targetSize.height >= 44,
+          source + ': charge entry keeps a 44px touch target (' + JSON.stringify(targetSize) + ')');
+        await entry.click({ trial: true });
         if (process.env.JU_CHARGE_QA_DIR) {
           fs.mkdirSync(process.env.JU_CHARGE_QA_DIR, { recursive: true });
           await page.screenshot({ path: path.join(process.env.JU_CHARGE_QA_DIR, `${source}-menu-${viewport.width}.png`), fullPage: true });
