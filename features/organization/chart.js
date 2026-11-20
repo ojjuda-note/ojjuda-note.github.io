@@ -1,4 +1,4 @@
-/* Admin-only organization payload is supplied by a protected RPC. */
+/* Shared renderer for the public organization directory and protected admin details. */
 (() => {
   'use strict';
   const COLORS = ['#47658e', '#3d7c80', '#6b689e', '#8b6347', '#64765b'];
@@ -13,8 +13,12 @@
   const list = value => Array.isArray(value) ? value.filter(item => typeof item === 'string' && item.trim()) : [];
   const level = value => value === '本部長' ? '총괄' : String(value || '조직');
   const cleanQuery = value => value.normalize('NFKC').replace(/\s+/g, '').toLocaleLowerCase('ko-KR');
+  const hasParallelDivisions = record => record.node.level === '부' && record.node.name === '오락실사업부' && record.children.length === 3;
+  const departmentWidth = record => hasParallelDivisions(record) ? DEPT_WIDTH * 3 + DEPT_GAP * 2 : DEPT_WIDTH;
+  const headquartersWidth = record => Math.max(DEPT_WIDTH, record.children.reduce((sum, dept) => sum + departmentWidth(dept), 0) + Math.max(0, record.children.length - 1) * DEPT_GAP);
 
-  function mount(host, payload) {
+  function mount(host, payload, options = {}) {
+    const publicMode = options.publicMode === true;
     const organization = payload?.organization;
     if (!organization || !Array.isArray(organization.headquarters) || !organization.headquarters.length || !Array.isArray(organization.representative) || organization.representative.length < 3) throw Error('invalid_organization');
     const abort = new AbortController(), signal = abort.signal;
@@ -50,7 +54,9 @@
     const updated = el('span', 'updated');
     const updateDate = new Date(payload.updated_at);
     if (payload.updated_at && !Number.isNaN(updateDate.getTime())) updated.textContent = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: 'long', day: 'numeric' }).format(updateDate) + ' 기준';
-    goalStrip.append(goals, updated);
+    if (!publicMode) goalStrip.append(goals);
+    else goalStrip.classList.add('public-summary');
+    goalStrip.append(updated);
     const workspace = el('section', 'workspace'); workspace.setAttribute('aria-label', '오쭈다 전체 조직도');
     const toolbar = el('div', 'toolbar'), searchWrap = el('div', 'search-wrap');
     const searchIcon = el('span', 'search-icon', '⌕'); searchIcon.setAttribute('aria-hidden', 'true');
@@ -104,11 +110,12 @@
     }
     hqs.forEach((hq, i) => {
       const group = el('section', 'hq-group'); group.style.setProperty('--branch', COLORS[i % COLORS.length]); group.setAttribute('aria-label', hq.node.name);
-      group.style.width = Math.max(DEPT_WIDTH, hq.children.length * DEPT_WIDTH + Math.max(0, hq.children.length - 1) * DEPT_GAP) + 'px';
+      group.style.width = headquartersWidth(hq) + 'px';
       const heading = el('h2', 'hq-heading'); heading.append(makeNode(hq));
       const columns = el('div', 'dept-columns');
       hq.children.forEach(dept => {
-        const column = el('section', 'dept-column'); column.setAttribute('aria-label', dept.node.name);
+        const column = el('section', 'dept-column' + (hasParallelDivisions(dept) ? ' arcade-department' : '')); column.setAttribute('aria-label', dept.node.name);
+        column.style.width = departmentWidth(dept) + 'px';
         const deptHeading = el('h3', 'dept-heading'); deptHeading.append(makeNode(dept)); column.append(deptHeading);
         const divisions = el('div', 'division-list');
         dept.children.forEach(division => {
@@ -121,7 +128,7 @@
       });
       group.append(heading, columns); groups.append(group);
     });
-    const calculatedWidth = hqs.reduce((sum, hq) => sum + Math.max(DEPT_WIDTH, hq.children.length * DEPT_WIDTH + Math.max(0, hq.children.length - 1) * DEPT_GAP), 0) + (hqs.length - 1) * HQ_GAP + BOARD_PAD * 2;
+    const calculatedWidth = hqs.reduce((sum, hq) => sum + headquartersWidth(hq), 0) + (hqs.length - 1) * HQ_GAP + BOARD_PAD * 2;
     board.style.width = calculatedWidth + 'px';
     board.append(groups); spacer.append(board); viewport.append(spacer);
     const tip = el('div', 'canvas-tip', '빈 곳을 끌어 이동 · 팀을 누르면 담당 업무'); tip.setAttribute('aria-hidden', 'true');
@@ -155,15 +162,17 @@
         const section = el('section', 'detail-section'); section.append(el('h3', '', '담당 팀'));
         const ownerButton = button(r.owner.node.name + '  ›', 'detail-child'); on(ownerButton, 'click', () => openDetails(r.owner)); section.append(ownerButton); detailBody.append(section);
       }
-      appendSection('점검할 내용', list(r.team?.checks));
-      appendSection('공동 목표에 기여할 일', list(r.team?.company_goal_contribution));
+      if (!publicMode) {
+        appendSection('점검할 내용', list(r.team?.checks));
+        appendSection('공동 목표에 기여할 일', list(r.team?.company_goal_contribution));
+      }
       if (r.children.length) {
         const section = el('section', 'detail-section'); section.append(el('h3', '', r.node.level === '팀' || r.node.level === '항목' ? '담당 항목' : '산하 조직'));
-        const children = el('div', 'detail-children');
+        const children = el('div', 'detail-children' + (hasParallelDivisions(r) ? ' detail-children-columns' : ''));
         r.children.forEach(child => { const b = button('', 'detail-child'); b.append(el('span', '', child.node.name), el('span', '', '›')); on(b, 'click', () => openDetails(child)); children.append(b); });
         section.append(children); detailBody.append(section);
       }
-      appendSection('업무 확인 자료', list(r.team?.evidence));
+      if (!publicMode) appendSection('업무 확인 자료', list(r.team?.evidence));
       const locateButton = button('조직도에서 보기', 'button primary detail-locate'); on(locateButton, 'click', () => { dialog.close(); locate(r, true); }); detailBody.append(locateButton);
       if (!r.team?.mission && !list(r.node.detail).length && !r.children.length) detailBody.prepend(el('p', 'detail-note', '등록된 담당 업무가 아직 없어요.'));
       if (!dialog.open) dialog.showModal();
@@ -188,6 +197,7 @@
       if (destroyed) return;
       width = board.offsetWidth; height = board.offsetHeight; lines.replaceChildren(); lines.setAttribute('width', width); lines.setAttribute('height', height); lines.setAttribute('viewBox', `0 0 ${width} ${height}`);
       connect(ceo, leadership, 27); connect(chief, hqs, 28); hqs.forEach(hq => connect(hq, hq.children, 28));
+      hqs.forEach(hq => hq.children.filter(hasParallelDivisions).forEach(dept => connect(dept, dept.children, 24)));
       if (tf) { const a = anchor(chief, 'bottom'), b = boardRect(tf), y = b.top + b.height / 2; path(`M ${a.x} ${a.y} V ${y} H ${b.left}`, 'independent'); }
       updateSpace();
     }
