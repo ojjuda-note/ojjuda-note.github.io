@@ -176,6 +176,10 @@ export function createReadingReader({ dialog, prefix, canRead = () => true, rend
       art.setAttribute('aria-label', String(item.art.name || item.title || '') + ' 카드');
       renderArtwork(art, item.art);
       page.append(art);
+      if (item.artCaption) {
+        const caption = make('p', 'reader-art-caption', item.artCaption);
+        page.append(caption);
+      }
     }
     if (Array.isArray(item.summaryLines) && item.summaryLines.length) {
       const summary = make('div', 'reader-summary');

@@ -203,6 +203,9 @@ const server = http.createServer((request, response) => {
         'the original source explanation is rendered below its title');
       assert.deepEqual(await article.locator('.reader-paragraph').allTextContents(), expected.paragraphs || []);
       assert.deepEqual(await article.locator('.reader-summary-line').allTextContents(), expected.summaryLines || []);
+      assert.deepEqual(await article.locator('.reader-art-caption').allTextContents(), expected.artCaption ? [expected.artCaption] : [],
+        'the advice caption identifies the actual drawn card without adding another reading');
+      if (expected.art) assert.equal(await article.locator('.reader-art').getAttribute('aria-label'), expected.art.name + ' 카드');
     }
     async function openReaderMenu(prefix = 'result') {
       if (!await page.locator('#' + prefix + '-reader-menu').isVisible()) await page.locator('#' + prefix + '-reader-menu-toggle').click();

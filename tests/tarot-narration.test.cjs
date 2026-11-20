@@ -9,6 +9,7 @@ const { CARD_LIFE_THEMES } = load('life-themes.js');
 const { FORTUNE_ROWS, getFortune } = load('fortune-corpus/index.js');
 const { CARD_INTERPRETATIONS } = load('interpretation-engine.js');
 const { getPersonStory } = load('person-stories.js');
+const { buildPersonNarrative } = load('person-narrative.js');
 const { splitSummarySentences } = load('reading-summary.js');
 const { directInterpretation, directAction } = load('reading-voice.js');
 const plain = value => JSON.parse(JSON.stringify(value));
@@ -55,6 +56,8 @@ function checkCardIntroductions(report, selected, readings) {
     assert.equal(intro.cardId, selected[index].id);
     assert.equal(intro.roleIndex, index);
     assert.ok(intro.title.includes(selected[index].name));
+    assert.equal(intro.paragraphs[0], reading.paragraphs[0], 'the card introduction starts with its complete topic insight');
+    assert.equal(intro.paragraphs[1], reading.introduction, 'the name and role follow the conclusion');
     for (const paragraph of [reading.introduction, ...reading.paragraphs]) {
       assert.ok(intro.paragraphs.includes(paragraph), 'card introduction preserves each complete original explanation');
       assert.ok(report.text.includes(paragraph), 'full copy includes the relocated explanation');
@@ -93,20 +96,20 @@ for (const card of DECK.filter(card => card.arcana === 'minor')) {
       assert.ok(result.introduction.includes(card.name), `${card.id} retains its canonical name`);
       assert.ok(result.introduction.includes(result.displayName));
       assert.ok(!result.paragraphs.includes(result.introduction), 'the standalone introduction is not duplicated');
-      assert.ok(result.text.startsWith(result.introduction));
-      for (const fact of [input.foundation.symbol, directInterpretation(card.topics[topic]), input.detail.example, input.foundation.caution]) {
+      assert.ok(result.text.startsWith(result.paragraphs[0]), 'the full reading starts with its topic conclusion');
+      for (const fact of [input.foundation.symbol, card.topics[topic], input.detail.example, input.foundation.caution].map(directInterpretation)) {
         assert.ok(result.text.includes(fact), `${card.id}/${topic}/${index} preserves an authored explanation`);
       }
       assert.equal(result.action, directAction(input.detail.action), 'shown advice uses the actual authored action in the direct voice');
       const person = getPersonStory(card.id);
-      assert.equal(result.summary, splitSummarySentences(person[topic])[0], 'the preview starts with the selected topic in the actual card portrait');
-      assert.ok(result.paragraphs[0].startsWith(CARD_INTERPRETATIONS[card.id].meaning),
-        'the actual card meaning leads the reading before any inferred personality or caution');
-      assert.equal(result.paragraphs[1], person[topic], 'the selected topic follows the card meaning');
-      assert.ok(result.paragraphs.includes(person.portrait), 'the original personal portrait remains available');
-      assert.equal(result.meaning, CARD_INTERPRETATIONS[card.id].meaning, 'the original symbolic meaning remains intact');
-      assert.equal(result.traditionalMeaning, input.guidance.meaning, 'the original source interpretation is preserved separately');
-      assert.equal(result.foundationTakeaway, input.foundation.takeaway);
+      assert.equal(result.summary, splitSummarySentences(directInterpretation(person[topic]))[0], 'the preview starts with the selected topic in the actual card portrait');
+      assert.equal(result.paragraphs[0], directInterpretation(person[topic]), 'the complete authored topic insight leads the reading');
+      assert.equal(result.paragraphs[1], result.positionMeaning, 'the actual position explains that conclusion next');
+      assert.ok(result.paragraphs.includes(directInterpretation(person.portrait)), 'the original personal portrait remains available');
+      assert.equal(result.meaning, directInterpretation(CARD_INTERPRETATIONS[card.id].meaning), 'the symbolic meaning is retained in the polite editorial voice');
+      assert.ok(result.paragraphs.some(text => text.startsWith(result.meaning)), 'the original symbolic explanation is moved after the conclusion, not removed');
+      assert.equal(result.traditionalMeaning, directInterpretation(input.guidance.meaning), 'the explanation is restyled without replacing the raw source section');
+      assert.equal(result.foundationTakeaway, directInterpretation(input.foundation.takeaway));
       assert.doesNotMatch(result.text, /먼저 전통 타로 그림을 바탕으로 이 카드를 살펴보자|그 모습에 담긴 뜻을 조금 더 풀어보면 이래|그렇다면 무엇부터 해 보면 좋을까/);
       assert.equal(result.detailSections, input.base.sections);
       assert.equal(result.reference, input.base.reference);
@@ -140,6 +143,8 @@ for (const topicId of topics) {
   assert.equal(summary.groups[1].sections[0].id, 'together', 'the whole personal story comes before individual actions');
   assert.equal(summary.groups[1].sections[0].title, '지금 나에게 필요한 이야기');
   assert.equal(summary.groups[1].sections[0].paragraphs.join('\n\n'), summary.synthesis);
+  assert.equal(summary.groups[1].sections[0].paragraphs[0], directInterpretation(getPersonStory(cards[2].id)[topicId]),
+    'the general conclusion begins with the complete actual third-card topic insight');
   assert.equal(summary.groups[1].sections.length, 5);
   assert.equal(summary.groups[1].sections.find(section => section.id === 'possible-outcome').title, '실천한 뒤 살펴볼 변화');
   assert.equal(summary.groups[0].sections.length, 3);
@@ -161,7 +166,7 @@ for (const topicId of topics) {
     }
   }
   const timeline = summary.groups[2].sections;
-  for (const card of cards) assert.ok(timeline[0].paragraphs.join(' ').includes(getPersonStory(card.id).portrait),
+  for (const card of cards) assert.ok(timeline[0].paragraphs.join(' ').includes(directInterpretation(getPersonStory(card.id).portrait)),
     'the strength section explains each actual person portrait instead of asking the reader to discover a strength');
   assert.ok(timeline[1].paragraphs.join(' ').includes(readings[0].lifeTheme.past));
   assert.ok(timeline[2].paragraphs.join(' ').includes(readings[0].personalCaution));
@@ -181,7 +186,7 @@ for (const topicId of topics) {
   }
   const people = cards.map(card => getPersonStory(card.id));
   for (const person of people) {
-    assert.ok(summary.synthesis.includes(splitSummarySentences(person[topicId])[0]),
+    assert.ok(summary.synthesis.includes(splitSummarySentences(directInterpretation(person[topicId]))[0]),
       'every card contributes an interpretation written for the actual selected topic');
     for (const field of ['longing', 'defense', 'cost']) {
       assert.ok(!summary.synthesis.includes(person[field]),
@@ -192,13 +197,13 @@ for (const topicId of topics) {
   assert.ok(!summary.synthesis.includes(readings[2].action), 'the main story explains the person before the solution offers an action');
   const solutionSection = summary.groups[1].sections.find(section => section.id === 'solution');
   const solutionBody = solutionSection.paragraphs.join(' ');
-  for (const explanation of [people[2][topicId]]) {
+  for (const explanation of [directInterpretation(people[2][topicId])]) {
     assert.ok(solutionBody.includes(explanation) && solutionBody.indexOf(explanation) < solutionBody.indexOf(readings[2].action),
       'the actual selected topic leads into the complete original action');
   }
   assert.ok(!solutionBody.includes(readings[2].meaning), 'the symbolic definition belongs in card introductions');
-  assert.ok(summary.synthesis.includes(splitSummarySentences(people[0][topicId])[0]));
-  assert.ok(summary.synthesis.includes(splitSummarySentences(people[1][topicId])[0]),
+  assert.ok(summary.synthesis.includes(splitSummarySentences(directInterpretation(people[0][topicId]))[0]));
+  assert.ok(summary.synthesis.includes(splitSummarySentences(directInterpretation(people[1][topicId]))[0]),
     'the first two cards are read through this topic rather than a shared motion-only bridge');
   for (const reading of readings) {
     for (const detail of [reading.example, reading.topicMeaning, reading.foundationCaution]) {
@@ -229,6 +234,11 @@ for (const topicId of topics) {
   assert.ok(!summary.paragraphs.includes(summary.ritual));
   assert.ok(summary.oneLine.length >= 24 && /[.!?]$/u.test(summary.oneLine),
     'the short overview is a complete interpretation');
+  assert.ok(summary.oneLine.startsWith(splitSummarySentences(directInterpretation(people[2][topicId]))[0]),
+    'the short overview starts with the actual third-card conclusion');
+  assert.ok(summary.oneLine.includes(splitSummarySentences(buildPersonNarrative({ cards, topicId }).pairReading)[0]),
+    'the short overview also keeps the actual first two cards connected to the third-card action');
+  assert.ok(splitSummarySentences(summary.oneLine).length <= 3, 'the overview stays within three complete sentences');
   assert.ok(summary.oneLine.endsWith(splitSummarySentences(summary.ritual)[0]),
     'the short overview ends with one complete action from the actual third card and selected topic');
   assert.ok(summary.detailSections.some(section => section.body === base.summary));
@@ -253,17 +263,19 @@ for (const card of DECK) for (const topic of topics) for (let index = 0; index <
   assert.ok(reading.introduction.includes(POSITIONS[index].label));
   assert.ok(reading.introduction.includes(card.name));
   assert.ok(reading.paragraphs.length >= 5);
-  assert.ok(reading.paragraphs[0].startsWith(CARD_INTERPRETATIONS[card.id].meaning),
-    'all 78 cards lead with their own meaning rather than a presumed personal problem');
-  assert.equal(reading.paragraphs[1], getPersonStory(card.id)[topic]);
-  assert.ok(reading.paragraphs.includes(getPersonStory(card.id).portrait));
-  assert.ok(JSON.stringify(reading.detailSections).includes(reading.traditionalMeaning), 'the complete original interpretation remains accessible in source details');
+  assert.equal(reading.paragraphs[0], directInterpretation(getPersonStory(card.id)[topic]),
+    'all 78 cards lead with their actual authored topic insight');
+  assert.equal(reading.paragraphs[1], reading.positionMeaning);
+  assert.ok(reading.paragraphs.includes(directInterpretation(getPersonStory(card.id).portrait)));
+  assert.ok(reading.detailSections.some(section => directInterpretation(section.body || '').includes(reading.traditionalMeaning)),
+    'the complete original interpretation remains accessible in the preserved source details');
   const positionSource = reading.detailSections.find(section => section.title === '이 카드가 전하는 말');
   assert.ok(directInterpretation(positionSource.body).endsWith(reading.positionMeaning),
     'all 78 cards preserve this actual position passage in the expandable source as well as the main card text');
   const sourcePractice = reading.detailSections.find(section => section.title === '생활 속 예시와 해 볼 일');
-  assert.ok(sourcePractice.body.startsWith(reading.example), 'the original hypothetical example remains in source details');
-  const sourceAction = [sourcePractice.subtitle, sourcePractice.body.slice(reading.example.length).trim()].filter(Boolean).join(' ');
+  const [sourceExample, ...sourcePracticeBody] = sourcePractice.body.split(/\n\n/u);
+  assert.equal(reading.example, directInterpretation(sourceExample), 'the complete hypothetical example keeps its conditions and original source');
+  const sourceAction = [sourcePractice.subtitle, sourcePracticeBody.join('\n\n')].filter(Boolean).join(' ');
   assert.equal(reading.action, directAction(sourceAction), 'shown advice is derived from the complete action preserved in source details');
   if (card.details) assert.equal(sourceAction, card.details[topic].action, 'the raw authored action is preserved byte-for-byte');
   assert.doesNotMatch(reading.personalCaution, /카드|강한 그림/u,
@@ -327,7 +339,7 @@ for (let index = 0; index < DECK.length; index++) for (const topic of topics) {
   const solution = report.sections.find(section => section.id === 'solution');
   const body = solution.paragraphs.join(' ');
   const story = getPersonStory(ordered[2].id);
-  for (const explanation of [story[topic]]) {
+  for (const explanation of [directInterpretation(story[topic])]) {
     assert.ok(body.includes(explanation) && body.indexOf(explanation) < body.indexOf(report.ritual),
       `${ordered[2].id}/${topic}: the explanation leads into this topic's complete original action`);
   }
