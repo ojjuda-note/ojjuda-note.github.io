@@ -191,6 +191,11 @@ for (const topic of ['overall','love','money','work']) {
     assert.equal(summary.groups.find(group => group.id === 'domains').sections.length,50,'all fifty domain originals stay in the raw data');
     const pages = buildSummaryPages(summary,{cards});
     uniquePages(pages);
+    const solutionPages = chapterPages(pages, 'problem-solution');
+    assert.equal(solutionPages[0].art.id, cards[2].id, 'the advice illustration uses the actual third drawn card');
+    assert.equal(solutionPages[0].artCaption, `조언 카드 · ${cards[2].name}`);
+    assert.ok(solutionPages.slice(1).every(page => !page.art && !page.artCaption),
+      'the advice illustration appears once and never interrupts continued prose');
     if (topic === 'overall' && ids.join(',') === 'fool,justice,pentacles_king') {
       assert.equal(new Set(pages.map(page => page.chapterId)).size,72,'the fixed representative draw has 72 chapters including its retained references');
     }
@@ -306,8 +311,9 @@ for (const [index,card] of DECK.entries()) {
   const before = JSON.stringify(reading);
   const pages = buildCardPages(card,reading,{positionLabel:'실제 공개 순서의 자리'});
   uniquePages(pages);
-  assert.equal(chapterText(pages,'cards-' + card.id),(reading.introduction || '') + original(reading),
-    'standalone card stories remain character-for-character unchanged');
+  const [conclusion, ...details] = reading.paragraphs;
+  assert.equal(chapterText(pages,'cards-' + card.id),conclusion + (reading.introduction || '') + details.join(''),
+    'the complete conclusion leads the card introduction without losing any authored paragraph');
   assert.equal(pages[0].art.id,card.id);
   assert.equal(pages[0].subtitle,'실제 공개 순서의 자리');
   assertReferenceMaterial(pages,reading);

@@ -1,33 +1,34 @@
-import { getPersonStory } from './person-stories.js?v=20261114-tarot-first-person1';
-import { PERSON_PAIR_READINGS } from './person-pair-readings.js?v=20261114-tarot-first-person1';
+import { getPersonStory } from './person-stories.js?v=20261120-tarot-voice2';
+import { PERSON_PAIR_READINGS } from './person-pair-readings.js?v=20261120-tarot-voice2';
 import { getConnectionProfile } from './connection-profiles.js?v=20261114-tarot-first-person1';
-import { withParticle } from './interpretation-engine.js?v=20261114-tarot-first-person1';
+import { withParticle } from './interpretation-engine.js?v=20261120-tarot-voice2';
 import { splitSummarySentences, summaryLinesFrom } from './reading-summary.js?v=20261113-tarot-summary1';
+import { directInterpretation, directAction } from './reading-voice.js?v=20261120-tarot-voice2';
 
 const TOPICS = ['overall', 'love', 'money', 'work'];
-export const PERSONAL_READING_BASIS = '내가 고른 상황과 뽑은 세 장을 연결해 성향과 마음을 해석한 내용이다. 내 실제 과거나 상대의 속마음을 확인한 결과는 아니다. 카드 연결에는 공통 해석 규칙을 적용하며, 선택 비교와 이어지는 답변에는 생활 제안을 담았다.';
+export const PERSONAL_READING_BASIS = '선택한 상황과 세 카드의 뜻으로 내 성향과 마음을 살펴보는 풀이예요. 실제 과거나 상대의 속마음을 확인한 결과는 아니에요. 카드 연결에는 공통 해석 규칙을 쓰고, 선택 비교와 이어지는 답변에는 생활 제안을 담았어요.';
 const first = text => splitSummarySentences(text)[0];
+const paragraph = (...parts) => [...new Set(parts.map(text => String(text || '').trim()).filter(Boolean))].join(' ');
 const SITUATION_BOUNDARIES = Object.freeze({
-  'overall-family': '챙김을 받는 사람의 뜻을 묻고, 내가 쉴 시간도 함께 남겨 둔다.',
-  'overall-study': '이번 평가 하나로 내 능력이나 앞으로의 길 전체를 정하지는 않는다.',
-  'overall-change': '새로운 선택을 하더라도 당장 먹고 자고 생활할 여유는 남겨 둔다.',
-  'love-crush': '상대가 원하지 않는다면 그 답을 존중하고 더 재촉하지 않는다.',
-  'love-flirting': '둘이 약속하지 않은 연인의 역할까지 서로에게 요구하지는 않는다.',
-  'love-dating': '사귀는 사이여도 싫다고 말할 권리와 혼자 쉴 시간은 서로 지켜 준다.',
-  'love-distance': '관계를 이어 가려고 한 사람만 잠과 생활을 줄이고 있다면 그 방식은 다시 정해야 한다.',
-  'love-reunion': '상대가 거절하거나 연락을 멈춰 달라고 했다면 더 연락하지 않는다.',
-  'money-spending': '꼭 필요한 생활비를 남기고, 실제 이용 조건을 읽은 뒤 결정한다.',
-  'money-saving': '실제 들어오는 돈 안에서 계획하고, 생활에 필요한 돈까지 모두 묶어 두지는 않는다.',
-  'money-agreement': '직접 읽고 이해한 조건에만 동의하고, 감당하기 어려운 약속은 맡지 않는다.',
-  'work-job-search': '지원 조건과 제출 마감은 실제 공고에서 확인한다.',
-  'work-job-change': '확정되지 않은 제안만 믿고 지금의 약속을 먼저 바꾸지는 않는다.',
-  'work-team': '새 요청을 받으면 어디까지 맡는지 합의한 뒤 시작한다.',
-  'work-business': '확인한 비용과 시간으로 감당할 수 있는 약속만 한다.'
+  'overall-family': '돌봄을 받는 사람이 원하는 것을 묻고, 내가 쉴 시간도 남겨 두세요.',
+  'overall-study': '이번 평가 하나로 내 능력이나 앞으로의 길 전체를 판단하지 마세요.',
+  'overall-change': '새 선택을 하더라도 당장 먹고 자고 생활할 여유는 남겨 두세요.',
+  'love-crush': '상대가 원하지 않는다면 그 답을 존중하고 더 재촉하지 마세요.',
+  'love-flirting': '둘이 약속하지 않은 연인의 역할까지 요구하지 마세요.',
+  'love-dating': '사귀는 사이여도 싫다고 말할 권리와 혼자 쉴 시간은 서로 지켜 주세요.',
+  'love-distance': '한 사람만 잠과 생활을 줄이며 관계를 이어 가고 있다면 그 방식은 다시 정하세요.',
+  'love-reunion': '상대가 거절하거나 연락을 멈춰 달라고 했다면 더 연락하지 마세요.',
+  'money-spending': '꼭 필요한 생활비를 남기고, 실제 이용 조건을 읽은 뒤 결정하세요.',
+  'money-saving': '실제로 들어오는 돈 안에서 계획하세요. 생활에 필요한 돈까지 모두 묶어 두지는 마세요.',
+  'money-agreement': '직접 읽고 이해한 조건에만 동의하세요. 감당하기 어려운 약속은 맡지 마세요.',
+  'work-job-search': '지원 조건과 제출 마감은 실제 공고에서 확인하세요.',
+  'work-job-change': '확정되지 않은 제안만 믿고 지금의 약속을 먼저 바꾸지는 마세요.',
+  'work-team': '새 요청을 받으면 어디까지 맡는지 합의한 뒤 시작하세요.',
+  'work-business': '확인한 비용과 시간으로 감당할 수 있는 약속만 하세요.'
 });
 
-// Short personal clauses drawn from each existing portrait and relationship
-// profile. The last choice comes from its actual situation action or route,
-// so the preview never lists the same two abstract strengths a second time.
+// These authored clauses make a contrast in pace concrete. Other connections
+// use the actual offer, excess and route instead of repeating both portraits.
 const PERSONAL_TRAITS = Object.freeze({
   fool: '직접 경험하며 배워 가는',
   magician: '가진 도구와 능력으로 생각을 실현하려는',
@@ -124,23 +125,22 @@ const phrase = (value, particle) => withParticle(value, particle);
 // traditional combinations. A give/need match suggests a question to examine;
 // it never proves that two habits are compatible or guarantees an outcome.
 function commonPair(cards, left, right, reason) {
-  const opening = `나는 ${PERSONAL_TRAITS[cards[0].id]} 편이고, ${PERSONAL_TRAITS[cards[1].id]} 성향도 있다.`;
   if (reason === 'different-pace') {
-    return `${opening} 바로 움직일 일과 더 살펴볼 일을 나누어 내 속도를 조절한다.`;
+    return `${PERSONAL_TRAITS[cards[0].id]} 마음과 ${PERSONAL_TRAITS[cards[1].id]} 마음이 함께 보여요. 바로 움직일 일과 더 확인할 일을 나누세요.`;
   }
   if (reason === 'shared-emphasis') {
-    return `${opening} 익숙한 두 장점을 살리되, 선택에 필요한 다른 조건도 함께 살핀다.`;
+    return `${phrase(left.offer, '과')} ${phrase(right.offer, '을')} 함께 써 보세요. ${phrase(left.excess, '이')} 앞서지는 않는지 확인하세요.`;
   }
   if (reason === 'right-supports-left') {
-    return `${opening} ${phrase(left.excess, '이')} 나타난다면 내가 어떤 확인을 놓쳤는지 돌아본다.`;
+    return `${phrase(left.excess, '이')} 앞설 때는 ${phrase(right.offer, '이')} 필요해요. ${directAction(right.route)}`;
   }
   if (reason === 'left-supports-right') {
-    return `${opening} ${phrase(right.excess, '이')} 나타난다면 내가 원래 중요하게 여긴 것부터 다시 살핀다.`;
+    return `${phrase(right.excess, '이')} 앞설 때는 ${phrase(left.offer, '이')} 필요해요. ${directAction(left.route)}`;
   }
   if (reason === 'mutual-support') {
-    return `${opening} 두 장점을 함께 쓰되, 하나를 지키려고 다른 하나를 무리하게 밀어붙이지는 않는다.`;
+    return `${phrase(left.offer, '과')} ${phrase(right.offer, '을')} 함께 써 보세요. 한쪽을 지키려고 다른 쪽을 무리하게 밀어붙이지 마세요.`;
   }
-  return `${opening} 어느 한쪽만으로 판단하지 않고, 지금 상황에서 더 필요한 쪽에 힘을 보탠다.`;
+  return `${phrase(left.offer, '과')} ${phrase(right.offer, '은')} 쓰임이 달라요. 지금 필요한 쪽에 먼저 힘을 보태세요.`;
 }
 
 function pairReading(cards, profiles, topicId, reason, contextId) {
@@ -167,7 +167,8 @@ export function buildPersonNarrative({ cards, topicId = 'overall', context, name
       || cards.some(card => !card?.id || typeof card.name !== 'string' || !card.name.trim())) {
     throw new Error('tarot_person_narrative_requires_three_actual_cards');
   }
-  const stories = cards.map(card => getPersonStory(card.id));
+  const stories = cards.map(card => Object.fromEntries(Object.entries(getPersonStory(card.id)).map(([key, value]) =>
+    [key, typeof value === 'string' ? directInterpretation(value) : value])));
   const profiles = cards.map(card => getConnectionProfile(card.id));
   const actualTopic = context?.topicId || topicId;
   if (!TOPICS.includes(actualTopic)) throw new Error('tarot_person_narrative_requires_topic');
@@ -177,27 +178,30 @@ export function buildPersonNarrative({ cards, topicId = 'overall', context, name
   }
   const [left, right, last] = stories;
   const situation = context?.cards?.[cards[0].id];
-  const opening = situation ? first(situation) : first(left[actualTopic]);
+  const opening = directInterpretation(situation ? first(situation) : first(left[actualTopic]));
   const present = context?.cards?.[cards[1].id];
-  const presentMeaning = present ? first(present) : first(right[actualTopic]);
+  const presentMeaning = directInterpretation(present ? first(present) : first(right[actualTopic]));
   const reason = pairReason(profiles[0], profiles[1]);
   const pairSelection = pairReading(cards, profiles, actualTopic, reason, context?.id);
-  const pair = pairSelection.text;
-  const concern = context?.concern && !context?.id ? `내 고민은 ${context.concern}이다. ` : '';
+  const pair = directInterpretation(pairSelection.text);
+  const concern = context?.concern && !context?.id ? directInterpretation(`내 고민은 ${context.concern}이다.`) : '';
   const limit = SITUATION_BOUNDARIES[context?.id]
-    || (context?.boundary ? `${phrase(context.boundary, '을')} 지킨다.` : '');
+    || (context?.boundary ? directAction(`${phrase(context.boundary, '을')} 지킨다.`) : '');
   const lastAdvice = context?.cards?.[cards[2].id];
   const lastSentences = lastAdvice ? splitSummarySentences(lastAdvice) : [];
-  const lastMeaning = lastAdvice ? lastSentences[0] : last[actualTopic];
-  const lastAction = lastSentences.length > 1 ? lastSentences.slice(1).join(' ') : '';
-  const choiceLink = lastAction || profiles[2].route;
+  const lastMeaning = directInterpretation(lastAdvice ? lastSentences[0] : last[actualTopic]);
+  const lastAction = lastSentences.length > 1 ? directAction(lastSentences.slice(1).join(' ')) : '';
+  const choiceLink = lastAction || directAction(profiles[2].route);
+  // Keep the authored meaning and its action together: a later sentence may
+  // refer to a condition or object introduced by the one immediately before it.
   const paragraphs = [
-    `${opening} ${concern}`.trim(),
-    `${presentMeaning} ${pair}`,
-    `${lastMeaning} ${choiceLink} ${limit}`.replace(/ {2,}/g, ' ').trim()
+    lastAdvice ? paragraph(lastMeaning, choiceLink) : lastMeaning,
+    paragraph(opening, concern, presentMeaning, pair),
+    lastAdvice ? limit : paragraph(choiceLink, limit)
   ];
-  const summaryLines = summaryLinesFrom(pair, choiceLink);
-  const overview = `${first(pair)} ${lastAction || first(closingAction.trim() || choiceLink)}`;
+  const summaryLines = summaryLinesFrom(lastAdvice ? lastMeaning : pair, choiceLink);
+  const overview = paragraph(first(lastMeaning), lastAdvice ? '' : first(pair),
+    first(lastAction || directAction(closingAction.trim()) || choiceLink));
   const supports = [0, 1].filter(index => profiles[2].give === profiles[index].need);
   return {
     paragraphs, summaryLines, stories, pairReading: pair, overview, choiceLink,

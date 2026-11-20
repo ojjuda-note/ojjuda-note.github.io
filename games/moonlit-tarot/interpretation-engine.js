@@ -3,7 +3,7 @@ import { WANDS_RULES } from './card-rules-wands.js?v=20261114-tarot-first-person
 import { CUPS_RULES } from './card-rules-cups.js?v=20261114-tarot-first-person1';
 import { SWORDS_RULES } from './card-rules-swords.js?v=20261114-tarot-first-person1';
 import { PENTACLES_RULES } from './card-rules-pentacles.js?v=20261114-tarot-first-person1';
-import { directInterpretation, directAction } from './reading-voice.js?v=20261113-tarot-easy1';
+import { directInterpretation, directAction } from './reading-voice.js?v=20261120-tarot-voice2';
 
 // Card-specific editorial applications of the existing, cited card meanings.
 // The same rules are applied to concrete topic contexts; these are not extra

@@ -150,8 +150,10 @@ base.sections.forEach((section, index) => {
   assert.equal(section.title, expectedTitles[index]);
   assert.equal(section.number, index + 1);
   assert.equal(section.categoryId, READING_TOPICS[index].category);
-  assert.equal(section.paragraphs.length, 4, 'a hypothetical example leads into the personal problem, current circumstances and response');
-  assert.equal(section.paragraphs[0], section.example);
+  assert.equal(section.paragraphs.length, 4, 'the complete response leads into the reasons, current circumstances and hypothetical example');
+  assert.equal(section.paragraphs[0], section.interpretation.response,
+    'the selected advice-card insight and action stay together before examples');
+  assert.ok(section.paragraphs[3].startsWith(section.example), 'the hypothetical example remains complete after the interpretation');
   assert.ok(section.paragraphs.every(text => typeof text === 'string' && text.length > 45));
   assertPersonalProse([section.title, section.subtitle, ...section.summaryLines, ...section.paragraphs].join('\n'), section.id);
   assert.equal(section.summaryLines.length, 2);
@@ -242,13 +244,13 @@ for (const topic of ['overall', 'love', 'money', 'work']) assert.deepEqual(plain
 const poisoned = baseCards.map((card, index) => ({ ...getReading(card, 'love', index), topicMeaning: 'UNRELATED_TOPIC_TEXT', example: 'UNRELATED_TOPIC_EXAMPLE', action: 'UNRELATED_TOPIC_ACTION' }));
 assert.deepEqual(plain(buildDomainGroup({ cards: baseCards, readings: poisoned })), plain(base));
 assertPersonalProse(base.description, 'domain navigation description');
-assert.match(base.description, /궁금한 분야.*골라/);
+assert.match(base.description, /궁금한 분야.*고르면/);
 assert.match(DOMAIN_READING_BASIS, /같은 세 장/);
 assert.match(DOMAIN_READING_BASIS, /카드의 기본 뜻/);
-assert.match(DOMAIN_READING_BASIS, /생활 제안/);
-assert.match(DOMAIN_READING_BASIS, /전통 자료는 여러 풀이에서 함께 참고/);
-assert.match(DOMAIN_READING_BASIS, /가상 장면/);
-assert.match(DOMAIN_READING_BASIS, /실제로 겪은 일이나 앞으로 생길 일, 상대의 속마음을 확인한 내용은 아니/);
+assert.match(DOMAIN_READING_BASIS, /실천 방법/);
+assert.match(DOMAIN_READING_BASIS, /전통 자료를 함께 참고/);
+assert.match(DOMAIN_READING_BASIS, /가상 예시/);
+assert.match(DOMAIN_READING_BASIS, /실제로 겪은 일이나 미래의 사건, 상대의 속마음을 알아낸 내용은 아니/);
 assert.ok(!JSON.stringify(base).includes(DOMAIN_READING_BASIS), 'the reading basis is exported separately from the personal domain view');
 assert.doesNotMatch(JSON.stringify(base), /궁합\s*\d+\s*%|반드시 합격|무조건 수익|수명은|병이 낫/);
 const integrated = getSummary(baseCards, 'money');

@@ -103,7 +103,10 @@ function chapter(pages, group, part, index, extras = {}) {
     for (const chunk of splitReaderParagraphs(paragraphs)) pages.push({ ...page, paragraphs: chunk });
   }
   if (pages.length === start) pages.push({ ...common, sourceId: sources[0].id, sourceTitle: part.title, subtitle: part.subtitle || '', paragraphs: [] });
-  if (extras.art) pages[start].art = extras.art;
+  if (extras.art) {
+    pages[start].art = extras.art;
+    if (extras.artCaption) pages[start].artCaption = extras.artCaption;
+  }
   if (extras.links?.length) pages[pages.length - 1].links = extras.links;
   for (let offset = start; offset < pages.length; offset++) pages[offset].id = `${chapterId}-${offset - start + 1}`;
 }
@@ -166,8 +169,11 @@ export function buildSummaryPages(summary, { cards = [], personalReport = null }
       const target = category ? { id: `domains:${category.id}`, label: category.label } : group;
       // Chapter IDs remain tied to the source section, even when grouped by category in the menu.
       const start = pages.length;
-      chapter(pages, { id: group.id, label: target.label }, part, index,
-        { art: group.id === 'cards' ? cards.find(card => card.id === part.cardId) : null });
+      const adviceCard = group.id === 'problem' && part.id === 'solution' ? cards[2] : null;
+      chapter(pages, { id: group.id, label: target.label }, part, index, {
+        art: group.id === 'cards' ? cards.find(card => card.id === part.cardId) : adviceCard,
+        artCaption: adviceCard ? `조언 카드 · ${adviceCard.name}` : ''
+      });
       for (let page = start; page < pages.length; page++) pages[page].groupId = target.id;
       if (group.id === 'cards') cardAppendix(notes, part, part.id || `card-${index}`, part.displayName || cards[index]?.name || part.title);
     }
@@ -194,14 +200,15 @@ export function buildSummaryPages(summary, { cards = [], personalReport = null }
 export function buildCardPages(card, reading, { positionLabel = '' } = {}) {
   const pages = [];
   const title = reading.displayName || card.name;
+  const [conclusion, ...details] = paragraphsOf(reading);
   chapter(pages, { id: 'cards', label: '카드 이야기' }, {
     id: card.id, title, subtitle: positionLabel || reading.positionLabel || '',
-    paragraphs: [reading.introduction, ...paragraphsOf(reading)].filter(Boolean)
+    paragraphs: [conclusion, reading.introduction, ...details].filter(Boolean)
   }, 0, { art: card });
   cardAppendix(pages, reading, card.id, title);
   chapter(pages, appendix, {
     id: 'reading-scope', title: '이 설명은 어떻게 만들었나요?',
-    paragraphs: ['옛 타로 그림에 담긴 뜻을 오쭈다에서 쉬운 말로 풀어 쓴 설명이다. 생활 속 이야기는 카드의 뜻을 이해하도록 만든 예시다. 나에게 실제로 있었던 일이나 앞으로 생길 일을 알아낸 내용은 아니다.']
+    paragraphs: ['옛 타로 그림에 담긴 뜻을 오쭈다에서 쉬운 말로 풀어 썼어요. 생활 속 이야기는 카드의 뜻을 이해하도록 만든 예시예요. 실제로 있었던 일이나 앞으로 생길 일을 알아낸 내용은 아니에요.']
   });
   return pages;
 }

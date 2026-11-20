@@ -1,9 +1,9 @@
-import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261120-tarot-topics3';
+import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261120-tarot-voice2';
 import { TarotFX, TarotAudio } from './fx.js';
 import { TarotPayment, getTarotPrice } from './payment.js?v=20261114-tarot-copy1';
-import { createPersonalReading } from './personal-reading-ui.js?v=20261120-tarot-topics3';
-import { createReadingReader } from './reading-reader.js?v=20261120-tarot-chapters1';
-import { buildSummaryPages, buildCardPages, selectSummaryGroups } from './reading-pages.js?v=20261120-tarot-topics3';
+import { createPersonalReading } from './personal-reading-ui.js?v=20261120-tarot-voice2';
+import { createReadingReader } from './reading-reader.js?v=20261120-tarot-voice2';
+import { buildSummaryPages, buildCardPages, selectSummaryGroups } from './reading-pages.js?v=20261120-tarot-voice2';
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
