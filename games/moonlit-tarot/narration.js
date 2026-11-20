@@ -1,5 +1,5 @@
 import { CARD_LIFE_THEMES } from './life-themes.js?v=20261114-tarot-first-person1';
-import { buildDomainGroup, DOMAIN_READING_BASIS } from './domain-narration.js?v=20261114-tarot-first-person1';
+import { buildDomainGroup, DOMAIN_READING_BASIS } from './domain-narration.js?v=20261120-tarot-topics3';
 import { getCardInterpretation, interpretCard, MAIN_CONTEXTS } from './interpretation-engine.js?v=20261114-tarot-first-person1';
 import { getPersonStory } from './person-stories.js?v=20261114-tarot-first-person1';
 import { buildPersonNarrative, PERSONAL_READING_BASIS } from './person-narrative.js?v=20261114-tarot-first-person1';
