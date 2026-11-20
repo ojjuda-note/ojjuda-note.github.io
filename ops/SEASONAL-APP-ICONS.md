@@ -2,21 +2,36 @@
 
 ## 적용 범위
 
-아지트·공원·파장의 웹 탭, 설치 안내, PWA manifest에 같은 날짜의 그림을 사용한다. 기존 manifest 파일 위치, URL의 버전 매개변수, `id`, `start_url`, `scope`, 앱 이름을 유지한다. 내부 화면 이동으로 설치 앱의 정체성을 바꾸거나 로그인·초대·복구 토큰을 아이콘 URL에 넣지 않는다.
+아지트·공원·파장의 웹 탭, 설치 안내, PWA manifest에 같은 날짜의 이름 글자 아이콘을 사용한다. 기존 manifest 파일 위치, URL의 버전 매개변수, `id`, `start_url`, `scope`, 앱 이름을 유지한다. 내부 화면 이동으로 설치 앱의 정체성을 바꾸거나 로그인·초대·복구 토큰을 아이콘 URL에 넣지 않는다.
 
-네이티브 Android 앱의 홈 화면 아이콘은 APK/AAB에 포함된 런처 자원으로 결정된다. 이 웹 배포가 기존 네이티브 앱의 런처를 바꾸지는 않는다. 네이티브 자동 아이콘은 별도 앱 구현·업데이트 상태를 확인한다.
+네이티브 Android 앱의 홈 화면 아이콘은 APK/AAB에 포함된 런처 자원으로 결정된다. `ops/android-apps/scripts/prepare_resources.py`는 같은 24개 원본으로 Android 리소스를 만든다. 원격 달력은 포함된 테마의 선택 날짜만 바꾸므로 새 디자인은 앱을 재빌드하고 업데이트해야 반영된다. 새 Android 빌드·검증 상태는 해당 변경 커밋의 Android Actions 결과로 확인한다. 이전 일러스트 빌드의 성공을 새 원본 검증으로 사용하지 않는다.
 
 ## 원본과 선택
 
 - 달력: `shared/app-icons/calendar.json`
 - 날짜 선택: `shared/app-icons/selector.mjs`, `Asia/Seoul` 기준
 - 원본: `brand/app-icons/seasonal/{agit,park,pajang}/{spring,summer,autumn,winter,newyear,seollal,chuseok,christmas}.png`
-- 생성기: `ops/build-seasonal-app-icons.mjs`
+- 원본 제작: `ops/render-wordmark-app-icons.py`, 글꼴·SVG·미리보기는 `brand/app-icons/wordmark/`
+- 웹 배포 생성기: `ops/build-seasonal-app-icons.mjs`
 - 배포 상태: `/shared/app-icons/current.json`
 
-모든 원본은 불투명 1024×1024 PNG다. 가장 중요한 그림은 중앙의 마스킹 안전원에 둔다. 일반 아이콘은 중앙 800×800의 배경 여백을 정리한 뒤 비율 그대로 192×192, 512×512, 180×180으로 축소한다. `icon-maskable-512.png`는 같은 원본 전체를 512×512로 축소해 안전 여백을 유지한다. 원본의 안전원 구성은 디자인 검수 대상이며 자동 파일 검사만으로 보장하지 않는다.
+모든 원본은 불투명 1024×1024 PNG다. 아지트·공원·파장 이름은 Bagel Fat One 파생 글꼴의 윤곽선으로 만들고, 계절·행사별 배경색과 작은 장식을 더한다. 일반 아이콘은 중앙 800×800의 배경 여백을 정리한 뒤 비율 그대로 192×192, 512×512, 180×180으로 축소한다. `icon-maskable-512.png`는 같은 원본 전체를 512×512로 축소해 안전 여백을 유지한다. 글자의 마스킹 안전영역과 가독성은 디자인 검수 대상이며 자동 파일 검사만으로 보장하지 않는다.
+
+`brand/app-icons/<앱>-1024.png`와 `<앱>-maskable-1024.png` 6개도 현재 여름 이름 글자 아이콘이다. 일반 파일은 중앙 800×800을 1024×1024로 키운 것이고, 마스킹 파일은 여름 원본 전체다. 실제 날짜별 배포는 이 6개 대신 `seasonal/`의 선택된 원본을 사용한다.
 
 정상 빌드는 미래의 예약 배포에서 이미지 누락이 발생하지 않도록 24개 파일을 모두 확인한다. 누락·투명도·치수·변환 오류가 있으면 배포를 실패시키며 기존 운영 배포를 유지한다.
+
+이름 디자인 교체로 달력과 선택 순서를 바꾸지 않는다. 크리스마스는 12월 18~25일, 새해는 12월 25일~1월 1일, 설·추석은 본날 D-7~D+1이다. 12월 25일은 크리스마스가 우선한다. 전체 날짜·우선순위 규칙은 [앱 아이콘 달력](../docs/app-icon-calendar.md)을 따른다.
+
+## 이름 글자 원본 재생성
+
+Python 3, Pillow, fontTools, Inkscape와 저장소에 포함된 파생 글꼴이 필요하다. 저장소 루트에서 실행한다.
+
+```bash
+python3 ops/render-wordmark-app-icons.py
+```
+
+이 명령은 SVG 24개, 계절 PNG 24개, 여름 기본 PNG 6개, 해시 목록과 미리보기 3개를 다시 만든다. 이미 생성된 PNG로 미리보기만 갱신할 때는 `--previews-only`를 사용한다. 웹 배포용 PNG와 manifest는 아래 Node 생성기로 별도 생성한다. 세부 색상표·글꼴 원본 출처·OFL 1.1·미리보기 구성은 [이름 중심 아이콘 안내](../brand/app-icons/wordmark/README.md)를 따른다.
 
 ## 예약과 버전
 
