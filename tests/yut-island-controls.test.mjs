@@ -109,9 +109,9 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   const entryButton=name=>[...doc.querySelectorAll('#entry-controls button')].find(b=>b.textContent===name);
   assert.equal(doc.body.dataset.mpEntry,'true');assert.ok(doc.getElementById('tabletop').hidden);
   assert.equal(entryButton('컴퓨터 대전').getAttribute('aria-pressed'),'true');
-  entryButton('온라인 대전').click();assert.ok(!entryButton('방 코드로 참가').hidden);
-  entryButton('방 코드로 참가').click();assert.ok(doc.getElementById('join-code'));
-  doc.getElementById('close').click();entryButton('같은 기기').click();
+  entryButton('온라인 대전').click();assert.equal(doc.getElementById('public-room-host').hidden,false);
+  assert.ok(doc.querySelector('[data-arcade-rooms]'));assert.equal(entryButton('방 코드로 참가'),undefined);
+  entryButton('같은 기기').click();assert.equal(doc.getElementById('public-room-host').hidden,true);
   const recordNote=doc.querySelector('#entry-controls .ge-copy');
   assert.equal(recordNote.hidden,false);
   assert.match(recordNote.textContent,/첫 번째 팀\(산호 팀\).*내 월간 연승/);
@@ -358,9 +358,11 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   await until(()=>text('team-title').includes('자두'),450);
   await until(()=>text('team-title').includes('산호'),450);
   assert.equal(first().textContent,'윷 던지기');assert.equal(first().disabled,false);
-  doc.getElementById('settings').click();dialogButton('온라인 멀티').click();dialogButton('방 코드로 참가').click();
-  doc.getElementById('join-code').value='bad';dialogButton('참가하기').click();
-  assert.match(text('dialog-body'),/전체를 붙여 넣으세요/);
+  doc.getElementById('settings').click();dialogButton('온라인 멀티').click();
+  assert.equal(doc.getElementById('setup').hidden,false);
+  assert.equal(doc.querySelector('#entry-controls [aria-pressed="true"]').textContent,'온라인 대전');
+  assert.ok(doc.querySelector('[data-arcade-rooms]'));
+  assert.equal(doc.getElementById('join-code'),null);
 
 });
 
