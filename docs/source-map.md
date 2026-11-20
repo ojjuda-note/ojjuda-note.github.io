@@ -46,6 +46,7 @@
 | 공통 게임 월간 순위 화면 | `features/arcade/monthly-ranking.html`, `.css`, `.js` | `community_game_monthly_personal` RPC |
 | 공통 게임 입장·결과 순위 링크 | `shared/games/game-results.js`, `.css` | 게임별 최고 기록은 기존 RPC 유지 |
 | 회원 정지·영구정지 | `admin/` | `admin-ban` |
+| 운영본부 조직도 | `admin/operations.html`, `operations.css`, `operations.js`, `operations-chart.js` | 관리자 전용 `admin_organization_read` RPC. 조직 구조·담당 업무는 RLS로 보호된 `admin_organization_documents`에서 조회하며 공개 파일에 넣지 않음 |
 | 계정 복구 | `shared/auth/` | `member-recovery` |
 | 오류 신고 | `shared/diagnostics/` | `feedback-codex` |
 | 운세·리듬 구매내역 관리 | `admin/fortune-purchases.js`, `.css` | 관리자 전용 `admin_fortune_purchases`로 바이오리듬·타로·사주의 실제 결제 항목·사용 쭈 조회 |

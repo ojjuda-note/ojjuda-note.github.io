@@ -12,9 +12,9 @@ const {window}=browser;
 window.eval(read('admin/service-scope.js'));
 window.eval(read('admin/navigation.js'));
 const nav=window.OjjudaAdminNavigation;
-assert.equal(nav.GROUPS.length,5,'one task-oriented menu per management group');
+assert.equal(nav.GROUPS.length,6,'one task-oriented menu per management group');
 assert.deepEqual(Array.from(nav.GROUPS,group=>group.label),
-  ['운영 현황','회원·ZU','콘텐츠 관리','신고·안전','운영·보관']);
+  ['운영 현황','운영본부','회원·ZU','콘텐츠 관리','신고·안전','운영·보관']);
 const actual=nav.GROUPS.flatMap(group=>group.items.map(([area,tab])=>`${area}:${tab}`));
 assert.equal(new Set(actual).size,actual.length,'no duplicate functional locations');
 for(const [area,tabs] of Object.entries({
@@ -42,19 +42,19 @@ assert.equal(counts['operations:errors'],'1');
 assert.match(host.textContent,/상품권 등록/);
 assert.match(host.textContent,/원고실/);
 
-assert.equal(host.querySelectorAll('[data-admin-folder]').length,6,'all five folders and the full index stay visible');
+assert.equal(host.querySelectorAll('[data-admin-folder]').length,7,'all six folders and the full index stay visible');
 assert.deepEqual([...host.querySelectorAll('.adm-menu-group:not([hidden])')].map(e=>e.dataset.group),['status']);
 nav.selectFolder(host.querySelector('[data-admin-folder="content"]'));
 assert.deepEqual([...host.querySelectorAll('.adm-menu-group:not([hidden])')].map(e=>e.dataset.group),['content']);
 assert.equal(host.querySelector('[data-admin-folder="content"]').getAttribute('aria-pressed'),'true');
 nav.selectFolder(host.querySelector('[data-admin-folder="all"]'));
-assert.equal(host.querySelectorAll('.adm-menu-group:not([hidden])').length,5,'full folder view shows all five sections');
+assert.equal(host.querySelectorAll('.adm-menu-group:not([hidden])').length,6,'full folder view shows all six sections');
 const search=host.querySelector('[data-admin-search]');
 search.value='포토땅';nav.filter(search);
 assert.deepEqual([...host.querySelectorAll('.adm-menu-group:not([hidden])')].map(e=>e.dataset.group),['content']);
 assert.equal(host.querySelectorAll('.adm-menu-item:not([hidden]) .adm-menu-link[data-v="photo-stages"]').length,1);
 search.value='';nav.filter(search);
-assert.equal(host.querySelectorAll('.adm-menu-group:not([hidden])').length,5);
+assert.equal(host.querySelectorAll('.adm-menu-group:not([hidden])').length,6);
 
 assert.equal(nav.togglePin('account','visitors'),true);
 nav.replaceNav({area:'payment',tab:'users',summary});
@@ -82,6 +82,9 @@ for(const service of ['agit','park','pajang']){
   host.innerHTML=nav.render({service,area,tab:home,summary});
   assert.equal(host.querySelector('.adm-navigation').dataset.service,service);
   assert.equal(host.querySelector('[data-admin-folder="content"] span').textContent,scope.services[service].label+' 관리');
+  const organization=host.querySelector('.adm-menu-group[data-group="headquarters"] .adm-menu-link');
+  assert.equal(organization.getAttribute('href'),'/admin/operations.html'+(service==='agit'?'':'?from='+service));
+  assert.equal(organization.hasAttribute('data-act'),false,'organization opens its protected standalone page');
   const items=[...host.querySelectorAll('.adm-menu-groups [data-act="adm-open"]')];
   for(const item of items)assert.equal(scope.allows(service,item.dataset.v),true,`${service} never renders ${item.dataset.v}`);
   assert.deepEqual(items.filter(item=>scope.common.includes(item.dataset.v)).map(item=>`${item.dataset.area}:${item.dataset.v}`).sort(),commonKeys,'shared entries retain identical registry destinations in every service');

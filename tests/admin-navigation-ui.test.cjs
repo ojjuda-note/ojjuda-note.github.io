@@ -154,7 +154,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     await page.goto('https://fixture.test/world.html?admin=overview'); await loaded();
     await page.locator('.adm-stat').filter({ hasText: '정지 계정' }).waitFor();
     assert.deepEqual(await page.locator('.adm-menu-group > h3').allTextContents(),
-      ['운영 현황','회원·ZU','아지트 관리','신고·안전','운영·보관']);
+      ['운영 현황','운영본부','회원·ZU','아지트 관리','신고·안전','운영·보관']);
     for(const [id,title,home] of [['park','공원','cards'],['pajang','파장','pajang-answers'],['agit','아지트','overview']]){
       await service(id);
       await page.getByRole('heading',{name:title+' 관리자모드',exact:true}).waitFor();
@@ -164,16 +164,18 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
         for(const target of tabs)assert.equal(await page.locator('.adm-menu-group .adm-menu-link[data-v="'+target+'"]').count(),owner===id?1:0,'dedicated menu '+target+' only belongs to '+owner);
       }
       for(const target of ['users','settings','reports','feedback','notice','activity'])assert.ok(await page.locator('.adm-menu-group .adm-menu-link[data-v="'+target+'"]').count()>0,'shared operation '+target+' remains in '+id);
+      assert.equal(await page.locator('.adm-menu-group[data-group="headquarters"] .adm-menu-link').getAttribute('href'),
+        '/admin/operations.html'+(id==='agit'?'':'?from='+id),'organization keeps the current administrator service');
       if(id==='pajang'){
         await mounted('pajang-answers');assert.equal(await page.evaluate(()=>fixture.options['pajang-answers'].view),'answers');
         await tab('pajang-chats');await mounted('pajang-chats');assert.equal(await page.evaluate(()=>fixture.options['pajang-chats'].view),'chats');
       }
     }
-    assert.equal(await page.locator('[data-admin-folder]').count(),6,'all category folders are visible without expansion');
+    assert.equal(await page.locator('[data-admin-folder]').count(),7,'all category folders are visible without expansion');
     assert.equal(await page.locator('.adm-navigation').evaluate(node => node.scrollWidth <= node.clientWidth), true,
       'file folders fit the mobile width');
     await page.locator('[data-admin-folder="all"]').click();
-    assert.equal(await page.locator('.adm-menu-group:not([hidden])').count(),5);
+    assert.equal(await page.locator('.adm-menu-group:not([hidden])').count(),6);
     await page.getByLabel('기능 찾기').fill('포토땅');
     assert.equal(await page.locator('.adm-menu-group:not([hidden])').count(),1,'search narrows the group list');
     assert.equal(await page.locator('.adm-menu-link:not([hidden])').filter({hasText:'포토땅따먹기'}).count(),1);

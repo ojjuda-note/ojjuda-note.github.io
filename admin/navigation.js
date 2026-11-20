@@ -5,6 +5,8 @@
     { id:'status', label:'운영 현황', items:[
       ['account','overview','운영 요약'],['account','visitors','방문·이용 통계'],
       ['operations','errors','오류 현황'] ] },
+    { id:'headquarters', label:'운영본부', items:[
+      ['operations','organization','조직도'] ] },
     { id:'members', label:'회원·ZU', items:[
       ['account','users','가입자 관리'],['account','suspended','정지 계정'],
       ['trash','trash-accounts','탈퇴 계정'],['account','referrals','추천인'],
@@ -45,14 +47,18 @@
     const value = field ? Number(summary?.[field]) : 0;
     return Number.isSafeInteger(value)&&value>0 ? value : 0;
   }
-  function itemHtml(item,area,tab,summary,groupLabel='') {
+  function itemHtml(item,area,tab,summary,groupLabel='',service='agit') {
     const current=item.area===area&&item.tab===tab;
     const pinned=pins.includes(key(item.area,item.tab));
     const count=badgeNumber(summary,item.area,item.tab);
     const search=(item.label+' '+groupLabel).toLocaleLowerCase('ko-KR');
     const hidden=query&&!search.includes(query)?' hidden':'';
+    const label=`<span>${escape(item.label)}</span><span class="adm-menu-count" data-admin-count="${item.area}:${item.tab}"${count?'':' hidden'}>${count?count.toLocaleString('ko-KR'):''}</span>`;
+    const link=item.tab==='organization'
+      ? `<a class="adm-menu-link${current?' is-current':''}" href="/admin/operations.html${service==='agit'?'':'?from='+service}"${current?' aria-current="page"':''}>${label}</a>`
+      : `<button type="button" class="adm-menu-link${current?' is-current':''}" data-act="adm-open" data-area="${item.area}" data-v="${item.tab}"${current?' aria-current="page"':''}>${label}</button>`;
     return `<div class="adm-menu-item" data-admin-nav-item data-search="${escape(search)}"${hidden}>
-      <button type="button" class="adm-menu-link${current?' is-current':''}" data-act="adm-open" data-area="${item.area}" data-v="${item.tab}"${current?' aria-current="page"':''}><span>${escape(item.label)}</span><span class="adm-menu-count" data-admin-count="${item.area}:${item.tab}"${count?'':' hidden'}>${count?count.toLocaleString('ko-KR'):''}</span></button>
+      ${link}
       <button type="button" class="adm-menu-pin${pinned?' is-pinned':''}" data-act="adm-pin" data-area="${item.area}" data-v="${item.tab}" aria-label="${escape(item.label)} 즐겨찾기 ${pinned?'해제':'추가'}" aria-pressed="${pinned}" title="즐겨찾기 ${pinned?'해제':'추가'}">${pinned?'★':'☆'}</button>
     </div>`;
   }
@@ -68,13 +74,13 @@
     const folder=query?'all':folderSelection||selected;
     const favorites=pins.map(id=>allItems.find(item=>key(item.area,item.tab)===id)).filter(item=>item&&allowed(item));
     const matchedFavorites=favorites.filter(item=>!query||(item.label+' '+GROUPS.find(group=>group.id===item.group)?.label).toLocaleLowerCase('ko-KR').includes(query));
-    const favoriteHtml=favorites.map(item=>itemHtml(item,area,tab,summary,GROUPS.find(group=>group.id===item.group)?.label)).join('');
+    const favoriteHtml=favorites.map(item=>itemHtml(item,area,tab,summary,GROUPS.find(group=>group.id===item.group)?.label,service)).join('');
     const groupsHtml=groups.map(group=>{
       const extra=group.id==='members'
         ? `<div class="adm-menu-item" data-admin-nav-item data-search="상품권 등록 회원·zu"${query&&!('상품권 등록 회원·zu').includes(query)?' hidden':''}><a class="adm-menu-link" href="/admin/rewards.html${service==='agit'?'':'?from='+service}">상품권 등록</a></div>` : '';
       const matched=group.items.some(([, ,label])=>!query||(label+' '+group.label).toLocaleLowerCase('ko-KR').includes(query))
         ||(group.id==='members'&&(!query||('상품권 등록 회원·zu').includes(query)));
-      const items=group.items.map(([targetArea,targetTab,label])=>itemHtml({area:targetArea,tab:targetTab,label},area,tab,summary,group.label)).join('')+extra;
+      const items=group.items.map(([targetArea,targetTab,label])=>itemHtml({area:targetArea,tab:targetTab,label},area,tab,summary,group.label,service)).join('')+extra;
       return `<section class="adm-menu-group" data-group="${group.id}"${(query&&!matched)||(!query&&folder!=='all'&&folder!==group.id)?' hidden':''}><h3>${escape(group.label)}</h3><div class="adm-menu-group-items">${items}</div></section>`;
     }).join('');
     const foldersHtml=[...groups,{id:'all',label:'전체 보기',items:[]}].map(group=>{
