@@ -51,7 +51,8 @@ test('game entry, settings and result use the same Ojjuda color and focus vocabu
   assert.match(results, /:root\[data-world-theme\]:not\(\[data-theme=dark\]\) \.game-result-card\[data-result-outcome="success"\]/, 'winning results inherit the same accent');
   assert.match(controls, /:root\[data-world-theme\]:not\(\[data-theme=dark\]\) \.game-controls button/, 'game control buttons follow the same seasonal theme');
   const themes = read('app/world/world-themes.css');
-  const seasonalAccents = [...themes.matchAll(/:root\[data-world-theme="[^"]+"\]\{[^}]*?--accent:(#[0-9a-f]{6})/gi)].map(match => match[1].slice(1));
+  assert.match(themes, /--accent:var\(--season-accent\)/, 'the active accent inherits the seasonal palette');
+  const seasonalAccents = [...themes.matchAll(/:root\[data-world-theme="[^"]+"\]\{[^}]*?--season-accent:(#[0-9a-f]{6})/gi)].map(match => match[1].slice(1));
   assert.ok(seasonalAccents.length >= 15, 'all seasonal palettes remain in the audit');
   for (const accent of seasonalAccents) {
     assert.ok(contrast('ffffff', accent) >= 4.5, `the seasonal primary action #${accent} must be readable`);

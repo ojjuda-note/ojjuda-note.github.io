@@ -8,6 +8,7 @@
   const gameMin = kind => ['liar','king','minority','mission'].includes(kind) ? 3 : 2;
   const codePattern = /^[A-Z0-9]{6}$/;
   const params = new URL(location.href).searchParams;
+  const entryRevision = '20261120-service-actions1';
   const localPlay = byId('local-play');
   let openingLocal = false;
   localPlay?.addEventListener('click', async event => {
@@ -27,7 +28,7 @@
     const code=(params.get('resume')||'').toUpperCase(), direct=params.get('gameFrom');
     if(codePattern.test(code)&&(!direct||canResume(direct))){
       const resume=byId('resume-drinks');
-      resume.href=direct?'/games/'+direct+'/?room='+code:'?room='+code;
+      resume.href=direct?'/games/'+direct+'/?room='+code+'&v='+entryRevision:'?room='+code+'&v='+entryRevision;
       resume.hidden=false;
     }
     byId('play-modes').hidden = false;
@@ -139,7 +140,7 @@
     url.searchParams.set('room',room.code); history.replaceState(null,'',url);
     if (room.phase==='playing' && canResume(room.kind) && codePattern.test(room.child)) {
       navigating=true;connection.pause();clearTimeout(pollTimer);
-      location.replace('/games/'+room.kind+'/?room='+room.child+'&party='+room.code);
+      location.replace('/games/'+room.kind+'/?room='+room.child+'&party='+room.code+'&v='+entryRevision);
       return;
     }
     byId('room-title').textContent=room.title;

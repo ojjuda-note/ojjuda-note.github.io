@@ -295,4 +295,9 @@ body[data-mp-entry="true"] #sheet .dialog-title h2:before{display:none}
 #sheet .arcade-room-form .game-details summary{cursor:pointer;font-size:13px}
 #sheet .arcade-room-form .roster-line{grid-template-columns:70px minmax(0,1fr) 70px;gap:6px;font-size:12px}
 #sheet .arcade-room-form .mfoot{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
-@media(max-width:360px){#online-lobby .room-players{grid-template-columns:minmax(0,1fr)}#public-room-host .arcade-room-card{grid-template-columns:minmax(0,1fr) auto}#public-room-host .arcade-room-game{display:none}}
+@media(max-width:360px){#online-lobby .room-players{grid-template-columns:minmax(0,1fr)}#public-room-host .arcade-room-card{grid-template-columns:minmax(0,1fr)}#public-room-host .arcade-room-game{display:none}}
+
+/* Room actions keep exit on the left and start/continue on the right. */
+.room-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.room-actions>button,#online-lobby .room-actions>button{min-width:0;width:100%;margin:0;overflow-wrap:anywhere}
+@media(min-width:361px) and (max-width:600px){#public-room-host .arcade-room-card{grid-template-columns:36px minmax(0,1fr)}}

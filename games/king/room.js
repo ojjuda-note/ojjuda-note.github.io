@@ -98,7 +98,7 @@ function render(s,force=false){
       if(s.declined!=null)content+='<p class="suite-hint">이번 미션은 패스했어요. 벌칙 없이 다음 판으로 넘어가요.</p>';
       else if(s.accepted?.length===2)content+='<p class="suite-hint">두 사람 모두 동의했어요. 진행 중에도 언제든 멈출 수 있어요.</p>';
       else content+='<p class="suite-hint">답하거나 하기 어려운 미션은 이유를 말하지 않고 패스해도 돼요.</p>';
-      content+=party?'':s.me===(s.hostSeat??0)?control('한 판 더','again',true):'<p class="suite-hint">방장이 다음 판을 시작할 수 있어요.</p>';
+      if(!party&&s.me!==(s.hostSeat??0))content+='<p class="suite-hint">방장이 다음 판을 시작할 수 있어요.</p>';
     }
   }else{
     const role=s.card===0?'이번 판의 왕이에요!':'내 번호는 '+s.card+'번이에요.';
@@ -116,7 +116,8 @@ function render(s,force=false){
       content='<h1 class="suite-heading">'+esc(s.players[s.king])+'님이 왕이에요</h1>'+card+'<p class="suite-hint">왕이 번호와 미션을 고르고 있어요.</p>';
     }
   }
-  view.innerHTML='<section class="card"><div class="inside">'+heading+content+'<div class="actions">'+control('방 나가기','leave')+'</div></div></section>';
+  const replay=s.phase==='done'&&!party&&s.me===(s.hostSeat??0)?control('한 판 더','again',true):'';
+  view.innerHTML='<section class="card"><div class="inside">'+heading+content+'<div class="actions drinking-round-actions">'+control('방 나가기','leave')+replay+'</div></div></section>';
   const order=view.querySelector('#order');
   if(order){
     const display=mission=>menu.kingMission(mission,draftNumber,draftSecond);

@@ -101,6 +101,7 @@ test('a member picks a public room and the named waiting room stays open',async 
   assert.match(f.doc.getElementById('online-lobby-body').textContent,/민준/);assert.match(f.doc.getElementById('online-lobby-body').textContent,/다온/);
   assert.equal(f.w.location.hash,'');assert.equal(new URL(f.w.location.href).searchParams.get('room'),'1842');
   assert.equal(f.button('게임 시작'),undefined,'a guest cannot start the host room');
+  assert.deepEqual([...f.doc.querySelectorAll('#online-lobby .room-actions > button')].map(button=>button.textContent), ['방 나가기']);
 });
 
 test('creating a room uses the common title and capacity form and preserves the new lobby',async t=>{
@@ -110,6 +111,7 @@ test('creating a room uses the common title and capacity form and preserves the 
   assert.match(f.doc.getElementById('online-lobby').textContent,/저녁에 한 판/);
   assert.match(f.doc.getElementById('online-lobby-body').textContent,/6/);
   assert.equal(f.doc.getElementById('arcade-room-form'),null);assert.equal(f.calls.legacy,0);
+  assert.deepEqual([...f.doc.querySelectorAll('#online-lobby .room-actions > button')].map(button=>button.textContent), ['방 나가기','게임 시작']);
 });
 
 test('a delayed online entry does not replace a computer game selection',async t=>{
