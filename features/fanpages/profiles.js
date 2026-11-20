@@ -202,7 +202,7 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   a2olite: {
-    checkedAt: '2026.11.18',
+    checkedAt: '2026.11.20',
     debut: '2026.10.13', debutWork: 'NEON',
     agency: 'A2O Entertainment',
     concept: '아홉 멤버의 네온빛 Zalpha Pop.',
@@ -213,6 +213,7 @@ window.OJJUDA_FAN_PROFILES = {
       { year: '2026.10', title: '인기가요 1위', detail: 'NEON', href: 'https://m.programs.sbs.co.kr/programTemplate/amp/clip/mobile/22000638968' }
     ],
     records: [
+      { year: '2026.10', title: 'NEON · 퍼펙트 올킬(PAK)', detail: '2026.10.26 Instiz iChart 인증 · 2026년 네 번째 퍼펙트 올킬', href: 'https://ichart.kr/song/52712' },
       { year: '2026.11', title: '써클 차트 3관왕', detail: 'NEON · 디지털·스트리밍·글로벌 K팝 차트 1위(11.11 보도)', href: 'https://www.soompi.com/article/1886133wpp/ive-riize-and-illit-top-circle-weekly-charts-a2o-earns-triple-crown' },
       { year: '2026.10', title: '빌보드 글로벌 차트 2개 부문 톱10', detail: 'NEON · Global 200 8위 / Global Excl. U.S. 3위 · 10.31 차트', href: 'https://prtimes.jp/main/html/rd/p/000000009.000192898.html' },
       { year: '2026.10', title: '오리콘 주간 스트리밍 급상승 1위', detail: 'NEON · 2026.10.29 발표', href: 'https://prtimes.jp/main/html/rd/p/000000009.000192898.html' },
@@ -317,17 +318,17 @@ const supplementaryProfiles = {
     }
   },
   a2olite: {
-    sources: [{ label: '멤버 생일·MBTI', href: 'https://tanjoubi.today/en/group/20261013_A2OLITE_dc66' }],
+    sources: [{ label: '멤버 생일 · 비공식 참고(추가 확인 필요)', href: 'https://tanjoubi.today/en/group/20261013_A2OLITE_dc66' }],
     members: {
       'YOUNG': { birthday: '2008.10.27' },
-      'OA': { birthday: '2013.02.08', mbti: 'ENFP' },
+      'OA': { birthday: '2013.02.08' },
       'AYUNE': { birthday: '2013.01.29' },
-      'AIJING': { birthday: '2013.04.24', mbti: 'ESFJ' },
-      'HIMEKI': { birthday: '2009.10.05', mbti: 'INFJ' },
+      'AIJING': { birthday: '2013.04.24' },
+      'HIMEKI': { birthday: '2009.10.05' },
       'RADA': { birthday: '2011.04.11' },
       'XILI': { birthday: '2010.11.06' },
-      'VORA': { birthday: '2010.02.10', mbti: 'INTJ' },
-      'MERCI': { birthday: '2011.05.31', mbti: 'ISTJ' }
+      'VORA': { birthday: '2010.02.10' },
+      'MERCI': { birthday: '2011.05.31' }
     }
   },
   a2osoul: {
