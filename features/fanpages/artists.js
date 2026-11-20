@@ -432,6 +432,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { label: "Weverse", icon: "✦", url: "https://weverse.io/illit" }
     ],
     merch: [
+      { title: "DEARLIT · Dear My Winter Fairy", sub: "2026.11.20 11:00(KST) 공식 판매 시작 · 한정 수량·재고는 판매처 확인", href: "https://shop.weverse.io/en/shop/JPY/artists/120/notices/15015" },
       { title: "BREAK EVEN 공식 MD", sub: "2026.10.26부터 공식 판매 · 한정 수량·재고는 판매처 확인", href: "https://shop.weverse.io/en/shop/JPY/artists/120/notices/14674" },
       { title: "BREAK EVEN · Little Mimi Ver.", sub: "2026.12.30 발매 예정 · 11.05부터 예약판매 · 재고는 판매처 확인", href: "https://shop.weverse.io/en/shop/KRW/artists/120/sales/71786" },
       { title: "DEARLIT 공식 캐릭터 MD", sub: "2026.09.02부터 한정 수량 판매 · 재고 확인 필요", href: "https://shop.weverse.io/ko/shop/KRW/artists/120/notices/14153" },
@@ -449,7 +450,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "SUPER REAL ME", date: "2024.03.25", type: "미니 1집", songs: ["My World", "Magnetic", "Midnight Fiction", "Lucky Girl Syndrome"], href: "https://beliftlab.com/artist/discography/ILLIT/8" }
     ],
     appearances: [
-      { date: "2026-11-20", title: "2026 MAMA AWARDS", sub: "일본 오사카 · CHAPTER 1 · 출연·편성 변경은 공식 확인", href: "https://www.cj.net/jp/press-release/view/1132", timeZone: "Asia/Tokyo" },
+      { date: "2026-11-20", title: "2026 MAMA AWARDS", sub: "일본 오사카 · CHAPTER 1 · 11.18 빌리프랩 공지: 주최 측 협의 중, 멤버별 참여·진행 방식 변경 가능", href: "https://weverse.io/illit/notice/41154", timeZone: "Asia/Tokyo" },
       { date: "2026-11-28", title: "NTV 베스트 아티스트", sub: "일본 NTV 음악 특집 · 방송 시간·내용은 공식 편성 확인", href: "https://www.atstar1.com/news/articleView.html?idxno=6040730", timeZone: "Asia/Tokyo" },
       { date: "2026-12-02", title: "2026 FNS 가요제", sub: "일본 후지TV 음악 방송 · 방송 시간은 공식 편성 확인", href: "https://www.atstar1.com/news/articleView.html?idxno=6040730", timeZone: "Asia/Tokyo" },
       { date: "2026-12-23", title: "PRESS START❤ ENCORE in JAPAN", sub: "18:30 · 일본 치바 LaLa arena TOKYO-BAY · 주최 HYBE JAPAN · 예매는 공식 안내", href: "https://www.hybejapan.events/illit/press_start_encore", timeZone: "Asia/Tokyo" },
@@ -460,6 +461,7 @@ window.OJJUDA_FAN_ARTISTS = [
     ],
     campaigns: [
       { kind: "홍보대사", date: "2026.07.03", title: "농협경제지주 × ILLIT · 쌀 소비 촉진", sub: "첫 쌀 소비 촉진 홍보대사 · Like me, like 米 : It\'s 米 캠페인", href: "https://www.yna.co.kr/view/AKR20260703051000005" },
+      { kind: "광고", date: "2026.09.16", title: "ABC-MART × FILA · DISTRACER CHECK", sub: "2026.09.17 일본 출시 · ILLIT 모델 영상·한정 스티커 안내", href: "https://prtimes.jp/main/html/rd/p/000000936.000074055.html" },
       { kind: "광고", date: "2026.03", title: "FILA", sub: "그룹 스포츠 브랜드 광고 모델 · 빌리프랩 발표", href: "https://www.tenasia.co.kr/article/2026031916524" },
       { kind: "콜라보", date: "2026.03", title: "Rockfish Weatherwear × ILLIT", sub: "2026.03.03 글로벌 협업 컬렉션 출시", href: "https://www.tenasia.co.kr/article/2026031916524" },
       { kind: "홍보대사", date: "2026.09", title: "민주 × Glint by VDIVOV", sub: "멤버 민주 · 뷰티 브랜드 앰배서더 · 09.29 브랜드 발표", href: "https://prtimes.jp/main/html/rd/p/000000035.000064439.html" }
@@ -470,6 +472,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "Weverse 공지", sub: "팬 커뮤니티", href: "https://weverse.io/illit/notice" }
     ],
     news: [
+      { date: "11.18", tag: "공지", title: "미니 5집 음악방송 등 일부 활동 축소 · 11.20 MAMA 참여 방식 변경 가능", href: "https://weverse.io/illit/notice/41154" },
       { date: "11.16", tag: "수상", title: "11.15 MMA2026 톱10·글로벌 톱10·베스트 퍼포먼스 여자·글로벌 임팩트 4관왕", href: "https://www.osen.co.kr/article/G1112910990" },
       { date: "11.13", tag: "방송", title: "12.31 NHK 제77회 홍백가합전 3년 연속 출연 발표", href: "https://www.yna.co.kr/view/AKR20261113101400005" },
       { date: "11.06", tag: "수상", title: "뮤직뱅크 ‘체포하겠어’ 1위 · 9,803점", href: "https://www.soompi.com/article/1884749wpp/watch-nmixx-takes-1st-win-for-birthday-wish-on-music-bank-performances-by-ateez-illit-and-more-2" },
