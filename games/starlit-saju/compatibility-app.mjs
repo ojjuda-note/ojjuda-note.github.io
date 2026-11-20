@@ -1,7 +1,7 @@
 import {attachReaderTools} from './reader-tools.mjs?v=20261120-saju-story2';
 import {readingDetailText} from './reading-detail.mjs?v=20261114-saju-depth1';
 import {keepCompatibilityCard} from './reading-selection.mjs?v=20261120-saju-prune1';
-import {readingScopeText} from './reading-scope.mjs?v=20261114-saju-final-review2';
+import {readingScopeText} from './reading-scope.mjs?v=20261120-saju-voice1';
 import { SajuPayment } from './payment.js?v=20261115-saju-reopen1';
 import { SajuCompatibilityPayment, COMPATIBILITY_PRICE } from './compatibility-payment.mjs?v=20261113-compatibility20-1';
 import { compatibilityScoreText } from './compatibility-score-view.mjs?v=20261114-saju-copy1';
@@ -213,7 +213,7 @@ async function ready() {
 async function modules() {
   modulesPromise ||= Promise.all([
     import('./engine.mjs?v=20261113-saju-brief1'),
-    import('./compatibility.mjs?v=20261114-saju-final-review2'),
+    import('./compatibility.mjs?v=20261120-saju-voice1'),
     import('./report-view.mjs?v=20261120-saju-prune1'),
   ]).catch(error=>{modulesPromise=null;throw error;});
   return modulesPromise;

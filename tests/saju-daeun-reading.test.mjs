@@ -49,7 +49,7 @@ test('all actual ten-year periods receive complete personal topics without chang
       assert.equal(new Set(topic.paragraphs).size,topic.paragraphs.length,'a topic cannot pad itself with repeated paragraphs');
       assert.ok(topic.detailSections.length>1,'the person, period, example and practical response are distinguishable');
       assert.deepEqual(topic.detailSections.flatMap(section=>section.paragraphs),topic.paragraphs);
-      assert.ok(topic.paragraphs.some(value=>value.startsWith('생활 속 상황을 가정해 볼게요.')));
+      assert.ok(topic.paragraphs.some(value=>value.startsWith('생활 속 가상 예시예요.')));
       assert.ok(topic.paragraphs.every(value=>typeof value==='string'&&value.length>25));
       assert.ok(topic.title.length>8);
     }
