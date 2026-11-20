@@ -1,0 +1,49 @@
+name: Integrate the reviewed wordmarks with current service updates
+
+on:
+  push:
+    branches: ['codex/wordmark-integration-20261120']
+    paths: ['.github/workflows/integrate-wordmarks.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    if: github.ref == 'refs/heads/codex/wordmark-integration-20261120'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      WORDMARK_MAIN_SHA: '4baa870e278e6a15955507388d85e89c01adc242'
+      WORDMARK_EXPECTED_TREE: '68df56bf549873e70ea15571bf6dc950088060dd'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 8
+      - name: Merge the reviewed main commit and preserve the new icon metadata
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch --no-tags --depth=8 origin "$WORDMARK_MAIN_SHA"
+          if ! git merge --no-ff --no-commit "$WORDMARK_MAIN_SHA"; then
+            test "$(git diff --name-only --diff-filter=U)" = 'world.html'
+          fi
+          node --input-type=module <<'JS'
+          import {readFileSync, writeFileSync} from 'node:fs';
+          import {execFileSync} from 'node:child_process';
+          const base = process.env.WORDMARK_MAIN_SHA;
+          const readBase = path => execFileSync('git', ['show', base + ':' + path], {encoding: 'utf8'});
+          const oldState = JSON.parse(readBase('shared/app-icons/current.json'));
+          const newState = JSON.parse(readFileSync('shared/app-icons/current.json', 'utf8'));
+          const source = readBase('world.html');
+          if (!source.includes(oldState.revision) || !source.includes(oldState.scriptRevision)) throw Error('Missing reviewed icon metadata');
+          writeFileSync('world.html', source.replaceAll(oldState.revision, newState.revision).replaceAll(oldState.scriptRevision, newState.scriptRevision));
+          JS
+          node scripts/sync-section-versions.mjs
+          git add -- world.html
+          git rm -- .github/workflows/integrate-wordmarks.yml
+          test -z "$(git diff --name-only --diff-filter=U)"
+          git diff --cached --check
+          git commit -m 'Merge current service updates while preserving the reviewed wordmark icons'
+          test "$(git rev-parse 'HEAD^{tree}')" = "$WORDMARK_EXPECTED_TREE"
+          git push origin HEAD:refs/heads/codex/wordmark-integration-20261120
