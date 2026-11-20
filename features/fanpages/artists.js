@@ -143,7 +143,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { date: "2027-01-17", title: "Looks Can Kill · 일본 구매자 추첨 이벤트", sub: "오사카 우메다 크리스털홀 · 당첨자 대상 촬영·사인·포스트카드 행사 · 시간은 주최 공지 확인", href: "https://www.sonymusic.co.jp/artist/IVE/info/588141" }
     ],
     campaigns: [
-      { kind: "협업", date: "2026.10.19", title: "서울시·DDP × IVE · DIVE IN TO LIGHT", sub: "DDP 365라이트 컴백 영상·레이저쇼 공동 프로모션 · 서울시 공식 발표 10/29", href: "https://english.seoul.go.kr/ive-comeback-videos-light-up-ddp-as-seoul-expands-city-marketing-linking-k-pop-with-seoul-landmarks/" },
+      { kind: "콜라보", date: "2026.10.19", title: "서울시·DDP × IVE · DIVE IN TO LIGHT", sub: "DDP 365라이트 컴백 영상·레이저쇼 공동 프로모션 · 서울시 공식 발표 10/29", href: "https://english.seoul.go.kr/ive-comeback-videos-light-up-ddp-as-seoul-expands-city-marketing-linking-k-pop-with-seoul-landmarks/" },
       { kind: "홍보대사", date: "2026.09.17", title: "UGG 아시아·태평양 앰배서더 · 장원영", sub: "UGG Born to Feel 2026 가을·겨울 캠페인 · Deckers Japan 공식 발표", href: "https://prtimes.jp/main/html/rd/p/000000784.000003434.html" },
       { kind: "홍보대사", date: "2026.08.19", title: "AGE20'S 글로벌 앰배서더 · 레이", sub: "에이지투웨니스 리브랜딩·뷰티 캠페인 · 애경산업 발표", href: "https://biz.heraldcorp.com/article/10844878" },
       { kind: "홍보대사", date: "2026.02.02", title: "메종 발렌티노 · 레이·리즈", sub: "공식 브랜드 앰배서더 임명 · 발렌티노 발표", href: "https://prtimes.jp/main/html/rd/p/000000257.000101366.html" },
