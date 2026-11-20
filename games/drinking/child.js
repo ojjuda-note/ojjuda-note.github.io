@@ -180,8 +180,8 @@
     if (action !== 'leave') return null;
     if (!parent) return '';
     const leave = '<button type="button" class="secondary" data-party-leave>술게임방 나가기</button>';
-    if (parent.me === hostSeat()) return '<button type="button" class="secondary" data-party-return>모두 대기실로</button>' + leave;
-    return (phase === 'done' ? '<p data-party-wait>방장이 다음 게임을 고르고 있어요.</p>' : '') + leave;
+    if (parent.me === hostSeat()) return leave + '<button type="button" class="secondary" data-party-return>모두 대기실로</button>';
+    return leave + (phase === 'done' ? '<p data-party-wait>방장이 다음 게임을 고르고 있어요.</p>' : '');
   }
   async function leaveOrReturn(button) {
     if (!parent || returning || navigating || !connection.active()) return;

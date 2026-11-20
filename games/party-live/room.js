@@ -137,7 +137,7 @@
     const replay = party || s.phase !== 'done' ? '' : s.me===(s.hostSeat??0) ? control('한 판 더','again',true) : '<p>방장이 다음 판을 시작할 수 있어요.</p>';
     view.innerHTML = '<section class="card"><div class="topline"><span>' + esc(s.title) + '</span><span>' +
       s.round + '번째 판 · ' + s.players.length + '/' + s.capacity + '명</span></div><div id="game">' +
-      (playing ? feature.view(s,ui) : lobby(s)) + '</div><div class="actions">' + replay + control('방 나가기','leave') + '</div></section>';
+      (playing ? feature.view(s,ui) : lobby(s)) + '</div><div class="actions drinking-round-actions">' + control('방 나가기','leave') + replay + '</div></section>';
     if (playing) { mounted = true; feature.mount?.(s,ui); }
     if (previousFocus) {
       const field = previousFocus.id ? document.getElementById(previousFocus.id) :

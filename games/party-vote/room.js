@@ -107,7 +107,7 @@ function roundView(s) {
         (s.voted ? '<p class="suite-hint">모두 투표하면 결과가 공개돼요.</p>' : minority ? ballots(s.choices) : ballots(s.players, s.me))+(minority&&s.me===0&&!s.voteCount?'<button type="button" class="secondary" data-edit-choices>선택지 다시 고르기</button>':'');
     case 'done':
       return (minority ? resultForMinority(s) : resultForMission(s)) +
-        (party ? '' : host ? control('한 판 더', 'again', true) : '<p>방장이 다음 판을 시작할 수 있어요.</p>');
+        (party || host ? '' : '<p>방장이 다음 판을 시작할 수 있어요.</p>');
     default:
       return '<p>게임 상태를 확인하고 있어요…</p>';
   }
@@ -138,7 +138,8 @@ function render(s, force = false) {
   activeCode = s.code;
   view.innerHTML = '<section class="card"><div class="topline"><span>' + esc(s.title) + '</span><span>' + s.round +
     '번째 판 · ' + s.players.length + '/' + s.capacity + '명</span></div>' + roundView(s) +
-    '<div class="actions">' + control('방 나가기', 'leave') + '</div></section>';
+    '<div class="actions drinking-round-actions">' + control('방 나가기', 'leave') +
+    (s.phase === 'done' && !party && s.me === (s.hostSeat ?? 0) ? control('한 판 더', 'again', true) : '') + '</div></section>';
   const picker=view.querySelector('#minority-prompt');
   if(picker){
     const menu=window.DrinkingQuestionMenu;

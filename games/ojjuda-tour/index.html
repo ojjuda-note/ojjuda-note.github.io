@@ -313,10 +313,13 @@ details p{margin:8px 0;font-size:15.5px;line-height:1.5;color:#3d2b5c}
 <link rel="stylesheet" href="marble-online.css?v=20261012-marble-invite1">
 <link rel="stylesheet" href="/shared/games/multiplayer-entry.css?v=20261109-unified-multiplayer-ui2">
 <script src="/shared/games/multiplayer-entry.js?v=20261112-arcade-entry-return1" defer></script>
-<link rel="stylesheet" href="/shared/games/game-results.css?v=20261116-yut-destinations">
-<script src="/shared/games/game-results.js?v=20261116-yut-destinations"></script>
+<link rel="stylesheet" href="/shared/games/game-results.css?v=20261120-service-actions1">
+<script src="/shared/games/game-results.js?v=20261120-service-actions1"></script>
 <style>#sheet2.result-view>.sheet-card{padding:0;width:min(430px,calc(100vw - 24px));max-width:430px;background:transparent;border:0;box-shadow:none}#sheet2.result-view .sheet-head,#sheet2.result-view #s2Body{display:none}#sheet2.result-view #s2Btns{display:block;padding:0;margin:0}</style>
-<style>#sheet.result-view>.sheet-card{padding:0;width:min(430px,calc(100vw - 24px));max-width:430px;background:transparent;border:0;box-shadow:none}#sheet.result-view .sheet-head,#sheet.result-view #sBody{display:none}#sheet.result-view #sBtns{display:block;padding:0;margin:0}</style>
+<style>#sheet.result-view>.sheet-card{padding:0;width:min(430px,calc(100vw - 24px));max-width:430px;background:transparent;border:0;box-shadow:none}#sheet.result-view .sheet-head,#sheet.result-view #sBody{display:none}#sheet.result-view #sBtns{display:block;padding:0;margin:0}
+#marbleWaiting .marble-room-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+#marbleWaiting .marble-room-actions>button{min-width:0;width:100%;margin:0;overflow-wrap:anywhere}
+</style>
 <link rel="stylesheet" href="/shared/games/arcade-return.css?v=20261112-arcade-entry-return1">
 </head>
 <body>
@@ -383,7 +386,7 @@ details p{margin:8px 0;font-size:15.5px;line-height:1.5;color:#3d2b5c}
         <form id="marbleJoin" class="marble-join"><label for="marbleCode">방 번호로 참가</label><div><input id="marbleCode" name="code" maxlength="8" minlength="8" placeholder="방 번호 8자리" pattern="[a-fA-F0-9]{8}" autocomplete="off" autocapitalize="characters" spellcheck="false" required><button class="ge-secondary" type="submit">참가</button></div></form>
         <p class="ge-hint">각자 로그인한 뒤 같은 방 번호를 입력해요.<br>온라인 기록은 참가자 모두의 순위에 저장돼요.</p>
       </div>
-      <div id="marbleWaiting" hidden><h2 id="marbleRoomTitle"></h2><p class="marble-code"><span>방 번호</span><strong id="marbleRoomCode"></strong><button type="button" id="marbleCopy">복사</button></p><p id="marbleRoomCount"></p><ol id="marbleMembers"></ol><button type="button" class="ge-secondary" id="marbleInvite">친구 초대</button><p id="marbleInviteStatus" class="ge-hint" role="status"></p><button type="button" class="ge-primary" id="marbleStart">함께 시작하기</button><p id="marbleWaitHelp" class="ge-hint"></p><button type="button" class="ge-secondary" id="marbleLeave">방 나가기</button></div>
+      <div id="marbleWaiting" hidden><h2 id="marbleRoomTitle"></h2><p class="marble-code"><span>방 번호</span><strong id="marbleRoomCode"></strong><button type="button" id="marbleCopy">복사</button></p><p id="marbleRoomCount"></p><ol id="marbleMembers"></ol><button type="button" class="ge-secondary" id="marbleInvite">친구 초대</button><p id="marbleInviteStatus" class="ge-hint" role="status"></p><p id="marbleWaitHelp" class="ge-hint"></p><div class="marble-room-actions"><button type="button" class="ge-secondary" id="marbleLeave">방 나가기</button><button type="button" class="ge-primary" id="marbleStart">함께 시작하기</button></div></div>
       <p class="ge-hint">선택 시간은 45초예요. 시간이 지나면 자동 진행해요.<br>새로고침하거나 다시 열면 같은 방으로 돌아와요.</p>
     </section>
   </section>

@@ -403,11 +403,14 @@ function showResult(){
   record.append(document.createTextNode(ranking?.recorded?`현재 ${ranking.currentStreak}연승 · 이번 달 최고 ${ranking.bestStreak}연승\n저장 완료 · `:mode==='solo'?'연습 결과 · 순위 제외\n':'이번 판은 순위에 포함되지 않아요.\n'),rankingLink());
   content.append(resultIcon(outcome),heading,element('div',metric,'game-result-metric'),record);
   const actions=element('div',undefined,'game-result-actions');
-  actions.append(button(computerGame()?'다시 한 판':'대기실로','',computerGame()?()=>void startSolo(false,true):()=>{closeSheet();setScreen('lobby');renderLobby();}),button('게임판 보기','',closeSheet),button('오락실로','',()=>void exit(true)));
+  const leave=button('오락실로','',()=>void exit(true)),inspect=button('게임판 보기','',closeSheet);
+  const replay=button(computerGame()?'다시 한 판':'대기실로','',computerGame()?()=>void startSolo(false,true):()=>{closeSheet();setScreen('lobby');renderLobby();});
+  leave.dataset.gameResultAction='exit';inspect.dataset.gameResultAction='secondary';replay.dataset.gameResultAction='primary';
+  actions.append(leave,inspect,replay);
   content.append(actions);
   const extra=element('div',undefined,'game-result-extra'),scores=element('div',undefined,'result-players');
   for(const p of view.players){const row=element('div');row.append(element('span',resultName(p)),element('strong',p.active===false?'탈락':`${p.handCount??p.hand?.length??0}장`));scores.append(row);}
-  extra.append(scores);content.append(extra);card.append(content);$('sheet-body').append(card);actions.querySelector('button').focus();
+  extra.append(scores);content.append(extra);card.append(content);$('sheet-body').append(card);replay.focus();
 }
 function rankingLink(){const link=element('a','월간 순위 보기');link.href=RANKING_URL;link.target='_blank';link.rel='noopener';return link;}
 

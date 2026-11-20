@@ -92,13 +92,14 @@ function render(s){
   let content;
   if(s.phase==='waiting'){
     content=roomHeading+'<h1>참가자를 기다려요</h1><p>현재 '+s.players.length+' / '+s.capacity+'명 · 모두 모이면 시작해요.</p>'+members+
-      '<div class="actions">'+control('초대 링크 복사','copy',true)+control('방 나가기','leave')+'</div><p class="sub">친구에게 링크와 방 비밀번호를 알려 주세요.</p>';
+      '<div class="actions drinking-round-actions">'+control('방 나가기','leave')+control('초대 링크 복사','copy',true)+'</div><p class="sub">친구에게 링크와 방 비밀번호를 알려 주세요.</p>';
   }else{
     const lost=s.phase==='done';
     const biteId=roomId(s),ack=read(key('ack'))===biteId;
     let title=lost?esc(s.players[s.loser])+'님 당첨!':mine?'내 차례예요':esc(s.players[s.turn])+'님 차례';
     let hint=lost?'아픈 이빨은 '+(s.trap+1)+'번이었어요. 다음 판에는 피해 볼까요?':'남은 이빨 '+(24-s.pressed.length)+'개 · '+(mine?'아직 누르지 않은 이빨을 골라요.':'친구가 이빨을 고르고 있어요.');
-    const controls=lost?'<div class="actions">'+(s.me===s.loser&&!ack?control('확인','ack',true):'')+(s.me===(s.hostSeat??0)?control('한 판 더','again',true):'')+control('방 나가기','leave')+'</div>':'<div class="actions">'+control('방 나가기','leave')+'</div>';
+    const acknowledge=lost&&s.me===s.loser&&!ack?'<div class="actions">'+control('확인','ack',true)+'</div>':'';
+    const controls=acknowledge+'<div class="actions drinking-round-actions">'+control('방 나가기','leave')+(lost&&s.me===(s.hostSeat??0)?control('한 판 더','again',true):'')+'</div>';
     content='<div class="topline"><span>'+esc(s.title)+'</span><span>'+s.round+'번째 판 · '+s.players.length+'명</span></div><h1>'+title+'</h1><p aria-live="polite">'+hint+'</p>'+controls+board(s,!lost&&mine)+members;
     if(old&&s.round===old.round&&s.pressed.length>old.pressed.length)fx.play('tooth');
     if(lost&&s.me===s.loser&&!ack&&!document.hidden&&lastBite!==biteId){lastBite=biteId;fx.startBite();}

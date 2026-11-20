@@ -43,6 +43,29 @@ test('result effects and all stage/share controls fit mobile and desktop without
       if (width === 390 && outcome === 'success' && process.env.GAME_RESULTS_SCREENSHOT) await page.screenshot({ path: process.env.GAME_RESULTS_SCREENSHOT });
       await page.evaluate(() => OjjudaGameResults.close());
     }
+    for (const auxiliary of [false, true]) {
+      await page.evaluate(auxiliary => {
+        window.replays = 0;
+        OjjudaGameResults.show({ game: 'yut', outcome: 'success', actions: [
+          { id: 'replay', role: 'primary', label: '다시 시작', onClick: () => { window.replays++; return false; } },
+          ...(auxiliary ? [{ id: 'look', role: 'secondary', label: '판 보기', onClick: () => false }] : []),
+          { id: 'exit', role: 'exit', label: '나가기' }
+        ] });
+      }, auxiliary);
+      const actions = await page.evaluate(() => [...document.querySelector('.game-result-actions').children].map(button => {
+        const rect = button.getBoundingClientRect();
+        return { id: button.id, x: rect.x, y: rect.y, right: rect.right, height: rect.height };
+      }));
+      assert.deepEqual(actions.map(action => action.id), auxiliary ? ['exit', 'look', 'replay'] : ['exit', 'replay']);
+      assert.ok(actions[0].right <= actions.at(-1).x && Math.abs(actions[0].y - actions.at(-1).y) < 1, JSON.stringify({ width, auxiliary, actions }));
+      assert.ok(actions.every(action => action.height >= 44 && action.x >= 0 && action.right <= width));
+      await page.keyboard.press('Shift+Tab');
+      assert.equal(await page.evaluate(() => document.activeElement.id), auxiliary ? 'look' : 'exit');
+      await page.keyboard.press('Tab');
+      assert.equal(await page.evaluate(() => document.activeElement.id), 'replay');
+      await page.keyboard.press('Enter'); assert.equal(await page.evaluate(() => window.replays), 1);
+      await page.evaluate(() => OjjudaGameResults.close());
+    }
   }
   assert.deepEqual(errors, []);
 });
