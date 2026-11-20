@@ -24,7 +24,7 @@
   drinking:'1.26.1',
   shapematch:'1.3.0',
   tarot:'1.12.2',
-  saju:'2.17.2',
+  saju:'2.17.3',
   group:'1.2.2',
   chacha_rush:'1.1.2',
   byeolcheonji:'1.0.5',
