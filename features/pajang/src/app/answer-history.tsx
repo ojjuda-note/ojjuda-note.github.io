@@ -224,7 +224,7 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
     </div>
     {result.error&&<p className="notice" role="alert">{result.error}<button onClick={()=>load.current(result.next&&result.items.length?"more":"first")}>다시 시도</button></p>}
     {result.total!==null&&!result.error&&!result.items.length&&<div className="empty"><span className="emptyicon" aria-hidden="true"><I n="wave" s={22}/></span>
-      <h3>{gender!=="all"?"선택한 조건에 맞는 답변이 없어요":filter==="all"?"최근 1년 동안 공개된 답변이 없어요":"이 인연을 원하는 회원의 답변이 아직 없어요"}</h3>
+      <h3>{gender!=="all"?"선택한 조건에 맞는 답변이 없어요":filter==="all"?"지금 공개 중인 답변이 없어요":"이 인연을 원하는 회원의 답변이 아직 없어요"}</h3>
       {gender!=="all"||filter!=="all"?<button className="secondary" onClick={()=>{setGender("all");setFilter("all");}}>전체 답변 보기<I n="arrow" s={16}/></button>:
         !station.me?.body&&<button className="secondary" onClick={onWrite}>첫 답변 쓰기<I n="pencil" s={16}/></button>}
     </div>}

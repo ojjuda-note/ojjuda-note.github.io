@@ -455,12 +455,12 @@ export default function StationApp({initialStation}:{initialStation:Station}){
         dismiss();setToast("답변을 수정했어요.");return true;
       }}/>}
     {modal.kind==="answer"&&<><span className="modalicon"><I n="pencil"/></span><h2>{answerTitle}</h2><p className="questionbox">{themeText}</p>
-      <p className="sub">{editingAnswer?"저장하면 모두의 답변에도 수정한 내용이 보여요.":"답변을 공개하면 작성일을 포함해 1년(365일) 동안 파장 회원이 질문과 내 답변을 함께 볼 수 있어요."}</p>
+      <p className="sub">{editingAnswer?"저장하면 공개 기간이 남아 있는 답변에 수정한 내용이 보여요. 공개 기간은 바뀌지 않아요.":"이 답변을 공개하면 다른 파장 회원이 질문과 답변을 작성일을 포함해 최대 365일간 볼 수 있어요(한국 시간 기준)."}</p>
       <Editor initial={modal.originalBody} max={220} label="내 이야기" hint="장소, 노래, 기억처럼 구체적인 장면을 들려주세요."
-        submit={editingAnswer?"수정 저장하기":"답변 공개하기"} busy={busy} onSave={async body=>{
+        submit={editingAnswer?"수정 저장하기":"365일간 공개하기"} busy={busy} onSave={async body=>{
           const origin=navigationId.current;
           const data={body,day:s.day,slot:s.slot,questionId:modal.questionId};
-          const next=editingAnswer?await act("edit-answer",{...data,previousBody:modal.originalBody}):await act("answer",{...data,archive:true});
+          const next=editingAnswer?await act("edit-answer",{...data,previousBody:modal.originalBody}):await act("answer",{...data,archive:true,publicationPolicy:"year-v1"});
           if(!next||origin!==navigationId.current)return;
           dismiss();setToast(slotName+(editingAnswer?" 답변을 수정했어요.":" 답변을 저장했어요."));
         }}/>
@@ -483,7 +483,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     {(modal.kind==="edit"||modal.kind==="setup")&&<><h2>{modal.kind==="setup"?"회원 프로필 만들기":"공개 프로필 수정"}</h2><p className="sub">닉네임과 활동 지역, 원하는 인연을 정해 주세요.</p><ProfileForm key={me?.id||"new"} person={modal.kind==="setup"?null:me} isNew={modal.kind==="setup"} busy={busy} onSave={async b=>{const setup=modal.kind==="setup";if(await act(setup?"participate":"profile",b,setup)){go("profile");setToast("프로필을 저장했어요.");}}}/></>}
     {modal.kind==="block"&&peer&&<><span className="modalicon"><I n="shield"/></span><h2>{peer.name}님을 차단할까요?</h2><p className="sub">서로의 답변과 신호, 대화가 목록에서 사라져요. 이후 메시지도 보낼 수 없어요.</p><button className="primary wide" disabled={busy} onClick={async()=>{if(await act("block",{peer:peer.id})){go("today");setToast("프로필을 차단했어요.");}}}>차단하기</button><button className="textbtn" onClick={close}>취소</button></>}
     {modal.kind==="delete"&&<><h2>파장 기록을 삭제할까요?</h2><p className="sub">파장 프로필과 답변, 신호·대화·교환용 사진을 삭제해요. 삭제한 내용은 복구할 수 없으며, 오쭈다 계정은 유지돼요.</p><button className="primary wide" disabled={busy} onClick={async()=>{if(await act("delete",{})){location.replace("./");}}}>파장 기록 삭제</button><button className="textbtn" onClick={close}>취소</button></>}
-    {modal.kind==="help"&&<><span className="modalicon"><I n="headphones"/></span><h2>파장 이용 안내</h2><div className="guidelist">{[["오전과 오후에 한 번씩 답해요","한국 시간 자정과 낮 12시에 새 질문이 열려요. 한 번 답하면 다음 질문이 열릴 때까지 바로 메인으로 들어가요."],["답변에 신호를 보내요","모두의 답변에서 최근 1년의 질문과 답을 함께 읽어 보세요. 내 답을 쓰기 전에도 마음에 드는 사람에게 하루 무료 신호 3개를 보낼 수 있어요."],["서로 닿으면 대화해요","받은 신호를 수락하면 두 사람의 대화방이 열려요. 상대 프로필에서 언제든 차단할 수 있어요."],["프로필과 사진을 교환해요","이 대화방에서 각자 메시지를 5개 이상 보낸 뒤 프로필이나 사진 교환을 신청할 수 있어요. 상대가 수락하면 서로 볼 수 있어요."]].map(([a,b],i)=><div key={a}><b>{i+1}</b><div><strong>{a}</strong><p>{b}</p></div></div>)}</div><button className="primary wide" onClick={close}>알겠어요</button></>}
+    {modal.kind==="help"&&<><span className="modalicon"><I n="headphones"/></span><h2>파장 이용 안내</h2><div className="guidelist">{[["오전과 오후에 한 번씩 답해요","한국 시간 자정과 낮 12시에 새 질문이 열려요. 한 번 답하면 다음 질문이 열릴 때까지 바로 메인으로 들어가요."],["답변에 신호를 보내요","모두의 답변에서 공개 기간이 남아 있는 질문과 답을 함께 읽어 보세요. 내 답을 쓰기 전에도 마음에 드는 사람에게 하루 무료 신호 3개를 보낼 수 있어요."],["서로 닿으면 대화해요","받은 신호를 수락하면 두 사람의 대화방이 열려요. 상대 프로필에서 언제든 차단할 수 있어요."],["프로필과 사진을 교환해요","이 대화방에서 각자 메시지를 5개 이상 보낸 뒤 프로필이나 사진 교환을 신청할 수 있어요. 상대가 수락하면 서로 볼 수 있어요."]].map(([a,b],i)=><div key={a}><b>{i+1}</b><div><strong>{a}</strong><p>{b}</p></div></div>)}</div><button className="primary wide" onClick={close}>알겠어요</button></>}
     {error&&<p role="alert" className="error">{error}</p>}
   </Dialog>}</div>;
 }

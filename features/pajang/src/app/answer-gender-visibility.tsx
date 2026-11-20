@@ -34,7 +34,7 @@ export default function AnswerGenderVisibility({onSaved}:{onSaved:()=>void}) {
     } finally {pending.current=false;if(mounted.current)setSaving(false);}
   }
   const enabled=preference?.visible===true;
-  const hint=preference&&!preference.hasGender?"연동된 성별 정보가 없어 내 답변은 남·여 필터에 표시되지 않아요.":"켜면 최근 1년의 내 답변이 오쭈다 회원정보의 남·여 필터에 표시돼요.";
+  const hint=preference&&!preference.hasGender?"연동된 성별 정보가 없어 내 답변은 남·여 필터에 표시되지 않아요.":"켜면 공개 기간이 남아 있는 내 답변이 오쭈다 회원정보의 남·여 필터에 표시돼요.";
   return <section className="discovery-visibility-panel" aria-label="답변 공개 설정">
     <label className="discovery-visibility-control">
       <span>성별 필터에 내 답변 표시</span>
