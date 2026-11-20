@@ -154,7 +154,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     await page.goto('https://fixture.test/world.html?admin=overview'); await loaded();
     await page.locator('.adm-stat').filter({ hasText: '정지 계정' }).waitFor();
     assert.deepEqual(await page.locator('.adm-menu-group > h3').allTextContents(),
-      ['운영 현황','회원·ZU','아지트 관리','신고·안전','운영·보관']);
+      ['운영 현황','운영본부','회원·ZU','아지트 관리','신고·안전','운영·보관']);
     for(const [id,title,home] of [['park','공원','cards'],['pajang','파장','pajang-answers'],['agit','아지트','overview']]){
       await service(id);
       await page.getByRole('heading',{name:title+' 관리자모드',exact:true}).waitFor();
@@ -169,7 +169,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
         await tab('pajang-chats');await mounted('pajang-chats');assert.equal(await page.evaluate(()=>fixture.options['pajang-chats'].view),'chats');
       }
     }
-    assert.equal(await page.locator('[data-admin-folder]').count(),6,'all category folders are visible without expansion');
+    assert.equal(await page.locator('[data-admin-folder]').count(),7,'all category folders are visible without expansion');
     assert.equal(await page.locator('.adm-navigation').evaluate(node => node.scrollWidth <= node.clientWidth), true,
       'file folders fit the mobile width');
     await page.locator('[data-admin-folder="all"]').click();

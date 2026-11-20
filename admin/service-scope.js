@@ -13,10 +13,12 @@
   });
   const common = Object.freeze(['overview','visitors','users','suspended','referrals','settings','reports','feedback',
     'errors','connections','activity','notice','words','assets','rewards','trash-all','trash-accounts','trash-other']);
+  // Standalone administrator pages are shared links, not World workspace tabs.
+  const external = Object.freeze(['organization']);
   const valid = value => typeof value === 'string' && Object.hasOwn(services,value);
   const normalize = value => valid(value) ? value : 'agit';
   const owner = tab => Object.keys(dedicated).find(service => dedicated[service].includes(tab)) || null;
-  const allows = (service,tab) => common.includes(tab) || dedicated[normalize(service)].includes(tab);
+  const allows = (service,tab) => common.includes(tab) || external.includes(tab) || dedicated[normalize(service)].includes(tab);
   const resolve = (value,tab) => valid(value) ? value : owner(tab) || 'agit';
-  window.OjjudaAdminScope = Object.freeze({services,dedicated,common,valid,normalize,owner,allows,resolve});
+  window.OjjudaAdminScope = Object.freeze({services,dedicated,common,external,valid,normalize,owner,allows,resolve});
 })();
