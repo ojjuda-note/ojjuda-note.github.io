@@ -26,6 +26,8 @@ async function fixture(context, source, rpc) {
   if (source === 'world') {
     await page.setContent('<base href="https://fixture.test/"><meta name="viewport" content="width=device-width,initial-scale=1"><main class="main" id="world-my"></main>');
     for (const match of world.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)) await page.addStyleTag({ content: match[1] });
+    // The production settings rows live in this linked stylesheet, not in World inline CSS.
+    await page.addStyleTag({ content: read('features/account/settings-list.css') });
     await page.evaluate(() => {
       window.$ = { coins: 70, settings: { accent: 'pink', theme: 'light', defaultVis: 'all', notify: {} }, me: { nick: '검사 회원', bio: '', mood: '😊', moodText: '' }, album: [] };
       window.D = { online: true, user: { id: 'synthetic-user', email: 'test@example.invalid' } };
