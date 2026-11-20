@@ -7,6 +7,7 @@ const {pathToFileURL,fileURLToPath} = require('node:url');
 const {JSDOM} = require('jsdom');
 const {entryFlowDriver,selectReadingItem} = require('./helpers/saju-ui-harness.cjs');
 const {currentStory,chooseStory,followStory,collectStories,collectCurrentTopic,originalParagraphs,assertOriginalParagraphs,assertSummaryAndScore,storySummary,visible} = require('./helpers/saju-story-ui.cjs');
+const {removedCompatibilityCards}=require('./helpers/saju-selected-readings.cjs');
 
 const appDir=path.resolve(__dirname,'../games/starlit-saju');
 const fixedNow='2026-11-13T03:00:00.000Z';
@@ -410,7 +411,10 @@ test('an explicit twenty-ju purchase reveals the real reading and accessible sco
   assert.ok(coverageScenes.length,'the purchased contents retains the complete scope story');
   h.copy();await waitFor(()=>h.state.copies.length===1);
   assert.match(h.state.copies[0],/궁합/);
-  for(const paragraph of reading.cards.flatMap(card=>card.paragraphs))assert.ok(h.state.copies[0].includes(paragraph),'copy includes every personal interpretation paragraph');
+  for(const card of reading.cards) {
+    if(removedCompatibilityCards.has(card.id))assert.equal(h.state.copies[0].includes(card.paragraphs.join('\n')),false,'removed duplicate compatibility explanations stay out of copy');
+    else for(const paragraph of card.paragraphs)assert.ok(h.state.copies[0].includes(paragraph),'copy includes each retained compatibility explanation exactly');
+  }
   assert.doesNotMatch(h.state.copies[0],/궁합 계산 근거|점수를 계산한 방법/);
   for(const paragraph of reading.readingScope.paragraphs) {
     assert.ok(coverageText.includes(paragraph));

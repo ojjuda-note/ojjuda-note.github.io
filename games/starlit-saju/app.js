@@ -505,8 +505,8 @@ function scheduleReadingRefresh({retryChanged=true}={}) {
 async function prepareDetailedReading(chart,target,person=currentPerson||readPerson()) {
   detailModulesPromise ||= Promise.all([
     import('./fortune-data.mjs?v=20261114-saju-correction1'),
-    import('./readings.mjs?v=20261114-saju-final-review2'),
-    import('./report-view.mjs?v=20261120-saju-topic1'),
+    import('./readings.mjs?v=20261120-saju-prune1'),
+    import('./report-view.mjs?v=20261120-saju-prune1'),
     import('./daeun.mjs?v=20261114-saju-correction1'),
     zodiacModule()
   ]).catch(error=>{detailModulesPromise=null;throw error;});

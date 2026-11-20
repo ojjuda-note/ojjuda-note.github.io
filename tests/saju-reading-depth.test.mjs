@@ -9,6 +9,7 @@ import {buildCompatibilityScore} from '../games/starlit-saju/compatibility-score
 import {compatibilityPeopleText} from '../games/starlit-saju/compatibility-people-view.mjs';
 import {compatibilityScoreText} from '../games/starlit-saju/compatibility-score-view.mjs';
 import {readingDetailSections,readingDetailText} from '../games/starlit-saju/reading-detail.mjs';
+import {expectedGeneralCopyGroups,authoredCopyBody} from './helpers/saju-copy-policy.mjs';
 
 const now=new Date('2026-11-13T00:00:00Z');
 const birth={year:1990,month:5,day:17,hour:8,minute:37};
@@ -46,12 +47,14 @@ function generalGroups(report) {
   };
 }
 
-test('every general reading keeps its full structured explanation in the paid category and complete copy',()=>{
+test('every retained reading keeps its full structured explanation in copy while removed layers remain only in the model',()=>{
   const {reading}=general();
+  const selected=new Set(Object.values(expectedGeneralCopyGroups(reading)).flat());
   for(const [category,items] of Object.entries(generalGroups(reading)))for(const item of items) {
     const label=item.id||item.title||item.label;
-    structured(item,label,reading.copyByCategory[category]);
-    for(const text of readingDetailText(item))assert.ok(reading.copyByCategory.all.includes(text),label+': the complete purchase includes every new explanation');
+    structured(item,label,selected.has(item)?reading.copyByCategory[category]:undefined);
+    if(selected.has(item))for(const text of readingDetailText(item))assert.ok(reading.copyByCategory.all.includes(text),label+': the complete purchase keeps the representative explanation');
+    else assert.ok(!reading.copyByCategory.all.includes(authoredCopyBody(item)),label+': the removed interpretation does not return in copy');
   }
   for(const copy of Object.values(reading.copyByCategory))assert.doesNotMatch(copy,/계산 근거|점수를 계산한 방법|자료 출처|상세 산식/);
 });

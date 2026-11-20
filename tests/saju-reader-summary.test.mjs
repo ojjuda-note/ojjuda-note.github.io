@@ -4,6 +4,7 @@ import { calculateSaju } from '../games/starlit-saju/engine.mjs';
 import { analyzeFortune } from '../games/starlit-saju/fortune-data.mjs';
 import { buildDetailedReading } from '../games/starlit-saju/readings.mjs';
 import { attachReaderSummary, describePersonalPeriod } from '../games/starlit-saju/reader-summary.mjs';
+import {expectedGeneralCard,authoredCopyBody} from './helpers/saju-copy-policy.mjs';
 
 const now=new Date('2026-11-13T00:00:00Z');
 const sample={year:1990,month:5,day:17,hour:8,minute:37};
@@ -223,7 +224,8 @@ test('the expanded lifelong topics stay grouped, trace actual observed relations
   for(const card of report.reader.lifelong.cards) {
     assert.ok(chapters.some(chapter=>chapter.id===card.chapterId),card.chapterId);
     for(const code of card.godCodes)assert.ok(actual.has(code),`an unobserved natal relationship cannot supply ${card.id}`);
-    for(const paragraph of card.paragraphs)assert.ok(report.copyByCategory.lifelong.includes(paragraph),'expanded prose is included without truncation in the product copy');
+    if(expectedGeneralCard(card.id))for(const paragraph of card.paragraphs)assert.ok(report.copyByCategory.lifelong.includes(paragraph),'the retained representative is copied without truncation');
+    else assert.ok(!report.copyByCategory.lifelong.includes(authoredCopyBody(card)),card.id+': the removed parallel interpretation stays out of copy');
     assert.ok(card.factIds.every(id=>id.startsWith('natal.')),'long-term topics do not borrow a future period');
   }
   assert.deepEqual(new Set(report.reader.lifelong.cards.map(card=>card.navGroup)),new Set(['나의 바탕','사랑과 가족','일과 배움','돈과 문서','관계와 생활']));

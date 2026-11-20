@@ -8,6 +8,7 @@ import {analyzeDaeun} from '../games/starlit-saju/daeun.mjs';
 import {buildDetailedReading} from '../games/starlit-saju/readings.mjs';
 import {attachReadingScores,readingScoreCopy} from '../games/starlit-saju/reading-score.mjs';
 import {READING_SCORE_RULES,READING_SCORE_PAIR_RULES,READING_SCORE_STEM_RULES} from '../games/starlit-saju/reading-score-rules.mjs';
+import {expectedGeneralCopyGroups,authoredCopyBody} from './helpers/saju-copy-policy.mjs';
 
 const now=new Date('2026-11-13T00:00:00Z');
 const birth={year:1990,month:5,day:17,hour:8,minute:37};
@@ -308,16 +309,22 @@ test('attaching scores is deterministic, preserves original data and fails atomi
   assert.deepEqual(broken,failedBefore);
 });
 
-test('copies preserve visible stories, advice, scope and scores while omitting internal facts, sources and formulas',()=>{
+test('copies preserve representative stories, scope and scores while omitting removed parallel explanations and internal formulas',()=>{
   const {report}=fixture();
   const copy=report.copyByCategory.all;
+  const selected=new Set(Object.values(expectedGeneralCopyGroups(report)).flat());
   for(const item of units(report)) {
+    if(!selected.has(item)) {
+      const body=authoredCopyBody(item);
+      if(body)assert.ok(!copy.includes(body),`${item.id||item.title}: removed parallel body must not return in copy`);
+      continue;
+    }
     for(const paragraph of item.paragraphs||[])assert.ok(copy.includes(paragraph),item.id||item.title);
     for(const line of item.summaryLines||[])assert.ok(copy.includes(line),line);
     for(const line of readingScoreCopy(item))assert.ok(copy.includes(line),line);
   }
   for(const advice of [...report.adviceByCategory.lifelong,...report.adviceByCategory.annual,...report.months.flatMap(month=>month.advice)]) {
-    assert.ok(copy.includes(advice.action));assert.ok(copy.includes(advice.caution));
+    assert.ok(!copy.includes([advice.title,'해 볼 일: '+advice.action,'함께 살펴볼 점: '+advice.caution].join('\n')),'standalone advice remains internal after the repeated layer is removed');
     assert.ok(!copy.includes(advice.why),'the calculation reason stays internal');
   }
   assert.doesNotMatch(copy,/원래의 계산과 해석 전체|이 성격 풀이의 근거|대운 계산 근거|자료를 확인한 곳|\[계산에서 확인한 내용\]|\[적용한 해석 규칙\]|confirmed-pair-ratios|tailwindNumerator|round\(100/);

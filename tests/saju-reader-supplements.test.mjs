@@ -72,15 +72,17 @@ test('stage supplements preserve every actual metaphor and authored question, in
   assert.equal(observed.size,12,'all twelve meanings are covered by the actual selected monthly periods');
 });
 
-test('each supplement has two complete units and every visible paragraph, heading and scope is copied in the same order',()=>{
+test('removed supplements and their explanatory notices stay out of product copies while the complete internal model remains',()=>{
   for(const {topic,month,cards} of contexts(fixture)) {
     const copied=copyReaderSupplements(fixture.report,topic,{month:month??null}).join('\n');
-    assert.ok(fixture.report.copyByCategory[topic].includes(copied),'the real category copy contains the complete supplementary block');
-    assert.ok(fixture.report.copyByCategory.all.includes(copied),'the all-reading copy also retains the block');
+    assert.ok(!fixture.report.copyByCategory[topic].includes(copied),'the removed supplementary block stays out of its category copy');
+    assert.ok(!fixture.report.copyByCategory.all.includes(copied),'the removed supplementary block stays out of the complete copy');
     for(const card of cards) {
       assert.equal(card.summaryLines.length,2);
       assert.notEqual(card.summaryLines[0],card.summaryLines[1]);
       assert.deepEqual(card.detailSections.flatMap(section=>section.paragraphs),card.paragraphs);
+      for(const category of [topic,'all'])assert.equal(fixture.report.copyByCategory[category].split('\n').filter(line=>line===card.scopeNotice).length,0,
+        card.id+': the removed supplemental explanation does not return through its own notice');
       assert.ok(!card.label.includes('지장간')&&!card.label.includes('십이운성'),'the reading menu leads with ordinary life topics');
       const ordered=[card.label,'추가 해설',...card.summaryLines,...readingDetailText(card),card.scopeNotice];
       let offset=0;

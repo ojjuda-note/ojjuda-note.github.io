@@ -11,6 +11,7 @@ import {renderDetailedReport,renderCompatibilityReport,restoreReadingPage} from 
 const require=createRequire(import.meta.url),{JSDOM}=require('jsdom');
 const {currentStory,chooseStory,followStory,collectStories,assertOriginalParagraphs,
   assertSummaryAndScore,storiesForItem,groupStories,visible}=require('./helpers/saju-story-ui.cjs');
+const {selectedGeneralUnits,removedGeneralCards,isRemovedGeneralStory}=require('./helpers/saju-selected-readings.cjs');
 const now=new Date('2026-11-13T00:00:00Z');
 const chart=calculateSaju({year:1990,month:5,day:17,hour:8,minute:37},{now});
 const fortune=analyzeFortune(chart,{year:2026,now});
@@ -30,46 +31,33 @@ function assertNoEvidence(h) {
   assert.equal(h.host.querySelector('#reading-evidence,#reading-method,#reading-sources,#reading-guide,#reading-glossary,.report-chapter,.reading-full-text,.source-entry,[data-fact-id],a[href*="-evidence"],a[href*="-chapter-"]'),null);
   assert.ok([...h.host.querySelectorAll('option,.reading-item-button')].every(item=>!/근거|계산·해석|계산 단원|자료 출처/.test(item.textContent)));
 }
-function scoredUnits(report) {
-  return [report.personPortrait,...report.personPortrait.cards,
-    report.reader.lifelong,...report.reader.lifelong.cards,
-    report.reader.annual,...report.reader.annual.cards,
-    ...report.reader.months.flatMap(month=>[month,...month.cards]),
-    report.daeun,...report.daeun.periods.flatMap(period=>[period,...period.topics,...period.situations]),
-    report.reader.symbols,...report.reader.symbols.items,
-    report.reader.timings,...report.reader.timings.items.flatMap(item=>[item,...item.cautions,...item.opportunities,...item.people,...item.documents])];
-}
-
-// One complete user-driven traversal covers every source and meter. Subsequent
+// One complete user-driven traversal covers every retained source and meter. Subsequent
 // focused scenarios use only the affected topics rather than repeating it.
-test('every computed interpretation, paragraph and score remains reachable in the normal story order',()=>{
+test('every selected interpretation keeps its original prose and scores while removed readings never return through next',()=>{
   const h=mount('all');
   try {
-    const scenes=collectStories(h.host),used=new Set(),units=scoredUnits(reading);
-    assert.equal(units.length,306,'this synthetic fixture covers all distinct scored source units');
+    const scenes=collectStories(h.host),used=new Set(),units=selectedGeneralUnits(reading);
+    assert.equal(units.length,177,'the independent selection fixture covers every retained scored source unit');
     for(const item of units) {
       const parts=storiesForItem(scenes,item,{used}),label=item.id||item.title||item.label||item.headline;
       assertSummaryAndScore(parts,item,label);
       if(item.paragraphs)assertOriginalParagraphs(parts,item.paragraphs,label);
       else if(item.text)assertOriginalParagraphs(parts,[item.text],label);
     }
-    const spotlightMonths=[fortune.months.find(item=>item.isCurrent)?.month||1,12];
-    for(const month of spotlightMonths) {
-      const item=reading.reader.months.find(item=>item.month===month),parts=storiesForItem(scenes,item,{used});
-      assertSummaryAndScore(parts,item,`${month}월 spotlight`);
-    }
     const panels=scenes.flatMap(scene=>scene.scores);
-    assert.equal(panels.length,308);assert.equal(panels.filter(panel=>panel.status==='available').length,300);
-    assert.equal(panels.filter(panel=>panel.status==='unavailable').length,8);
-    assert.equal(panels.flatMap(panel=>panel.meters).length,600,'all original bars remain in visible scenes, not a hidden report');
+    const available=units.filter(item=>item.readingScore.available).length;
+    assert.equal(panels.length,units.length);assert.equal(panels.filter(panel=>panel.status==='available').length,available);
+    assert.equal(panels.filter(panel=>panel.status==='unavailable').length,units.length-available);
+    assert.equal(panels.flatMap(panel=>panel.meters).length,available*2,'every retained item has both original independent bars');
     assert.ok(panels.some(panel=>panel.meters.length===2&&panel.meters[0].value+panel.meters[1].value!==100),
       'independent wind values are never normalized into a complementary pair');
-    for(const item of [...reading.reader.supplements.lifelong,...reading.reader.supplements.annual,...reading.reader.supplements.months.flatMap(month=>month.cards)]) {
-      const parts=storiesForItem(scenes,item);
-      assertSummaryAndScore(parts,item,item.id);assertOriginalParagraphs(parts,item.paragraphs,item.id);
-      assert.ok(parts.some(part=>part.text.includes(item.scopeNotice)),'supplementary interpretation retains its scope');
-      assert.equal(parts.flatMap(part=>part.scores).length,0,'additional explanation does not invent a numerical score');
+    assert.ok(scenes.every(scene=>!isRemovedGeneralStory(scene)),'removed cards, advice, supplements and timing panels are absent from the actual reading order');
+    for(const item of [...reading.reader.supplements.lifelong,...reading.reader.supplements.annual,
+      ...reading.reader.supplements.months.flatMap(month=>month.cards)]) {
+      assert.equal(scenes.some(scene=>scene.kind==='scope'&&scene.text.includes(item.scopeNotice)),false,
+        `${item.id}: an explanation of a deleted supplement does not survive as a guidance page`);
     }
+    assert.equal(h.host.querySelector('dialog.story-menu details'),null,'retained items are directly selectable without expanding a group');
     assertNoEvidence(h);assert.equal(JSON.stringify(reading),originalReading,'display changes preserve calculation and complete copy data');
   } finally {h.close();}
 });
@@ -97,7 +85,7 @@ test('each purchased category starts with one direct summary and exposes only it
         scope.push(...scene.querySelectorAll('.story-body > p'));
         const next=h.host.querySelectorAll('.reading-pager-step')[1];if(next.disabled)break;next.click();
       }
-      assert.deepEqual(scope.map(p=>p.textContent),reading.readingScope.paragraphs);
+      assert.deepEqual(scope.map(p=>p.textContent).slice(0,reading.readingScope.paragraphs.length),reading.readingScope.paragraphs);
       for(const paragraph of reading.readingScope.paragraphs)assert.ok(reading.copyByCategory[topic].includes(paragraph));
       assertNoEvidence(h);
     } finally {h.close();}
@@ -109,8 +97,11 @@ test('all eight life-topic scope boundaries remain in the chosen story and in it
   try {
     const scoped=reading.reader.lifelong.cards.filter(item=>item.scopeNotice);assert.equal(scoped.length,8);
     for(const item of scoped) {
-      const choice=[...h.host.querySelectorAll('.reading-item-button')].find(button=>button.textContent===item.label);
-      assert.ok(choice);chooseStory(h.select,choice.dataset.readingTarget);
+      if(removedGeneralCards.has(item.id))h.outer('reading-coverage');
+      else {
+        const choice=[...h.host.querySelectorAll('.reading-item-button')].find(button=>button.textContent===item.label);
+        assert.ok(choice);chooseStory(h.select,choice.dataset.readingTarget);
+      }
       const source=h.current().dataset.storySource,parts=[];
       while(h.current().dataset.storySource===source) {
         parts.push(h.current().textContent);
@@ -158,17 +149,18 @@ test('an unknown-time decade keeps its six-AM assumption with every chosen perio
   } finally {h.close();}
 });
 
-test('all twelve months, exact date ranges and opportunity details remain reachable without another report',()=>{
+test('all twelve months keep their original date ranges while removed timing links cannot restore a duplicate report',()=>{
   const h=mount('monthly');
   try {
     for(const month of reading.reader.months) {
       h.outer(`reading-month-${month.month}-summary`);
       assert.equal(h.current().dataset.storySource,`reading-month-${month.month}`);
       assert.ok(h.current().querySelector('.story-context').textContent.includes(reading.months.find(item=>item.month===month.month).periodLabel));
-      const timing=reading.reader.timings.items.find(item=>item.month===month.month);
-      h.outer(`reading-timings-month-${month.month}`);
-      assert.equal(h.current().dataset.month,String(month.month));
-      assert.ok(h.current().querySelector('.story-context').textContent.includes(timing.periodLabel));
+      const current=h.current();
+      assert.equal(restoreReadingPage(h.host,`reading-timings-month-${month.month}`),false,'a deleted timing-only anchor cannot reopen its old duplicate report');
+      assert.equal(h.current(),current);
+      assert.equal(h.current().dataset.storySource,`reading-month-${month.month}`);
+      assert.ok(h.current().querySelector('.story-context').textContent.includes(reading.months.find(item=>item.month===month.month).periodLabel));
       assert.ok(h.current().contains(h.doc.activeElement));
     }
     h.outer('reading-month-periods');

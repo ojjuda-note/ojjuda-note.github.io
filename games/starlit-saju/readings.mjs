@@ -1,4 +1,5 @@
 import {readingDetailText} from './reading-detail.mjs?v=20261114-saju-depth1';
+import {keepGeneralCard,keepPortraitCard} from './reading-selection.mjs?v=20261120-saju-prune1';
 import {READING_SCOPES,readingScopeText} from './reading-scope.mjs?v=20261114-saju-final-review2';
 import {
   STEM_REFERENCE, GROUP_REFERENCE, GOD_REFERENCE,
@@ -10,7 +11,7 @@ import { attachDeeperReadings } from './deeper-reading.mjs?v=20261114-saju-copy1
 import { attachStageReadings } from './stage-reading.mjs?v=20261114-saju-final-review2';
 import { attachReaderSummary } from './reader-summary.mjs?v=20261114-saju-final-review2';
 import { attachReaderExtras } from './reader-extras.mjs?v=20261114-saju-final-review2';
-import { attachReaderSupplements, copyReaderSupplements } from './reader-supplements.mjs?v=20261114-saju-final-review2';
+import { attachReaderSupplements } from './reader-supplements.mjs?v=20261114-saju-final-review2';
 import { attachPeriodContexts } from './reading-period-context.mjs?v=20261114-saju-correction1';
 import { buildDaeunReading, copyDaeunReading } from './daeun-reading.mjs?v=20261114-saju-final-review2';
 import { buildPersonPortrait } from './person-portrait.mjs?v=20261114-saju-correction1';
@@ -260,17 +261,12 @@ function methodMetadata(fortune,topic='all') {
     ],
   };
 }
-function adviceCopy(advice) {
-  if(!advice?.length)return [];
-  const lines=['','선택에 도움이 되는 제안'];
-  for(const item of advice)lines.push('',item.title,'해 볼 일: '+item.action,'함께 살펴볼 점: '+item.caution);
-  return lines;
-}
 const summaryCopy = item => [...(Array.isArray(item?.summaryLines) ? ['두 줄 요약',...item.summaryLines] : []),...readingScoreCopy(item)];
-function readerCopy(overview,periodLabel='') {
+function readerCopy(overview,periodLabel='',{includeOverview=true}={}) {
   if (!overview) return [];
-  const lines=['',overview.title,overview.headline,...(periodLabel?[periodLabel]:[]),...summaryCopy(overview),...readingDetailText(overview)];
+  const lines=includeOverview?['',overview.title,overview.headline,...(periodLabel?[periodLabel]:[]),...summaryCopy(overview),...readingDetailText(overview)]:[];
   for (const card of overview.cards||[]) {
+    if(!keepGeneralCard(card.id))continue;
     lines.push('',card.label,card.title,...summaryCopy(card),...readingDetailText(card));
     if(card.scopeNotice) lines.push('풀이 범위: '+card.scopeNotice);
   }
@@ -295,29 +291,34 @@ function copyCategory(report,topic) {
   const topics=topic==='all'?['lifelong','annual','monthly']:[topic];
   const title=topic==='all'?`전체 풀이 · 평생운과 ${report.year}년 올해운·월별운`:
     topic==='lifelong'?'평생운 · 나의 사주와 생활 이야기':report.year+'년 '+(topic==='annual'?'올해운':'월별운');
-  const lines=['오쭈다 · 별빛 사주팔자',title];
+  const lines=['오쭈다 · 별빛 사주팔자',title],removedScopes=[];
   if(report.reader.scopeNotice) lines.push(report.reader.scopeNotice);
   lines.push(...readingScopeText(report.readingScope));
   for(const current of topics) {
+    const overviews=current==='monthly'?report.reader.months:[report.reader[current]];
+    removedScopes.push(...overviews.flatMap(overview=>overview.cards.filter(card=>!keepGeneralCard(card.id)).map(card=>card.scopeNotice)));
     if(current==='lifelong'&&report.personPortrait) {
       const portrait=report.personPortrait;
+      removedScopes.push(...portrait.cards.filter(card=>!keepPortraitCard(card.id)).map(card=>card.scopeNotice));
       lines.push('',portrait.title,portrait.headline,...summaryCopy(portrait),...readingDetailText(portrait));
-      for(const card of portrait.cards)lines.push('',card.label,card.title,...summaryCopy(card),...readingDetailText(card));
+      for(const card of portrait.cards)if(keepPortraitCard(card.id))lines.push('',card.label,card.title,...summaryCopy(card),...readingDetailText(card));
       if(portrait.scopeNotice)lines.push(portrait.scopeNotice);
       lines.push('','항목별 상세 풀이');
     }
     if(current==='monthly') for(const month of report.reader.months) {
       const detail=report.months.find(value=>value.month===month.month);
-      lines.push(...readerCopy(month,detail?.periodLabel||''),...adviceCopy(detail?.advice),...copyReaderSupplements(report,current,{month:month.month}));
+      lines.push(...readerCopy(month,detail?.periodLabel||''));
     }
     else {
       const periodLabel=current==='annual'?report.facts.find(fact=>fact.id==='annual.period')?.text||'':'';
-      lines.push(...readerCopy(report.reader[current],periodLabel),...adviceCopy(report.adviceByCategory[current]),...copyReaderSupplements(report,current));
+      lines.push(...readerCopy(report.reader[current],periodLabel,{includeOverview:current!=='lifelong'}));
     }
     if(current==='lifelong'&&report.daeun)lines.push('',copyDaeunReading(report.daeun));
     if(current==='lifelong') lines.push(...readerExtrasCopy(report.reader.symbols));
-    if(current==='monthly') lines.push(...readerExtrasCopy(report.reader.timings));
   }
+  const printed=new Set(lines.flatMap(line=>typeof line==='string'?line.split('\n'):[]).flatMap(line=>line.startsWith('풀이 범위: ')?[line,line.slice('풀이 범위: '.length)]:[line]));
+  const notices=[...new Set(removedScopes.filter(value=>typeof value==='string'&&value.trim()))].filter(value=>!printed.has(value));
+  if(notices.length)lines.push('','풀이 참고',...notices);
   return lines.join('\n');
 }
 

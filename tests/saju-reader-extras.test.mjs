@@ -5,6 +5,7 @@ import { analyzeFortune } from '../games/starlit-saju/fortune-data.mjs';
 import { buildDetailedReading } from '../games/starlit-saju/readings.mjs';
 import { attachReaderExtras } from '../games/starlit-saju/reader-extras.mjs';
 import { getReadingSources } from '../games/starlit-saju/sources.mjs';
+import {expectedGeneralCard} from './helpers/saju-copy-policy.mjs';
 
 const now=new Date('2026-11-13T03:00:00Z');
 function build(input={year:1990,month:5,day:17,hour:8,minute:37},year=2026) {
@@ -61,15 +62,21 @@ test('monthly opportunities and cautions preserve every calculated period and al
   }
 });
 
-test('new personal symbols and period guidance keep the existing product boundaries in copied reading',()=>{
-  const {report}=build();
+test('selected symbols and monthly readings keep product boundaries while the duplicate timing copy is removed',()=>{
+  const {fortune,report}=build();
   for(const topic of ['lifelong','annual','monthly','all']) {
     const copy=report.copyByCategory[topic];
     assert.equal(copy.includes(report.reader.symbols.headline),['lifelong','all'].includes(topic));
-    assert.equal(copy.includes(report.reader.timings.headline),['monthly','all'].includes(topic));
+    assert.equal(copy.includes(report.reader.timings.headline),false);
     if(['monthly','all'].includes(topic)) for(const item of report.reader.timings.items) {
-      assert.ok(copy.includes(item.periodLabel));
-      for(const key of ['opportunities','people','documents','cautions']) for(const paragraph of item[key]) assert.ok(copy.includes(paragraph.text));
+      const period=fortune.months.find(month=>month.month===item.month);
+      assert.ok(copy.includes(period.start.label));assert.ok(copy.includes(period.end.label));
+      assert.ok(copy.includes(report.months.find(month=>month.month===item.month).periodLabel),'the retained monthly heading keeps its full original date range');
+      assert.equal(copy.includes(item.paragraphs.join('\n')),false,'the supplemental timing explanation stays removed');
+      const selected=report.reader.months.find(month=>month.month===item.month);
+      for(const source of [selected,...selected.cards.filter(card=>expectedGeneralCard(card.id))]) {
+        for(const text of [...source.summaryLines,...source.paragraphs])assert.ok(copy.includes(text),'the selected month keeps its complete original explanation');
+      }
     }
   }
 });
@@ -88,11 +95,13 @@ test('every warning period explains the actual personal tendency and retains exa
     }
     for(const caution of item.cautions.filter(value=>value.topic==='caution')) {
       assert.ok(caution.label.length>15,'the warning title must name an action or situation, not a technical category');
-      assert.ok(report.copyByCategory.monthly.includes(caution.label));
+      assert.equal(report.copyByCategory.monthly.includes(caution.label+'\n'+caution.text),false,'the removed timing-only warning is not copied as another item');
     }
     assert.ok(item.periodLabel.includes(month.start.label));
     assert.ok(item.periodLabel.includes(month.end.label));
-    for(const paragraph of item.paragraphs)assert.ok(report.copyByCategory.monthly.includes(paragraph));
+    assert.equal(report.copyByCategory.monthly.includes(item.paragraphs.join('\n')),false);
+    const selected=report.reader.months.find(value=>value.month===month.month).cards.find(card=>card.id===`month-${month.month}-cautions`);
+    for(const paragraph of selected.paragraphs)assert.ok(report.copyByCategory.monthly.includes(paragraph),'the retained monthly caution keeps its exact original wording');
   }
 });
 
