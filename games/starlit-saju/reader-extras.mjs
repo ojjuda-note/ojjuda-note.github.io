@@ -1,14 +1,14 @@
 import { getReadingSources } from './sources.mjs?v=20261113-saju-reader1';
-import { describePersonalPeriod } from './reader-summary.mjs?v=20261114-saju-final-review2';
+import { describePersonalPeriod } from './reader-summary.mjs?v=20261120-saju-voice1';
 
 // These are documented symbolic correspondences, not a computed useful element
 // or a promise of good luck. The day master's element is never chosen by count.
 const SYMBOLS = Object.freeze({
-  wood: { name:'나무', color:'푸른색', numbers:[3,8], direction:'동쪽', scene:'새로 시작할 일을 적는 공책이나 책상 위 작은 소품에 푸른색을 골라 볼 수 있어요.' },
-  fire: { name:'불', color:'붉은색', numbers:[2,7], direction:'남쪽', scene:'발표나 새로운 시도를 앞두고 마음을 다잡는 작은 소품에 붉은색을 써 볼 수 있어요.' },
-  earth: { name:'흙', color:'노란색', numbers:[5,10], direction:'중앙', scene:'자주 쓰는 기록장이나 물건을 모아 두는 수납함에 노란색을 골라 볼 수 있어요.' },
-  metal: { name:'쇠', color:'흰색', numbers:[4,9], direction:'서쪽', scene:'정리하고 싶은 책상이나 서류함에 흰색을 써서 나만의 표시를 만들어 볼 수 있어요.' },
-  water: { name:'물', color:'검은색', numbers:[1,6], direction:'북쪽', scene:'생각을 정리하는 공책이나 오래 쓰는 작은 소품에 검은색을 골라 볼 수 있어요.' },
+  wood: { name:'나무', color:'푸른색', numbers:[3,8], direction:'동쪽', scene:'푸른색을 나만의 표시로 써 보세요. 새 계획을 적는 공책이나 책상 위 소품에 잘 어울려요.' },
+  fire: { name:'불', color:'붉은색', numbers:[2,7], direction:'남쪽', scene:'붉은색을 나만의 표시로 써 보세요. 발표를 준비하는 공책이나 자주 쓰는 소품에 작게 넣어 보세요.' },
+  earth: { name:'흙', color:'노란색', numbers:[5,10], direction:'중앙', scene:'노란색을 나만의 표시로 써 보세요. 자주 쓰는 기록장이나 수납함을 구별하는 색으로 쓰세요.' },
+  metal: { name:'쇠', color:'흰색', numbers:[4,9], direction:'서쪽', scene:'흰색을 나만의 표시로 써 보세요. 책상이나 서류함에 흰 이름표를 붙여 정리하세요.' },
+  water: { name:'물', color:'검은색', numbers:[1,6], direction:'북쪽', scene:'검은색을 나만의 표시로 써 보세요. 생각을 적는 공책이나 오래 쓰는 소품에 활용하세요.' },
 });
 
 // Shared, service-authored applications of each actually calculated relation.
@@ -132,27 +132,27 @@ function symbols(report, fortune) {
   const sources=getReadingSources('lifelong',fortune.year).filter(source=>['traditional-colors-directions','hetu-numbers'].includes(source.id));
   const items=[
     {label:'색',value:value.color,description:value.scene,
-      example:`가령 새 기록장의 표지를 고른다고 해 볼게요. ${value.color} 표지나 작은 표시를 골라 내가 자주 찾는 공책을 구별해 둘 수 있어요. 이미 쓰는 물건에는 같은 색의 작은 메모지만 붙여도 돼요.`,
-      choice:'직접 보았을 때 글씨가 잘 읽히는지, 주변 물건과 어울리는지 살펴보세요. 마음에 드는 색을 넓게 써도 되고 작은 부분에만 남겨도 돼요. 내 취향과 쓰기 편한 정도를 함께 생각하면 좋아요.'},
-    {label:'숫자',value:value.numbers.join(' · '),description:'마음에 드는 수를 골라 공책의 표시나 개인 소품에 활용할 수 있어요.',
+      example:`가령 새 기록장의 표지를 고른다고 해 볼게요. ${value.color} 표지를 골라 자주 쓰는 공책을 구별하세요. 이미 쓰는 공책에는 같은 색 메모지만 붙여도 충분해요.`,
+      choice:'글씨가 잘 보이고 마음에 드는 색을 고르세요. 전체 색을 바꾸기 부담스럽다면 이름표처럼 작은 부분에만 쓰세요.'},
+    {label:'숫자',value:value.numbers.join(' · '),description:'마음에 드는 숫자 하나를 골라 공책이나 소품에 나만의 표시로 쓰세요.',
       example:`가령 공책 여러 권을 나만의 표시로 구별한다고 해 볼게요. ${value.numbers[0]} 또는 ${value.numbers[1]} 중 마음에 드는 숫자를 작게 적고, 옆에 공책의 쓰임도 함께 써 두면 찾기 편해요.`,
-      choice:'숫자는 내가 기억하기 쉽고 다른 표시와 헷갈리지 않는 것으로 골라 보세요. 필요한 물건의 개수나 할 일의 양은 실제 쓰임에 맞춰 정하면 돼요. 이 숫자에 맞추려고 생활 계획까지 바꿀 필요는 없어요.'},
-    {label:'방향',value:value.direction,description:value.direction==='중앙'?'중앙을 나만의 상징으로 참고할 수 있어요. 실제 방의 가운데는 오가기 편하게 비워 두고, 수납은 쓰는 물건 가까이에 두세요.':'방향은 나만의 상징으로 참고할 수 있어요. 침대·책상은 출입문, 창문, 빛과 통로를 함께 살펴 배치해 보세요.',
+      choice:'기억하기 쉽고 다른 표시와 헷갈리지 않는 숫자를 고르세요. 물건의 개수와 할 일의 양은 실제로 필요한 만큼 정하세요.'},
+    {label:'방향',value:value.direction,description:value.direction==='중앙'?'중앙은 이 사주에 연결된 전통 상징이에요. 실제 방의 가운데는 오가기 편하게 비워 두세요.':'이 방향은 사주에 연결된 전통 상징이에요. 실제 가구 배치는 채광과 이동하기 편한 정도를 기준으로 정하세요.',
       example:value.direction==='중앙'
-        ?'가령 방의 배치를 종이에 그려 본다고 해 볼게요. 종이의 중앙에 작은 표시를 하고, 내가 자주 오가는 길과 물건을 꺼내는 자리를 함께 그려 보세요. 상징은 그림에 남기고 실제 공간은 쓰기 편하게 살필 수 있어요.'
-        :`가령 방의 배치를 종이에 그려 본다고 해 볼게요. ${value.direction} 쪽에 작은 표시를 하고, 지금 쓰는 책상과 수납 위치도 함께 그려 보세요. 표시를 남기는 것만으로도 나만의 상징으로 활용할 수 있어요.`,
-      choice:'배치를 바꿔 보고 싶다면 자주 쓰는 물건을 쉽게 꺼낼 수 있는지, 문을 여닫고 오가는 길이 편한지 먼저 보세요. 옮기기 전에 물건의 크기와 놓을 공간을 확인하면 다시 옮기는 수고를 줄일 수 있어요.'},
+        ?'가령 방의 배치를 종이에 그려 본다고 해 볼게요. 중앙에 작은 표시를 하고, 자주 오가는 길과 물건을 꺼내는 자리를 그리세요. 길을 막는 물건이 있는지 확인하세요.'
+        :`가령 방의 배치를 종이에 그려 본다고 해 볼게요. ${value.direction}에 표시를 하고, 책상과 수납 위치를 그리세요. 표시는 그대로 두고 실제 가구는 쓰기 편한 곳에 놓으세요.`,
+      choice:'가구를 옮기기 전에 크기와 놓을 공간을 재세요. 문을 끝까지 열 수 있는지, 자주 쓰는 물건을 꺼내기 편한지 확인하세요.'},
   ].map(({example,choice,...item})=>({...item,...detailContent([
     ['이 상징을 활용한다면',[item.description]],['생활 속 가상 예시',[example]],['고를 때 함께 살필 점',[choice]],
   ])}));
   return {
     title:'색·숫자·방향',
-    headline:`사주에서 나를 나타내는 ${value.name}에 옛사람들이 붙인 상징이에요.`,
+    headline:`나를 나타내는 ${value.name}의 전통 상징이에요.`,
     ...detailContent([
-      ['나에게 연결된 상징',[`이 사주에서 나를 나타내는 글자는 ‘${value.name}’에 속해요. 옛 대응표의 ‘${value.name}’ 항목에 적힌 색은 ${value.color}, 숫자는 ${value.numbers.join('·')}, 방향은 ${value.direction}이에요.`]],
+      ['나에게 연결된 상징',[`이 사주를 나타내는 ${value.name}의 상징은 ${value.color}, 숫자 ${value.numbers.join('·')}, ${value.direction}이에요. 전통 대응표에 따라 연결한 색·숫자·방향이에요.`]],
       ['생활에서 가볍게 참고해 보세요',[
         '이 상징은 마음에 드는 색이나 나만의 표시를 고를 때 쓰는 참고 자료예요. 행운을 보장하는 색·번호나 집의 좋은 자리를 따로 계산한 결과는 아니에요.',
-        '이번에는 색·숫자·방향 중 마음에 드는 것 하나만 골라 이미 쓰는 물건에 작은 표시로 남겨 보세요. 며칠 써 보며 찾기 쉽고 마음에 드는지 살펴본 뒤, 계속 사용할지는 내 취향에 맞게 정하면 돼요.',
+        '마음에 드는 상징 하나를 골라 이미 쓰는 물건에 표시하세요. 새 물건을 살 필요는 없어요. 쓰기 편하고 마음에 들면 계속 사용하세요.',
       ]],
     ]),items,
     origin:'service-reference',element:day.element,

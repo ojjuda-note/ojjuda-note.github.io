@@ -1,22 +1,22 @@
 import {readingDetailText} from './reading-detail.mjs?v=20261114-saju-depth1';
 import {keepGeneralCard,keepPortraitCard} from './reading-selection.mjs?v=20261120-saju-prune1';
-import {READING_SCOPES,readingScopeText} from './reading-scope.mjs?v=20261114-saju-final-review2';
+import {READING_SCOPES,readingScopeText} from './reading-scope.mjs?v=20261120-saju-voice1';
 import {
   STEM_REFERENCE, GROUP_REFERENCE, GOD_REFERENCE,
   RELATION_REFERENCE, GROUP_PAIR_RULES, PRACTICE_SUGGESTIONS,
 } from './readings-data.mjs?v=20261113-saju-easy1';
 import { attachPlainLanguage } from './plain-language.mjs?v=20261114-saju-copy1';
 import { attachAdvice } from './advice.mjs?v=20261114-saju-copy1';
-import { attachDeeperReadings } from './deeper-reading.mjs?v=20261114-saju-copy1';
+import { attachDeeperReadings } from './deeper-reading.mjs?v=20261120-saju-voice1';
 import { attachStageReadings } from './stage-reading.mjs?v=20261114-saju-final-review2';
-import { attachReaderSummary } from './reader-summary.mjs?v=20261114-saju-final-review2';
-import { attachReaderExtras } from './reader-extras.mjs?v=20261114-saju-final-review2';
-import { attachReaderSupplements } from './reader-supplements.mjs?v=20261114-saju-final-review2';
-import { attachPeriodContexts } from './reading-period-context.mjs?v=20261114-saju-correction1';
-import { buildDaeunReading, copyDaeunReading } from './daeun-reading.mjs?v=20261114-saju-final-review2';
-import { buildPersonPortrait } from './person-portrait.mjs?v=20261114-saju-correction1';
+import { attachReaderSummary } from './reader-summary.mjs?v=20261120-saju-voice1';
+import { attachReaderExtras } from './reader-extras.mjs?v=20261120-saju-voice1';
+import { attachReaderSupplements } from './reader-supplements.mjs?v=20261120-saju-voice1';
+import { attachPeriodContexts } from './reading-period-context.mjs?v=20261120-saju-voice1';
+import { buildDaeunReading, copyDaeunReading } from './daeun-reading.mjs?v=20261120-saju-voice1';
+import { buildPersonPortrait } from './person-portrait.mjs?v=20261120-saju-voice1';
 import { attachReadingSummaryLines } from './reading-summary-lines.mjs?v=20261114-saju-wind1';
-import { attachReadingScores, readingScoreCopy } from './reading-score.mjs?v=20261114-saju-correction1';
+import { attachReadingScores, readingScoreCopy } from './reading-score.mjs?v=20261120-saju-voice1';
 import { buildNatalReadingData, seasonRules, charLabel, particle, relationOf, godPosition, interactionFact } from './natal-reading-data.mjs?v=20261114-saju-wind1';
 
 const GROUP_KEYS = ['peer', 'expression', 'wealth', 'authority', 'resource'];

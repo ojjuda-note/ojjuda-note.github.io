@@ -1,7 +1,7 @@
 // Product scope stays visible even when calculation records are hidden.
 export const READING_SCOPES=Object.freeze({
   saju:Object.freeze({title:'풀이의 범위',paragraphs:Object.freeze([
-    '확인된 출생 정보로 성향과 관계를 읽고, 선택한 시기의 주제를 생활에 연결해 드려요.',
+    '확인된 출생 정보에 사주의 전통 해석을 적용해 성향과 관계, 시기별로 살필 일을 설명해요.',
     '사주 전체의 강약이나 나에게 이로운 기운을 정밀하게 판정하는 내용은 포함하지 않아요.',
     '같은 특징에는 공통 설명을 사용해요. 실제 사건이 일어날지, 언제 일어날지를 정하는 내용은 아니에요.',
   ])}),

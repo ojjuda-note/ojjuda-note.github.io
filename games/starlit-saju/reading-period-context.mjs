@@ -17,33 +17,33 @@ const THEMES={
 const GROUPS={companion:'peer',competitor:'peer',creator:'expression',critic:'expression',
   opportunist:'wealth',manager:'wealth',challenger:'authority',officer:'authority',explorer:'resource',scholar:'resource'};
 const SHARED={
-  peer:'내 선택과 다른 사람의 몫을 나누는 문제가 이어져요. 의견을 모으는 자리에서도 내가 정할 부분과 함께 정할 부분을 먼저 구분하세요.',
-  expression:'생각을 말이나 결과로 드러내는 주제가 이어져요. 할 일을 더 벌이기보다 이미 만든 것을 보여 주고 필요한 부분을 고치는 데 힘을 써 보세요.',
-  wealth:'시간과 돈을 어디에 쓸지 정하는 주제가 이어져요. 한 가지 선택이 다른 계획에 쓸 여유를 얼마나 남기는지 함께 살피세요.',
-  authority:'약속한 역할과 책임을 확인하는 주제가 이어져요. 해야 할 일이 늘었다면 마감과 맡을 범위도 함께 다시 정하세요.',
-  resource:'배운 것을 익히고 도움을 활용하는 주제가 이어져요. 설명을 더 듣는 것과 직접 해 보는 시간을 나누면 배움이 내 실력으로 남아요.',
+  peer:'계속 중요한 주제는 각자의 선택과 몫이에요. 의견을 모을 때도 내가 정할 일과 함께 정할 일을 먼저 나누세요.',
+  expression:'생각을 실제 결과로 보여 주는 일이 계속 중요해요. 새 일을 더 벌이기 전에 이미 만든 것을 보여 주고 필요한 부분을 고치세요.',
+  wealth:'시간과 돈을 쓰는 기준을 계속 지켜야 해요. 하나를 선택한 뒤 다른 계획에 쓸 여유가 얼마나 남는지 확인하세요.',
+  authority:'약속한 역할과 책임이 계속 핵심이에요. 일이 늘었다면 마감과 맡을 범위도 다시 정하세요.',
+  resource:'배운 내용을 직접 익히는 일이 계속 중요해요. 설명을 듣는 시간과 혼자 연습하는 시간을 나누세요.',
 };
 const BRIDGES={
-  'peer-expression':'내 기준을 세웠다면 이제 다른 사람도 이해할 수 있는 말과 결과로 보여 줄 차례예요. 원하는 방법만 말하기보다 짧은 초안이나 예시를 함께 준비하세요.',
-  'peer-wealth':'스스로 고르는 힘을 시간과 돈의 선택에 적용해 보세요. 함께 시작하는 일에서도 내 몫과 공동으로 쓸 몫을 구분해야 선택을 오래 이어 갈 수 있어요.',
-  'peer-authority':'내 방식으로 해 보고 싶은 마음과 함께 지킬 약속을 맞추는 것이 핵심이에요. 결과의 기준은 함께 정하고, 진행 방법에서 내가 결정할 범위를 찾아보세요.',
-  'peer-resource':'내가 직접 결정할 문제에 필요한 배움을 골라야 해요. 여러 조언을 모두 따르려 하기보다 지금 막힌 부분을 질문하고 내 말로 답을 정리하세요.',
-  'expression-peer':'쌓아 온 표현과 결과를 내 선택의 기준으로 삼아 보세요. 반응이 좋았던 방법을 그대로 따르기보다 어떤 부분이 나에게 잘 맞았는지 돌아보는 게 중요해요.',
-  'expression-wealth':'만들거나 표현하던 일을 실제 시간과 비용에 맞추는 것이 핵심이에요. 좋아하는 활동을 이어 가려면 한 번의 준비뿐 아니라 반복해서 필요한 돈과 수고도 챙기세요.',
-  'expression-authority':'새로운 생각을 함께 지킬 기준 안에서 완성하는 데 초점을 두세요. 고치고 싶은 부분과 꼭 지켜야 할 조건을 나누면 제안이 구체적인 결과로 이어져요.',
-  'expression-resource':'직접 해 본 경험에서 다음에 배울 것을 찾는 과정이 중요해요. 자료를 처음부터 다시 모으기보다 결과가 막힌 지점 하나를 골라 배우고 다시 써 보세요.',
-  'wealth-peer':'관리해 온 시간과 돈을 누구의 기준으로 쓸지 돌아보는 시기예요. 주변의 기대에 맞춘 선택과 내게 필요한 선택을 나누면 지킬 것과 줄일 것이 분명해져요.',
-  'wealth-expression':'준비한 시간과 재료를 눈에 보이는 작은 결과로 바꾸는 것이 핵심이에요. 더 많이 갖추기를 기다리기보다 지금 가진 것으로 끝낼 수 있는 작업부터 정하세요.',
-  'wealth-authority':'돈과 시간을 쓸 계획에 역할과 책임을 함께 맞춰야 해요. 비용을 낼 사람, 일을 맡을 사람, 바뀐 조건을 확인할 사람을 분명히 정하세요.',
-  'wealth-resource':'배움에 쓸 시간과 돈을 실제 활용할 장면과 연결하세요. 수업이나 자료의 양보다 배운 뒤 혼자 해낼 일을 정하는 것이 선택의 기준이에요.',
-  'authority-peer':'맡은 책임 안에서 내가 판단할 수 있는 범위를 찾는 것이 핵심이에요. 부탁을 받을 때 맡을 부분과 다른 사람의 확인이 필요한 부분을 나누어 말하세요.',
-  'authority-expression':'지켜야 할 기준을 알았다면 내 생각을 결과로 보여 줄 차례예요. 기준에 맞는 작은 초안을 먼저 내고, 확인받은 부분을 바탕으로 다음 작업을 이어 가세요.',
-  'authority-wealth':'책임을 다하기 위해 필요한 시간과 비용을 구체적으로 살펴야 해요. 일의 범위가 늘었다면 준비물과 마감도 그대로인지 함께 확인하세요.',
-  'authority-resource':'맡은 역할을 잘해 내는 데 필요한 기초를 채우는 것이 핵심이에요. 모르는 부분을 정확히 물은 뒤 비슷한 일을 혼자 해 보며 익히세요.',
-  'resource-peer':'배운 내용을 내 판단으로 바꾸는 과정이 중요해요. 설명을 그대로 따르는 데서 한 걸음 나아가, 왜 그 방법을 고르는지 내 말로 정리해 보세요.',
-  'resource-expression':'배우고 생각한 것을 작은 결과로 꺼내는 것이 핵심이에요. 더 알아야 한다는 부담이 크다면 지금 이해한 부분만 짧게 설명하거나 직접 만들어 보세요.',
-  'resource-wealth':'배운 것이 실제 생활에 쓰이도록 시간과 돈의 계획을 붙여 주세요. 새로운 자료를 더 고르기 전에 이미 배운 내용을 써 볼 시간부터 남겨 두세요.',
-  'resource-authority':'쌓아 온 공부와 경험을 맡은 역할에 적용하는 것이 핵심이에요. 배운 내용을 전부 보여 주려 하기보다 이번에 요구받은 기준에 맞는 결과 하나를 준비하세요.',
+  'peer-expression':'내 기준을 세웠다면 짧은 초안이나 예시로 보여 주세요. 원하는 방법을 구체적인 결과로 설명하는 단계예요.',
+  'peer-wealth':'스스로 고르는 힘을 시간과 돈의 관리에 쓰세요. 함께 시작하는 일에서도 내 몫과 공동으로 쓸 몫을 구분해야 해요.',
+  'peer-authority':'결과의 기준은 함께 정하고 진행 방법은 어디까지 직접 정할지 확인하세요. 내 방식을 살리면서 약속도 지키는 게 핵심이에요.',
+  'peer-resource':'지금 결정할 문제에 필요한 내용부터 배우세요. 여러 조언을 모두 따르지 말고 막힌 부분을 질문한 뒤 내 말로 답을 정리하세요.',
+  'expression-peer':'직접 만든 결과에서 다음 선택의 기준을 찾으세요. 반응이 좋았던 방법 중 무엇이 내게 잘 맞았는지 구체적으로 정리하세요.',
+  'expression-wealth':'좋아하는 활동을 이어 가려면 시간과 비용을 맞춰야 해요. 처음 준비할 돈뿐 아니라 반복해서 드는 돈과 수고도 챙기세요.',
+  'expression-authority':'새 방법을 제안할 때는 꼭 지킬 조건부터 확인하세요. 고칠 부분과 그대로 둘 부분을 나눈 뒤 작은 결과로 보여 주세요.',
+  'expression-resource':'직접 해 보고 막힌 부분에서 다음 공부를 시작하세요. 자료를 처음부터 다시 모으지 말고 질문 하나를 골라 배운 뒤 적용하세요.',
+  'wealth-peer':'관리해 온 시간과 돈을 내 필요에 맞게 쓰세요. 주변의 기대 때문에 고른 것과 실제로 필요한 것을 나누어 정리하세요.',
+  'wealth-expression':'준비한 시간과 재료로 작은 결과를 만드세요. 더 갖추기를 기다리지 말고 지금 가진 것으로 끝낼 작업부터 정하세요.',
+  'wealth-authority':'돈과 시간을 정할 때 각자의 책임도 함께 맞추세요. 비용을 낼 사람, 일할 사람, 바뀐 조건을 확인할 사람을 분명히 나누세요.',
+  'wealth-resource':'배움에 쓸 돈과 시간은 배운 뒤 혼자 할 일을 기준으로 정하세요. 수업과 자료를 많이 모으는 것보다 실제 연습이 먼저예요.',
+  'authority-peer':'맡은 일에서 어디까지 직접 판단할지 확인하세요. 부탁을 받을 때도 내 몫과 다른 사람의 확인이 필요한 일을 나누어 말하세요.',
+  'authority-expression':'기준을 확인했다면 작은 초안부터 보여 주세요. 확인받은 내용에 맞춰 다음 작업을 이어 가세요.',
+  'authority-wealth':'맡은 일을 해내는 데 필요한 시간과 비용을 계산하세요. 일의 범위가 늘었다면 준비물과 마감도 다시 맞춰야 해요.',
+  'authority-resource':'맡은 일에 필요한 기초부터 익히세요. 모르는 부분을 정확히 묻고, 비슷한 일을 혼자 해 보며 확인하세요.',
+  'resource-peer':'배운 내용으로 직접 판단하는 연습을 하세요. 설명을 그대로 따라 하기 전에 왜 그 방법을 고르는지 내 말로 정리하세요.',
+  'resource-expression':'배운 것을 작은 결과로 만드세요. 더 알아야 한다는 부담이 크다면 지금 이해한 부분부터 짧게 설명하세요.',
+  'resource-wealth':'배운 내용을 써 볼 시간과 비용부터 마련하세요. 새로운 자료를 더 고르기 전에 이미 배운 것을 직접 적용하세요.',
+  'resource-authority':'공부와 경험을 지금 맡은 일에 적용하세요. 배운 것을 전부 보여 주려 하지 말고 요구받은 기준에 맞는 결과 하나를 준비하세요.',
 };
 
 const fail=()=>{throw new Error('시기별 풀이가 이어지는 기간을 확인하지 못했어요. 다시 불러와 주세요.');};
@@ -95,7 +95,7 @@ function segmentReading(segment,focus,label,wholeStart,wholeEnd,position,total) 
     `${segment.period.startLabel}부터 ${segment.period.endLabel} 전까지`;
   const beginning=total>1?`${position===0?'앞':'다음'} 대운과 겹치는 ${periodLabel}, `:`${periodLabel} 이어지는 대운에서는 `;
   return [
-    beginning+`${particle(quoteThemes(segment.godCodes),'을','를')} 살펴봐요. ${label}의 ${particle(quoteThemes(focus),'과','와')} 함께 읽으면 다음에 힘쓸 일이 분명해져요.`,
+    beginning+`${particle(quoteThemes(segment.godCodes),'을','를')} 우선해요. ${label}에는 ${quoteThemes(focus)}도 함께 챙기세요.`,
     ...together(segment.godCodes,focus),
   ];
 }
@@ -126,9 +126,9 @@ export function attachPeriodContexts(report,fortune) {
     const year=month.yearHanja===annual.hanja?annual:makeTransitContext(month.yearHanja,fortune.profile,
       {label:`${month.solarTermYear}년`,key:`context.year.${month.solarTermYear}`,scope:'annual'});
     const yearCodes=codesOf(year),segments=periodSegments(daeun,month.start.iso,month.end.iso);
-    const yearLead=month.solarTermYear===fortune.year?`${fortune.year}년에`:`입춘 전이라 ${month.solarTermYear}년의 흐름에서`;
+    const yearLead=month.solarTermYear===fortune.year?`${fortune.year}년 풀이의 핵심은`:`입춘 전이라 ${month.solarTermYear}년 풀이를 적용해요. 핵심은`;
     const yearParagraphs=[
-      `${yearLead} 살펴보는 주제는 ${particle(quoteThemes(yearCodes),'이에요','예요')}. ${month.month}월에는 ${particle(quoteThemes(focus),'을','를')} 함께 읽어요.`,
+      `${yearLead} ${particle(quoteThemes(yearCodes),'이에요','예요')}. ${month.month}월에는 ${particle(quoteThemes(focus),'을','를')} 함께 챙기세요.`,
       ...together(yearCodes,focus),
     ];
     const sections=[{title:'올해와 함께 읽는 이달',paragraphs:yearParagraphs}];

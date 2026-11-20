@@ -1,4 +1,4 @@
-import {PAIR_CONTEXTS} from './deeper-reading-data.mjs?v=20261114-saju-depth1';
+import {PAIR_CONTEXTS} from './deeper-reading-data.mjs?v=20261120-saju-voice1';
 
 // Connections between already observed natal clues. The ordering selects what
 // to explain; it never measures strength, predicts an event or fills a gap.
@@ -21,11 +21,11 @@ const MOTIVES={
   scholar:{group:'resource',focus:'기초를 배우고 필요한 도움을 받는 일',first:'기본을 배우고 모르는 것을 확인하며',last:'배운 것을 차근차근 익혀 쓰는 사람'},
 };
 const SAME_GROUP={
-  peer:'내가 정할 권한과 함께하는 사람의 수고를 같이 보세요. 선택은 존중받으면서도 일의 몫은 서로 납득할 수 있어야 편해요.',
-  expression:'하던 일을 끝내는 것과 더 나은 방법을 찾는 일을 나누어 보세요. 지금 마칠 부분을 정해 두면 떠오른 개선도 다음 시도로 이어 갈 수 있어요.',
-  wealth:'새로 해 볼 일에 쓸 준비와 이미 이어 가는 생활의 준비를 나누어 보세요. 시작할 여유와 계속할 여유를 함께 확인하는 게 중요해요.',
-  authority:'문제를 해결하는 일과 정해진 약속을 지키는 일을 함께 보세요. 추가로 맡는 일이 생기면 원래의 마감과 책임도 다시 맞춰야 해요.',
-  resource:'기본 설명을 익힌 뒤 다른 질문을 살펴보세요. 알아본 내용을 직접 써 볼 자리가 있어야 무엇을 더 물어볼지도 분명해져요.',
+  peer:'내가 정할 일과 함께 의논할 일을 나누세요. 서로의 선택을 존중하고, 맡은 수고도 공평하게 인정해야 해요.',
+  expression:'지금 끝낼 일과 다음에 고칠 일을 나누세요. 오늘 마칠 부분부터 완성하고, 새 아이디어는 따로 적어 두세요.',
+  wealth:'새 일에 쓸 돈과 생활비를 따로 정하세요. 처음 시작할 비용과 계속 이어 갈 비용을 모두 확인해야 해요.',
+  authority:'일을 더 맡을 때는 기존 마감과 맡은 범위도 다시 정하세요. 새 부탁 때문에 앞서 한 약속이 밀리지 않게 하세요.',
+  resource:'기본 방법을 익힌 뒤 직접 써 보세요. 막힌 부분을 짚어 질문하면 필요한 설명을 정확히 받을 수 있어요.',
 };
 const DOMAIN_OPENINGS={
   overview:'여러 선택을 함께 놓고 보면',decisions:'새 일을 선택할 때',relationships:'가까운 사람과 뜻을 맞출 때',
@@ -33,11 +33,11 @@ const DOMAIN_OPENINGS={
   pressure:'여러 요구가 한꺼번에 들어올 때',adjustment:'내 뜻을 다른 사람에게 전할 때',
 };
 const SEASON_CONNECTIONS={
-  same:'같은 목표로 함께하더라도 방법까지 모두 같을 필요는 없어요. 직접 정할 부분과 함께 맞출 부분을 나누면 이 장점을 지키기 쉬워요.',
-  output:'생각을 안에만 남기지 않고 말이나 작은 결과로 보여 줄 자리가 중요해요. 준비한 것을 한번 꺼내 본 뒤 반응에 맞춰 다듬어 보세요.',
-  wealth:'하고 싶은 마음을 실제로 낼 수 있는 시간과 비용에 맞춰 보는 과정이 중요해요. 이번에 감당할 준비를 정하면 선택도 구체적이 돼요.',
-  authority:'좋아서 선택한 일과 주변의 기대 때문에 맡은 일을 구분하는 게 중요해요. 지킬 약속을 정할 때 내가 원하는 일에 쓸 시간도 남겨 두세요.',
-  resource:'설명을 듣고 도움을 받아 이해할 여유가 중요해요. 이미 할 수 있는 부분부터 시작하면 남은 질문도 더 구체적으로 물을 수 있어요.',
+  same:'목표가 같아도 일하는 방법은 달라요. 함께 맞출 부분만 정하고, 각자 맡은 일의 방법은 존중하세요.',
+  output:'생각을 짧은 말이나 초안으로 보여 주세요. 상대가 이해한 내용을 확인한 뒤 부족한 부분을 다듬으세요.',
+  wealth:'할 수 있는 시간과 쓸 돈부터 정하세요. 그 범위 안에서 지금 시작할 일 하나를 고르세요.',
+  authority:'내가 원해서 맡은 일과 부탁받은 일을 구분하세요. 약속을 정할 때 내가 하고 싶은 일에 쓸 시간도 남겨 두세요.',
+  resource:'알고 있는 부분부터 직접 시작하세요. 모르는 곳에서 멈추면 무엇이 막혔는지 짚어 도움을 요청하세요.',
 };
 
 function checkedEntries(profile) {
@@ -67,7 +67,7 @@ export function describeNatalContext(profile,{codes,domain='overview',seasonKey=
   const paragraphs=[];
   if(other) {
     const next=other.god.code;
-    paragraphs.push(`${particle(MOTIVES[first].focus,'을','를')} 중요하게 여기면서, ${particle(MOTIVES[next].focus,'도','도')} 함께 챙기려는 모습으로 풀이해요. ${pairMeaning(first,next)}`);
+    paragraphs.push(`${particle(MOTIVES[first].focus,'을','를')} 중요하게 여기고, ${MOTIVES[next].focus}도 함께 챙겨요. ${pairMeaning(first,next)}`);
   }
   const selectedPositions=new Set(entries.filter(e=>selected.includes(e.god.code)).map(position));
   const relevant=profile.interactions.map((value,index)=>{
@@ -83,12 +83,12 @@ export function describeNatalContext(profile,{codes,domain='overview',seasonKey=
     const linked=unique(chosen.entries.map(entry=>entry.god.code));
     const themes=linked.length>1?particle(MOTIVES[linked[0]].focus,'과','와')+' '+MOTIVES[linked[1]].focus:MOTIVES[linked[0]].focus;
     interactionParagraphs.push({text:clash
-      ?`${DOMAIN_OPENINGS[domain]}, ${particle(themes,'을','를')} ${linked.length>1?'함께 지키려 하면 선택이 서로 엇갈릴 수 있어요.':'그대로 이어 가기 어려운 요구가 함께 있을 수 있어요.'} 먼저 지킬 조건을 정하고, 나머지는 조정할 여지를 남겨 두세요.`
-      :`${DOMAIN_OPENINGS[domain]}, ${particle(themes,'을','를')} ${linked.length>1?'서로 연결해 보는':'다른 사람의 생각이나 조건과 맞춰 보는'} 쪽으로 읽어요. 함께 원하는 결과를 먼저 말하되, 아직 정하지 않은 부분까지 동의한 것으로 넘기지 마세요.`,
+      ?`${DOMAIN_OPENINGS[domain]}, ${particle(themes,'을','를')} ${linked.length>1?'모두 지키려 하면 결정이 복잡해져요.':'지키려는 마음과 다른 사람의 요구가 부딪히는 점이 주의할 부분이에요.'} 먼저 지킬 조건 하나를 정하고, 나머지는 의논해 조정하세요.`
+      :`${DOMAIN_OPENINGS[domain]}, ${particle(themes,'을','를')} ${linked.length>1?'함께 살리는 데 강점이 있어요.':'다른 사람의 생각과 맞추는 데 강점이 있어요.'} 함께 원하는 결과부터 말하세요. 아직 정하지 않은 부분은 따로 확인하세요.`,
       factIds:unique(['natal.interaction.'+chosen.index,...chosen.entries.map(factId)]),
       positions:chosen.positions,kind:chosen.value.kind,codes:linked});
   }
-  const season=seasonKey?`${particle(MOTIVES[first].focus,'을','를')} 살릴 때는 주변 조건도 함께 보세요. ${SEASON_CONNECTIONS[seasonKey]}`:null;
+  const season=seasonKey?SEASON_CONNECTIONS[seasonKey]:null;
   return {
     headline:second?`${MOTIVES[first].first}, ${MOTIVES[second].last}`:MOTIVES[first].last,
     paragraphs,season,interactions:interactionParagraphs,

@@ -130,7 +130,8 @@ test('the same leading traits receive shared wording without an invented A/B con
     assert.doesNotMatch(section.paragraphs.join(' '),/A는 .+ B는|완벽한 궁합|최고의 궁합|100%/);
     const scene=item.detailSections.find(section=>section.title==='이렇게 대화해 보세요');
     assert.match(scene.paragraphs.join(' '),/가상 장면/);
-    assert.match(scene.paragraphs.join(' '),/공통으로 보이는/);
+    assert.match(scene.paragraphs.join(' '),/두 사람 모두/);
+    assert.doesNotMatch(scene.paragraphs.join(' '),/A는 .+ B는/);
   }
 });
 
