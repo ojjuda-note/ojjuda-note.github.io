@@ -2,7 +2,7 @@
 (()=>{
  'use strict';
  const scripts=[
-  "/admin/visitors.js?v=20261113-biorhythm-paid1","/admin/trash.js?v=20261021-trash1",
+  "/admin/visitors.js?v=20261121-campaign1","/admin/trash.js?v=20261021-trash1",
   "/admin/friend-messages.js?v=20261116-message-page1","/admin/member-identity.js?v=20260929-phone-unique",
   "/admin/pajang-moderation.js?v=20261119-pajang-admin1",
   "/admin/connections.js?v=20261022-entry1","/admin/accounts.js?v=20261116-history-pages1",
@@ -13,7 +13,7 @@
   "/note/operations.js?v=20261119-question-admin1",
   "note/admin.js?v=20261120-park-video1"
  ],styles=[
-  "/admin/visitors.css?v=20261111-guest-popularity1",
+  "/admin/visitors.css?v=20261121-campaign1",
   "/admin/visitors-charts.css?v=20261113-feature-chart2",
   "/admin/trash.css?v=20261021-trash1","/admin/friend-messages.css?v=20261020-messages1",
   "/admin/pajang-moderation.css?v=20261119-pajang-admin1",
