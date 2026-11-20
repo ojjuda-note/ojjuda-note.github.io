@@ -116,6 +116,8 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'GfXhRyw4L8A', title: 'SUPERSTAR EP', kind: '하이라이트 메들리', source: 'A2O WORLD' }
   ],
   nmixx: [
+    { id: '9FoJ_cr0750', title: '금일 기쁨 업무량 초과 · 2026 더팩트 뮤직 어워즈 비하인드', kind: '메이킹', source: 'NMIXX Official · 2026.11.18' },
+    { id: 'FyaqX9yN5Ls', title: '2027학년도 대학수학능력시험 응원 메시지', kind: '공식 메시지', source: 'NMIXX Official · 2026.11.18' },
     { id: 'roHWN9fL2SM', title: '긴 소원 (Birthday Wish)', kind: '뮤직비디오', source: 'NMIXX / JYP Entertainment' },
     { id: 'jPjK8fPCwE4', title: '긴 소원 (Birthday Wish)', kind: '퍼포먼스', source: 'NMIXX Official' },
     { id: '6Ycn9qZK09I', title: 'Heavy Serenade', kind: '뮤직비디오', source: 'NMIXX / JYP Entertainment' },
