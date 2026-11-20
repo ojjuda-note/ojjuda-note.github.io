@@ -14,23 +14,40 @@ const source=[
   slice('const sectionChecks=', 'var O1=')
 ].join('\n');
 
-function fixture(storage=new Map()){
-  const dom=new JSDOM('<main class="main"><textarea></textarea><div data-game-friend-invite-slot></div></main>');
+function fixture(storage=new Map(),options={}){
+  const href=options.href||'https://ojjuda.kr/world.html?tab=hub';
+  const dom=new JSDOM('<main class="main"><textarea></textarea><div data-game-friend-invite-slot></div></main>',{url:href});
   dom.window.document.body.id='app';
   const requests=[],routes=[];
-  const c=vm.createContext({URL,Date,document:dom.window.document,w:String,g:{tab:'hub'},
-    localStorage:{getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,value)},
-    location:{href:'https://ojjuda.kr/world.html?tab=hub',replace:url=>routes.push(new URL(url))},
+  const localStorage={getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,value),removeItem:key=>storage.delete(key)};
+  const location={href,replace:url=>routes.push(new URL(url))};
+  const history={state:null,replaceState(state,title,url){this.state=state;location.href=new URL(url,location.href).href;}};
+  const c=vm.createContext({URL,Date,window:dom.window,document:dom.window.document,w:String,g:{tab:'hub'},
+    localStorage,location,history,setTimeout:()=>0,setInterval:()=>0,clearTimeout(){},clearInterval(){},
     worldParkNotes:{canLeave:()=>true},
-    fetch:(url,options)=>new Promise(resolve=>requests.push({url,options,reply:body=>resolve({ok:true,json:async()=>body})}))});
-  vm.runInContext(source,c);
+    fetch:(url,options)=>new Promise((resolve,reject)=>requests.push({url,options,reply:body=>resolve({ok:true,json:async()=>body}),fail:reject}))});
+  let loadedSource=source;
+  if(options.versions?.hub)loadedSource=loadedSource.replace(/var Go="[^"]+"/,()=>`var Go=${JSON.stringify(options.versions.hub)}`);
+  for(const id of ['arcade','park'])if(options.versions?.[id]){
+    loadedSource=loadedSource.replace(new RegExp(`(${id}:\\{name:'[^']+',version:')[^']+`),(_,prefix)=>prefix+options.versions[id]);
+  }
+  vm.runInContext(loadedSource,c);
   function enter(id){
     c.g.tab=['park','arcade'].includes(id)?'place':id;
     c.g.place=c.g.tab==='place'?{id}:null;
     c.enterReleaseSection();
     c.showSectionUpdate();
   }
-  return {c,requests,routes,enter,document:dom.window.document};
+  function storageEvent(key,newValue=storage.get(key)??null){
+    const event=new dom.window.Event('storage');
+    Object.defineProperties(event,{key:{value:key},newValue:{value:newValue},storageArea:{value:localStorage}});
+    dom.window.dispatchEvent(event);
+  }
+  return {c,requests,routes,enter,storageEvent,document:dom.window.document};
+}
+async function release(f,version,force=false){
+  const pending=f.c.checkSectionRelease(undefined,force);
+  f.requests.at(-1).reply({version});await pending;
 }
 test('installed versions match three independent release files and appear in settings',()=>{
   const {c}=fixture();
@@ -123,6 +140,131 @@ test('a dismissed notice stays closed in memory when device storage is unavailab
  const {c,enter,requests,document}=fixture(blocked);
  enter('hub');const pending=c.checkSectionRelease();requests[0].reply({version:'9.0.0'});await pending;
  c.dismissSectionUpdate();c.showSectionUpdate();assert.equal(document.querySelector('[data-section-update]'),null);
+});
+test('closing an update synchronizes an already open tab without replacing its draft',async()=>{
+ const storage=new Map(),first=fixture(storage),second=fixture(storage);
+ first.c.j1();second.c.j1();
+ first.enter('hub');second.enter('hub');await release(first,'9.0.0');await release(second,'9.0.0');
+ const draft=second.document.querySelector('textarea');draft.value='작성 중';
+ first.c.dismissSectionUpdate();second.storageEvent('ojjuda:dismissed-update:hub');
+ assert.equal(second.document.querySelector('[data-section-update]'),null,'the other tab closes immediately');
+ await release(second,'9.0.0',true);second.c.showSectionUpdate();
+ assert.equal(second.document.querySelector('[data-section-update]'),null,'a repeated manifest cannot reopen it');
+ assert.equal(second.document.querySelector('textarea'),draft);assert.equal(draft.value,'작성 중');
+ second.enter('arcade');await release(second,'9.0.0');
+ assert.match(second.document.querySelector('[data-section-update]').textContent,/오락실/,'another service keeps its own notice');
+});
+test('an older tab cannot overwrite a newer dismissal or revive an older release',async()=>{
+ const storage=new Map(),older=fixture(storage),newer=fixture(storage);
+ older.enter('hub');newer.enter('hub');await release(older,'9.0.0');await release(newer,'10.0.0');
+ newer.c.dismissSectionUpdate();older.c.dismissSectionUpdate();
+ assert.equal(storage.get('ojjuda:dismissed-update:hub'),'10.0.0','dismissed version never moves backwards');
+ const reopened=fixture(storage);reopened.enter('hub');await release(reopened,'9.0.0');
+ assert.equal(reopened.document.querySelector('[data-section-update]'),null,'a lower manifest is also already dismissed');
+ await release(reopened,'10.0.0',true);assert.equal(reopened.document.querySelector('[data-section-update]'),null);
+ await release(reopened,'11.0.0',true);assert.match(reopened.document.querySelector('[data-section-update]').textContent,/11\.0\.0/);
+});
+test('a delayed storage event restores the higher dismissal after a competing older write',async()=>{
+ const key='ojjuda:dismissed-update:hub',storage=new Map([[key,'9.0.0']]),f=fixture(storage);
+ f.c.j1();f.enter('hub');await release(f,'10.0.0');
+ assert.ok(f.document.querySelector('[data-section-update]'));
+ // Two other tabs write before this tab receives the first queued event.
+ // The tab that wrote 10.0.0 can already be closed when the event is delivered.
+ storage.set(key,'10.0.0');storage.set(key,'9.0.0');
+ f.storageEvent(key,'10.0.0');
+ assert.equal(storage.get(key),'10.0.0','the event preserves information newer than the current storage value');
+ assert.equal(f.document.querySelector('[data-section-update]'),null);
+ f.storageEvent(key,'9.0.0');
+ assert.equal(storage.get(key),'10.0.0','a later stale event cannot lower the recovered version');
+ assert.equal(f.document.querySelector('[data-section-update]'),null);
+});
+test('old HTML after an update shows a retry state without claiming the release is installed',async()=>{
+ const storage=new Map(),first=fixture(storage);first.enter('hub');await release(first,'9.0.0');
+ const installed=first.c.installedSectionVersion();first.c.I1();
+ const savedAttempt=storage.get('ojjuda:update-attempt:hub');assert.ok(savedAttempt,'the update target survives navigation');
+ const attempt=JSON.parse(savedAttempt);
+ assert.equal(attempt.version,'9.0.0');assert.ok(Number.isFinite(attempt.at));
+ const returned=fixture(storage,{href:first.routes[0].href});returned.c.j1();returned.enter('hub');await release(returned,'9.0.0');
+ const banner=returned.document.querySelector('[data-section-update-failed]');assert.ok(banner);
+ assert.match(banner.textContent,/다시 불러오기/);assert.doesNotMatch(banner.textContent,/업데이트가 있어요/);
+ assert.equal(returned.c.installedSectionVersion(),installed);
+ assert.equal(returned.c.sectionCheck('hub').failedVersion,'9.0.0');
+ assert.equal(new URL(returned.c.location.href).searchParams.has('v'),false);
+ assert.equal(new URL(returned.c.location.href).searchParams.has('update_nonce'),false);
+ const later=fixture(storage);later.c.j1();later.enter('hub');await release(later,'9.0.0');
+ assert.ok(later.document.querySelector('[data-section-update-failed]'),'the retry state survives a later visit without URL flags');
+ assert.equal(later.routes.length,0,'a failed update never starts a navigation loop');
+ later.c.I1();assert.equal(later.routes.length,1,'retry remains an explicit action');
+});
+test('a known failed update stays retryable when the release manifest cannot be fetched',async()=>{
+ const storage=new Map([['ojjuda:update-attempt:hub',JSON.stringify({version:'9.0.0',at:Date.now()})]]),f=fixture(storage);
+ const installed=f.c.installedSectionVersion();f.c.j1();f.enter('hub');
+ const pending=f.c.checkSectionRelease();f.requests.at(-1).fail(Error('offline'));await pending;
+ const banner=f.document.querySelector('[data-section-update-failed]');assert.ok(banner,'a failed manifest fetch cannot hide the known retry target');
+ assert.match(banner.textContent,/다시 불러오기/);assert.doesNotMatch(banner.textContent,/업데이트가 있어요/);
+ assert.equal(f.c.installedSectionVersion(),installed);assert.equal(f.routes.length,0);
+ f.c.I1();assert.equal(f.routes.length,1);assert.equal(f.routes[0].searchParams.get('v'),'hub-9.0.0');
+});
+test('loading the requested release or newer finishes only that service update',async()=>{
+ for(const loaded of ['9.0.0','9.1.0']){
+  const storage=new Map([
+   ['ojjuda:update-attempt:hub',JSON.stringify({version:'9.0.0',at:Date.now()})],
+   ['ojjuda:update-attempt:park',JSON.stringify({version:'8.0.0',at:Date.now()})],
+   ['fixture:account-state','unchanged']
+  ]);
+  const f=fixture(storage,{href:'https://ojjuda.kr/world.html?tab=hub&v=hub-9.0.0&update_nonce=123#saved',versions:{hub:loaded}});
+  f.c.j1();f.enter('hub');await release(f,loaded);
+  assert.equal(f.c.installedSectionVersion(),loaded);
+  assert.equal(f.document.querySelector('[data-section-update],[data-section-update-failed]'),null);
+  assert.equal(storage.has('ojjuda:update-attempt:hub'),false,'a verified installed update clears its attempt');
+  assert.equal(JSON.parse(storage.get('ojjuda:update-attempt:park')).version,'8.0.0');
+  assert.equal(storage.get('fixture:account-state'),'unchanged');
+  assert.equal(new URL(f.c.location.href).hash,'#saved');assert.equal(f.routes.length,0);
+ }
+});
+test('the update URL retains its target when browser storage is unavailable',async()=>{
+ const blocked={get(){throw Error('storage blocked');},set(){throw Error('storage blocked');},delete(){throw Error('storage blocked');}};
+ const first=fixture(blocked);first.enter('hub');await release(first,'9.0.0');first.c.I1();
+ assert.equal(first.routes.length,1);assert.equal(first.routes[0].searchParams.get('v'),'hub-9.0.0');
+ const returned=fixture(blocked,{href:first.routes[0].href});returned.c.j1();returned.enter('hub');await release(returned,'9.0.0');
+ assert.ok(returned.document.querySelector('[data-section-update-failed]'));
+ assert.notEqual(returned.c.installedSectionVersion(),'9.0.0');
+ const installed=fixture(blocked,{href:first.routes[0].href,versions:{hub:'9.0.0'}});
+ installed.c.j1();installed.enter('hub');await release(installed,'9.0.0');
+ assert.equal(installed.document.querySelector('[data-section-update],[data-section-update-failed]'),null);
+ assert.equal(new URL(installed.c.location.href).searchParams.has('v'),false,'a genuinely installed release tidies its target even without storage');
+});
+test('reloading a failed update keeps the retry state when browser storage is unavailable',async()=>{
+ const blocked={get(){throw Error('storage blocked');},set(){throw Error('storage blocked');},delete(){throw Error('storage blocked');}};
+ const first=fixture(blocked);first.enter('hub');await release(first,'9.0.0');first.c.I1();
+ const failed=fixture(blocked,{href:first.routes[0].href});failed.c.j1();failed.enter('hub');await release(failed,'9.0.0');
+ assert.ok(failed.document.querySelector('[data-section-update-failed]'));
+ const refreshed=fixture(blocked,{href:failed.c.location.href});refreshed.c.j1();refreshed.enter('hub');await release(refreshed,'9.0.0');
+ const banner=refreshed.document.querySelector('[data-section-update-failed]');assert.ok(banner,'another reload must retain the unfulfilled target');
+ assert.match(banner.textContent,/다시 불러오기/);assert.doesNotMatch(banner.textContent,/업데이트가 있어요/);
+ assert.notEqual(refreshed.c.installedSectionVersion(),'9.0.0');assert.equal(refreshed.routes.length,0);
+});
+test('a withdrawn update target is removed without losing auth parameters or another service target',async()=>{
+ const blocked={get(){throw Error('storage blocked');},set(){throw Error('storage blocked');},delete(){throw Error('storage blocked');}};
+ const href='https://ojjuda.kr/world.html?tab=hub&v=hub-9.0.0&update_nonce=123&code=fixture-auth-code&state=fixture-auth-state#saved';
+ const returned=fixture(blocked,{href});returned.c.j1();returned.enter('hub');await release(returned,'8.0.0');
+ const cleaned=new URL(returned.c.location.href);
+ assert.equal(cleaned.searchParams.has('v'),false);assert.equal(cleaned.searchParams.has('update_nonce'),false);
+ assert.equal(cleaned.searchParams.get('code'),'fixture-auth-code');assert.equal(cleaned.searchParams.get('state'),'fixture-auth-state');
+ assert.equal(cleaned.hash,'#saved');assert.equal(returned.c.sectionCheck('hub').failedVersion,null);
+ assert.equal(returned.document.querySelector('[data-section-update-failed]'),null);
+ assert.match(returned.document.querySelector('[data-section-update]').textContent,/8\.0\.0/,'the valid manifest replaces the withdrawn target');
+ const refreshed=fixture(blocked,{href:cleaned.href});refreshed.c.j1();refreshed.enter('hub');
+ const pending=refreshed.c.checkSectionRelease();refreshed.requests.at(-1).fail(Error('offline'));await pending;
+ assert.equal(refreshed.document.querySelector('[data-section-update],[data-section-update-failed]'),null,'a later network failure cannot revive the withdrawn release');
+ assert.equal(refreshed.c.sectionCheck('hub').failedVersion,null);assert.equal(refreshed.routes.length,0);
+ assert.equal(new URL(refreshed.c.location.href).searchParams.get('code'),'fixture-auth-code');
+ assert.equal(new URL(refreshed.c.location.href).hash,'#saved');
+ const other=fixture(blocked,{href});other.c.j1();other.enter('hub');
+ const otherTarget=new URL(href);otherTarget.searchParams.set('v','park-9.0.0');otherTarget.searchParams.set('update_nonce','456');
+ other.c.location.href=otherTarget.href;
+ await release(other,'8.0.0');
+ assert.equal(other.c.location.href,otherTarget.href,'a late Hub manifest must preserve Park recovery, auth parameters and the hash');
 });
 test('publishing a Park-only bump stamps just the Park version into the shell',t=>{
  const temp=fs.mkdtempSync(path.join(require('node:os').tmpdir(),'ojjuda-sections-'));

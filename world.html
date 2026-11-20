@@ -613,11 +613,11 @@ async function Oa(t,e,o){adminMutationPending++;t&&(t.disabled=!0);try{await e()
  Wt(button,async()=>{await mt("admin_set_first_visit_ju",{p_amount:amount});wt.first_visit_ju=amount;input.defaultValue=String(amount);},"첫 방문 선물을 "+amount.toLocaleString("ko-KR")+"쭈로 저장했어요");
 },"adm-limit"(t,e){let o=Math.max(0,Math.min(100,parseInt(z("#adm-limit").value,10)||0));Wt(e,async()=>{await U.setConfig("beta_charge_daily_limit",o),wt.beta_charge_daily_limit=o},`하루 ${o}번으로 바꿨어요`)}};document.addEventListener("change",t=>{if(t.target&&t.target.id==="adm-free"){let e=t.target.checked;Wt(null,async()=>{await U.setConfig("beta_free_charge",e),wt.beta_free_charge=e},e?"무료 충전을 켰어요":"무료 충전을 껐어요")}});document.addEventListener("submit",t=>{t.target.id==="adm-user-form"&&(t.preventDefault(),L.q=z("#adm-q").value.trim(),bt())});var F0="ojjuda-samsung-dark-tip",Is=()=>/SamsungBrowser/i.test(navigator.userAgent),fh=()=>!!(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);function Os(){return`<b>색이 이상하게 보이나요?</b> 삼성 인터넷의 다크 모드가 오쭈다 아지트의 색을 바꾸고 있어요.
   아래 메뉴 <b>≡</b> → <b>설정</b> → <b>실험실</b>(Labs) → <b>웹사이트 다크 테마 사용</b>을 켜주세요.
-  메뉴 이름은 버전마다 조금 다를 수 있어요. 안 보이면 메뉴의 <b>다크 모드</b>를 꺼도 돼요.`}function k0(t){if(!Is()||!t&&!fh())return;try{if(!t&&localStorage.getItem(F0))return}catch{}if(document.getElementById("browser-tip"))return;let e=document.createElement("div");e.id="browser-tip",e.setAttribute("role","note"),e.innerHTML=`<p>${Os()}</p><button type="button" class="btn sm pri" id="browser-tip-ok">알겠어요</button>`,document.body.appendChild(e),document.getElementById("browser-tip-ok").addEventListener("click",()=>{try{localStorage.setItem(F0,"1")}catch{}e.remove()})}var Go="0.72.50-beta";
+  메뉴 이름은 버전마다 조금 다를 수 있어요. 안 보이면 메뉴의 <b>다크 모드</b>를 꺼도 돼요.`}function k0(t){if(!Is()||!t&&!fh())return;try{if(!t&&localStorage.getItem(F0))return}catch{}if(document.getElementById("browser-tip"))return;let e=document.createElement("div");e.id="browser-tip",e.setAttribute("role","note"),e.innerHTML=`<p>${Os()}</p><button type="button" class="btn sm pri" id="browser-tip-ok">알겠어요</button>`,document.body.appendChild(e),document.getElementById("browser-tip-ok").addEventListener("click",()=>{try{localStorage.setItem(F0,"1")}catch{}e.remove()})}var Go="0.72.51-beta";
 const sectionReleases={
   hub:{name:'아지트',version:Go,manifest:'/version.json'},
-  arcade:{name:'오락실',version:'1.3.5',manifest:'/features/arcade/version.json'},
-  park:{name:'공원',version:'1.5.3',manifest:'/park/version.json'}
+  arcade:{name:'오락실',version:'1.3.6',manifest:'/features/arcade/version.json'},
+  park:{name:'공원',version:'1.5.4',manifest:'/park/version.json'}
 };
 function releaseSection(){
  const tab=worldMainTab();
@@ -2596,8 +2596,10 @@ function syncWorldNotice(){
 window.addEventListener('ojjuda:themechange',syncWorldNotice);
 function sectionUpdateMarkup(){
  const state=sectionCheck(releaseSection());
- if(!g.newVersion||state.dismissedVersion===g.newVersion)return '';
- return `<div class="notice-bar update" data-section-update role="status"><span>${w(g.releaseName)} ${w(g.newVersion)} 업데이트가 있어요.</span><button class="btn sm pri" data-act="app-update"${state.applying?' disabled':''}>${state.applying?'불러오는 중…':'업데이트'}</button><button class="btn sm" data-act="app-update-dismiss" aria-label="업데이트 알림 닫기">×</button></div>`;
+ if(!g.newVersion||newerSectionVersion(g.newVersion,state.dismissedVersion)===false)return '';
+ const failed=newerSectionVersion(g.newVersion,state.failedVersion)===false&&newerSectionVersion(state.failedVersion,g.newVersion)===false;
+ const message=failed?`${w(g.releaseName)} 새 버전을 아직 불러오지 못했어요.`:`${w(g.releaseName)} ${w(g.newVersion)} 업데이트가 있어요.`;
+ return `<div class="notice-bar update" data-section-update${failed?' data-section-update-failed':''} role="status"><span>${message}</span><button class="btn sm pri" data-act="app-update"${state.applying?' disabled':''}>${state.applying?'불러오는 중…':failed?'다시 불러오기':'업데이트'}</button><button class="btn sm" data-act="app-update-dismiss" aria-label="업데이트 알림 닫기">×</button></div>`;
 }
 function Zg(){let t=sectionUpdateMarkup();if(t+=worldNoticeMarkup(),t+='<div data-game-friend-invite-slot></div>',$.bannedUntil&&new Date($.bannedUntil)>new Date){let e=new Date($.bannedUntil);t+=`<div class="notice-bar ban">운영 정책에 따라 ${e.getMonth()+1}월 ${e.getDate()}일 ${e.getHours()}시까지 방명록, 소개글, 댓글, 동네 대화, 친구 신청이 제한돼요.</div>`}return t}function Uf(t){if(t==="my")return'<span class="badge" data-notification-badge hidden aria-hidden="true"></span>';return t==="friends"&&D.online&&P.incoming.length?`<span class="badge">${P.incoming.length}</span>`:""}function Xg(){typeof matchMedia!="function"||!matchMedia("(min-width:1100px)").matches||document.querySelectorAll(".deco-grid .panel .pal, .deco-grid .panel .swgrid, .deco-grid .panel .avgrid").forEach(t=>{let e=t.querySelector("button");if(!e)return;let o=Math.max(...[...t.querySelectorAll(":scope > button")].slice(0,16).map(i=>i.getBoundingClientRect().height));if(!o)return;let r=parseFloat(getComputedStyle(t).rowGap)||8;Math.ceil(t.children.length/Math.max(1,Math.round(t.clientWidth/(e.getBoundingClientRect().width+r))))<=4||(t.style.maxHeight=Math.round(o*4+r*3+4)+"px",t.classList.add("fit4"))})}function Jg(){let t={};return document.querySelectorAll("[data-keep]").forEach(e=>{t[e.dataset.keep]=[e.scrollLeft,e.scrollTop]}),t}function tb(t){for(let e in t){let o=document.querySelector(`[data-keep="${e}"]`);o&&(o.scrollLeft=t[e][0],o.scrollTop=t[e][1])}}var worldAdminLoading=null;
 function ensureWorldAdminAssets(){
@@ -2789,16 +2791,46 @@ function Sa(t){Pr("[data-mid]",t).forEach(e=>{e.addEventListener("error",async()
 const sectionChecks=new Map();
 let observedReleaseSection;
 const sectionDismissKey=id=>'ojjuda:dismissed-update:'+id;
+const sectionAttemptKey=id=>'ojjuda:update-attempt:'+id;
 function readDismissedSection(id){try{return localStorage.getItem(sectionDismissKey(id));}catch{return null;}}
+function highestSectionVersion(a,b){
+ if(newerSectionVersion(a,'0.0.0')===null)return newerSectionVersion(b,'0.0.0')===null?null:b;
+ return newerSectionVersion(b,a)===true?b:a;
+}
+function readSectionAttempt(id){
+ try{const attempt=JSON.parse(localStorage.getItem(sectionAttemptKey(id)));return highestSectionVersion(attempt?.version,null);}catch{return null;}
+}
+function clearSectionAttemptUrl(id,version){
+ try{
+  const url=new URL(location.href);
+  if(url.searchParams.get('v')!==id+'-'+version)return;
+  url.searchParams.delete('v');url.searchParams.delete('update_nonce');history.replaceState(history.state,'',url.href);
+ }catch{}
+}
+function restoreSectionAttempt(id,state,target){
+ target=highestSectionVersion(state.failedVersion,target);
+ if(!target)return;
+ if(newerSectionVersion(target,sectionReleases[id].version)===true){state.failedVersion=target;return;}
+ state.failedVersion=null;
+ try{localStorage.removeItem(sectionAttemptKey(id));}catch{}
+}
 function sectionCheck(id){
- if(!sectionChecks.has(id))sectionChecks.set(id,{checkedAt:0,pending:null,newVersion:null,applying:false,dismissedVersion:readDismissedSection(id)});
- return sectionChecks.get(id);
+ let state=sectionChecks.get(id);
+ if(!state){
+  state={checkedAt:0,pending:null,newVersion:null,applying:false,dismissedVersion:null,failedVersion:null};
+  sectionChecks.set(id,state);
+  restoreSectionAttempt(id,state,readSectionAttempt(id));
+  state.newVersion=state.failedVersion;
+ }
+ // Another tab can close a newer release while this page is still open.
+ state.dismissedVersion=highestSectionVersion(state.dismissedVersion,readDismissedSection(id));
+ return state;
 }
 function dismissSectionUpdate(){
  const id=releaseSection(),state=sectionCheck(id);
  if(!state.newVersion)return;
- state.dismissedVersion=state.newVersion;
- try{localStorage.setItem(sectionDismissKey(id),state.newVersion);}catch{}
+ state.dismissedVersion=highestSectionVersion(state.dismissedVersion,state.newVersion);
+ try{localStorage.setItem(sectionDismissKey(id),state.dismissedVersion);}catch{}
  showSectionUpdate();
 }
 function newerSectionVersion(next,current){
@@ -2826,6 +2858,8 @@ function showSectionUpdate(render){
 }
 function checkSectionRelease(render,force=false){
  const id=releaseSection(),section=sectionReleases[id],state=sectionCheck(id);
+ // Refresh dismissal even when this request is throttled or returns the same version.
+ showSectionUpdate(render);
  if(state.pending)return state.pending;
  const now=Date.now();
  if(!force&&now-state.checkedAt<300000)return;
@@ -2838,6 +2872,12 @@ function checkSectionRelease(render,force=false){
    const newer=newerSectionVersion(version,section.version);
    if(newer===null)return;
    const next=newer?version:null;
+   // A valid published version supersedes a withdrawn or replaced attempt.
+   if(state.failedVersion&&(newerSectionVersion(version,state.failedVersion)===true||newerSectionVersion(state.failedVersion,version)===true)){
+    clearSectionAttemptUrl(id,state.failedVersion);
+    state.failedVersion=null;
+    try{localStorage.removeItem(sectionAttemptKey(id));}catch{}
+   }
    if(state.newVersion===next)return;
    state.newVersion=next;
    if(releaseSection()===id){g.newVersion=next;g.releaseName=section.name;showSectionUpdate(render);}
@@ -2853,10 +2893,33 @@ function enterReleaseSection(){
  void checkSectionRelease();
 }
 function j1(render){
- const url=new URL(location.href);
- if(url.searchParams.has('v')||url.searchParams.has('update_nonce')){
+ const url=new URL(location.href),target=/^(hub|arcade|park)-(.+)$/.exec(url.searchParams.get('v')||'');
+ let keepTarget=false;
+ // A navigation is not proof that the server supplied the requested HTML.
+ if(target&&newerSectionVersion(target[2],sectionReleases[target[1]].version)!==null){
+  const id=target[1],state=sectionCheck(id);
+  restoreSectionAttempt(id,state,target[2]);
+  if(state.failedVersion){
+   state.newVersion=state.failedVersion;
+   keepTarget=true;
+   try{localStorage.setItem(sectionAttemptKey(id),JSON.stringify({version:state.failedVersion,at:Date.now()}));keepTarget=readSectionAttempt(id)!==state.failedVersion;}catch{}
+  }
+  if(releaseSection()===id){g.newVersion=state.newVersion;g.releaseName=sectionReleases[id].name;showSectionUpdate(render);}
+ }
+ // Keep the recovery target across reloads when device storage is blocked.
+ if(!keepTarget&&(url.searchParams.has('v')||url.searchParams.has('update_nonce'))){
   url.searchParams.delete('v');url.searchParams.delete('update_nonce');history.replaceState(history.state,'',url.href);
  }
+ window.addEventListener('storage',event=>{
+  for(const id of Object.keys(sectionReleases)){
+   if(event.key!==sectionDismissKey(id))continue;
+   const state=sectionCheck(id),saved=readDismissedSection(id);
+   state.dismissedVersion=highestSectionVersion(state.dismissedVersion,event.newValue);
+   // Repair a racing older tab's write without lowering our dismissal watermark.
+   if(saved&&newerSectionVersion(state.dismissedVersion,saved)===true){try{localStorage.setItem(sectionDismissKey(id),state.dismissedVersion);}catch{}}
+   if(releaseSection()===id)showSectionUpdate(render);
+  }
+ });
  setTimeout(()=>checkSectionRelease(render),4000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)void checkSectionRelease(render);});
  setInterval(()=>checkSectionRelease(render),30*60000);
@@ -2875,8 +2938,9 @@ function I1(){
  url.searchParams.set('v',id+'-'+next);
  // A prior attempt can have cached HTML from before the deployment finished.
  url.searchParams.set('update_nonce',String(Date.now()));
+ try{localStorage.setItem(sectionAttemptKey(id),JSON.stringify({version:next,at:Date.now()}));}catch{}
  state.applying=true;showSectionUpdate();
- try{location.replace(url.href);}catch{state.applying=false;showSectionUpdate();}
+ try{location.replace(url.href);}catch{state.applying=false;state.failedVersion=next;showSectionUpdate();}
 }
 var O1=0,P1=new Set,N1=/ResizeObserver loop|^Script error\.?$|chrome-extension:|moz-extension:|safari-extension:/i;function ir(t,e){if(!D.online||!D.user||O1>=5)return;let o=String(t||"").slice(0,500);!o||P1.has(o)||N1.test(o)||N1.test(String(e||""))||(P1.add(o),O1++,S.from("client_errors").insert({user_id:D.user.id,message:o,stack:String(e||"").slice(0,4e3),screen:worldReportScreen().slice(0,40),app_version:installedSectionVersion(),user_agent:navigator.userAgent.slice(0,400)}).then(()=>{},()=>{}))}function H1(){window.addEventListener("error",t=>ir(t.message,t.error&&t.error.stack)),window.addEventListener("unhandledrejection",t=>{let e=t.reason;ir(e&&e.message||String(e),e&&e.stack)})}var no=JSON.stringify,mc=t=>new Date(t||Date.now()).toISOString(),Q1=t=>new Date(t).getTime(),ua=null,pi=null,uc={},de=null,fi=null,pc=!1,di=!1,Vn=0;function mi(t,e=ua){return{profile:{id:e,nickname:t.me.nick,bio:t.me.bio||"",mood:t.me.mood,mood_text:t.me.moodText||"",...D.doorReady&&D.doorWritable!==!1?{door_closed:!!t.doorClosed}:{}},priv:{user_id:e,...D.walletReady?{}:{coins:t.coins},data:{...D.walletReady?{}:{lastCheckin:t.lastCheckin},settings:t.settings,sent:t.sent,blocked:t.blocked,album:t.album.filter(o=>!o.remote).map(({local:o,...r})=>r),friends:t.friends}},diaries:t.diary.map(o=>({id:o.id,user_id:e,title:o.title||"",body:o.body||"",visibility:o.vis,media_id:o.media||null,created_at:mc(o.at)})),guestbook:t.guestbook.map(o=>({id:o.id,reply:o.reply||null,hidden:!!o.hidden,is_read:!!o.read}))}}function Nb(t){return{profile:no(t.profile),priv:no(t.priv),diaries:new Map(t.diaries.map(e=>[e.id,no(e)])),guestbook:new Map(t.guestbook.map(e=>[e.id,no(e)]))}}var fc=null,V1={profile:"닉네임이나 소개",priv:"설정",diary:"다이어리","diary-del":"다이어리 지우기",guestbook:"방명록 답글"};function Hb(t,e){let o=String(t&&(t.message||t.details||t.hint)||""),r=t&&t.code,a=V1[e]||"바꾼 내용";return/banned_word/.test(o)?{key:"banned",rank:5,fix:!0,msg:`${a}에 쓸 수 없는 표현이 있어서 저장하지 못했어요. 내용을 고쳐 주세요`}:r==="23514"||/check constraint/i.test(o)?{key:"length",rank:4,fix:!0,msg:`${a}이(가) 너무 길어서 저장하지 못했어요. 조금 줄여 주세요`}:/too_fast|rate|slow_down/i.test(o)?{key:"fast",rank:3,msg:"너무 빨리 올렸어요. 잠시 뒤 자동으로 다시 저장할게요"}:/banned|suspend|정지/i.test(o)?{key:"banned-user",rank:4,fix:!0,msg:"이용이 잠시 정지된 계정이라 저장할 수 없어요"}:!navigator.onLine||/Failed to fetch|NetworkError|Load failed|network|timeout/i.test(o)||!r?{key:"net",rank:1,msg:"인터넷 연결이 불안정해서 저장을 잠시 미뤘어요. 연결되면 자동으로 저장돼요"}:{key:"server:"+r,rank:2,msg:"서버가 저장을 받아 주지 않았어요. 잠시 뒤 다시 시도할게요"}}var G1=new Set;function Qb(t,e){let o=t+":"+(e&&(e.code||e.message));if(!G1.has(o)&&(G1.add(o),!!navigator.onLine))try{ir(`저장 실패 (${V1[t]||t}): ${e&&e.code||""} ${e&&e.message||""}`.slice(0,480),e&&(e.details||e.hint)||"")}catch{}}async function W1(t){
  const rows=await Promise.all([S.from("profiles").select("*").eq("id",t).maybeSingle(),S.from("user_private").select("*").eq("user_id",t).maybeSingle()]);

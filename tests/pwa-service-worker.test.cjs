@@ -41,9 +41,9 @@ function worker(options = {}) {
   };
   const context = vm.createContext({
     URL, Request, Response, caches,
-    fetch: async (request) => {
+    fetch: async (request, init) => {
       calls.fetched.push(request);
-      if (options.fetch) return options.fetch(request);
+      if (options.fetch) return options.fetch(request, init);
       return new Response('Live app');
     },
     self: {
@@ -89,10 +89,15 @@ test('an unsuccessful precache does not activate the replacement worker', async 
   assert.equal(w.calls.skipped, 0);
 });
 
-test('online entry pages return their live response without caching it', async () => {
-  for (const url of ['/', '/index.html', '/world.html', '/world.html?tab=park']) {
+test('online entry pages revalidate HTTP caches without storing HTML offline', async () => {
+  for (const url of ['/', '/index.html', '/world.html', '/world.html?tab=park',
+    '/world.html?place=park', '/world.html?tab=arcade&v=arcade-1.3.5&update_nonce=123']) {
     const live = new Response('Current signed-in page');
-    const w = worker({ fetch: async () => live });
+    const w = worker({ fetch: async (request, init) => {
+      assert.equal(init?.cache, 'no-cache', 'even a fresh HTTP cache entry must be revalidated');
+      assert.equal(request.url, new URL(url, origin).href);
+      return live;
+    } });
     assert.equal(await w.navigate(url), live);
     assert.equal(w.calls.fetched.length, 1);
     assert.equal(w.calls.added.length, 0);

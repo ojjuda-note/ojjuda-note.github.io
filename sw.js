@@ -66,7 +66,8 @@ self.addEventListener('fetch', (event) => {
     if (AUTH_QUERY_KEYS.has(key.toLowerCase())) return;
   }
 
-  // Always use the ordinary network response. Never store HTML, account data,
-  // API replies, game assets, or results. Auth callbacks remain browser-owned.
-  event.respondWith(fetch(request).catch(connectionNotice));
+  // Revalidate entry HTML even when its HTTP cache entry is still fresh.
+  // CacheStorage remains limited to the offline notice; account data, APIs,
+  // games and auth callbacks keep their existing handling.
+  event.respondWith(fetch(request, { cache: 'no-cache' }).catch(connectionNotice));
 });
