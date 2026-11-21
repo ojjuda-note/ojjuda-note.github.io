@@ -317,7 +317,7 @@ if (seventeenProfile) {
 const twsProfile = window.OJJUDA_FAN_PROFILES.tws;
 if (twsProfile) {
   twsProfile.expanded = true;
-  twsProfile.checkedAt = '2026.11.17';
+  twsProfile.checkedAt = '2026.11.19';
   twsProfile.awards = [
     { year: '2026.11', title: 'MMA2026 글로벌 임팩트 아티스트 남자 부문', detail: '2026.11.14 서울 고척스카이돔 수상', href: 'https://enews.imbc.com/News/RetrieveNewsInfo/524887' }
   ];
