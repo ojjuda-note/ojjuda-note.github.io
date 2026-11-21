@@ -402,3 +402,18 @@ test('world entry wires both guest and member greeting and cache-busted CSS/JS',
   assert.match(fs.readFileSync(path.join(__dirname, '../shared/games/world-game-rankings.js'), 'utf8'),
     /ojjuda:leaders-loaded/);
 });
+
+test('daily greeting replaces redundant emoji ornaments with a readable wordmark and accessible close control', () => {
+  const css = fs.readFileSync(path.join(__dirname, '../features/home/agit-welcome.css'), 'utf8');
+  const html = fs.readFileSync(path.join(__dirname, '../world.html'), 'utf8');
+  assert.match(welcomeSource, /class="agit-welcome-wordmark" aria-hidden="true">아지트<\/div>/);
+  assert.doesNotMatch(welcomeSource, /agit-welcome-(?:orbit|heart)/, 'the extra ornament nodes are gone');
+  assert.match(css, /\.agit-welcome-wordmark\s*\{[^}]*font:\s*700 clamp\(36px, 9vw, 45px\)/s);
+  assert.match(css, /\.agit-welcome-wordmark::before\s*\{[^}]*background:\s*var\(--accent-soft\)/s);
+  assert.match(css, /\.agit-welcome-close\s*\{[^}]*width:\s*44px;\s*height:\s*44px;/s,
+    'close target is at least 44px wide and tall');
+  assert.doesNotMatch(css, /agit-welcome-(?:orbit|heart|pop)/);
+  assert.match(css, /@media \(max-width: 380px\)\s*\{[^}]*\.agit-welcome-wordmark\s*\{/s);
+  assert.match(html, /agit-welcome\.css\?v=20261121-d08-wordmark1/);
+  assert.match(html, /agit-welcome\.js\?v=20261121-d08-wordmark1/);
+});
