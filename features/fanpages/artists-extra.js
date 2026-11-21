@@ -812,7 +812,7 @@
       id: 'seventeen', name: 'SEVENTEEN', korean: '세븐틴', category: 'boy', fan: 'CARAT', agency: 'PLEDIS Entertainment',
       members: ['에스쿱스', '정한', '조슈아', '준', '호시', '원우', '우지', '디에잇', '민규', '도겸', '승관', '버논', '디노'],
       debut: '2015.05.26', debutWork: '17 CARAT', songs: ['아낀다 (Adore U)', '20'],
-      checkedAt: '2026.11.16',
+      checkedAt: '2026.11.19',
       concept: '보컬·퍼포먼스·힙합 유닛이 함께 빚는 팀워크.',
       official: 'https://www.pledis.co.kr/', youtube: 'https://www.youtube.com/@pledis17',
       photo: 'Seventeen Carat Land 24.jpg', photoLabel: 'CARAT LAND', photoYear: '2025', credit: 'SEVENTEEN', license: 'CC BY 3.0',
@@ -841,6 +841,9 @@
         { date: '2026-11-19', title: '도겸×정한 NO-CLUE TRIP · 본편 첫 공개',
           sub: 'Weverse · 일본 Hulu · 대만 friDay · 20:00(KST/JST) · 매주 목요일 총 6회 · 공식 VOD 안내 확인',
           href: 'https://www.seventeen-17.jp/posts/information/jpfkwu' },
+        { date: '2026-11-20', title: '정한×조슈아 · 피가로재팬 2027년 1월 증간호 발매',
+          sub: '일본 CE미디어하우스 · 정한·조슈아 표지 · 11/17 공식 표지 공개 · 발매 11/20(JST)',
+          href: 'https://www.seventeen-17.jp/posts/information/wisdnn' },
         { date: '2026-11-21', title: '정한×조슈아 JOURNEY INTO [DREAMING] · 일본 공연',
           sub: '베루나 돔(사이타마) · 17:00 (일본 현지) · PLEDIS / 공식 일본 팬클럽 · 티켓 변경은 공식 사이트 확인',
           href: 'https://www.seventeen-17.jp/posts/schedule/ztckpb' },
@@ -869,6 +872,10 @@
         { title: 'PLEDIS · SEVENTEEN 공지', sub: '일정 변경·예매 및 공식 알림 · 로그인 후 확인', href: 'https://weverse.io/seventeen/notice' }
       ],
       news: [
+        { date: '2026.11.17', tag: '매거진', title: '정한·조슈아 표지 · 피가로재팬 1월 증간호 11/20 발매 확정', href: 'https://www.seventeen-17.jp/posts/information/wisdnn' },
+        { date: '2026.11.17', tag: '공식 영상', title: '세븐틴 2027 시즌 그리팅 공식 프리뷰 공개 · 11/20 예약 예고', href: 'https://www.youtube.com/watch?v=6zapPaYSZxs' },
+        { date: '2026.11.16', tag: '굿즈', title: 'YAKUSOKU 일본 팬미팅 Blu-ray·디지털 코드 11/16 예약 시작 · 2027/2/3 정식 발매', href: 'https://www.seventeen-17.jp/posts/information/sifiir' },
+        { date: '2026.11.16', tag: '팬 안내', title: 'JxJ 11/21·22 베루나돔 CARAT 특전 수령 예약 사이트 개시', href: 'https://www.seventeen-17.jp/posts/information/lxdsdt' },
         { date: '2026.11.15', tag: '팬 안내', title: 'JxJ 11/21·22 베루나돔 CARAT 부스 특전 수령 예약 11/16 19:00(JST) 시작 · 운영 10:30~16:45', href: 'https://www.seventeen-17.jp/posts/information/cttbou' },
         { date: '2026.11.13', tag: '굿즈', title: '도겸×정한 NO-CLUE TRIP 공식 MD · Weverse Global 2차 예약 11/19 15:00까지', href: 'https://shop.weverse.io/en/shop/USD/artists/7/notices/14998' },
         { date: '2026.11.13', tag: '굿즈', title: 'JxJ 일본 돔 공연 · 11/21·22 공식 MD 현장 수령 운영 안내', href: 'https://www.seventeen-17.jp/posts/information/povezu' },
@@ -879,6 +886,12 @@
         { date: '2026.10.19', tag: '음악', title: '정한×조슈아 유닛 JxJ 미니 1집 DREAMSCAPE 발매 · 로그인 후 확인', href: 'https://weverse.io/seventeen/notice/39436/' }
       ],
       merch: [
+        { title: 'SEVENTEEN 2026 JAPAN FANMEETING YAKUSOKU · Blu-ray',
+          sub: '2026.11.16 18:00(JST) 예약 시작 · 2027.02.03 발매 예정 · 일본 공식 판매처별 특전·재고 확인',
+          href: 'https://www.seventeen-17.jp/posts/information/sifiir' },
+        { title: 'SEVENTEEN 2026 JAPAN FANMEETING YAKUSOKU · DIGITAL CODE',
+          sub: '2026.11.16 18:00(JST) 예약 시작 · 2027.02.03 발매 예정 · Weverse 영상 시청 코드 포함 · 재고는 공식 판매처 확인',
+          href: 'https://www.seventeen-17.jp/posts/information/zzkmiv' },
         { title: 'SNOW with MINITEEN · 공식 캐릭터 팝업 MD',
           sub: '11/20~30 서울 성동구 스퀘어포털 1층 · 11/17 11:00(KST) 사전예약 시작 · Weverse 로그인 필요 · 재고·구매 조건은 현장 확인',
           href: 'https://weverse.io/seventeen/notice/40906' },
@@ -902,6 +915,9 @@
         { title: 'SEVENTEEN 공식 상품 목록', sub: 'Weverse Shop · 앨범·응원봉·공식 MD · 가격·재고 확인', href: 'https://shop.weverse.io/ko/shop/KRW/artists/7' }
       ],
       campaigns: [
+        { kind: '홍보대사', date: '2026.11.12', title: '정한×조슈아 JxJ × ENYA MUSIC',
+          sub: '글로벌 브랜드 홍보대사 · DREAMSCAPE 협업 스마트 기타 컬렉션 · 11/12 ENYA MUSIC 공식 보도자료',
+          href: 'https://www.zawya.com/en/press-release/asia-press-releases/seventeens-jeonghan-x-joshua-partner-with-enya-music-as-global-brand-ambassadors-for-dreamscape-collection-2246228' },
         { kind: '홍보대사', date: '2024.06.26', title: '유네스코 청년 친선대사', sub: 'UNESCO 첫 청년 친선대사로 임명 · Going Together 청년 지원 협력', href: 'https://www.unesco.org/en/articles/unesco-and-k-pop-group-seventeen-announce-1-million-grant-scheme-youth-well-being-and-creativity' },
         { kind: '콜라보', date: '2025.06.11', title: 'SEVENTEEN × sacai · Bad Influence 의상', sub: '뮤직비디오 협업 의상 제작 · 자선 경매 수익 UNESCO 기부 안내', href: 'https://www.billboard-japan.com/d_news/detail/150491/2' }
       ],
