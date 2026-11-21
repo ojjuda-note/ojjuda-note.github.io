@@ -74,12 +74,18 @@ function readRanking(client,owner,key,query,fresh=false){
  return entry.promise;
 }
 function readLeaders(client,owner,ids,fresh=false){
+ // Keep compatibility with lightweight RPC clients used in tests and offline mode.
+ const bounded=(name,args,ms)=>{
+  const query=client.rpc(name,args);
+  return typeof query?.abortSignal==='function'&&typeof AbortSignal!=='undefined'&&typeof AbortSignal.timeout==='function'
+   ?query.abortSignal(AbortSignal.timeout(ms)):query;
+ };
  return readRanking(client,owner,readKey('leaders',rankingMonth(),ids),async()=>{
   // The authenticated batch reader is preferable, but its failure must not
   // hide results that can still be read individually.
   if(owner!=='public-preview'){
    try{
-    const batch=await client.rpc('community_game_monthly_leaders',{p_games:ids}).abortSignal(AbortSignal.timeout(10000));
+    const batch=await bounded('community_game_monthly_leaders',{p_games:ids},10000);
     if(!batch.error&&batch.data&&typeof batch.data==='object')return batch;
    }catch{}
   }
@@ -90,7 +96,7 @@ function readLeaders(client,owner,ids,fresh=false){
    const rows=await Promise.all(chunk.map(async id=>{
     if(owner==='public-preview'&&!publicPreviewGames.has(id))return [id,{__error:true}];
     try{
-     const response=await client.rpc('community_game_monthly_personal',{p_game:id,p_guest_token:null}).abortSignal(AbortSignal.timeout(7000));
+     const response=await bounded('community_game_monthly_personal',{p_game:id,p_guest_token:null},7000);
      if(response.error||!Array.isArray(response.data?.leaders))return [id,{__error:true}];
      return [id,response.data.leaders[0]||null];
     }catch{return [id,{__error:true}];}
