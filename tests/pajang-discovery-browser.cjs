@@ -25,6 +25,7 @@ const signalOffers=[[1,10,2],[3,28,2],[5,45,2],[10,85,1],[20,160,1],[30,225,1]]
   .map(([quantity,price,revision])=>({id:'signal_'+quantity,quantity,price,revision}));
 const toolbarAssets=[
   '/shared/brand/service-header.css','/note/notifications.js','/note/notifications.css',
+  '/shared/brand/service-banners.js','/shared/brand/service-banners.css',
   '/shared/share/page-share.js','/shared/share/page-share.css',
   '/shared/auth/invite-referral.js',
   '/features/wallet/ju-charge.js','/features/wallet/ju-charge.css','/ju-coins/ju-coins.css',
@@ -643,9 +644,15 @@ async function checkNavigation(page){
       if(pathname==='/features/home/location-warmup.mjs')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../home/location-warmup.mjs'))});
       if(pathname==='/world.html')return route.fulfill({contentType:'text/html',body:`<!doctype html>
         <html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="/features/home/agit-hub.css"><title>아지트</title>
-        <script src="/config.js"></script><script src="/features/home/agit-hub.js"></script><script type="module" src="/features/home/location-warmup.mjs"></script>
-        <main></main><script>document.querySelector('main').innerHTML=OjjudaAgitHub.markup({},{});</script></html>`});
+        <link rel="stylesheet" href="/features/home/agit-hub.css"><link rel="stylesheet" href="/features/account/settings-list.css"><link rel="stylesheet" href="/shared/brand/service-banners.css"><title>아지트</title>
+        <script src="/config.js"></script><script src="/features/home/agit-hub.js"></script><script src="/shared/brand/service-banners.js"></script><script type="module" src="/features/home/location-warmup.mjs"></script>
+        <button type="button" id="open-settings">설정</button><main style="box-sizing:border-box;max-width:750px;margin:auto;padding:14px"></main><script>
+          const main=document.querySelector('main');
+          const showSettings=()=>{main.innerHTML='<section class="ojjuda-settings" aria-label="아지트 설정"><ojjuda-service-banners current="agit"></ojjuda-service-banners></section>';};
+          main.innerHTML=OjjudaAgitHub.markup({},{});
+          document.getElementById('open-settings').onclick=showSettings;
+          if(new URL(location.href).searchParams.get('tab')==='my')showSettings();
+        </script></html>`});
       if(pathname==='/shared/navigation/section-back.js')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../../shared/navigation/section-back.js'))});
       if(pathname==='/shared/location/location.js')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../../shared/location/location.js'))});
       if(pathname==='/shared/content/text-length.mjs')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../../shared/content/text-length.mjs'))});
@@ -1241,7 +1248,8 @@ async function checkNavigation(page){
     await selectMenu('내 파장');await page.setViewportSize({width:1080,height:840});
     await page.screenshot({path:path.join(dir,'pajang-profile-desktop.png'),animations:'disabled'});
     await selectMenu('오늘');await answers.waitFor();await capture('home-desktop');await goHome();
-    const banner=page.getByRole('link',{name:/파장.*오늘의 질문 보기/});
+    await page.getByRole('button',{name:'설정',exact:true}).click();
+    const banner=page.locator('ojjuda-service-banners[current="agit"] .ojjuda-service-banner[data-service="pajang"]');
     for(const width of [320,390,1080]){
       await page.setViewportSize({width,height:844});
       await banner.scrollIntoViewIfNeeded();
@@ -1267,7 +1275,7 @@ async function checkNavigation(page){
     assert.equal(entryDocuments.length,1,'a returning member opens one document with no intermediate popup');
     assert.equal(await page.evaluate(()=>window.authCalls),1);
     await page.evaluate(()=>{sessionStorage.fixtureMode='new';sessionStorage.removeItem('pajang:answered-round');});
-    await page.goto(origin+'/world.html#pajang-radar');
+    await page.goto(origin+'/world.html?tab=my');
     const beforeEntry=entryDocuments.length;
     await banner.click();
     await page.getByRole('heading',{name:'처음 만난 날, 어떤 이야기를 나누고 싶나요?'}).waitFor();
