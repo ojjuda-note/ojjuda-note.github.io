@@ -559,6 +559,11 @@
       "slug": "sitemap",
       "target": "/sitemap.html",
       "label": "사이트맵"
+    },
+    {
+      "slug": "park-story",
+      "target": "/features/guide/park.html",
+      "label": "오쭈다 공원 소개"
     }
   ]
 }
