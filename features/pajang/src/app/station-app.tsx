@@ -1,6 +1,6 @@
 "use client";
 import {useEffect,useLayoutEffect,useRef,useState} from "react";
-import {themeFor,introDetails,signalsWith,type Person,type Message,type Station} from "../lib/station";
+import {themeFor,introDetails,signalsWith,type Person,type Message,type Station,type NearbyAnswer} from "../lib/station";
 
 import {InterestArt as Art} from "./interest-art";
 import {I} from "./icons";
@@ -144,7 +144,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   const editingAnswer=modal?.kind==="answer" && modal.originalBody!==undefined;
   const answerTitle=slotName+(editingAnswer?" 답변 수정":" 답변");
   const row=modal?.answer;
-  const peer=row?{...row,id:row.peer}:s.people.find(p=>p.id===modal?.peer);
+  const peer=row?{...row,id:row.peer}:s.people.find(p=>p.id===modal?.peer)??s.nearbyPeople?.find(p=>p.id===modal?.peer);
   const active=s.people.find(p=>p.id===thread);
   const incoming=s.people.filter(p=>signalsWith(s,p.id).incoming),sent=s.people.filter(p=>signalsWith(s,p.id).outgoing),matches=s.people.filter(p=>signalsWith(s,p.id).match);
   const validThread=Boolean(active&&signalsWith(s,thread).match);
@@ -348,6 +348,14 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     finally{lock.current=false;setBusy(false);}
   }
   function signal(p:Person){const v=signalsWith(s,p.id);if(v.match){startChat(p.id);return;}if(v.outgoing){open({kind:"result",peer:p.id});return;}if(!available&&!s.purchasingEnabled){setToast("오늘의 신호를 모두 썼어요. 내일 다시 만나요.");return;}open({kind:"signal",peer:p.id});}
+  function openNearbyProfile(id:string,answer?:NearbyAnswer){
+    const person=(s.nearbyPeople??s.people).find(item=>item.id===id);
+    if(!person)return;
+    if(!answer){open({kind:"person",peer:id});return;}
+    const relation=signalsWith(s,id);
+    open({kind:"person",peer:id,answer:{...answer,peer:id,name:person.name,region:person.region,
+      interest:person.interest,own:id===me?.id,sent:!!relation.outgoing,received:!!relation.incoming}});
+  }
   async function openHistoryChat(id:string) {
     if(signalsWith(s,id).match && s.people.some(person=>person.id===id)){startChat(id);return;}
     const origin=navigationId.current;
@@ -402,7 +410,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     <StationNavigation tab={tab} onGo={go} pending={signalCount}/>
     <main className="wrap station-content" id="station-content">
     {(net||threadError)&&<div className="notice" role="status">{net||threadError}<button onClick={()=>{void refresh();if(thread)void readThread(thread);}}>다시 연결</button></div>}
-    {tab==="radar"&&<><button className="return-today" onClick={()=>go("today")}><I n="back" s={15}/>오늘</button><NearbyRadar station={s} sample={false} autoLocation={autoLocation} onLocationChange={cancelAutoLocation} onProfile={id=>open({kind:"person",peer:id})} onJoin={()=>location.assign("./")} onSettings={async (cell,accountId)=>Boolean(await act(cell?"radar-enable":"radar-disable",cell?{...cell,consent:true,shareBearing:true,accountId,locationVersion:s.locationVersion}:{accountId,locationVersion:s.locationVersion},true))}/></>}
+    {tab==="radar"&&<><button className="return-today" onClick={()=>go("today")}><I n="back" s={15}/>오늘</button><NearbyRadar station={s} sample={false} autoLocation={autoLocation} onLocationChange={cancelAutoLocation} onProfile={openNearbyProfile} onJoin={()=>location.assign("./")} onSettings={async (cell,accountId)=>Boolean(await act(cell?"radar-enable":"radar-disable",cell?{...cell,consent:true,shareBearing:true,accountId,locationVersion:s.locationVersion}:{accountId,locationVersion:s.locationVersion},true))}/></>}
     {visitedToday&&<div className="today-page" hidden={tab!=="today"}>
       <section className="letter-hero" aria-label={slotName+" 질문"}>
         <div className="letter-copy">

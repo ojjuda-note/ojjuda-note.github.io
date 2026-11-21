@@ -69,6 +69,7 @@ on:
       - 'tests/pajang-answer-history-edit-db.test.mjs'
       - 'tests/pajang-answer-likes-db.test.cjs'
       - 'tests/pajang-past-questions-db.test.cjs'
+      - 'tests/pajang-nearby-recent*.cjs'
       - 'tests/pajang-answer-interactions*.cjs'
       - 'tests/fixtures/pajang-answer-likes-fixture.cjs'
       - 'tests/fixtures/pajang-answer-feeds-before-likes.sql'
@@ -150,6 +151,7 @@ on:
       - 'tests/pajang-answer-history-edit-db.test.mjs'
       - 'tests/pajang-answer-likes-db.test.cjs'
       - 'tests/pajang-past-questions-db.test.cjs'
+      - 'tests/pajang-nearby-recent*.cjs'
       - 'tests/pajang-answer-interactions*.cjs'
       - 'tests/fixtures/pajang-answer-likes-fixture.cjs'
       - 'tests/fixtures/pajang-answer-feeds-before-likes.sql'
@@ -206,6 +208,8 @@ jobs:
         run: node --test tests/pajang-answer-history-edit-db.test.mjs tests/pajang-answer-edit-form.test.cjs
       - name: Check answer likes and past question writing
         run: node --test tests/pajang-answer-likes-db.test.cjs tests/pajang-past-questions-db.test.cjs tests/pajang-answer-interactions.test.cjs
+      - name: Check nearby answers from the latest three question slots
+        run: node --test tests/pajang-nearby-recent*.test.cjs
       - run: node tests/note-composer-settings.test.cjs
       - name: Install Chromium and Korean fonts
         working-directory: tests

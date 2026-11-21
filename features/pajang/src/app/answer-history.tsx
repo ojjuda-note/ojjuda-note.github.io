@@ -19,9 +19,9 @@ type Result = {key:string; items:DiscoveryAnswer[]; total:number|null; next:Curs
 type Order = "recommend"|"latest"|"local";
 type Gender = "male"|"all"|"female";
 const genderOptions = [
-  {value:"male", text:"남", label:"남성 답변"},
-  {value:"all", text:"", label:"성별 전체"},
-  {value:"female", text:"여", label:"여성 답변"},
+  {value:"all", text:"전체", label:"성별 전체"},
+  {value:"male", text:"남성", label:"남성 답변"},
+  {value:"female", text:"여성", label:"여성 답변"},
 ] as const;
 declare global {
   interface Window {
@@ -227,7 +227,6 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
     <div className="sectiontitle history-head">
       <div className="history-heading">
         <h2 id="all-answers-title">모두의 답변</h2>
-        <GenderSwitch value={gender} onChange={setGender}/>
         <span className="feednumber" aria-label={result.total===null?undefined:"답변 "+result.total+"개"}>{result.total}</span>
       </div>
       <div className="signal-budget"><span className="budget"><I n="signal" s={16}/>남은 신호 <b>{station.remaining}{station.paidRemaining?<em>개</em>:<em> / 3</em>}</b></span>
@@ -236,6 +235,7 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
       </div>
     </div>
     <div className="filterrow">
+      <GenderSwitch value={gender} onChange={setGender}/>
       <div className="chips relationship-filters" aria-label="원하는 인연으로 필터">
         <button className={filter==="all"?"sel":""} aria-pressed={filter==="all"} onClick={()=>setFilter("all")}>전체</button>
         {relationshipIntents.map(x=><button key={x.key} className={filter===x.key?"sel":""} aria-pressed={filter===x.key} onClick={()=>setFilter(x.key)} title={x.description}>{x.shortLabel}</button>)}

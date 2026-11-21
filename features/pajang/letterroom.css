@@ -71,7 +71,7 @@ body {background:var(--bg);color:var(--ink)}
 .letter-copy {max-width:66%}
 .letter-date,.mobile-near,.rail-title,.rail-paper button,.rail-near b,.return-today {display:flex;align-items:center;gap:8px}
 .letter-date,.entry-slot {font-size:13px;font-weight:750;color:var(--berry)}
-.letter-date time {padding-left:10px;border-left:1px solid var(--line);font-size:12px;font-weight:500;color:var(--ink-2)}
+.letter-date time {padding-left:10px;border-left:1px solid var(--line);font-size:13px;font-weight:500;color:var(--ink-2)}
 .letter-hero h1,.entry-intro h1 {font:650 clamp(32px,3.7vw,53px)/1.35 var(--serif);letter-spacing:-.075em;text-wrap:balance;color:var(--ink);margin:15px 0 20px}
 .letter-hero h1:last-child {margin-bottom:0}
 .primary,.actions #write,.actions button[type=submit],.composer button {color:var(--on-accent);background:var(--berry);border-radius:23px}
@@ -90,17 +90,19 @@ body {background:var(--bg);color:var(--ink)}
 .rail-near b,.rail-near span {color:var(--sage)}
 .rail-near i {position:absolute;right:-30px;bottom:-49px;z-index:-1;width:135px;aspect-ratio:1;border-radius:50%;opacity:.54;background:repeating-radial-gradient(circle,transparent 0 15px,color-mix(in srgb,var(--accent) 45%,var(--surface)) 16px 17px),conic-gradient(from 300deg,color-mix(in srgb,var(--accent) 25%,transparent) 0deg,transparent 64deg)}
 .mobile-near {display:none}
-.today-actions {display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px}
+.today-actions {display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:5px}
 .question-suggest {display:flex;align-items:center;gap:7px;min-width:0;min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:22px;background:var(--paper);color:var(--dark);font:650 13px/1.4 var(--sans);text-align:left;word-break:keep-all}
 .question-suggest svg {flex:none}
 .question-suggest:focus-visible {outline:2px solid var(--berry);outline-offset:3px}
 .today-actions .mobile-near {flex:none;min-height:44px;margin:0}
-.today-actions+.today-columns {margin-top:18px}
+.today-actions+.today-columns {margin-top:14px}
 .question-suggestion-help {margin:0 0 16px;color:var(--muted);font-size:12px;line-height:1.6}
 .question-suggestion-form textarea {font-size:16px}
 .question-suggestion-form textarea:focus-visible {outline-color:var(--berry)}
 @media(hover:hover){.question-suggest:hover:not(:disabled){background:var(--soft);border-color:var(--line)}}
-#answers.feedsection {margin:0;min-width:0}
+#answers.feedsection {margin:0;padding:0 0 28px;min-width:0}
+#answers .signal-budget small {font-size:12px;line-height:1.5}
+#answers .signal-budget .signal-buy {min-height:40px;font-size:13px}
 #answers .cardgrid {display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
 .question-viewport {position:relative;min-width:0;overflow:hidden;overflow-anchor:none;border-radius:16px;touch-action:pan-y pinch-zoom}
 .question-track {position:relative;min-width:0;transition:transform .18s ease-out}
@@ -110,7 +112,7 @@ body {background:var(--bg);color:var(--ink)}
 .question-page,.answer-group {overflow:hidden;background:var(--paper);border:1px solid var(--line);border-radius:16px}
 .question-preview {position:absolute;top:0;width:100%;pointer-events:none}
 .question-page header,.answer-group header {padding:15px 22px;background:var(--surface-2);border-bottom:1px solid var(--line)}
-.question-page header time,.answer-group header time,.own-history time {color:var(--ink-2);font-size:11px;font-weight:650}
+.question-page header time,.answer-group header time,.own-history time {color:var(--ink-2);font-size:13px;font-weight:650}
 .question-page h3,.answer-group h3 {margin:5px 0 0;font-size:19px;line-height:1.5;overflow-wrap:anywhere}
 .question-page .question-header,.answer-group .question-carousel {--question-tint:#79ab8d;background-color:color-mix(in srgb,var(--question-tint) 24%,var(--surface-2));cursor:grab;outline-offset:-3px}
 .question-header[data-tone="1"],.question-carousel[data-tone="1"] {--question-tint:#c58e9d}
@@ -128,7 +130,7 @@ body {background:var(--bg);color:var(--ink)}
 .question-controls button {display:grid;place-items:center;min-width:44px;min-height:44px;border-radius:50%;color:var(--dark);touch-action:manipulation}
 .question-controls button:hover:not(:disabled) {background:var(--accent-soft)}
 .question-controls button:disabled {opacity:.3}
-.question-position {min-width:38px;text-align:center;color:var(--muted);font:600 11px/1.4 var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap}
+.question-position {min-width:38px;text-align:center;color:var(--muted);font:600 13px/1.4 var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap}
 .question-carousel {touch-action:pan-y pinch-zoom}
 .question-copy {transition:transform .18s ease-out}
 .question-carousel[data-dragging=true] .question-copy {transition:none}
@@ -137,13 +139,14 @@ body {background:var(--bg);color:var(--ink)}
 #answers .answercard+.answercard {border-top:1px solid var(--line)}
 #answers .answercard .person {gap:9px;text-align:left}
 #answers .answercard .avatar {width:34px;height:34px}
-#answers .answercard .person small {color:var(--muted);font-size:11px}
+#answers .answercard .person small {color:var(--muted);font-size:13px}
 #answers .answercard .quote {padding:0;margin:12px 0;color:var(--ink);font:500 clamp(16px,1.6vw,19px)/1.72 var(--sans);letter-spacing:-.029em}
 #answers .answer-foot {border:0;padding:0}
-#answers .sendlink {border-radius:18px;background:var(--accent-soft);color:var(--accent-ink);padding:0 13px}
+#answers .sendlink {min-height:44px;border-radius:18px;background:var(--accent-soft);color:var(--accent-ink);padding:0 13px;font-size:13px}
 #answers .sendlink:hover:not(:disabled) {background:color-mix(in srgb,var(--accent) 20%,var(--surface))}
 #answers .sendlink.issent {color:var(--muted);background:var(--surface-2)}
 #answers .tag,#answers .chips button.sel {color:var(--dark)}
+#answers .answer-intents .tag {font-size:12px}
 #answers .chips button.sel {border-bottom-color:var(--berry)}
 #answers .filterrow {min-width:0}
 #answers .chips {min-width:0}
@@ -155,7 +158,7 @@ body {background:var(--bg);color:var(--ink)}
 .seg button.on {background:var(--soft);color:var(--dark);border-color:var(--line)}
 .listbox,.chatbox,.empty,.dialog {background:var(--paper);border-color:var(--line)}
 .inbox-chats {margin:27px 0 9px;font-size:22px}
-.accept-note {display:block;margin-top:7px;color:var(--muted)}
+.accept-note {display:block;margin-top:7px;color:var(--muted);font-size:13px;line-height:1.6}
 .chat-exchange,.sheet-bar,.questionbox,.account-summary,.account-section .settings {background:var(--surface-2)}
 .exchange-drawer .secondary {background:var(--paper)}
 .chatlog {background:var(--surface)}
@@ -211,19 +214,19 @@ body {background:var(--bg);color:var(--ink)}
   .pajang-signature svg {width:24px;height:23px}
   .pajang-mast .agit-return {font-size:12px;padding-left:10px}
   .pajang-members {font-size:11px}
-  .station-content.wrap {padding:15px 0 calc(77px + env(safe-area-inset-bottom))}
+  .station-content.wrap {padding:12px 0 calc(77px + env(safe-area-inset-bottom))}
   .station-nav {inset:auto 0 0;transform:none;display:grid;grid-template-columns:repeat(3,1fr);padding:5px 12px calc(5px + env(safe-area-inset-bottom));background:color-mix(in srgb,var(--surface) 98%,transparent);border-top:1px solid var(--line)}
   .station-nav a {flex-direction:column;gap:2px;min-height:46px;padding:3px;border-radius:12px;font-size:11px}
   .letter-hero,.entry-intro {border-radius:16px}
-  .letter-hero {padding:20px}
+  .letter-hero {padding:18px}
   .letter-hero::before,.entry-intro::before {background:linear-gradient(90deg,color-mix(in srgb,var(--hero-bg) 92%,transparent) 0%,color-mix(in srgb,var(--hero-bg) 83%,transparent) 32%,color-mix(in srgb,var(--hero-bg) 62%,transparent) 54%,color-mix(in srgb,var(--hero-bg) 10%,transparent) 83%),linear-gradient(0deg,color-mix(in srgb,var(--hero-bg) 67%,transparent),transparent 40%),var(--letter-scene) 66% center/cover no-repeat}
-  .letter-copy {max-width:93%}
-  .letter-hero h1 {font-size:clamp(25px,6.8vw,34px);margin:15px 0;line-height:1.4}
-  .letter-date {font-size:12px}
-  .letter-date time {font-size:11px}
+  .letter-copy {max-width:100%}
+  .letter-hero h1 {font-size:clamp(25px,6.8vw,34px);margin:12px 0;line-height:1.4}
+  .letter-date {font-size:13px}
+  .letter-date time {font-size:13px}
   .letter-copy .primary {padding:8px 13px}
   .today-rail {display:none}
-  .mobile-near {display:flex;margin:7px 0 0 auto;min-height:34px;padding:5px 10px;border-radius:18px;background:var(--soft);color:var(--sage);font-size:12px;font-weight:650}
+  .mobile-near {display:flex;margin:7px 0 0 auto;min-height:44px;padding:5px 10px;border-radius:18px;background:var(--soft);color:var(--sage);font-size:13px;font-weight:650}
   .today-columns {display:block;margin-top:16px}
   .question-page header,.answer-group header,#answers .answercard {padding:14px 16px}
   .question-page h3,.answer-group h3 {font-size:16px}
@@ -231,7 +234,7 @@ body {background:var(--bg);color:var(--ink)}
   .listperson {flex-wrap:wrap}.listperson>p {min-width:0}
   .entry-intro .intro {max-width:85%;font-size:13px}
 }
-@media(max-width:360px){.pajang-mast-inner,.station-layout{width:calc(100% - 22px)}.letter-hero{padding:16px}.letter-copy{max-width:98%}}
+@media(max-width:360px){.pajang-mast-inner,.station-layout{width:calc(100% - 22px)}.letter-hero{padding:16px}.letter-copy{max-width:100%}}
 
 /* Entry announces the new heading without drawing an input-like focus box. */
 #station main :is(h1,h2)[tabindex="-1"]:focus {outline:none}
@@ -288,8 +291,8 @@ footer,.footerbrand {color:var(--ink-2)}
 .discovery-visibility-control input:checked {background:var(--accent);border-color:var(--accent)}
 .discovery-visibility-control input:checked::before {background:var(--on-accent)}
 .answer-genders {background:var(--surface-2);border-color:var(--line)}
-.answer-genders::before {background:var(--line)}
 .answer-gender span {color:var(--ink-2)}
+.answer-gender[data-lit=true] span {background:var(--accent);color:var(--on-accent)}
 .answer-gender input:focus-visible+span {outline-color:var(--accent-ink)}
 .scope-self,.self,.radar-scope .cluster-count,.nearby-heading .onair {background:var(--accent);color:var(--on-accent)}
 .scope-self {box-shadow:0 0 0 3px color-mix(in srgb,var(--surface) 55%,transparent)}
