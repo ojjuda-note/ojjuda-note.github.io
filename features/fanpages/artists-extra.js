@@ -1506,12 +1506,22 @@
         commonsPhoto('260228 ATEEZ Choi San @ Dolce & Gabbana FW 26.27 Show in Milan.jpg', '산 · 밀라노 패션위크', '2026', 'sublimitas viii · Flickr 원작 · Commons FlickreviewR 확인 · 크롭본', 'CC BY-SA 4.0'),
         commonsPhoto('240803 Ateez 01.jpg', '2024 뉴욕 월드투어 단체 무대', '2024', 'pinkllamanade · Flickr 원작 · Commons FlickreviewR 2025.05.12 확인', 'CC BY-SA 2.0')
       ],
-      checkedAt: '2026.11.17',
+      checkedAt: '2026.11.19',
       music: [
         {
-          title: 'UP (Orchestra Ver.)', date: '2026.11.16', type: '공식 오케스트라 버전 싱글 · 11.16 14:00 공개',
-          songs: ['UP (Orchestra Ver.)'],
-          href: 'https://ateez.kqent.com/contents/6afa8bf02e54bd45e11e9f9e'
+          title: 'UP (Remix 3)', date: '2026.11.19', type: '디지털 리믹스 싱글 · R3HAB·I Hate Models',
+          songs: ['UP (R3HAB Ver.)', 'UP (I Hate Models Ver.)'],
+          href: 'https://ateez.kqent.com/contents/6afd7581d394824e90a68273'
+        },
+        {
+          title: 'UP (Remix 2)', date: '2026.11.18', type: '디지털 리믹스 싱글 · Spray·h4rdy',
+          songs: ['UP (Spray Ver.)', 'UP (h4rdy Ver.)'],
+          href: 'https://ateez.kqent.com/en/contents/6afd2c6e641b4b6b49a24329'
+        },
+        {
+          title: 'UP (Remix 1)', date: '2026.11.16', type: '디지털 리믹스 싱글 · 오케스트라·속도 변형',
+          songs: ['UP (Orchestra Ver.)', 'UP (Speed Up Ver.)', 'UP (Speed Down Ver.)'],
+          href: 'https://music.apple.com/us/album/up-remix-1-single/6829634312'
         },
         {
           "title": "GOLDEN HOUR : Part.6",
@@ -1568,6 +1578,9 @@
         }
       ],
       appearances: [
+        { date: '2026-11-26', title: '우영 2026 생일 YouTube 라이브',
+          sub: 'KQ 공식 안내 · 시작 시간 미공개 · 팬 사연 접수 11/20 14:59 KST 마감',
+          href: 'https://ateez.kqent.com/surveys/6afe6c10969ec466617d7983' },
         {
           date: '2026-11-20', title: 'GOLDEN HOUR : Part.6 헬로라이브 팬사인회·영상통화',
           sub: 'MEET&CALL 공식 주최 · 팬사인회 시간·장소 추후 안내 · 응모 11/07 종료 · 영상통화는 팬사인회 뒤 진행',
@@ -1681,6 +1694,9 @@
         { title: 'KQ 공식 일정·소식', sub: '한국 공개방송·공연·일정 변경', href: 'https://ateez.kqent.com/contents' }
       ],
       news: [
+        { date: '2026.11.19', tag: '음악', title: 'UP (Remix 3) 발매 · R3HAB·I Hate Models 버전 2곡', href: 'https://ateez.kqent.com/contents/6afd7581d394824e90a68273' },
+        { date: '2026.11.19', tag: '팬이벤트', title: '우영 11/26 생일 라이브 예고 · 팬 사연 11/20 14:59 마감', href: 'https://ateez.kqent.com/surveys/6afe6c10969ec466617d7983' },
+        { date: '2026.11.18', tag: '음악', title: 'UP (Remix 2) 발매 · Spray·h4rdy 버전 2곡', href: 'https://ateez.kqent.com/en/contents/6afd2c6e641b4b6b49a24329' },
         { date: '2026.11.17', tag: '협업', title: '일본 I’m donut ? × ATEEZ 한정 도넛·블랭킷 판매 시작 · 11/30까지', href: 'https://ateez-official.jp/contents/1126332' },
         { date: '2026.11.16', tag: '음악', title: 'UP (Orchestra Ver.) 14:00 정식 공개', href: 'https://ateez.kqent.com/contents/6afa8bf02e54bd45e11e9f9e' },
         { date: '2026.11.16', tag: '굿즈', title: '일본 타워레코드·HMV Part.6 음반 럭키로토·특별 전시 발표', href: 'https://ateez-official.jp/contents/1128190' },
@@ -1749,7 +1765,7 @@
         },
         {
           "title": "GOLDEN HOUR : Part.6 일본 정식 수입반",
-          "sub": "UNIVERSAL MUSIC JAPAN · A/DIARY/Z · 일본 11.18 발매 예정",
+          "sub": "UNIVERSAL MUSIC JAPAN · A/DIARY/Z · 일본 11.18 정식 발매 · 재고·특전은 판매처 확인",
           "href": "https://www.universal-music.co.jp/ateez/news/2026-10-13/"
         },
         {
