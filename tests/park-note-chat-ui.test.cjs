@@ -42,11 +42,12 @@ const returnToAgit=async(page,frame)=>{
  await page.locator('.bottomnav:visible [data-park-action="settings"],.sidenav:visible [data-park-action="settings"]').click();
  await frame.locator('[data-park-settings-root]').waitFor();
  await frame.locator('[data-park-settings="world"]').click();
- await page.locator('.agit-park-banner').waitFor();
+ await page.locator('.agit-hub').waitFor();
  await page.locator('[data-park-app] iframe').waitFor({state:'hidden'});
 };
 const enterParkFromAgit=async page=>{
- await page.locator('.agit-park-banner').click();
+ await page.locator('.bottomnav:visible [data-tab="my"],.sidenav:visible [data-tab="my"]').click();
+ await page.locator('.ojjuda-service-banner[data-service="park"]').click();
  const iframe=page.locator('[data-park-app] iframe');await iframe.waitFor();
  const frame=await (await iframe.elementHandle()).contentFrame();
  await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
@@ -69,7 +70,7 @@ for(const [from,to] of [
  vm.runInNewContext(read('park/route.js'),scope);assert.equal(result,'https://fixture.test'+to);
 }
 let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
-world=world.replace('<script type="module">',`<script>${['app/world/world-themes.js','app/world/world-navigation.js','app/world/world-pull-refresh.js','shared/viewport/mobile-viewport.js','features/home/agit-hub.js','park/world-park-notes.js'].map(read).join('\n')}</script><script type="module">`);
+world=world.replace('<script type="module">',`<script>${['app/world/world-themes.js','app/world/world-navigation.js','app/world/world-pull-refresh.js','shared/viewport/mobile-viewport.js','features/home/agit-hub.js','shared/brand/service-banners.js','park/world-park-notes.js'].map(read).join('\n')}</script><script type="module">`);
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
  window.parkFixture={state:g,enter(id){xf(id,1);clearInterval(g.placeT);g.placeT=null;},
@@ -83,7 +84,7 @@ OjjudaDecorations.install({getUserId:()=>session?.user?.id,client:{auth:{onAuthS
 window.populateParkFixture=()=>{feed.hidden=false;detail.hidden=true;document.getElementById('connection-status').hidden=true;
  document.getElementById('feed-list').replaceChildren(...Array.from({length:9},(_,i)=>cardElement({id:'00000000-0000-4000-8000-'+String(i+1).padStart(12,'0'),kind:'memo',body:'공원에서 나누는 오늘의 이야기 '+(i+1),tags:['일상'],background_key:'plain',created_at:new Date().toISOString()})));
 };`;
-const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace('</body>',()=>'<script>'+['app/world/world-themes.js','park/route.js','shared/viewport/mobile-viewport.js','features/wallet/ju-decorations.js','note/feed-swipe.js','note/composer-tools.js','note/preview.js','note/navigation.js'].map(read).join('\n')+'\n'+identity+'\n'+read('park/integration.js')+'</script></body>');
+const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace('</body>',()=>'<script>'+['app/world/world-themes.js','park/route.js','shared/viewport/mobile-viewport.js','shared/brand/service-banners.js','features/wallet/ju-decorations.js','note/feed-swipe.js','note/composer-tools.js','note/preview.js','note/navigation.js'].map(read).join('\n')+'\n'+identity+'\n'+read('park/integration.js')+'</script></body>');
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox','--disable-dev-shm-usage']});
  try{

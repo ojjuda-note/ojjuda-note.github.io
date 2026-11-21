@@ -4,7 +4,7 @@ const {calendarCases,selectCalendarDate,palette,distinctPalettes}=require('./the
 const root=path.join(__dirname,'..'),read=f=>fs.readFileSync(path.join(root,f),'utf8');
 const proof=process.env.WORLD_DESIGN_PROOF_DIR||'/tmp/world-design-proof';fs.mkdirSync(proof,{recursive:true});
 let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
-world=world.replace('</head>','<script>'+read('features/home/agit-hub.js')+'\n'+read('park/world-park-notes.js')+'\n'+read('app/world/world-themes.js')+'\n'+read('shared/games/world-game-rankings.js')+'\n'+read('shared/games/world-game-assets.js')+'\n'+read('features/arcade/arcade-rooms.js')+'\n'+read('app/world/world-navigation.js').split('/* World-only ambient audio;')[0]+'</script></head>');
+world=world.replace('</head>','<script>'+read('features/home/agit-hub.js')+'\n'+read('shared/brand/service-banners.js')+'\n'+read('park/world-park-notes.js')+'\n'+read('app/world/world-themes.js')+'\n'+read('shared/games/world-game-rankings.js')+'\n'+read('shared/games/world-game-assets.js')+'\n'+read('features/arcade/arcade-rooms.js')+'\n'+read('app/world/world-navigation.js').split('/* World-only ambient audio;')[0]+'</script></head>');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
  $.me.nick='오쭈다';$.me.bio='오늘도 반가워요.';$.coins=250;D.online=false;S={rpc:async()=>({data:{ok:true,rooms:[],mine:null}})};
@@ -161,6 +161,21 @@ world=world.slice(0,boot)+`
   assert.ok(boxes.every((b,i)=>b.y===boxes[0].y&&b.width>=44&&b.fits&&(!i||b.x>=boxes[i-1].x+boxes[i-1].width-1)),'three readable links share one row at '+width);
   await fits('Hub '+width);
  }
+ // The compact reciprocal links live together at the end of Settings.
+ await page.locator('.bottomnav [data-tab=my]').click();
+ const serviceBanners=page.locator('ojjuda-service-banners[current="agit"]');
+ await serviceBanners.locator('.ojjuda-service-banner').first().waitFor();
+ assert.equal(await serviceBanners.evaluate(node=>node.parentElement.lastElementChild===node),true,'service banners are last in Settings');
+ assert.deepEqual(await serviceBanners.locator('.ojjuda-service-banner').evaluateAll(links=>links.map(link=>link.dataset.service)),['park','pajang']);
+ for(const width of [320,390,750]){
+  await page.setViewportSize({width,height:850});
+  const boxes=await serviceBanners.locator('.ojjuda-service-banner').evaluateAll(links=>links.map(link=>{
+   const {x,y,width,height}=link.getBoundingClientRect();return {x,y,width,height,fits:link.scrollWidth<=link.clientWidth+1};
+  }));
+  assert.ok(boxes.every(box=>box.fits&&box.height>=44&&box.x>=0&&box.x+box.width<=width+1),'service banners fit at '+width);
+  assert.ok(Math.abs(boxes[0].y-boxes[1].y)<=1&&boxes[1].x>=boxes[0].x+boxes[0].width,'both service banners share one row at '+width);
+ }
+ await page.setViewportSize({width:390,height:850});
  // Read rendered colors, not only the theme attribute or illustration URL.
  const placeAppearances={};
  for(const appearance of ['light','dark']){
@@ -168,26 +183,20 @@ world=world.slice(0,boot)+`
   const samples=[];
   for(const [theme,date] of calendarCases){
    await selectCalendarDate(page,date);
-   const colors=await palette(page,{park:'.agit-park-open',pajang:'.agit-pajang-open'});
+   const colors=await palette(page,{park:'.ojjuda-service-banner[data-service="park"]',pajang:'.ojjuda-service-banner[data-service="pajang"]'});
    assert.equal(colors.theme,theme);assert.equal(colors.body,colors.bg,'Agit background follows '+theme);
-   const placeAccents=await page.evaluate(()=>Object.fromEntries(['park','pajang'].map(name=>{
-    const banner=document.querySelector('.agit-'+name+'-banner'),swatch=document.createElement('span');
-    swatch.hidden=true;swatch.style.backgroundColor='var(--place-accent)';banner.append(swatch);
-    const accent=getComputedStyle(swatch).backgroundColor;swatch.remove();return [name,accent];
-   })));
    for(const name of ['park','pajang']){
-    assert.notEqual(placeAccents[name],'rgba(0, 0, 0, 0)',name+' has its own visible accent');
-    assert.equal(colors.nodes[name].background,placeAccents[name],name+' entrance uses its own accent');
+    assert.notEqual(colors.nodes[name].image,'none',name+' has its own visible background');
     if(samples.length)assert.deepEqual(colors.nodes[name],samples[0].nodes[name],name+' keeps its identity across calendar themes in '+appearance);
    }
-   assert.notEqual(colors.nodes.park.background,colors.nodes.pajang.background,'Park and Pajang remain visually distinct in '+appearance);
+   assert.notEqual(colors.nodes.park.image,colors.nodes.pajang.image,'Park and Pajang remain visually distinct in '+appearance);
    samples.push(colors);
   }
   distinctPalettes(samples,'Agit '+appearance,['bg','accent']);
   placeAppearances[appearance]=samples[0].nodes;
  }
  for(const name of ['park','pajang']){
-  assert.notEqual(placeAppearances.light[name].background,placeAppearances.dark[name].background,name+' entrance background adapts to dark mode');
+  assert.notEqual(placeAppearances.light[name].image,placeAppearances.dark[name].image,name+' entrance background adapts to dark mode');
   assert.notEqual(placeAppearances.light[name].color,placeAppearances.dark[name].color,name+' entrance text adapts to dark mode');
  }
  await page.emulateMedia({colorScheme:'light'});await page.evaluate(()=>OjjudaThemes.sync());
@@ -203,7 +212,7 @@ world=world.slice(0,boot)+`
  await page.screenshot({path:path.join(proof,'settings-mobile.png'),fullPage:true});
  // Check Hub -> Settings -> Back before subsection visits add their own history.
  await page.getByRole('button',{name:'설정 닫기',exact:true}).click();
- await page.locator('.agit-park-banner').waitFor();
+ await page.locator('.agit-hub').waitFor();
  assert.equal(await page.evaluate(()=>designFixture.state.tab),'hub','the settings close button returns to the actual previous Agit visit');
  assert.equal(await page.locator('.bottomnav [aria-current=page]').getAttribute('data-tab'),'hub','the restored Agit is selected');
  assert.equal(await page.locator('.world-settings-page').count(),0,'the settings screen is closed after history traversal');
@@ -230,7 +239,7 @@ world=world.slice(0,boot)+`
  assert.ok(settingsLayout.rowHeights.every(height=>height>=44),'settings rows retain touch-friendly targets');
  await page.screenshot({path:path.join(proof,'settings-desktop.png'),fullPage:true});
  await page.evaluate(()=>Object.assign(designFixture.auth,designFixture.guestAuth));
- await page.locator('.sidenav [data-tab=hub]').click();await page.locator('.agit-park-banner').waitFor();
+ await page.locator('.sidenav [data-tab=hub]').click();await page.locator('.agit-hub').waitFor();
  // Inspect every theme in the real Arcade, including the dark variant.
  await page.locator('.sidenav [data-tab=arcade]').click();await page.evaluate(()=>{clearInterval(designFixture.state.placeT);designFixture.rank();});
  assert.equal(await page.evaluate(()=>designFixture.state.tab==='place'&&designFixture.state.place?.id==='arcade'),true);
@@ -244,8 +253,8 @@ world=world.slice(0,boot)+`
  await page.emulateMedia({colorScheme:'dark'});await page.waitForFunction(()=>document.documentElement.dataset.theme==='dark');await fits('dark theme');await page.screenshot({path:path.join(proof,'dark-desktop.png'),fullPage:true});
  // The live host and the real Park stylesheet order must resolve the same palette.
  await page.emulateMedia({colorScheme:'light'});
- await page.locator('.sidenav [data-tab=hub]').click();
- await page.locator('.agit-park-banner').click();
+ await page.locator('.sidenav [data-tab=my]').click();
+ await page.locator('.ojjuda-service-banner[data-service="park"]').click();
  await page.waitForFunction(()=>document.documentElement.classList.contains('world-park-active'));
  await page.waitForFunction(()=>document.querySelector('.park-app iframe')?.contentWindow?.OjjudaThemes);
  const park=page.frames().find(frame=>new URL(frame.url()).pathname==='/park/');

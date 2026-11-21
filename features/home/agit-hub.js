@@ -263,22 +263,6 @@
           </button>`;
         }).join('')}</div>
       </section>
-      <a class="agit-place-banner agit-park-banner" href="/world.html?place=park" data-act="agit-park" aria-label="공원 둘러보기">
-        <img class="agit-place-art agit-park-art" src="/features/home/park-community-3d-20261119.webp" width="768" height="768" alt="" loading="lazy" decoding="async">
-        <span class="agit-place-copy agit-park-copy">
-          <span class="agit-place-brand agit-park-brand"><b>공원</b><small>일상 커뮤니티</small></span>
-          <strong class="agit-place-title agit-park-title">오늘의 이야기가<br>모이는 곳</strong>
-          <span class="agit-place-open agit-park-open">공원 둘러보기 <span aria-hidden="true">→</span></span>
-        </span>
-      </a>
-      <a class="agit-place-banner agit-pajang-banner" href="/features/pajang/" id="pajang-radar" data-pajang-launch aria-label="파장, 19세 이상 회원 소개팅, 오늘의 질문 보기">
-        <img class="agit-place-art agit-pajang-letter" src="/features/home/pajang-signal-3d-20261119.webp" width="768" height="768" alt="" loading="lazy" decoding="async">
-        <span class="agit-place-copy agit-pajang-copy">
-          <span class="agit-place-brand agit-pajang-brand"><b>파장</b><small>19+ 회원 소개팅</small></span>
-          <strong class="agit-place-title agit-pajang-title">답변으로 시작되는<br>설렘</strong>
-          <span class="agit-place-open agit-pajang-open">오늘의 질문 보기 <span aria-hidden="true">→</span></span>
-        </span>
-      </a>
       <nav class="agit-reading-grid" aria-label="바이오리듬과 운세">
         <a class="agit-reading-card agit-biorhythm-banner" href="/features/biorhythm/" aria-label="오늘의 바이오리듬, 5쭈, 같은 생일로 결제 후 24시간 이용">
           <img src="/features/home/daily-biorhythm.webp" width="600" height="400" alt="" loading="lazy">

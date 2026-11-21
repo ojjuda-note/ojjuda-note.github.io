@@ -1,4 +1,4 @@
-import {useEffect,useRef,useState} from "react";
+import {createElement,useEffect,useRef,useState} from "react";
 import {I} from "./icons";
 import {openAccount,leaveAccount,accountError} from "../lib/account-actions.mjs";
 import {watchAdminAccess} from "../lib/admin-access.mjs";
@@ -120,6 +120,7 @@ export function AccountSettings({profileId,onOpen}:{profileId:string;onOpen:(act
         </a>
       </div>
     </section>}
+    {createElement("ojjuda-service-banners", {current:"pajang"})}
   </section>;
 }
 

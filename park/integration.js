@@ -55,12 +55,25 @@
     const owner = session?.user?.id || null;
     const settings = node('div', 'park-settings ojjuda-settings');
     settings.setAttribute('data-park-settings-root', '');
+    const serviceBanners = document.createElement('ojjuda-service-banners');
+    serviceBanners.setAttribute('current', 'park');
+    serviceBanners.addEventListener('click', event => {
+      const anchor = event.target.closest?.('a[href]');
+      if (!anchor) return;
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) { event.stopPropagation(); return; }
+      if (!canLeave()) { event.preventDefault(); event.stopPropagation(); return; }
+      const url = new URL(anchor.href, location.href);
+      if (url.origin === location.origin && url.pathname === '/world.html' && url.searchParams.get('tab') === 'hub') {
+        event.preventDefault(); event.stopPropagation(); navigate('world');
+      }
+    });
     const group = title => {
       const section = node('section', 'park-settings-group');
       section.setAttribute('aria-label', title);
       section.append(node('h3', '', title));
       const list = node('div', 'park-settings-list');
-      section.append(list); settings.append(section);
+      section.append(list);
+      settings.insertBefore(section, serviceBanners.parentNode === settings ? serviceBanners : null);
       return list;
     };
     const row = (container, id, label, action, className = '') => {
@@ -151,6 +164,7 @@
       adminGroup = admin.parentElement;
       row(admin, 'admin', '공원 관리자모드', () => navigate('admin'));
     };
+    settings.append(serviceBanners);
     managementBody.append(settings);
     syncAdminSettings();
     if (owner) send({type:'ojjuda:park-admin-refresh', userId:owner});
