@@ -317,11 +317,11 @@ test('compact mission cards keep their actions and show completion once',()=>{
   assert.equal(cards.length,5);
   assert.match(cards[0],/data-v="park"/);
   assert.match(cards[0],/title="공원에 글 남기기"/);
-  assert.match(cards[0],/aria-label="완료한 미션: 공원 글쓰기"/);
+  assert.match(cards[0],/aria-label="완료한 미션: 공원가기"/);
   assert.match(cards[0],/🌷/,'completed cards keep their task icon');
   assert.equal((cards[0].match(/✓/g)||[]).length,1,'one clear completion badge');
   assert.match(cards[3],/title="추천게임 시작하기"/);
-  assert.match(cards[4],/축제 둘러보기/);
+  assert.match(cards[4],/축제방문/);
   assert.doesNotMatch(cards.join(''),/agit-quest-number/,'decorative numbers do not consume space');
 });
 

@@ -191,7 +191,7 @@
         const target=id==='visit'?visitTarget(date):null;
         const [label,emoji]=target?[`${target.name} 페이지 들어가기`,'🚪']:
           id==='quiz'?(quizMode(date)==='chosung'?['초성 퀴즈','🔤']:['상식 퀴즈','💡']):missionLabels[id];
-        const compactLabel=target?`${target.name} 둘러보기`:id==='park'?'공원 글쓰기':id==='recommend'?'추천게임':label;
+        const compactLabel=target?`${target.name}방문`:id==='park'?'공원가기':id==='recommend'?'추천게임':id==='quiz'?label.replace(' ',''):label;
         const finished=isComplete(settings,id,date);
         return `<button type="button" class="agit-quest-card agit-quest-card--${i+1}${finished?' is-done':''}" data-act="agit-task" data-v="${id}" title="${label}" aria-label="${finished?'완료한 미션':'오늘의 미션'}: ${compactLabel}">
           <span class="agit-quest-emoji" aria-hidden="true">${emoji}</span>
