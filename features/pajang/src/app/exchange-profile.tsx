@@ -39,7 +39,7 @@ async function profileDetails(action:"mine"|"save",person:string,data:object={})
 const regions:Record<string,string[]>=regionCatalog;
 const labels:{key:keyof Fields; label:string; options?:readonly string[]; limit?:number}[]=[
   {key:"relationship",label:"결혼 이력",options:["싱글","돌싱"]},
-  {key:"job",label:"직업"},{key:"region",label:"사는 지역"},{key:"religion",label:"종교"},
+  {key:"job",label:"직업"},{key:"region",label:"사는 지역"},{key:"religion",label:"신앙"},
   {key:"height",label:"키"},{key:"mbti",label:"MBTI",options:["ISTJ","ISFJ","INFJ","INTJ","ISTP","ISFP","INFP","INTP","ESTP","ESFP","ENFP","ENTP","ESTJ","ESFJ","ENFJ","ENTJ"]},
   {key:"bloodType",label:"혈액형",options:["A","B","O","AB"]},
   {key:"skills",label:"특기",limit:160},{key:"hobbies",label:"취미",limit:160},
@@ -160,7 +160,7 @@ export function ExchangeProfileEditor({profileId,focusTastes=false,onSaved}:{pro
         {labels.filter(field=>field.key!=="bio").map(({key,label,options,limit})=>{
           const value=String(profile.fields[key]??"");
           if(key==="region")return <RegionField key={key} value={value} onChange={v=>change(key,v)}/>;
-          return <label key={key}>{key==="height"?"키 (cm)":label}
+          return <label key={key}>{key==="height"?"키 (cm)":key==="religion"?"나의 신앙 (선택)":label}
             {options?<select value={value} onChange={e=>change(key,e.target.value)}><option value="">미입력</option>{value&&!options.includes(value)&&<option>{value}</option>}{options.map(v=><option key={v} value={v}>{key==="bloodType"?v+"형":v}</option>)}</select>:
              key==="height"?<input name="height" type="number" inputMode="decimal" min={1} max={300} step="any" value={value} onChange={e=>change(key,e.target.value)}/>:
              <input maxLength={textInputMaxLength(value,limit||80)} value={value} onChange={e=>change(key,e.target.value)}/>}</label>;
