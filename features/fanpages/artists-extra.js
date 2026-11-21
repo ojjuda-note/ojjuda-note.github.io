@@ -33,7 +33,7 @@
     idle: {
       album: { href: 'https://music.apple.com/us/album/i-am-ep/1378887583', source: 'Apple Music' },
       merch: { title: 'i-dle 공식 상품', sub: 'CUBEE · i-dle 상품 목록', href: 'https://www.cubee.co.kr/product/list.html?cate_no=160' },
-      schedule: { title: '일본 공식 일정', sub: 'i-dle 일본 공식 사이트 · 활동 일정 목록', href: 'https://i-dle.cubeent.co.jp/?post_type=schedule' },
+      schedule: { title: '일본 공식 일정', sub: 'i-dle 일본 공식 사이트 · 활동 일정 목록', href: 'https://i-dle.cubeent.co.jp/schedule/' },
       news: { title: 'i-dle 일본 공식 소식', href: 'https://i-dle.cubeent.co.jp/news/' }
     },
     bts: {
@@ -556,13 +556,14 @@
     {
       id: 'idle', name: 'i-dle', korean: '아이들', category: 'girl', fan: 'NEVERLAND', agency: 'CUBE Entertainment',
       members: ['미연', '민니', '소연', '우기', '슈화'],
-      checkedAt: '2026.11.14',
+      checkedAt: '2026.11.18',
       debut: '2018.05.02', debutWork: 'I am', songs: ['LATATA', '달라($$$)', 'MAZE', "DON'T TEXT ME", '알고 싶어 (What’s in your house?)', '들어줘요 (Hear me)'],
       concept: '2018년 LATATA로 데뷔한 다섯 멤버의 셀프 프로듀싱 그룹. 2025년부터 i-dle이라는 이름으로 활동.',
       official: 'https://i-dle.cubeent.co.jp/profile/', youtube: 'https://www.youtube.com/@official_i_dle',
       photo: '(G)I-DLE Airport Departure 2024.png', photoLabel: '2024년 공항 단체', photoYear: '2024', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
       morePhotos: [
-        commonsPhoto('06072026 I-DLE SHOWCASE 1.png', 'We made 발매 쇼케이스 · 크롭 사진', '2026', 'K-POPIT 케이팝잇 · Wikimedia Commons에서 세로 6% 크롭', 'CC BY 4.0')
+        commonsPhoto('06072026 I-DLE SHOWCASE 1.png', 'We made 발매 쇼케이스 · 크롭 사진', '2026', 'K-POPIT 케이팝잇 · Wikimedia Commons에서 세로 6% 크롭', 'CC BY 4.0'),
+        commonsPhoto('06072026 I-DLE SHOWCASE 4.png', 'We made 발매 쇼케이스 · 단체 무대', '2026', 'K-POPIT 케이팝잇 · Wikimedia Commons에서 세로 4% 크롭', 'CC BY 4.0')
       ],
       music: [
         { title: 'We made', date: '2026.07.06', type: '미니 9집 · 타이틀 Gimme Dat Love', songs: ['Mono (Feat. skaiwater)', 'Gimme Dat Love', 'Morning', 'Crow', 'Love Is Pain'], href: 'https://i-dle.cubeent.co.jp/discography/2929/' },
@@ -573,13 +574,14 @@
         { title: 'I am', date: '2018.05.02', type: '데뷔 미니 1집 · 타이틀 LATATA', songs: ['LATATA', '달라($$$)', 'MAZE', "DON'T TEXT ME", '알고 싶어 (What’s in your house?)', '들어줘요 (Hear me)'], href: 'https://i-dle.cubeent.co.jp/discography/329/' }
       ],
       appearances: [
-        { date: '2026-11-16', title: '소연 · 일본 라디오 K TRACKS', sub: '시코쿠방송 · 23:40~24:00 (일본 현지) · 방송사 주관', href: 'https://i-dle.cubeent.co.jp/news/' }
+        { date: '2026-11-21', title: '소연 · TOKYO FM 라디오 川島明 そもそもの話', sub: 'TOKYO FM · 17:00~17:55 JST/KST · 공식 11.14 발표 · 방송 변경은 주최사 확인', href: 'https://i-dle.cubeent.co.jp/news/' }
       ],
       schedules: [
         { title: '일본 공식 일정', sub: '발매·방송·행사 및 변경 확인', href: 'https://i-dle.cubeent.co.jp/schedule/' },
         { title: '큐브 일본 공식 소식', sub: '일정·방송 공지 원문', href: 'https://i-dle.cubeent.co.jp/news/' }
       ],
       news: [
+        { date: '2026.11.14', tag: '방송', title: '소연, 11월 21일 TOKYO FM 川島明 そもそもの話 출연 발표', href: 'https://i-dle.cubeent.co.jp/news/' },
         { date: '2026.11.02', tag: '방송', title: '소연, 11.13·11.16 일본 라디오 K TRACKS 출연 안내', href: 'https://i-dle.cubeent.co.jp/news/' },
         { date: '2026.10.28', tag: '인터뷰', title: '소연 Rolling Stone JAPAN 인터뷰 소개', href: 'https://i-dle.cubeent.co.jp/news/' },
         { date: '2026.10.23', tag: '솔로 활동', title: '민니 디지털 EP i love you to the moon and back 발매', href: 'https://i-dle.cubeent.co.jp/discography/' },

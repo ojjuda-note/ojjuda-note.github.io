@@ -155,6 +155,7 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: '0LLFprdOHqo', title: 'GO M/V Behind the Scenes', kind: '메이킹', source: 'BLACKPINK Official · 2026.03.09' }
   ],
   idle: [
+    { id: 'GvAK7SoPZOc', title: 'We made · 미니 9집 컴백 라이브', kind: '컴백 라이브', source: 'i-dle 공식 YouTube · 2026.07.06' },
     { id: 'FkEiAKgAF2c', title: "MINNIE · to the moon :)", kind: '뮤직비디오', source: 'i-dle Official / CUBE · 2026.10.23' },
     { id: '7mDDM0eBWR0', title: 'SOYEON · 퇴사할게여 (Narr. 기안84)', kind: '뮤직비디오', source: 'i-dle Official / CUBE · 2026.09.07' },
     { id: 'FFjDEkZg-54', title: 'Gimme Dat Love', kind: '뮤직비디오', source: 'i-dle Official / CUBE · 2026.07.06' },
