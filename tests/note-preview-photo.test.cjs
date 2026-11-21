@@ -82,7 +82,7 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
       session:{user:{id:member}},myIdentity:{},myGender:'private',writingPosition:{latitude:37,longitude:127},eventPosition:{latitude:37,longitude:127},
       cache:new Map(),backdrop:{hidden:false},currentStyle:()=>({}),parsedTags:()=>[],chosenPhoto:()=> 'plain',
       validEventBody:()=>true,validEventPosition:()=>true,validEventOptions:()=>true,archiveDueThisMonth:()=>false,parentArchiveDue:()=>null,
-      composerPhotoOverflows:()=>false,cardPhotoOverflows:()=>false,noteSpamMessage:()=>'',recordDraft(){},setComposerInputs(){},updateComposer(){},
+      composerPhotoOverflows:()=>false,cardPhotoOverflows:()=>false,noteSpamMessage:()=>'',ensureComposeFont:async()=>true,recordDraft(){},setComposerInputs(){},updateComposer(){},
       window:{confirm:()=>true},$:selector=>({value:selector.includes('radius')||selector.includes('hours')?'1':selector.includes('gender')?'private':'anonymous'}),
       client:{auth:{getUser:async()=>({data:{user:{id:member}},error:null})},storage:{from:()=>({upload:async()=>({error:null})})}},
       uploadCardPhotoFile:async()=>attachmentPath,

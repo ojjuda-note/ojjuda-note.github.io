@@ -105,6 +105,43 @@ const PHOTO_GROUPS = [
 ];
 const PHOTO_FIRST = PHOTO_GROUPS[0].first, PHOTO_LAST = PHOTO_GROUPS.at(-1).last;
 const FONT_CODES = ['default', 'round', 'serif', 'nanum-myeongjo', 'handwriting', 'heart', 'calligraphy', 'mono'];
+const FREE_FONT_CODES = ['default', 'round', 'serif'];
+const fontPurchaseRequests = new Map();
+async function ensureComposeFont(userId, epoch, run) {
+  const font = $('#compose-font').value;
+  if (FREE_FONT_CODES.includes(font)) return true;
+  const unchangedCard = editingId && cache.get(editingId);
+  if (unchangedCard?.style?.font === font && Date.parse(unchangedCard.style_until) > Date.now()) return true;
+  const current = () => session?.user?.id === userId && identityEpoch === epoch
+    && composerRun === run && !backdrop.hidden && $('#compose-font').value === font;
+  let failureMessage = '';
+  busy = true; setComposerInputs(); updateComposer();
+  try {
+    const licenses = await noteRpc('list_my_card_font_entitlements');
+    if (!current()) return false;
+    if (licenses.some(item => item.font === font && Date.parse(item.expires_at) > Date.now())) return true;
+    const label = $('#compose-font').selectedOptions[0].textContent.split(' · 10')[0];
+    if (!window.confirm(`${label} 글꼴을 10쭈로 구매할까요? 구매한 시각부터 1개월 동안 여러 카드에 사용할 수 있어요. 자동 갱신은 없어요.`)) return false;
+    const key = `${userId}:${font}`;
+    if (!fontPurchaseRequests.has(key)) fontPurchaseRequests.set(key, crypto.randomUUID());
+    const result = await noteRpc('purchase_card_font', { p_font: font, p_request_id: fontPurchaseRequests.get(key) });
+    if (!current()) return false;
+    fontPurchaseRequests.delete(key);
+    if (!result?.expires_at || Date.parse(result.expires_at) <= Date.now()) throw Error('Font entitlement expired');
+    void loadWorldBalance(userId);
+    return true;
+  } catch (error) {
+    if (current()) failureMessage = /Insufficient coins/i.test(error.message || '')
+      ? '쭈가 부족해요. 쭈를 충전하거나 기본 무료 글꼴을 골라 주세요.'
+      : '글꼴 이용권을 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.';
+    return false;
+  } finally {
+    if (session?.user?.id === userId && identityEpoch === epoch && composerRun === run) {
+      busy = false; setComposerInputs(); updateComposer();
+      if (failureMessage) composeMessage.textContent = failureMessage;
+    }
+  }
+}
 const SELF_HOSTED_FONTS = ['heart', 'nanum-myeongjo'];
 const EFFECT_CODES = ['none', 'sparkle', 'frame', 'rain', 'shimmer', 'rainbow', 'snow',
   'starlight', 'fireflies', 'petals', 'bubbles', 'aurora', 'confetti', 'sunbeams',
@@ -2612,7 +2649,7 @@ function updateComposer() {
   const selected = !isGuestComposer() && $('#compose-font').value === 'calligraphy';
   const convert = $('#convert-calligraphy');
   convert.setAttribute('aria-pressed', String(selected));
-  convert.textContent = selected ? '캘리그라피 해제' : '캘리그라피로 변환';
+  convert.textContent = selected ? '캘리그라피 해제' : '캘리그라피로 변환 · 10쭈 / 1개월';
   convert.disabled = busy || draftLoading || !authKnown;
   updatePaidSubmit();
   $('.compose-photo')?.classList.toggle('tags-chip', document.activeElement !== tags && !!tags.value.trim());
@@ -3046,6 +3083,8 @@ async function publishCard() {
     await publishGuestCard(body);
     return;
   }
+  if (!await ensureComposeFont(actionUserId, actionEpoch, actionComposerRun)) return;
+  if (session?.user?.id !== actionUserId || identityEpoch !== actionEpoch || composerRun !== actionComposerRun || backdrop.hidden) return;
   let draftToken = null, publishKind = kind, publishParent = parentId;
   recordDraft(); busy = true; setComposerInputs(); updateComposer();
   if (!editId && kind !== 'event' && draftController) {

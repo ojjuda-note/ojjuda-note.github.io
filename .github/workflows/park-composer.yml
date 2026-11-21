@@ -92,6 +92,8 @@ jobs:
           fi
       - name: Check values, attachments, account boundaries and iframe lifecycle
         run: npm --prefix tests run test:park-composer:unit
+      - name: Check monthly font purchases, expiry and free fonts
+        run: node tests/park-monthly-fonts-db.test.cjs && node tests/park-monthly-fonts-client.test.cjs
       - name: Check group drafts, post types and existing form values
         run: node tests/group-board-dom.test.cjs
       - name: Install Chromium
