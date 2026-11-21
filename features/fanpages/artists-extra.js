@@ -1906,7 +1906,7 @@
       id: 'nctwish', name: 'NCT WISH', korean: '엔시티 위시', category: 'boy', fan: 'NCTzen', agency: 'SM Entertainment',
       members: ['시온', '리쿠', '유우시', '재희', '료', '사쿠야'],
       debut: '2024.02.21', debutWork: 'WISH', songs: ['WISH'],
-      checkedAt: '2026.11.17',
+      checkedAt: '2026.11.19',
       concept: '밝은 에너지로 소원을 전하는 NCT의 여섯 멤버 유닛.',
       official: 'https://www.nct-jp.net/', youtube: 'https://www.youtube.com/@NCTWISH',
       photo: '2026 NCT WISH promotion 01.jpg', photoLabel: '2026년 단체', photoYear: '2026', credit: 'numbuzin', license: 'CC BY 4.0',
@@ -1995,6 +1995,24 @@
           "href": "https://www.nct-jp.net/news/detail.php?id=1136642"
         },
         {
+          "date": "2026-12-24",
+          "title": "시온·지창욱 TELASA 여행 예능 1·2화 공개",
+          "sub": "『おじさんと美少年』 · 일본 TELASA 독점 · 오전 9:00 JST/KST · 총 5회",
+          "href": "https://nct-jp.net/ja/news/detail.php?id=1137364"
+        },
+        {
+          "date": "2027-01-07",
+          "title": "시온 TELASA 여행 예능 3화 공개",
+          "sub": "『おじさんと美少年』 · 일본 TELASA 독점 · 오전 9:00 JST/KST",
+          "href": "https://prtimes.jp/main/html/rd/p/000000096.000165653.html"
+        },
+        {
+          "date": "2027-01-14",
+          "title": "시온 TELASA 여행 예능 4화 공개",
+          "sub": "『おじさんと美少年』 · 일본 TELASA 독점 · 오전 9:00 JST/KST",
+          "href": "https://prtimes.jp/main/html/rd/p/000000096.000165653.html"
+        },
+        {
           "date": "2027-01-15",
           "title": "INTO THE WISH : Face Our WISH 서울 1일차",
           "sub": "서울 고척스카이돔 · 18:00 (KST) · 멜론티켓 공식 예매",
@@ -2007,6 +2025,12 @@
           "href": "https://weverse.io/nctwish/notice/40058"
         },
         {
+          "date": "2027-01-21",
+          "title": "시온 TELASA 여행 예능 최종 5화 공개",
+          "sub": "『おじさんと美少年』 · 일본 TELASA 독점 · 오전 9:00 JST/KST",
+          "href": "https://prtimes.jp/main/html/rd/p/000000096.000165653.html"
+        },
+        {
           "date": "2027-01-23",
           "title": "INTO THE WISH 가오슝 공연",
           "sub": "가오슝 아레나 · 17:00 (대만 현지시간) · 11/15 일반 예매 · ibon",
@@ -2015,8 +2039,8 @@
         {
           "date": "2027-02-06",
           "title": "INTO THE WISH 방콕 공연",
-          "sub": "IMPACT ARENA · 공연 시간·예매는 현지 주최사 공지 확인",
-          "href": "https://weverse.io/nctwish/notice/39830?hl=ko"
+          "sub": "IMPACT ARENA · 17:00 (태국 현지 ICT) · 팬클럽 선예매 등록 11/18 20:00~11/20 19:59 KST · 선예매 12/12 11:00~15:59 ICT · ALL TICKET",
+          "href": "https://weverse.io/nctwish/notice/40881"
         },
         {
           "date": "2027-02-13",
@@ -2126,6 +2150,18 @@
         { title: 'NCT WISH 공식 공지', sub: 'Weverse · 로그인·커뮤니티 가입 후 한국 공연·팬 행사 및 예매 확인', href: 'https://weverse.io/nctwish/notice' }
       ],
       news: [
+        {
+          "date": "2026.11.19",
+          "tag": "방송",
+          "title": "시온·지창욱 여행 예능 12/24 일본 TELASA 공개 · 총 5회",
+          "href": "https://nct-jp.net/ja/news/detail.php?id=1137364"
+        },
+        {
+          "date": "2026.11.18",
+          "tag": "공연",
+          "title": "2/6 방콕 공연 17:00 확정 · 팬클럽 선예매 등록 11/18~20 · 위버스 로그인 필요",
+          "href": "https://weverse.io/nctwish/notice/40881"
+        },
         {
           "date": "2026.11.16",
           "tag": "수상",
