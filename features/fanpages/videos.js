@@ -89,7 +89,9 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: '5Iewxe4KxiQ', title: 'PAPARAZZI ARRIVE', kind: '뮤직비디오', source: 'A2O WORLD' },
     { id: 'P5zUkubgW1I', title: 'Love Got Me Ooh', kind: '뮤직비디오', source: 'A2O WORLD' },
     { id: 'tYzAC-pYkyM', title: 'BAD HABITS TONITE', kind: '뮤직비디오', source: 'A2O WORLD' },
-    { id: '2ytBjXgaueA', title: 'PAPARAZZI ARRIVE', kind: '퍼포먼스', source: 'A2O WORLD' }
+    { id: '2ytBjXgaueA', title: 'PAPARAZZI ARRIVE', kind: '퍼포먼스', source: 'A2O WORLD' },
+    { id: 'MlaQATNKhwM', title: 'SHIJIE · bad idea (Zal-Dance)', kind: '멤버 공식 솔로 영상', source: 'A2O WORLD · 2026.09.04' },
+    { id: '9Pw3jvcQ4Vc', title: 'Under My Skin · Stage Performance', kind: '공식 무대', source: 'A2O WORLD · 2025.05.16' }
   ],
   a2olite: [
     { id: 'G_ej20-QWng', title: 'NEON · INFINITE Music Video', kind: '뮤직비디오', source: 'A2O WORLD · 2026.11.13' },
