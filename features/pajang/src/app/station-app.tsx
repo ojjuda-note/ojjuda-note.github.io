@@ -17,13 +17,15 @@ import {MyExchangePhotos,removeAllExchangePhotos} from "./exchange-photos";
 import {AccountSettings,AccountActionForm} from "./account-settings";
 import {QuestionSuggestionForm} from "./question-suggestion";
 import {AnswerEditForm,type AnswerEditTarget} from "./answer-edit";
+import {AnswerLike,AnswerLikesProvider} from "./answer-likes";
+import {PastAnswerForm,PastQuestions,type PastQuestion} from "./past-questions";
 import {ProfileForm,PublicProfilePreferences} from "./public-profile";
 import {SignalPurchaseForm} from "./signal-purchase";
 import {type SignalCounts,type SignalWallet} from "../lib/signal-wallet";
 
 import {StationNavigation,readRoute,routeHref,type Tab} from "./station-navigation";
 import {createStationHistory} from "../lib/navigation.mjs";
-type Modal = {kind:"answer"|"historyAnswer"|"suggestion"|"signal"|"buySignals"|"result"|"setup"|"edit"|"channels"|"help"|"block"|"delete"|"person"|"privateProfile"|"privatePhotos"|"visibility"|"answers"|"logout"|"withdraw";peer?:string;period?:string;originalBody?:string;questionId?:number;answer?:DiscoveryAnswer;editTarget?:AnswerEditTarget;focusTastes?:boolean};
+type Modal = {kind:"answer"|"historyAnswer"|"pastQuestions"|"pastAnswer"|"suggestion"|"signal"|"buySignals"|"result"|"setup"|"edit"|"channels"|"help"|"block"|"delete"|"person"|"privateProfile"|"privatePhotos"|"visibility"|"answers"|"logout"|"withdraw";peer?:string;period?:string;originalBody?:string;questionId?:number;answer?:DiscoveryAnswer;editTarget?:AnswerEditTarget;pastQuestion?:PastQuestion;pastOwner?:string;focusTastes?:boolean};
 const fmtClock=(at:number)=>new Intl.DateTimeFormat("ko-KR",{hour:"2-digit",minute:"2-digit",timeZone:"Asia/Seoul"}).format(new Date(at));
 async function request<T,>(url:string,init?:RequestInit):Promise<T>{
   const params=init?.body?JSON.parse(String(init.body)):{};
@@ -48,7 +50,7 @@ function Editor({initial="",max,label,submit,onSave,busy,hint,optional=false,pub
   const [value,setValue]=useState(initial);
   return <form onSubmit={e=>{e.preventDefault();if(maskedTextLength(value)<=max&&(optional||value.trim()))onSave(value.trim());}}>
     <label className="formlabel" htmlFor="editor">{label}</label><textarea id="editor" aria-describedby={publicationNote?"member-publication-note":undefined} value={value} onChange={e=>{setValue(e.target.value);onDraftChange?.(e.target.value);}} placeholder={hint} maxLength={textInputMaxLength(value,max)} rows={4} required={!optional}/><div className="counter">{maskedTextLength(value)} / {max}</div>
-    {publicationNote&&<p className="publication-note" id="member-publication-note">질문과 답변은 작성일부터 최대 365일간 파장 회원에게 보여요.</p>}
+    {publicationNote&&<p className="publication-note" id="member-publication-note">질문과 답변은 질문이 올라온 날부터 최대 365일간 파장 회원에게 보여요.</p>}
     <button className="primary wide" disabled={busy||maskedTextLength(value)>max||(!optional&&!value.trim())}>{submit}<I n="arrow" s={17}/></button></form>;
 }
 function ListPerson({p,type,station,busy,onProfile,onAction}:{
@@ -137,7 +139,8 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   const slotName=s.slot==="am"?"오전":"오후";
   const obsoleteAnswer=pendingModal?.kind==="answer" && (pendingModal.questionId!==s.question?.id ||
     (pendingModal.originalBody===undefined && Boolean(me?.body)));
-  const modal=(pendingModal?.period && pendingModal.period!==period) || obsoleteAnswer ? null : pendingModal;
+  const modal=(pendingModal?.period && pendingModal.period!==period) || obsoleteAnswer ||
+    (pendingModal?.pastOwner&&pendingModal.pastOwner!==me?.id) ? null : pendingModal;
   const editingAnswer=modal?.kind==="answer" && modal.originalBody!==undefined;
   const answerTitle=slotName+(editingAnswer?" 답변 수정":" 답변");
   const row=modal?.answer;
@@ -287,6 +290,16 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     setError("");
     if(!navigation.current?.open(next,null,{stack}))setModal(next);
   }
+  function answerPastQuestion(question:PastQuestion,stack=false){
+    const owner=liveRef.current.me?.id;
+    if(!owner||!liveRef.current.authenticated||!canLeaveDialog())return;
+    if(question.answered){
+      if(question.canEdit&&typeof question.body==="string")editHistoryAnswer({...question,body:question.body,owner},stack);
+      return;
+    }
+    const next:Modal={kind:"pastAnswer",pastQuestion:question,pastOwner:owner};setError("");
+    if(!navigation.current?.open(next,null,{stack}))setModal(next);
+  }
   function dismiss(){if(historyEditDirty.current&&!canLeaveDialog())return;if(!navigation.current?.close())setModal(null);setError("");}
   function close(){if(!lock.current)dismiss();}
   function accountBusy(value:boolean){
@@ -384,8 +397,8 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     }
     if(currentPeer.current===peerId){followChat.current=true;void readThread(peerId,true);}
   }
-  const modalTitle=modal?({answer:answerTitle,historyAnswer:"답변 수정",suggestion:"이 질문 어때요?",signal:"신호 보내기",buySignals:"추가 신호 구매",result:"신호 상태",setup:"회원 프로필 만들기",edit:"공개 프로필 수정",channels:"채널 선택",help:"파장 이용 안내",block:"프로필 차단",delete:"파장 기록 삭제",person:"상대 프로필",privateProfile:"교환용 프로필",privatePhotos:"교환용 사진",visibility:"답변 공개 설정",answers:"내가 남긴 답변",logout:"로그아웃",withdraw:"오쭈다 회원탈퇴"}[modal.kind]):"";
-  return <div className="station-layout">
+  const modalTitle=modal?({answer:answerTitle,historyAnswer:"답변 수정",pastQuestions:"지난 질문",pastAnswer:"지난 질문에 답변하기",suggestion:"이 질문 어때요?",signal:"신호 보내기",buySignals:"추가 신호 구매",result:"신호 상태",setup:"회원 프로필 만들기",edit:"공개 프로필 수정",channels:"채널 선택",help:"파장 이용 안내",block:"프로필 차단",delete:"파장 기록 삭제",person:"상대 프로필",privateProfile:"교환용 프로필",privatePhotos:"교환용 사진",visibility:"답변 공개 설정",answers:"내가 남긴 답변",logout:"로그아웃",withdraw:"오쭈다 회원탈퇴"}[modal.kind]):"";
+  return <AnswerLikesProvider key={s.authenticated?me?.id:"guest"} owner={me?.id??""}><div className="station-layout">
     <StationNavigation tab={tab} onGo={go} pending={signalCount}/>
     <main className="wrap station-content" id="station-content">
     {(net||threadError)&&<div className="notice" role="status">{net||threadError}<button onClick={()=>{void refresh();if(thread)void readThread(thread);}}>다시 연결</button></div>}
@@ -395,9 +408,12 @@ export default function StationApp({initialStation}:{initialStation:Station}){
         <div className="letter-copy">
           <div className="letter-date">오늘의 질문 <time dateTime={s.day}>{s.day.replaceAll("-",".")} · {slotName}</time></div>
           <h1>{themeText}</h1>
-          <button className={me?.body?"secondary":"primary"} disabled={!ready} onClick={()=>open(me?{kind:"answer",originalBody:me.body||undefined}:{kind:"setup"})}>
+          <div className="letter-actions"><button className={me?.body?"secondary":"primary"} disabled={!ready} onClick={()=>open(me?{kind:"answer",originalBody:me.body||undefined}:{kind:"setup"})}>
             <I n="pencil" s={16}/>{me?.body?"내 답변 수정하기":"내 답변 쓰기"}
           </button>
+          <button type="button" className="past-questions-open" aria-haspopup="dialog" disabled={!ready||!me} onClick={()=>open({kind:"pastQuestions",pastOwner:me?.id})}>
+            <I n="clock" s={16}/>지난 질문<I n="right" s={14}/>
+          </button></div>
         </div>
       </section>
       <div className="today-actions">
@@ -411,6 +427,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
         onBuySignals={()=>open({kind:"buySignals"})}
         onChat={id=>void openHistoryChat(id)}
         onEdit={answer=>{if(answer.own&&answer.peer===me?.id)editHistoryAnswer({...answer,owner:answer.peer});}}
+        onPastQuestion={answer=>answerPastQuestion({day:answer.day,slot:answer.slot,question:answer.question})}
         onWrite={()=>open({kind:"answer"})}/>
         <aside className="today-rail">
           <section className="rail-paper"><div className="rail-title"><h2>마음함</h2><I n="heart" s={23}/></div>
@@ -445,8 +462,17 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     {modal.kind==="suggestion"&&me&&<QuestionSuggestionForm key={me.id} onBusyChange={accountBusy} onSaved={()=>{close();setToast("질문을 보냈어요. 고마워요!");}}/>}
     {(modal.kind==="logout"||modal.kind==="withdraw")&&<AccountActionForm action={modal.kind} close={close} onBusyChange={accountBusy}/>}
     {modal.kind==="visibility"&&me&&<><h2>답변 공개 설정</h2><AnswerGenderVisibility key={me.id} onSaved={()=>setHistoryRevision(n=>n+1)}/></>}
-    {modal.kind==="answers"&&me&&<MyAnswers key={me.id+period} answered={Boolean(me.body)} revision={historyRevision}
+    {modal.kind==="answers"&&me&&<MyAnswers key={me.id+period} owner={me.id} answered={Boolean(me.body)} revision={historyRevision}
       onEdit={answer=>editHistoryAnswer({...answer,owner:me.id},true)} onWrite={()=>open({kind:"answer"})}/>}
+    {modal.kind==="pastQuestions"&&me&&<PastQuestions key={me.id} owner={me.id} revision={historyRevision} onChoose={question=>answerPastQuestion(question,true)}/>}
+    {modal.kind==="pastAnswer"&&modal.pastQuestion&&modal.pastOwner&&<PastAnswerForm
+      key={modal.pastOwner+"/"+modal.pastQuestion.day+"/"+modal.pastQuestion.slot} question={modal.pastQuestion} owner={modal.pastOwner}
+      onBusyChange={accountBusy} onDirtyChange={dirty=>{historyEditDirty.current=dirty;}}
+      onExisting={answer=>editHistoryAnswer(answer)} onMyAnswers={()=>open({kind:"answers"})}
+      onSaved={()=>{
+        if(liveRef.current.me?.id!==modal.pastOwner)return false;
+        setHistoryRevision(value=>value+1);dismiss();setToast("답변을 남겼어요.");void refresh();return true;
+      }}/>}
     {modal.kind==="historyAnswer"&&modal.editTarget&&<AnswerEditForm
       key={modal.editTarget.owner+"/"+modal.editTarget.day+"/"+modal.editTarget.slot} answer={modal.editTarget}
       onBusyChange={accountBusy} onDirtyChange={dirty=>{historyEditDirty.current=dirty;}}
@@ -457,7 +483,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
       }}/>}
     {modal.kind==="answer"&&<><span className="modalicon"><I n="pencil"/></span><h2>{answerTitle}</h2><p className="questionbox">{themeText}</p>
       {editingAnswer&&<p className="sub">저장하면 공개 기간이 남아 있는 답변에 수정한 내용이 보여요. 공개 기간은 바뀌지 않아요.</p>}
-      <Editor initial={modal.originalBody} max={220} label="내 이야기" hint="장소, 노래, 기억처럼 구체적인 장면을 들려주세요."
+      <Editor initial={modal.originalBody} max={220} label="내 이야기" hint="평소 내 생각이나 행동을 편하게 적어 주세요."
         publicationNote={!editingAnswer} submit={editingAnswer?"수정 저장하기":"답변하기"} busy={busy} onSave={async body=>{
           const origin=navigationId.current;
           const data={body,day:s.day,slot:s.slot,questionId:modal.questionId};
@@ -468,7 +494,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     </>}
     {modal.kind==="signal"&&peer&&!(available===0&&s.purchasingEnabled)&&<><span className="modalicon"><I n="signal"/></span><h2>{peer.name}님{row?.received || signalsWith(s,peer.id).incoming?"의 신호 수락":"에게 신호 보내기"}</h2><p className="sub">{available?"서로 신호를 보내면 대화를 시작할 수 있어요.":"오늘의 신호를 모두 썼어요. 내일 다시 만나요."}</p><div className="questionbox">{row&&<small>{row.question}</small>}{peer.body||signalsWith(s,peer.id).incoming?.note}</div><Editor key={signalDraftKey(peer.id,row)} initial={signalDrafts.current.get(signalDraftKey(peer.id,row))} onDraftChange={value=>signalDrafts.current.set(signalDraftKey(peer.id,row),value)} max={120} label="함께 보낼 한마디 (선택)" hint="어떤 부분에 마음이 닿았나요?" submit={(row?.received || signalsWith(s,peer.id).incoming?"신호 수락하기":"신호 보내기")+" · 남은 "+available+"개"} busy={busy||available===0} optional onSave={note=>void deliver(peer.id,note,row)}/></>}
     {modal.kind==="result"&&peer&&<div className="result"><span className="resultart"><Art interest={peer.interest} large/><i><I n={signalsWith(s,peer.id).match?"wave":"signal"}/></i></span><h2>{signalsWith(s,peer.id).match?"서로의 신호가 닿았어요":"신호를 보냈어요"}</h2><p className="sub">{signalsWith(s,peer.id).match?peer.name+"님도 당신에게 신호를 보냈어요. 이제 첫인사를 건네보세요.":peer.name+"님도 신호를 보내면 대화방이 열려요."}</p><button className="primary wide" onClick={()=>signalsWith(s,peer.id).match?startChat(peer.id):(setInbox("sent"),go("inbox"))}>{signalsWith(s,peer.id).match?"대화 시작하기":"보낸 신호 보기"}<I n="arrow" s={17}/></button></div>}
-    {modal.kind==="person"&&peer&&<><Art interest={peer.interest} large/><h2>{peer.name}</h2><p className="sub">{introDetails(peer)}</p>{peer.body&&<div className="questionbox"><small>{row?.question||themeText}</small>{peer.body}</div>}{me&&<PublicProfilePreferences key={me.id+peer.id} viewer={me.id} person={peer.id}/>}<button className="primary wide" onClick={()=>{
+    {modal.kind==="person"&&peer&&<><Art interest={peer.interest} large/><h2>{peer.name}</h2><p className="sub">{introDetails(peer)}</p>{peer.body&&<div className="questionbox"><small>{row?.question||themeText}</small>{peer.body}</div>}{row&&<AnswerLike answer={row}/>} {me&&<PublicProfilePreferences key={me.id+peer.id} viewer={me.id} person={peer.id}/>}<button className="primary wide" onClick={()=>{
         if(!row)return signal(peer);
         if((row.sent&&row.received)||signalsWith(s,row.peer).match)return void openHistoryChat(row.peer);
         if(row.sent||signalsWith(s,row.peer).outgoing){setInbox("sent");go("inbox");return;}
@@ -486,5 +512,5 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     {modal.kind==="delete"&&<><h2>파장 기록을 삭제할까요?</h2><p className="sub">파장 프로필과 답변, 신호·대화·교환용 사진을 삭제해요. 삭제한 내용은 복구할 수 없으며, 오쭈다 계정은 유지돼요.</p><button className="primary wide" disabled={busy} onClick={async()=>{if(await act("delete",{})){location.replace("./");}}}>파장 기록 삭제</button><button className="textbtn" onClick={close}>취소</button></>}
     {modal.kind==="help"&&<><span className="modalicon"><I n="headphones"/></span><h2>파장 이용 안내</h2><div className="guidelist">{[["오전과 오후에 한 번씩 답해요","한국 시간 자정과 낮 12시에 새 질문이 열려요. 한 번 답하면 다음 질문이 열릴 때까지 바로 메인으로 들어가요."],["답변에 신호를 보내요","모두의 답변에서 공개 기간이 남아 있는 질문과 답을 함께 읽어 보세요. 내 답을 쓰기 전에도 마음에 드는 사람에게 하루 무료 신호 3개를 보낼 수 있어요."],["서로 닿으면 대화해요","받은 신호를 수락하면 두 사람의 대화방이 열려요. 상대 프로필에서 언제든 차단할 수 있어요."],["프로필과 사진을 교환해요","이 대화방에서 각자 메시지를 5개 이상 보낸 뒤 프로필이나 사진 교환을 신청할 수 있어요. 상대가 수락하면 서로 볼 수 있어요."]].map(([a,b],i)=><div key={a}><b>{i+1}</b><div><strong>{a}</strong><p>{b}</p></div></div>)}</div><button className="primary wide" onClick={close}>알겠어요</button></>}
     {error&&<p role="alert" className="error">{error}</p>}
-  </Dialog>}</div>;
+  </Dialog>}</div></AnswerLikesProvider>;
 }
