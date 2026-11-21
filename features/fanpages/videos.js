@@ -182,6 +182,7 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'skso_fkQcg0', title: 'Bad Influence (Prod. by Pharrell Williams)', kind: '뮤직비디오', source: 'SEVENTEEN / HYBE LABELS · 2025.06.11' }
   ],
   straykids: [
+    { id: 'Eh-E7CfxUr0', title: 'SUIATSU · 재킷 촬영 메이킹 릴레이캠 다이제스트', kind: '공식 메이킹 쇼츠', source: 'Stray Kids Japan Official / Sony Music · 2026.11.17' },
     { id: 'YXOJopiDElc', title: 'SUIATSU · 도쿄돔 무대', kind: '공식 공연 영상', source: 'Stray Kids Japan Official / Sony Music · 2026.11.13' },
     { id: 'BZ4UzthYTss', title: 'This & That', kind: '뮤직비디오', source: 'Stray Kids / JYP Entertainment · 2026.08.07' },
     { id: 'Q7IFjVUUb_E', title: 'RUN IT', kind: '뮤직비디오', source: 'Stray Kids / JYP Entertainment · 2026.06.24' }
