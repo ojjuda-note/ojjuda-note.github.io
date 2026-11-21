@@ -55,6 +55,7 @@
     if (url.origin !== location.origin) return null;
     const pathname = url.pathname.replace(/\/{2,}/g, '/');
     if (/^\/features\/biorhythm(?:\/|\/index\.html)?$/.test(pathname)) return page('feature:biorhythm', '바이오리듬');
+    if (/^\/features\/pajang(?:\/(?:index\.html|station\.html|feed\.html)?)?$/.test(pathname)) return page('feature:pajang', '파장');
     const standalone = pathname.match(/^\/games\/([^/]+)\//);
     if (standalone) {
       const directory = standalone[1];

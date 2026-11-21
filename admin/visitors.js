@@ -11,7 +11,7 @@
   const sourceLabels = Object.freeze({ direct:'직접 방문',naver:'네이버 검색',google:'구글 검색',
     search:'기타 검색',social:'SNS·메신저',external:'외부 사이트',internal:'사이트 내부',campaign:'캠페인' });
   const featureLabels = Object.freeze({
-    agit:'아지트',arcade:'오락실',park:'공원',settings:'설정',portal:'첫 화면',
+    agit:'아지트',arcade:'오락실',park:'공원',pajang:'파장',settings:'설정',portal:'첫 화면',
     group:'그룹',fanpages:'팬페이지',restaurants:'인증맛집',festival:'축제일정',tarot:'타로',saju:'사주',biorhythm:'바이오리듬',
     game_chacha_rush:'차차 러시',game_solitaire:'솔리테어',game_archery:'바람의 궁수',
     game_sacheonseong:'사천성',game_mines:'지뢰찾기',game_saetbyeol:'새별',
@@ -104,17 +104,22 @@
   function featureChart(data) {
     const fortune = fortuneTotals(data.fortune_visits, data.today_date);
     const biorhythm = fortuneTotals(data.fortune_visits, data.today_date, ['biorhythm'], 'biorhythm_started_at');
-    // Keep the existing top 12 and all products on one scale. Product totals
+    const pajang = data.pajang_visits;
+    const hasPajang = typeof pajang?.started_at === 'string' && Number.isFinite(Date.parse(pajang.started_at))
+      && Date.parse(pajang.started_at) <= Date.parse(data.today_date + 'T23:59:59.999+09:00')
+      && typeof pajang.uses === 'number' && validCount(pajang.uses);
+    // Keep the existing top 12, Pajang and all products on one scale. Product totals
     // come only from their validated daily report, so a duplicate cannot add
     // a second row or double-count a visit.
-    const features = new Map(data.features.filter(row => !['tarot', 'saju', 'biorhythm'].includes(row.feature))
+    const features = new Map(data.features.filter(row => !['tarot', 'saju', 'biorhythm', 'pajang'].includes(row.feature))
       .map(row => [row.feature, { feature: row.feature, uses: Number(row.uses) }]));
     if (fortune) for (const row of fortune.rows) features.set(row.feature, row);
     if (biorhythm) for (const row of biorhythm.rows) features.set(row.feature, row);
+    if (hasPajang) features.set('pajang', { feature: 'pajang', uses: pajang.uses });
     const rows = [...features.values()].sort((a, b) => b.uses - a.uses
       || (a.feature < b.feature ? -1 : a.feature > b.feature ? 1 : 0));
     const card = horizontalChart('많이 선택한 기능', '최근 30일 · 브라우저당 기능별 하루 1회',
-      rows, 'uses', featureLabels, { showZeroRows: !!fortune || !!biorhythm });
+      rows, 'uses', featureLabels, { showZeroRows: hasPajang || !!fortune || !!biorhythm });
     card.dataset.chart = 'features';
     for (const [key, label, report] of [['fortune', '타로·사주', fortune], ['biorhythm', '바이오리듬', biorhythm]]) {
       const note = el('p', report ? `${label}: ${report.startLabel}부터 집계 · 이전 방문 제외`

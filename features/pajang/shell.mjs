@@ -1,6 +1,9 @@
 import {installPajangToolbar} from './account-toolbar.mjs?v=20261119-service-header1';
 
 installPajangToolbar();
+// Optional measurement never delays or blocks the member app and its toolbar.
+void import('./usage.mjs?v=20261121-pajang-visits1')
+  .then(({installPajangUsage})=>installPajangUsage()).catch(()=>{});
 
 // The Agit host restores focus and scroll when it dismisses its entry dialog.
 if(window.parent!==window && new URLSearchParams(location.search).get('embed')==='1'){
