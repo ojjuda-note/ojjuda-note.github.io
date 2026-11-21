@@ -25,6 +25,7 @@ on:
       - 'tests/drinking-*'
       - 'tests/helpers/drinking-*.cjs'
       - 'scripts/build-drinking-polish.mjs'
+      - 'scripts/build-drinking-king-actions.mjs'
       - 'scripts/lib/drinking-catalogs.mjs'
       - '.github/workflows/drinking-room-stability.yml'
   pull_request:
@@ -51,6 +52,7 @@ on:
       - 'tests/drinking-*'
       - 'tests/helpers/drinking-*.cjs'
       - 'scripts/build-drinking-polish.mjs'
+      - 'scripts/build-drinking-king-actions.mjs'
       - 'scripts/lib/drinking-catalogs.mjs'
       - '.github/workflows/drinking-room-stability.yml'
 permissions:
@@ -70,6 +72,8 @@ jobs:
         with:
           node-version: '22'
       - run: npm --prefix tests ci --ignore-scripts
+      - name: Verify current king action catalog
+        run: node scripts/build-drinking-king-actions.mjs --check
       - name: Install Chromium
         working-directory: tests
         run: npx playwright install --with-deps chromium
@@ -87,6 +91,7 @@ jobs:
           tests/drinking-truth-content-rebuild.test.cjs
           tests/drinking-content-expansions.test.cjs
           tests/drinking-content-wording.test.cjs
+          tests/drinking-king-actions.test.cjs
           tests/drinking-presentation.test.cjs
           tests/drinking-room-browser.test.cjs
           tests/drinking-presentation-browser.test.cjs
