@@ -90,8 +90,8 @@
 <script src="/shared/games/game-results.js?v=20261120-service-actions1" defer></script>
 <script src="/app/world/world-navigation.js?v=20261119-history4" defer></script>
 <script src="/app/world/world-pull-refresh.js?v=20261106-source-folders1" defer></script>
-<link rel="stylesheet" href="/features/home/agit-hub.css?v=20261121-mission-capsules1">
-<script src="/features/home/agit-hub.js?v=20261121-mission-capsules1" defer></script>
+<link rel="stylesheet" href="/features/home/agit-hub.css?v=20261121-mission-dock1">
+<script src="/features/home/agit-hub.js?v=20261121-mission-dock1" defer></script>
 <script type="module" src="/features/home/location-warmup.mjs?v=20261119-kma-current1"></script>
 <link rel="stylesheet" href="/features/home/agit-welcome.css?v=20261119-auto-theme1">
 <link rel="stylesheet" href="/features/home/entry-design.css?v=20261119-entry1">
@@ -623,7 +623,7 @@ async function Oa(t,e,o){adminMutationPending++;t&&(t.disabled=!0);try{await e()
  Wt(button,async()=>{await mt("admin_set_first_visit_ju",{p_amount:amount});wt.first_visit_ju=amount;input.defaultValue=String(amount);},"첫 방문 선물을 "+amount.toLocaleString("ko-KR")+"쭈로 저장했어요");
 },"adm-limit"(t,e){let o=Math.max(0,Math.min(100,parseInt(z("#adm-limit").value,10)||0));Wt(e,async()=>{await U.setConfig("beta_charge_daily_limit",o),wt.beta_charge_daily_limit=o},`하루 ${o}번으로 바꿨어요`)}};document.addEventListener("change",t=>{if(t.target&&t.target.id==="adm-free"){let e=t.target.checked;Wt(null,async()=>{await U.setConfig("beta_free_charge",e),wt.beta_free_charge=e},e?"무료 충전을 켰어요":"무료 충전을 껐어요")}});document.addEventListener("submit",t=>{t.target.id==="adm-user-form"&&(t.preventDefault(),L.q=z("#adm-q").value.trim(),bt())});var F0="ojjuda-samsung-dark-tip",Is=()=>/SamsungBrowser/i.test(navigator.userAgent),fh=()=>!!(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);function Os(){return`<b>색이 이상하게 보이나요?</b> 삼성 인터넷의 다크 모드가 오쭈다 아지트의 색을 바꾸고 있어요.
   아래 메뉴 <b>≡</b> → <b>설정</b> → <b>실험실</b>(Labs) → <b>웹사이트 다크 테마 사용</b>을 켜주세요.
-  메뉴 이름은 버전마다 조금 다를 수 있어요. 안 보이면 메뉴의 <b>다크 모드</b>를 꺼도 돼요.`}function k0(t){if(!Is()||!t&&!fh())return;try{if(!t&&localStorage.getItem(F0))return}catch{}if(document.getElementById("browser-tip"))return;let e=document.createElement("div");e.id="browser-tip",e.setAttribute("role","note"),e.innerHTML=`<p>${Os()}</p><button type="button" class="btn sm pri" id="browser-tip-ok">알겠어요</button>`,document.body.appendChild(e),document.getElementById("browser-tip-ok").addEventListener("click",()=>{try{localStorage.setItem(F0,"1")}catch{}e.remove()})}var Go="0.72.58-beta";
+  메뉴 이름은 버전마다 조금 다를 수 있어요. 안 보이면 메뉴의 <b>다크 모드</b>를 꺼도 돼요.`}function k0(t){if(!Is()||!t&&!fh())return;try{if(!t&&localStorage.getItem(F0))return}catch{}if(document.getElementById("browser-tip"))return;let e=document.createElement("div");e.id="browser-tip",e.setAttribute("role","note"),e.innerHTML=`<p>${Os()}</p><button type="button" class="btn sm pri" id="browser-tip-ok">알겠어요</button>`,document.body.appendChild(e),document.getElementById("browser-tip-ok").addEventListener("click",()=>{try{localStorage.setItem(F0,"1")}catch{}e.remove()})}var Go="0.72.59-beta";
 const sectionReleases={
   hub:{name:'아지트',version:Go,manifest:'/version.json'},
   arcade:{name:'오락실',version:'1.3.6',manifest:'/features/arcade/version.json'},
