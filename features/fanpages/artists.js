@@ -267,6 +267,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { label: "Weverse", icon: "✦", url: "https://weverse.io/lesserafim" }
     ],
     merch: [
+      { title: "2026 Black Friday · 일본 공식몰", sub: "일본 국내 배송 · 2026.11.20 12:00~12.04 23:59 JST · 상품별 가격·재고는 공식몰 확인", href: "https://www.le-sserafim.jp/news/f206c981c563" },
       { title: "2027 시즌그리팅 · FIM IN BLOOM", sub: "글로벌 예약 2026.11.17 11:00~12.07 23:59 KST · 12.08 출시 · 수량 소진 시 조기 종료", href: "https://shop.weverse.io/ko/shop/KRW/artists/50/notices/14945" },
       { title: "Made My Night 싱글 앨범", sub: "CHEMICAL NIGHT·컴팩트판 · 한국 9.11 발매·일본 10.09 발매 · 재고는 판매처 확인", href: "https://www.le-sserafim.jp/news/984d91860ac0" },
       { title: "FIM'S Holiday Express 공식 MD", sub: "쿠션·키링·블랭킷 · 11.09부터 한정 예약 · 재고는 판매처 확인", href: "https://www.le-sserafim.jp/news/4fc666123c77" },
@@ -282,7 +283,9 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "HOT", date: "2025.03.14", type: "미니 5집", songs: ["HOT", "Come Over", "Ash"], href: "https://sourcemusic.com/artist/discography/LE%20SSERAFIM/15" }
     ],
     appearances: [
+      { date: "2026-11-20", endDate: "2026-12-06", title: "LE SSERAFIM POP UP · 싱가포르", sub: "Plaza Singapura L1 #01-01 · 10:00~22:00 SGT · HYBE 공식 안내", href: "https://weverse.io/lesserafim/notice/40728" },
       { date: "2026-11-21", title: "2026 MAMA AWARDS", sub: "일본 오사카 · CHAPTER 2", href: "https://www.cj.net/jp/press-release/view/1132" },
+      { date: "2026-11-27", title: "PUREFLOW pt.1 · 싱가포르 폴라로이드 포토 이벤트", sub: "팬사인회 후 · House of K-pop 주관 추첨 · 11.22 23:59 SGT 응모 마감 · 장소는 주최 안내 확인", href: "https://houseofkpop.com/products/singapore-polaroid-photo-event-le-sserafim-2nd-studio-album-pureflow-pt-1-compact-ver" },
       { date: "2026-11-27", title: "PUREFLOW pt.1 · 싱가포르 팬사인회", sub: "14:30 SGT · House of K-pop 주관 추첨 행사 · 11.17 응모 마감 · 장소는 주최 안내 확인", href: "https://houseofkpop.com/products/singapore-fan-sign-event-le-sserafim-2nd-studio-album-pureflow-pt-1-compact-ver" },
       { date: "2026-11-28", title: "PUREFLOW 투어 · 싱가포르", sub: "APEX@EXPO · 현지 17:00 · iMe Singapore 주최", href: "https://ticketmaster.sg/activity/detail/26sg_lsf" },
       { date: "2026-12-05", title: "PUREFLOW 투어 · 마닐라", sub: "SM Mall of Asia Arena · PULP Live World 주최 · 12.06 공연 취소, 12.05만 진행", href: "https://www.pulpliveworld.com/Shows/296" },
@@ -307,6 +310,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "공식 채널", sub: "Linktree", href: "https://linktr.ee/lesserafim" }
     ],
     news: [
+      { date: "2026.11.19", tag: "굿즈", title: "일본 공식몰 2026 Black Friday · 11.20~12.04 판매 안내", href: "https://www.le-sserafim.jp/news/f206c981c563" },
       { date: "2026.11.16", tag: "굿즈", title: "2027 시즌그리팅 FIM IN BLOOM 11.17 예약 시작 · 12.07 마감, 12.08 출시", href: "https://shop.weverse.io/ko/shop/KRW/artists/50/notices/14945" },
       { date: "2026.11.13", tag: "팬사인회", title: "11.27 싱가포르 PUREFLOW 앨범 팬사인회 응모 안내", href: "https://houseofkpop.com/products/singapore-fan-sign-event-le-sserafim-2nd-studio-album-pureflow-pt-1-compact-ver" },
       { date: "2026.11.13", tag: "이벤트", title: "2027.01.23~24 일본 데뷔 4주년 기념 이벤트 공지", href: "https://www.le-sserafim.jp/news/555c78286abe" },
