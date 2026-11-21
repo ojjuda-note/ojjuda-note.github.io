@@ -23,7 +23,7 @@
  const $=selector=>document.querySelector(selector);
  const container=$('#all-rankings-groups'),status=$('#all-rankings-status'),month=$('#all-rankings-month'),refreshButton=$('#all-rankings-refresh');
  if(!container||!status||!month||!refreshButton)return;
- const rows=new Map();let client=null,requestId=0,lastActor=undefined,authListener=null;
+ const rows=new Map();let client=null,requestId=0,lastActor=undefined,authListener=null,shownMonth=null;
  const make=(tag,text,className)=>{
   const element=document.createElement(tag);
   if(text!=null)element.textContent=text;
@@ -52,7 +52,7 @@
  }
  const gameById=new Map(GAME_LIST.map(game=>[game.id,game]));
  const monthKey=()=>new Date(Date.now()+8*3600000).toISOString().slice(0,7);
- function updateMonth(){const key=monthKey();month.textContent=key.slice(0,4)+'년 '+Number(key.slice(5,7))+'월';}
+ function updateMonth(){const key=monthKey();shownMonth=key;month.textContent=key.slice(0,4)+'년 '+Number(key.slice(5,7))+'월';}
  function valueFor(game,record){
   const n=Number(record?.score);
   if(!Number.isFinite(n)||n<=0)return '—';
@@ -111,7 +111,7 @@
     }catch(error){
      if(token!==requestId)return;
      const blocked=error?.code==='42501'||/not_signed_in|not_allowed/.test(error?.message||'');
-     paint(id,null,blocked?'member':'error');failures++;
+     paint(id,null,blocked?(gameById.get(id)?.group==='adult'?'adult':'member'):'error');failures++;
     }
    }));
    if(token!==requestId)return failures;
@@ -166,6 +166,6 @@
  }
  renderRows();
  refreshButton.addEventListener('click',()=>void load());
- document.addEventListener('visibilitychange',()=>{if(document.hidden)return;const displayed=month.textContent.match(/^(\\d{4})년 (\\d{1,2})월$/);if(displayed&&monthKey()!==displayed[1]+'-'+displayed[2].padStart(2,'0'))void load();});
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&monthKey()!==shownMonth)void load();});
  void load();
 })();
