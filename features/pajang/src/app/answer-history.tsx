@@ -196,6 +196,11 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
       // One question may fill several pages. Keep looking until the next question
       // arrives, without ever showing another question's answers under this heading.
       if(after>0&&result.next){load.current("more");return;}
+      if(after>0&&groups.length>1){
+        advance.current=null;
+        setSelection({scope:selectionScope,question:questionKey(groups[0][0])});
+        return;
+      }
     }
     advance.current=null;
     if(selected&&(selection.scope!==selectionScope||!groups.some(group=>questionKey(group[0])===selection.question)))
@@ -209,6 +214,8 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
       advance.current={scope:selectionScope,question:questionKey(selected[0])};
       load.current("more");
     }
+    else if(direction>0&&!result.next&&groups.length>1)
+      setSelection({scope:selectionScope,question:questionKey(groups[0][0])});
   }
   return <section id="answers" className="feedsection" aria-labelledby="all-answers-title">
     <div className="sectiontitle history-head">

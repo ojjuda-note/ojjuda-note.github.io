@@ -13,11 +13,17 @@ export default function QuestionCarousel({groups,index,scope,more,loading,onStep
   const gesture=useRef<{id:number;x:number;y:number;horizontal:boolean}|null>(null);
   const animation=useRef<Animation|null>(null),dragValue=useRef(0),suppressClick=useRef(false);
   const requested=useRef<{key:string;direction:number;focus:string|null}|null>(null);
+  const departed=useRef<{key:string;offset:number}|null>(null);
   const key=questionKey(groups[index][0]);
   const shown=useRef({key,scope,index,height:0});
   const [drag,setDrag]=useState(0),[moving,setMoving]=useState(false);
   const [minHeight,setMinHeight]=useState<number>();
-  const previous=index>0,next=index<groups.length-1||(more&&!loading);
+  function adjacentIndex(direction:number){
+    const candidate=index+direction;
+    if(candidate>=0&&candidate<groups.length)return candidate;
+    return direction>0&&!more&&groups.length>1?0:-1;
+  }
+  const previous=index>0,next=adjacentIndex(1)>=0||(more&&!loading);
   function move(value:number){dragValue.current=value;setDrag(value);}
   function cancel(){gesture.current=null;move(0);}
   function step(direction:number,keepFocus=true){
@@ -40,9 +46,10 @@ export default function QuestionCarousel({groups,index,scope,more,loading,onStep
     shown.current={key,scope,index,height};
     if(before.key===key&&before.scope===scope)return;
     const navigation=requested.current,offset=dragValue.current;
-    requested.current=null;cancel();animation.current?.cancel();animation.current=null;
+    requested.current=null;departed.current=null;cancel();animation.current?.cancel();animation.current=null;
     setMoving(false);setMinHeight(undefined);
-    if(before.scope!==scope||navigation?.key!==before.key||Math.abs(index-before.index)!==1)return;
+    const wraps=navigation?.direction===1&&!more&&groups.length>1&&before.index===groups.length-1&&index===0;
+    if(before.scope!==scope||navigation?.key!==before.key||(!wraps&&Math.abs(index-before.index)!==1))return;
     revealQuestion();
     if(navigation.focus&&(viewport.current?.contains(document.activeElement)||document.activeElement===document.body)){
       const control=[...viewport.current!.querySelectorAll<HTMLButtonElement>(".answer-group .question-controls button")]
@@ -50,6 +57,7 @@ export default function QuestionCarousel({groups,index,scope,more,loading,onStep
       (control??viewport.current!.querySelector<HTMLElement>("header.question-carousel"))?.focus({preventScroll:true});
     }
     if(window.matchMedia("(prefers-reduced-motion: reduce)").matches||!track.current)return;
+    departed.current={key:before.key,offset:-navigation.direction};
     setMinHeight(Math.max(before.height,height));setMoving(true);
     const start=navigation.direction*((viewport.current?.clientWidth??0)+12)+offset;
     const motion=track.current.animate([{transform:`translate3d(${start}px,0,0)`},{transform:"translate3d(0,0,0)"}],
@@ -57,7 +65,7 @@ export default function QuestionCarousel({groups,index,scope,more,loading,onStep
     animation.current=motion;
     void motion.finished.then(()=>{
       if(animation.current!==motion)return;
-      animation.current=null;setMoving(false);setMinHeight(undefined);
+      animation.current=null;departed.current=null;setMoving(false);setMinHeight(undefined);
     },()=>{});
   });
   useEffect(()=>()=>{animation.current?.cancel();},[]);
@@ -69,7 +77,7 @@ export default function QuestionCarousel({groups,index,scope,more,loading,onStep
     let advances=false;
     if(start.horizontal&&Math.abs(dx)>=threshold&&Math.abs(dx)>Math.abs(dy)*1.5){
       const direction=dx<0?1:-1;
-      advances=Boolean(groups[index+direction]);step(direction,false);
+      advances=adjacentIndex(direction)>=0;step(direction,false);
     }
     // Preserve the last drag offset for the layout effect when selection changes.
     if(!advances)dragValue.current=0;
@@ -96,7 +104,7 @@ export default function QuestionCarousel({groups,index,scope,more,loading,onStep
       }
       if(e.cancelable)e.preventDefault();
       if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){move(0);return;}
-      const adjacent=dx>0?index>0:index<groups.length-1;
+      const adjacent=adjacentIndex(dx>0?-1:1)>=0;
       const width=e.currentTarget.clientWidth;
       move(Math.max(-width,Math.min(width,dx*(adjacent?1:.18))));
     }}
@@ -104,11 +112,15 @@ export default function QuestionCarousel({groups,index,scope,more,loading,onStep
     onLostPointerCapture={e=>{if(e.target===e.currentTarget&&gesture.current)cancel();}}
     onClickCapture={e=>{if(e.detail&&suppressClick.current){e.preventDefault();e.stopPropagation();suppressClick.current=false;}}}>
     <div ref={track} className="question-track" style={{transform:drag?`translate3d(${drag}px,0,0)`:undefined}}>
-      {groups.slice(Math.max(0,index-1),index+2).map((answers,position)=>{
-        const pageIndex=Math.max(0,index-1)+position,offset=pageIndex-index,active=offset===0;
+      {[-1,0,1].map(offset=>{
+        const active=offset===0;
         if(!active&&!drag&&!moving)return null;
+        const pageIndex=moving&&departed.current?.offset===offset
+          ?groups.findIndex(answers=>questionKey(answers[0])===departed.current!.key)
+          :active?index:adjacentIndex(offset);
+        const answers=groups[pageIndex];if(!answers)return null;
         const question=answers[0];
-        return <section key={questionKey(question)} className={"question-page "+(active?"answer-group":"question-preview")}
+        return <section key={questionKey(question)+"/"+offset} className={"question-page "+(active?"answer-group":"question-preview")}
           inert={!active} aria-hidden={active?undefined:true} aria-labelledby={active?"selected-question":undefined}
           style={active?undefined:{left:`calc(${offset*100}% + ${offset*12}px)`}}>
           <header className={"question-header"+(active?" question-carousel":"")} data-tone={pageIndex%6}
