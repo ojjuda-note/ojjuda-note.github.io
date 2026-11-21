@@ -1,14 +1,14 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261121-yut-capture1'
+ const revision='20261121-king-actions1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
   onecard:'2.4.3',
   croc:'1.5.1',
   liar:'1.7.1',
-  king:'1.12.1',
+  king:'1.12.2',
   minority:'1.11.1',
   mission:'1.7.1',
   bottle:'1.5.2',
@@ -21,7 +21,7 @@
   secretcount:'1.2.1',
   updown:'1.5.1',
   partyroulette:'1.6.1',
-  drinking:'1.26.2',
+  drinking:'1.26.3',
   shapematch:'1.3.1',
   tarot:'1.12.3',
   saju:'2.17.4',
