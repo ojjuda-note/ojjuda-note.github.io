@@ -44,14 +44,12 @@ function Dialog({children,close,title,busy=false}:{children:React.ReactNode;clos
   return <dialog ref={ref} className="dialog" aria-label={title} onCancel={e=>{e.preventDefault();close();}} onClick={e=>{if(e.target===ref.current){const b=ref.current.getBoundingClientRect();if(e.clientX<b.left||e.clientX>b.right||e.clientY<b.top||e.clientY>b.bottom)close();}}}>
     <div className="sheet-bar"><button className="iconbtn" aria-label="닫기" disabled={busy} onClick={close}><I n="close"/></button></div>{children}</dialog>;
 }
-function Editor({initial="",max,label,submit,onSave,busy,hint,optional=false,publication=false,onDraftChange}:{initial?:string;max:number;label:string;submit:string;onSave:(v:string,roundOnly:boolean)=>void;busy:boolean;hint:string;optional?:boolean;publication?:boolean;onDraftChange?:(v:string)=>void}){
+function Editor({initial="",max,label,submit,onSave,busy,hint,optional=false,publicationNote=false,onDraftChange}:{initial?:string;max:number;label:string;submit:string;onSave:(v:string)=>void;busy:boolean;hint:string;optional?:boolean;publicationNote?:boolean;onDraftChange?:(v:string)=>void}){
   const [value,setValue]=useState(initial);
-  const [roundOnly,setRoundOnly]=useState(false);
-  return <form onSubmit={e=>{e.preventDefault();if(maskedTextLength(value)<=max&&(optional||value.trim()))onSave(value.trim(),publication&&roundOnly);}}>
-    <label className="formlabel" htmlFor="editor">{label}</label><textarea id="editor" value={value} onChange={e=>{setValue(e.target.value);onDraftChange?.(e.target.value);}} placeholder={hint} maxLength={textInputMaxLength(value,max)} rows={4} required={!optional}/><div className="counter">{maskedTextLength(value)} / {max}</div>
-    {publication&&<><label className="publication-scope" htmlFor="member-publication"><span>답변 공개 기간</span><select id="member-publication" value={roundOnly?"round":"year"} aria-describedby="member-publication-note" disabled={busy} onChange={e=>setRoundOnly(e.target.value==="round")}><option value="year">365일 공개</option><option value="round">이번 회차만 공개</option></select></label>
-      <p className="publication-note" id="member-publication-note">{roundOnly?"다른 파장 회원은 이 질문과 답변을 다음 질문이 열리기 전까지만 볼 수 있어요.":"다른 파장 회원이 이 질문과 답변을 작성일을 포함해 최대 365일간 볼 수 있어요(한국 시간 기준)."}</p></>}
-    <button className="primary wide" disabled={busy||maskedTextLength(value)>max||(!optional&&!value.trim())}>{publication&&roundOnly?"이번 회차에만 공개하기":submit}<I n="arrow" s={17}/></button></form>;
+  return <form onSubmit={e=>{e.preventDefault();if(maskedTextLength(value)<=max&&(optional||value.trim()))onSave(value.trim());}}>
+    <label className="formlabel" htmlFor="editor">{label}</label><textarea id="editor" aria-describedby={publicationNote?"member-publication-note":undefined} value={value} onChange={e=>{setValue(e.target.value);onDraftChange?.(e.target.value);}} placeholder={hint} maxLength={textInputMaxLength(value,max)} rows={4} required={!optional}/><div className="counter">{maskedTextLength(value)} / {max}</div>
+    {publicationNote&&<p className="publication-note" id="member-publication-note">질문과 답변은 작성일부터 최대 365일간 파장 회원에게 보여요.</p>}
+    <button className="primary wide" disabled={busy||maskedTextLength(value)>max||(!optional&&!value.trim())}>{submit}<I n="arrow" s={17}/></button></form>;
 }
 function ListPerson({p,type,station,busy,onProfile,onAction}:{
   p:Person;type:"received"|"sent"|"chat";station:Station;busy:boolean;
@@ -460,10 +458,10 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     {modal.kind==="answer"&&<><span className="modalicon"><I n="pencil"/></span><h2>{answerTitle}</h2><p className="questionbox">{themeText}</p>
       {editingAnswer&&<p className="sub">저장하면 공개 기간이 남아 있는 답변에 수정한 내용이 보여요. 공개 기간은 바뀌지 않아요.</p>}
       <Editor initial={modal.originalBody} max={220} label="내 이야기" hint="장소, 노래, 기억처럼 구체적인 장면을 들려주세요."
-        publication={!editingAnswer} submit={editingAnswer?"수정 저장하기":"365일간 공개하기"} busy={busy} onSave={async (body,roundOnly)=>{
+        publicationNote={!editingAnswer} submit={editingAnswer?"수정 저장하기":"답변하기"} busy={busy} onSave={async body=>{
           const origin=navigationId.current;
           const data={body,day:s.day,slot:s.slot,questionId:modal.questionId};
-          const next=editingAnswer?await act("edit-answer",{...data,previousBody:modal.originalBody}):await act("answer",{...data,...(roundOnly?{archive:false}:{archive:true,publicationPolicy:"year-v1"})});
+          const next=editingAnswer?await act("edit-answer",{...data,previousBody:modal.originalBody}):await act("answer",{...data,archive:true,publicationPolicy:"year-v1"});
           if(!next||origin!==navigationId.current)return;
           dismiss();setToast(slotName+(editingAnswer?" 답변을 수정했어요.":" 답변을 저장했어요."));
         }}/>

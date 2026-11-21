@@ -694,7 +694,7 @@ async function checkNavigation(page){
       await page.evaluate(()=>window.finishFlight());
       await page.locator(ready).waitFor();
       assert.equal(await scene.isVisible(),false);
-      if(!member)assert.match(await page.locator('#publication-note').textContent(),/작성일을 포함해 최대 365일간.*한국 시간 기준/);
+      if(!member)assert.match(await page.locator('#publication-note').textContent(),/작성일부터 최대 365일간 파장 회원에게/);
       if(member){releasePicture?.();await page.unroute(picture);}
       await page.emulateMedia({reducedMotion:'no-preference'});
       if(!member){
@@ -1179,11 +1179,12 @@ async function checkNavigation(page){
     await page.locator('#marks button').first().waitFor();
     await checkCompass(page,'#scope','.rose b','#marks button:nth-child(2)');
     await page.locator('#write').click();await page.locator('[name=consent]').check();
-    const entryScope=page.getByRole('combobox',{name:'답변 공개 기간'});
-    assert.equal(await entryScope.inputValue(),'year');
-    assert.equal(await entryScope.locator('option:checked').textContent(),'365일 공개');
+    const entryAnswers=page.locator('#answer-fields');
+    assert.equal(await entryAnswers.getByRole('combobox').count(),0,'entry offers no date selector');
+    assert.equal(await entryAnswers.getByRole('checkbox').count(),0,'entry offers no publication opt-in');
+    assert.match(await entryAnswers.locator('#publication-note').textContent(),/작성일부터 최대 365일간 파장 회원에게/);
     await page.locator('#mine').fill('한 번 열린 화면에서 답변을 남겨요.');
-    await page.locator('#answer-form').getByRole('button',{name:'365일간 공개하고 오늘로',exact:true}).click();await nav.waitFor();
+    await page.locator('#answer-form').getByRole('button',{name:'답변하기',exact:true}).click();await nav.waitFor();
     const joinWrite=await page.evaluate(()=>window.answerWrites.find(w=>w.action==='join'));
     assert.equal(joinWrite.archive,true);
     assert.equal(joinWrite.publicationPolicy,'year-v1');
@@ -1205,17 +1206,6 @@ async function checkNavigation(page){
     console.log('PASS automatic heading focus without a box, while keyboard controls retain visible focus');
     await goHome();
     await page.evaluate(()=>{sessionStorage.fixtureMode='new';sessionStorage.removeItem('pajang:answered-round');});
-    await page.goto(origin+project+'index.html?scope-check=round');
-    await page.locator('#write').click();await page.locator('[name=consent]').check();
-    assert.equal(await entryScope.inputValue(),'year');
-    await entryScope.selectOption('round');
-    assert.match(await page.locator('#publication-note').textContent(),/다른 파장 회원.*다음 질문이 열리기 전까지만/);
-    await page.locator('#mine').fill('이번 회차만 열어 두는 첫 답변');
-    await page.locator('#answer-form').getByRole('button',{name:'이번 회차에만 공개하고 오늘로',exact:true}).click();
-    await nav.waitFor();
-    const roundJoin=await page.evaluate(()=>window.answerWrites.find(w=>w.action==='join'));
-    assert.equal(roundJoin.archive,false);
-    assert.equal(Object.hasOwn(roundJoin,'publicationPolicy'),false);
     await page.evaluate(()=>{sessionStorage.fixtureMode='new';});
     await page.goto(origin+project+'station.html?tab=profile');
     await page.getByText('파장 첫 참여',{exact:true}).waitFor();
@@ -1223,6 +1213,7 @@ async function checkNavigation(page){
     await page.locator('[name=consent]').check();await page.getByRole('button',{name:'참여하고 내 파장 보기'}).click();
     await page.getByRole('heading',{name:'내 파장'}).waitFor();
     assert.equal(await page.evaluate(()=>window.beforeJoin===document.querySelector('.pajang-mast')),true,'member entry preserves the document');
+    assert.equal(await page.locator('#answer-fields').isVisible(),false,'participate-only never shows the answer disclosure');
     const joinOnlyWrite=await page.evaluate(()=>window.answerWrites.find(w=>w.action==='participate'));
     assert.equal(Object.hasOwn(joinOnlyWrite,'archive'),false);
     assert.equal(Object.hasOwn(joinOnlyWrite,'publicationPolicy'),false);
@@ -1251,27 +1242,15 @@ async function checkNavigation(page){
     await questionCard.getByRole('button',{name:'내 답변 쓰기'}).click();
     const newAnswerDialog=page.getByRole('dialog');
     await newAnswerDialog.waitFor();
-    const memberScope=newAnswerDialog.getByRole('combobox',{name:'답변 공개 기간'});
-    assert.equal(await memberScope.inputValue(),'year');
-    assert.equal(await memberScope.locator('option:checked').textContent(),'365일 공개');
-    assert.match(await newAnswerDialog.textContent(),/작성일을 포함해 최대 365일간.*한국 시간 기준/);
-    await newAnswerDialog.getByLabel('내 이야기').fill('새롭게 공개하기로 선택한 답변');
-    await newAnswerDialog.getByRole('button',{name:'365일간 공개하기',exact:true}).click();
+    assert.equal(await newAnswerDialog.getByRole('combobox').count(),0,'member composer offers no date selector');
+    assert.equal(await newAnswerDialog.getByRole('checkbox').count(),0,'member composer offers no publication opt-in');
+    assert.match(await newAnswerDialog.textContent(),/작성일부터 최대 365일간 파장 회원에게/);
+    await newAnswerDialog.getByLabel('내 이야기').fill('새로 작성한 답변');
+    await newAnswerDialog.getByRole('button',{name:'답변하기',exact:true}).click();
     await newAnswerDialog.waitFor({state:'detached'});
     const answerWrite=await page.evaluate(()=>window.answerWrites.find(w=>w.action==='answer'));
     assert.equal(answerWrite.archive,true);
     assert.equal(answerWrite.publicationPolicy,'year-v1');
-    await page.goto(origin+project+'station.html?scope-check=round');
-    await questionCard.getByRole('button',{name:'내 답변 쓰기'}).click();
-    assert.equal(await memberScope.inputValue(),'year');
-    await memberScope.selectOption('round');
-    assert.match(await newAnswerDialog.textContent(),/다른 파장 회원.*다음 질문이 열리기 전까지만/);
-    await newAnswerDialog.getByLabel('내 이야기').fill('이번 회차만 열어 두는 답변');
-    await newAnswerDialog.getByRole('button',{name:'이번 회차에만 공개하기',exact:true}).click();
-    await newAnswerDialog.waitFor({state:'detached'});
-    const roundAnswer=await page.evaluate(()=>window.answerWrites.find(w=>w.action==='answer'));
-    assert.equal(roundAnswer.archive,false);
-    assert.equal(Object.hasOwn(roundAnswer,'publicationPolicy'),false);
     for(const mode of ['guest','denied']){
       await page.evaluate(m=>{sessionStorage.fixtureMode=m;},mode);
       await page.goto(origin+project+'station.html');
