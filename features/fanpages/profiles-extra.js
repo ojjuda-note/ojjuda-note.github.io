@@ -489,7 +489,7 @@ for (const id of ['tws','nctdream','ateez','treasure','nctwish','andteam']) {
 const kissOfLifeProfile = window.OJJUDA_FAN_PROFILES.kissoflife;
 if (kissOfLifeProfile) {
   kissOfLifeProfile.expanded = true;
-  kissOfLifeProfile.checkedAt = '2026.11.16';
+  kissOfLifeProfile.checkedAt = '2026.11.18';
   const officialBirthdays = { '쥴리': '2000.03.29', '나띠': '2002.05.30', '벨': '2004.03.20', '하늘': '2005.05.25' };
   for (const member of kissOfLifeProfile.members) {
     member.birthday = officialBirthdays[member.name] || null;
@@ -508,6 +508,8 @@ if (kissOfLifeProfile) {
   ];
   kissOfLifeProfile.sources.unshift({ label: '일본 컬럼비아 공식 발매·트랙리스트', href: 'https://columbia.jp/artist-info/kissoflife/discography/album.html' });
   kissOfLifeProfile.sources.push({ label: 'AAA 2026 공식 출연 명단', href: 'https://www.asiaartistawards.com/en/news/3225' });
+  kissOfLifeProfile.sources.push({ label: 'Greedy 11.25 발매 · 공식 예고', href: 'https://kissoflife.town/post/3574' });
+  kissOfLifeProfile.sources.push({ label: 'D AWARDS 2027 공식 출연진', href: 'https://d-awards.world/' });
 }
 
 

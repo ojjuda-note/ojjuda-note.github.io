@@ -253,6 +253,8 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     {"id":"1fVsSx5ggQc","title":"For us · 라라포트 BLACK FRIDAY TV CM","kind":"광고 영상","source":"미쓰이 쇼핑파크 / &TEAM · 2026.11.09"}
   ],
   kissoflife: [
+    { id: 'w-FQ_Iw7fDs', title: 'Greedy · KIOF IS COMING TO TOWN', kind: '공식 컴백 티저', source: 'KISS OF LIFE 공식 YouTube · 2026.11.16' },
+    { id: 'r-ohlGVhanY', title: '[KI-OFF] 일본 오프라인 행사 · To Do List', kind: '공식 비하인드', source: 'KISS OF LIFE 공식 YouTube · 2026.11.16' },
     { id: 'RcRYAE0ZcLQ', title: '2026 KGMA · 댄스 프랙티스', kind: '안무 연습', source: 'KISS OF LIFE 공식 YouTube · 2026.11.08' },
     { id: 'nk9zx3gGqSc', title: 'Sticky / THE FIRST TAKE', kind: '라이브', source: 'THE FIRST TAKE · 공식 채널 · 2026.09.28' },
     { id: '6bIVPKhafSI', title: 'SWEAT (Japanese Ver.) / THE FIRST TAKE', kind: '라이브', source: "THE FIRST TAKE · 2026.10.12" },
