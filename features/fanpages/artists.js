@@ -179,6 +179,7 @@ window.OJJUDA_FAN_ARTISTS = [
       commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (6).png', '미장센 · 포토월 06', '2026', '티비텐 TV10'),
       commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (8).png', '미장센 · 포토월 08', '2026', '티비텐 TV10'),
       commonsPhoto('Aespa - 55580814509.jpg', '시애틀 공연 · 그룹 (원본 AI 보정)', '2026', 'David Lee · AI 보정 원본', 'CC BY 4.0'),
+      commonsPhoto('Aespa - 55580643056.jpg', '시애틀 공연 · 그룹 무대', '2026', 'davidjlee / David Lee', 'CC BY 4.0'),
       commonsPhoto('03112026 Aespa NingNing Airport Departure 11.png', '닝닝 · 김포공항 (11.03)', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0')
     ],
     links: [
@@ -197,6 +198,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "KISS N TELL · Happy Holiday 응모", sub: "지정 판매처 구매 시 사인회 응모 코드 · 11.16~11.25(JST) 접수", href: "https://aespa-official.jp/news/happyholiday2026/" }
     ],
     music: [
+      { title: "KISS N TELL (☆Taku Takahashi Remix)", date: "2026.11.20", type: "디지털 리믹스 싱글", songs: ["KISS N TELL (☆Taku Takahashi Remix)"], href: "https://aespa-official.jp/news/kissntell-remix-release/" },
       { title: "Santa Baby (with Eartha Kitt)", date: "2026.11.13", type: "협업 디지털 싱글", songs: ["Santa Baby"], href: "https://www.yna.co.kr/amp/view/AKR20261113047000005" },
       { title: "SYNK : COMPLaeXITY", date: "2026.09.14", type: "스페셜 디지털 싱글 · 멤버 솔로 4곡", songs: ["16 Bit (KARINA Solo)", "Saddle Up (WINTER Solo)", "BYEB4HELLO (GISELLE Solo)", "I Love You But I Gotta Let You Go (NINGNING Solo)"], href: "https://music.apple.com/us/album/synk-complaexity-2026-special-digital-single-ep/6808550171" },
       { title: "KISS N TELL", date: "2026.07.24", type: "일본 미니 1집", songs: ["KISS N TELL", "Orbit Pop", "Fangirl", "ATTITUDE", "Done with Rules", "In Halo"], href: "https://aespa-official.jp/discography/kissntell/" },
@@ -217,8 +219,9 @@ window.OJJUDA_FAN_ARTISTS = [
       { date: "2027-04-04", title: "2027 aespa 일본 돔 투어 · 오사카 2회", sub: "교세라돔 오사카 · 16:00(JST) 공연 시작 · MY-J 선예매 2026.11.16~11.29(추첨)", href: "https://aespa-official.jp/news/dometour2027-fc/" }
     ],
     campaigns: [
+      { kind: "콜라보", date: "2026.11.20", title: "LINE MUSIC × aespa · KISS N TELL 리믹스 재생 캠페인", sub: "12.31 23:59(JST) 응모 마감 · 1,120회 이상 재생·My推し 설정 등 조건 · 추첨 3명", href: "https://aespa-official.jp/news/kissntell-remix-linemusic/" },
       { kind: "콜라보", date: "2026.11.13", title: "Eartha Kitt × aespa · Santa Baby", sub: "원곡 보컬과 협업한 디지털 싱글 · Primary Wave Music / SM", href: "https://www.yna.co.kr/amp/view/AKR20261113047000005" },
-      { kind: "콜라보", date: "2026.11.13", title: "☆Taku Takahashi (m-flo) × aespa", sub: "〈KISS N TELL〉 리믹스 협업 발표 · 11월 20일 공개 예정", href: "https://aespa-official.jp/news/kissntell-remix/" },
+      { kind: "콜라보", date: "2026.11.13", title: "☆Taku Takahashi (m-flo) × aespa", sub: "〈KISS N TELL〉 리믹스 협업 · 11월 20일 정식 공개", href: "https://aespa-official.jp/news/kissntell-remix-release/" },
       { kind: "콜라보", date: "2026.11.13", title: "Setlog × aespa", sub: "〈KISS N TELL〉 리믹스 사전 체험 · 기간 한정 영상 효과", href: "https://aespa-official.jp/news/kissntell-remix/" },
       { kind: "홍보대사", date: "2026.09.09", title: "MARK & LONA · 카리나", sub: "2026 가을·겨울 컬렉션 공식 브랜드 앰배서더 활동", href: "https://aespa-official.jp/news/mark-lona-2026/" }
     ],
@@ -228,6 +231,8 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "공식 공지", sub: "Weverse", href: "https://weverse.io/aespa/notice" }
     ],
     news: [
+      { date: "11.20", tag: "이벤트", title: "〈KISS N TELL〉 리믹스 LINE MUSIC 재생 캠페인 · 12월 31일 마감", href: "https://aespa-official.jp/news/kissntell-remix-linemusic/" },
+      { date: "11.20", tag: "음악", title: "〈KISS N TELL (☆Taku Takahashi Remix)〉 정식 발매", href: "https://aespa-official.jp/news/kissntell-remix-release/" },
       { date: "11.17", tag: "굿즈", title: "데뷔 6주년 기념 공식 MD 예약 판매 · 11월 22일 마감", href: "https://www.smtownandstore.com/product/aespa-6th-anniversary-pre-order-fleece-jacket-set/29758/category/646/display/1/" },
       { date: "11.17", tag: "방송", title: "윈터, 쿠팡플레이 〈저스트 메이크업 2〉 MC 합류 · 11월 27일 공개", href: "https://enews.imbc.com/News/ViewAmp/525108" },
       { date: "11.16", tag: "공연", title: "2027년 3~4월 도쿄·오사카 돔 투어 4회 확정 · MY-J 선예매 시작", href: "https://aespa-official.jp/news/dometour2027-fc/" },
