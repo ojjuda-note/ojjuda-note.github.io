@@ -254,35 +254,35 @@ test('editing profile fields trims text, deletes cleared values, and preserves v
 
 test('religion can be entered, edited, cleared, reopened, and displayed in the shared profile', async t => {
   const f = await fixture(t, {fields: {job: '책방지기', bio: '그대로 남길 소개'}});
-  assert.equal(f.control('종교').type, 'text');
-  assert.equal(f.control('종교').required, false);
-  assert.equal(f.control('종교').value, '');
+  assert.equal(f.control('나의 신앙 (선택)').type, 'text');
+  assert.equal(f.control('나의 신앙 (선택)').required, false);
+  assert.equal(f.control('나의 신앙 (선택)').value, '');
 
-  await f.set('종교', '  천주교  ');
+  await f.set('나의 신앙 (선택)', '  천주교  ');
   f.submit();
   await waitFor(() => f.state.successes === 1, 'a newly entered religion should save');
   assert.equal(f.saves()[0].p_data.fields.religion, '천주교');
   await f.reopen();
-  assert.equal(f.control('종교').value, '천주교');
-  assert.deepEqual(await f.showPeer(), {직업: '책방지기', 종교: '천주교', 자기소개: '그대로 남길 소개'});
+  assert.equal(f.control('나의 신앙 (선택)').value, '천주교');
+  assert.deepEqual(await f.showPeer(), {직업: '책방지기', 신앙: '천주교', 자기소개: '그대로 남길 소개'});
 
   await f.reopen();
-  await f.set('종교', '  기독교 · 개신교  ');
+  await f.set('나의 신앙 (선택)', '  기독교 · 개신교  ');
   f.submit();
   await waitFor(() => f.state.successes === 2, 'an edited religion should replace the saved value');
   assert.equal(f.saves()[1].p_data.fields.religion, '기독교 · 개신교');
   await f.reopen();
-  assert.equal(f.control('종교').value, '기독교 · 개신교');
-  assert.deepEqual(await f.showPeer(), {직업: '책방지기', 종교: '기독교 · 개신교', 자기소개: '그대로 남길 소개'});
+  assert.equal(f.control('나의 신앙 (선택)').value, '기독교 · 개신교');
+  assert.deepEqual(await f.showPeer(), {직업: '책방지기', 신앙: '기독교 · 개신교', 자기소개: '그대로 남길 소개'});
 
   await f.reopen();
-  await f.set('종교', '   ');
+  await f.set('나의 신앙 (선택)', '   ');
   f.submit();
   await waitFor(() => f.state.successes === 3, 'clearing religion should remove the saved value');
   assert.equal(Object.hasOwn(f.saves()[2].p_data.fields, 'religion'), false);
   assert.equal(Object.hasOwn(f.state.profile.fields, 'religion'), false);
   await f.reopen();
-  assert.equal(f.control('종교').value, '');
+  assert.equal(f.control('나의 신앙 (선택)').value, '');
   assert.deepEqual(await f.showPeer(), {직업: '책방지기', 자기소개: '그대로 남길 소개'});
   assert.equal(f.saves().length, 3);
 });

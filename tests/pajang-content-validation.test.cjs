@@ -314,7 +314,7 @@ test('exchange profiles accept a matching masking receipt and display the canoni
   assert.equal(f.alert(),null); assert.equal(f.state.successes,1);
   assert.equal(f.control('직업').value,'❤️❤️ 책방지기');
   assert.equal(f.control('자기소개').value,'첫 ❤️❤️ · 둘째 ❤️❤️ / 연락: hello@example.com, 010-1234-5678');
-  assert.equal(f.control('종교').value,'천주교'); assert.equal(f.control('나이').checked,true);
+  assert.equal(f.control('나의 신앙 (선택)').value,'천주교'); assert.equal(f.control('나이').checked,true);
   assert.equal(f.control('키 (cm)').value,'175.5');
 });
 
@@ -333,7 +333,7 @@ for (const [name,alter] of [
   f.state.afterWrite=(action,result)=>{if(action==='exchange')alter(result.data);return result;};
   f.q('.exchange-editor').requestSubmit(); await wait(() => f.alert());
   assert.equal(f.state.saved,undefined); assert.equal(f.control('자기소개').value,'금칙 소개');
-  assert.equal(f.control('종교').value,'천주교'); assert.equal(f.control('키 (cm)').value,'175.5');
+  assert.equal(f.control('나의 신앙 (선택)').value,'천주교'); assert.equal(f.control('키 (cm)').value,'175.5');
 });
 
 test('masked suggestions succeed once and the real daily limit still preserves the draft', async t => {
