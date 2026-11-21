@@ -121,7 +121,7 @@ async function ensureComposeFont(userId, epoch, run) {
     if (!current()) return false;
     if (licenses.some(item => item.font === font && Date.parse(item.expires_at) > Date.now())) return true;
     const label = $('#compose-font').selectedOptions[0].textContent.split(' · 10')[0];
-    if (!window.confirm(`${label} 글꼴을 10쭈로 구매할까요? 구매한 시각부터 1개월 동안 여러 카드에 사용할 수 있어요. 자동 갱신은 없어요.`)) return false;
+    if (!window.confirm(`${label} 글꼴을 10쭈로 구매할까요? 구매한 시각부터 1개월 동안 여러 카드에 사용할 수 있어요. 기간이 끝나면 카드 글꼴도 기본으로 돌아가며, 자동 갱신은 없어요.`)) return false;
     const key = `${userId}:${font}`;
     if (!fontPurchaseRequests.has(key)) fontPurchaseRequests.set(key, crypto.randomUUID());
     const result = await noteRpc('purchase_card_font', { p_font: font, p_request_id: fontPurchaseRequests.get(key) });
