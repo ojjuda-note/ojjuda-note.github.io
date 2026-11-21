@@ -189,6 +189,7 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
         async rpc(name, args) {
           calls.push({ name, args });
           if (name === 'is_note_moderator') return { data: true, error: null };
+          if (name === 'admin_card_media_paths') return { data: [], error: null };
           if (name === 'admin_cards') return { data: [{ ...card, hidden: args.p_state === 'hidden' }], error: null };
           if (name === 'admin_risk_cards') return { data: [{ ...card, body: '합성 위험 신호 카드' }], error: null };
           if (name === 'admin_risk_passed_ids') return { data: [], error: null };

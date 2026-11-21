@@ -107,6 +107,22 @@ textarea.na-input{min-height:95px;resize:vertical}
 .na-badge--warn{background:#fff1df;color:#855015}
 .na-badge--good{background:#e9f4ec;color:#2e6b42}
 .na-card-body{margin:9px 0;padding:12px;border-radius:12px;background:var(--surface-2,#f5f6fc);font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.na-card-media{margin:12px 0;min-width:0}
+.na-media-label{margin:0 0 7px!important;color:var(--ink-2,#626894);font-size:12px;font-weight:600}
+.na-media-surface{width:min(100%,360px);min-width:0}
+.na-media-photo,.na-media-play{position:relative;display:grid;gap:0;width:100%;max-width:100%;padding:0;overflow:hidden;border-radius:12px;background:var(--surface-2,#f5f6fc);text-align:center}
+.na-media-play{gap:8px;padding-bottom:9px}
+.na-media-thumbnail{display:block;width:100%;max-height:300px;aspect-ratio:1;object-fit:cover;background:var(--surface-2,#f5f6fc)}
+.na-media-open{position:absolute;right:9px;bottom:9px;padding:5px 9px;border-radius:8px;background:#17203ac9;color:#fff;font-size:12px}
+.na-media-video{display:block;width:100%;max-height:min(60dvh,480px);border-radius:12px;background:#121725;object-fit:contain}
+.na-media-loading{margin:8px 0!important;color:var(--ink-2,#626894);font-size:12px}
+.na-media-error{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--line,#daddf0);border-radius:12px;background:var(--surface-2,#f5f6fc);color:var(--ink-2,#626894);font-size:12px}
+.na-media-error .na-button{min-height:36px;padding:6px 12px;font-size:12px}
+.na-media-dialog{position:fixed;inset:0;width:min(960px,calc(100vw - 32px));max-width:none;max-height:calc(100dvh - 32px);margin:auto;padding:12px;overflow:auto;border:1px solid var(--line,#daddf0);border-radius:18px;background:var(--surface,#fff);color:var(--ink,#23264a);box-shadow:0 24px 80px #0a123666}
+.na-media-dialog::backdrop{background:#101827cc}
+.na-media-dialog-content{display:grid;gap:10px;min-width:0}
+.na-media-dialog-close{justify-self:end;min-width:64px}
+.na-media-full-photo{display:block;justify-self:center;max-width:100%;max-height:calc(100dvh - 120px);width:auto;height:auto;object-fit:contain;border-radius:8px}
 .na-item p.na-reason{margin:8px 0;color:var(--ink-2,#626894);font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}
 .na-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px;color:var(--ink-2,#626894);font-size:12px}
 .na-id{max-width:100%;overflow-wrap:anywhere;font:12px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--ink-2,#626894)}
