@@ -42,7 +42,7 @@ button,input,select,textarea{font-family:inherit}button,a{-webkit-tap-highlight-
 :root[data-theme=dark]{--ju-paid:#8f734d;--ju-paid-ink:#e7cfa8;--ju-paid-soft:#3b352a;--ju-paid-line:#6d604b;--ju-paid-muted:#c0ad8f}
 .world-redesign .profile-photo-stage{background:var(--surface-2)}.world-redesign .profile-photo-actions .profile-photo-save{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}.world-redesign .profile-photo-zoom input{accent-color:var(--accent)}
 
-.arcade-overview{margin-bottom:12px}
+.arcade-overview{margin-bottom:0}
 .arcade-social .arcade-status{margin:0 0 16px;padding:0 0 12px;border-bottom:1px solid var(--line)}.world-redesign .arcade-status .visit-banner{width:100%;max-width:none;margin:0;padding:0}.arcade-status .visit-banner .btn{margin-left:auto}
 
 /* Game covers stay distinct from the seasonal rankings illustration. */
@@ -103,4 +103,4 @@ button,input,select,textarea{font-family:inherit}button,a{-webkit-tap-highlight-
 .arcade-home .arcade-overview,.arcade-home #ppanel{min-height:0}
 .arcade-home [data-arcade-rank-root]{height:auto;min-height:0;padding-bottom:12px}
 .arcade-home .board-rank-group{min-height:0;padding-bottom:6px}
-@media(max-width:600px){.arcade-home .arcade-overview{margin-bottom:12px}.arcade-home [data-arcade-rank-root]{padding-bottom:10px}}
+@media(max-width:600px){.arcade-home [data-arcade-rank-root]{padding-bottom:10px}}
