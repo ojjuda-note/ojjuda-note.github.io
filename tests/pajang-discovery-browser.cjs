@@ -705,7 +705,7 @@ async function checkNavigation(page){
     }
     console.log('PASS watercolor flight, upright static alternative, immediate handoff with art pending');
     await page.goto(origin+project+'station.html#answers');
-    const answers=page.locator('#answers'), cards=answers.locator('article'), group=answers.getByRole('radiogroup');
+    const answers=page.locator('#answers'), cards=answers.locator('.answer-group article'), group=answers.getByRole('radiogroup');
     const radio=value=>group.locator('input[value="'+value+'"]');
     const selected=async value=>assert.equal(await radio(value).isChecked(),true);
     await cards.nth(1).waitFor();

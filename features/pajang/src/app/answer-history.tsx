@@ -235,10 +235,8 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
     {result.loading&&result.total===null&&<span className="answer-sr" role="status">답변을 불러오고 있어요.</span>}
     <div className="cardgrid" aria-busy={result.loading}>
       {result.loading&&result.total===null&&[0,1,2].map(i=><div className="answer-skeleton" key={i} aria-hidden="true"><i/><i/><i/><i/></div>)}
-      {selected&&<section className="answer-group" aria-labelledby="selected-question">
-        <QuestionCarousel question={selected[0]} index={index} count={groups.length} more={Boolean(result.next)} loading={result.loading} onStep={stepQuestion}/>
-        <div id="question-answers" aria-labelledby="selected-question">
-        {selected.map(row=>{
+      {selected&&<QuestionCarousel groups={groups} index={index} scope={selectionScope} more={Boolean(result.next)} loading={result.loading} onStep={stepQuestion}
+        renderAnswers={answers=>answers.map(row=>{
         const relation=signalsWith(station,row.peer);
         const sent=row.sent||!!relation.outgoing, received=row.received||!!relation.incoming, matched=sent&&received;
         const intents=relationshipIntents.filter(intent=>row.relationship_intents?.includes(intent.key));
@@ -257,7 +255,7 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
             <span><I n={matched?"chat":sent?"check":"signal"} s={17}/>{matched?"대화하기":sent?"보낸 신호":received?"신호 수락하기":"신호 보내기"}</span>
           </button>}</div>
         </article>;
-      })}</div></section>}
+      })}/>}
     </div>
     {result.error&&<p className="notice" role="alert">{result.error}<button onClick={()=>load.current(result.next&&result.items.length?"more":"first")}>다시 시도</button></p>}
     {result.total!==null&&!result.error&&!result.items.length&&<div className="empty"><span className="emptyicon" aria-hidden="true"><I n="wave" s={22}/></span>
