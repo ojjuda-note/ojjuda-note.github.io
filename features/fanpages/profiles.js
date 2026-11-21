@@ -36,7 +36,7 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   ive: {
-    checkedAt: '2026.11.17',
+    checkedAt: '2026.11.20',
     debut: '2021.12.01', debutWork: 'ELEVEN',
     agency: 'STARSHIP Entertainment',
     concept: 'I HAVE, 그리고 당당한 IVE의 순간.',
@@ -47,6 +47,7 @@ window.OJJUDA_FAN_PROFILES = {
       { year: '2026.09', title: '장원영 · 올해의 브랜드 대상', detail: '여자 광고모델 부문 · 2년 연속', href: 'https://www.etnews.com/20260901000136' }
     ],
     records: [
+      { year: '2026.06', title: 'LUCID DREAM 오리콘 주간 앨범 1위', detail: '일본 4번째 EP · 2026/6/8자 주간 앨범 차트 · 소니뮤직 공식 프로필', href: 'https://www.sonymusic.co.jp/artist/IVE/profile/' },
       { year: '2026.11', title: '제69회 그래미 어워즈 후보 지명', detail: '11.16 발표 · BANG BANG, Best Asian Pop Music Performance 부문 · 2027.02.07 시상 예정', href: 'https://www.grammy.com/songs/bang-bang-2/' },
       { year: '2023.02', title: '음악방송 누적 37관왕', detail: 'ELEVEN · LOVE DIVE · After LIKE', href: 'https://enews.imbc.com/News/RetrieveNewsInfo/373075' }
     ],

@@ -121,6 +121,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { label: "Berriz", icon: "✦", url: "https://link.berriz.in/web/main/IVE" }
     ],
     merch: [
+      { title: "DICON D'FESTA THE ORIGIN · IVE 화보집", sub: "일본 공식 판매처 예약 11/22 23:59 JST 마감 · 240쪽 · 2027년 3월부터 배송 · 특전 조건 확인", href: "https://d-dpartment.com/products/dicon-dfesta-the-origin-ive-d-type" },
       { title: "Looks Can Kill · 일본 구매 특전 응모", sub: "일본 구매자 추첨 2차 응모 진행 · 12/19 도쿄 회차 12/6, 2027/1/16~17 회차 1/5 마감 · 공식 조건 확인", href: "https://www.sonymusic.co.jp/artist/IVE/info/588141" },
       { title: "Looks Can Kill · 음반", sub: "2026.10.26 발매 · 공식 IVE 스토어", href: "https://shop.ive-starship.com/" },
       { title: "Looks Can Kill · 사인반", sub: "HERO COMICS ver. · 품절(공식 판매처 기준)", href: "https://shop.ive-starship.com/products/hero-comics-ver-ive-looks-can-kill-signed" },
@@ -142,6 +143,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { date: "2027-01-17", title: "Looks Can Kill · 일본 구매자 추첨 이벤트", sub: "오사카 우메다 크리스털홀 · 당첨자 대상 촬영·사인·포스트카드 행사 · 시간은 주최 공지 확인", href: "https://www.sonymusic.co.jp/artist/IVE/info/588141" }
     ],
     campaigns: [
+      { kind: "콜라보", date: "2026.10.19", title: "서울시·DDP × IVE · DIVE IN TO LIGHT", sub: "DDP 365라이트 컴백 영상·레이저쇼 공동 프로모션 · 서울시 공식 발표 10/29", href: "https://english.seoul.go.kr/ive-comeback-videos-light-up-ddp-as-seoul-expands-city-marketing-linking-k-pop-with-seoul-landmarks/" },
       { kind: "홍보대사", date: "2026.09.17", title: "UGG 아시아·태평양 앰배서더 · 장원영", sub: "UGG Born to Feel 2026 가을·겨울 캠페인 · Deckers Japan 공식 발표", href: "https://prtimes.jp/main/html/rd/p/000000784.000003434.html" },
       { kind: "홍보대사", date: "2026.08.19", title: "AGE20'S 글로벌 앰배서더 · 레이", sub: "에이지투웨니스 리브랜딩·뷰티 캠페인 · 애경산업 발표", href: "https://biz.heraldcorp.com/article/10844878" },
       { kind: "홍보대사", date: "2026.02.02", title: "메종 발렌티노 · 레이·리즈", sub: "공식 브랜드 앰배서더 임명 · 발렌티노 발표", href: "https://prtimes.jp/main/html/rd/p/000000257.000101366.html" },
@@ -155,6 +157,7 @@ window.OJJUDA_FAN_ARTISTS = [
     news: [
       { date: "11.16", tag: "후보", title: "〈BANG BANG〉 2027 그래미 ‘베스트 아시안 팝 퍼포먼스’ 후보", href: "https://www.grammy.com/songs/bang-bang-2/" },
       { date: "11.15", tag: "수상", title: "MMA2026 ‘올해의 베스트송’ 대상 등 총 5관왕", href: "https://www.melon.com/mma/result.htm?mmaYear=2026" },
+      { date: "11.11", tag: "굿즈", title: "DICON D'FESTA THE ORIGIN · IVE 공식 화보집 일본 예약 시작(11/22 마감)", href: "https://prtimes.jp/main/html/rd/p/000000688.000022823.html" },
       { date: "11.07", tag: "영상", title: "〈Looks Can Kill〉 안무 연습 비하인드 공개", href: "https://www.youtube.com/watch?v=sheag2-3h_o" },
       { date: "10.29", tag: "행사", title: "〈Looks Can Kill〉 구매자 추첨 이벤트·특전 일정 발표", href: "https://www.sonymusic.co.jp/artist/IVE/info/588141" },
       { date: "10.26", tag: "앨범", title: "미니 5집 〈Looks Can Kill〉 정식 발매", href: "https://www.starship-ent.com/musician/ive" },
