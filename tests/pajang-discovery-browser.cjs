@@ -1385,6 +1385,7 @@ async function checkNavigation(page){
     // Leaving a pending member check must not later reopen Pajang.
     await page.evaluate(()=>{sessionStorage.fixtureMode='member';sessionStorage.openTiming='yes';sessionStorage.holdEntryIdentity='yes';sessionStorage.removeItem('pajang:answered-round');});
     await page.goto(origin+'/world.html?closing=1');
+    await page.getByRole('button',{name:'설정',exact:true}).click();
     await banner.click();
     await page.locator('#gate .flight-scene').waitFor();
     await page.goBack();await page.waitForURL('**/world.html?closing=1');
@@ -1403,6 +1404,7 @@ async function checkNavigation(page){
           if(mode!=='member')sessionStorage.removeItem('pajang:answered-round');
           delete sessionStorage.openMs;delete sessionStorage.openStart;},scenario);
         await page.goto(origin+'/world.html?timing='+attempt);
+        await page.getByRole('button',{name:'설정',exact:true}).click();
         const opened=entryDocuments.length;
         await banner.click();
         if(scenario!=='new')await page.waitForURL('**/station.html');
@@ -1511,6 +1513,7 @@ async function checkNavigation(page){
     await context.grantPermissions(['geolocation']);
     await page.evaluate(()=>{localStorage.locationEnabled='true';sessionStorage.removeItem('ojjuda:location-cell:member');});
     await page.goto(origin+'/world.html?warm-location=1');
+    await page.getByRole('button',{name:'설정',exact:true}).click();
     await page.waitForFunction(()=>sessionStorage.getItem('ojjuda:location-cell:member'));
     assert.equal(await page.evaluate(()=>window.geoReadCount),1,'Agit requests the position before opening Pajang');
     await banner.click();await page.waitForURL('**/station.html');await answers.waitFor();
@@ -1525,6 +1528,7 @@ async function checkNavigation(page){
         if(mode!=='member')sessionStorage.removeItem('pajang:answered-round');
       },scenario);
       await page.goto(origin+'/world.html?slow-location='+scenario);
+      await page.getByRole('button',{name:'설정',exact:true}).click();
       await banner.click();
       if(scenario==='new'){
         await page.locator('#welcome #write').waitFor({timeout:5000});
