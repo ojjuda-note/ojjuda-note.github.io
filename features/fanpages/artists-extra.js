@@ -297,7 +297,7 @@
       id: 'hearts2hearts', name: 'Hearts2Hearts', korean: '하츠투하츠', category: 'girl', fan: 'S2U', agency: 'SM Entertainment',
       members: ['지우', '카르멘', '유하', '스텔라', '주은', '에이나', '이안', '예온'],
       debut: '2025.02.24', debutWork: 'The Chase', songs: ['The Chase', 'Butterflies'],
-      checkedAt: '2026.11.16',
+      checkedAt: '2026.11.20',
       concept: '서로 다른 마음을 이어 하나의 하모니를 만드는 여덟 멤버.',
       official: 'https://hearts2heartsofficial.jp/', youtube: 'https://www.youtube.com/@hearts2hearts.official',
       photo: '260221 HEARTS2HEARTS @ 2026 Fanmeeting HEARTS2HOUSE.jpg', photoLabel: 'HEARTS2HOUSE 팬미팅', photoYear: '2026', credit: 'sublimitas viii', license: 'CC BY-SA 4.0',
@@ -318,14 +318,20 @@
         { title: 'The Chase', date: '2025.02.24', type: '데뷔 싱글', songs: ['The Chase', 'Butterflies'], href: 'https://www.youtube.com/watch?v=kxUA2wwYiME' }
       ],
       appearances: [
-        { date: '2026-11-20', title: '2026 MAMA AWARDS Chapter 1 출연', sub: '일본 오사카 교세라 돔 · 18:00 시상식 · CJ ENM 주최', href: 'https://cjnews.cj.net/2026-mama-awards-a-to-z%EF%BD%9C%EC%B6%9C%EC%97%B0%EC%A7%84%EB%B6%80%ED%84%B0-%ED%8A%B9%EB%B3%84-%EB%AC%B4%EB%8C%80%EA%B9%8C%EC%A7%80-%ED%95%9C%EB%88%88%EC%97%90-%EB%AA%A8%EC%95%84%EB%B3%B4%EA%B8%B0/' },
         { date: '2026-11-21', title: 'ANIMAX MUSIX 2026 DAY2 출연', sub: '일본 요코하마 아레나 · 13:00 입장 / 14:30 공연 · 주최 NTT도코모·ANIMAX, 협찬 도부철도', href: 'https://hearts2heartsofficial.jp/news/2026090802/' },
         { date: '2026-11-22', title: '일본 첫 팬 이벤트 READY! S2U', sub: '도쿄 아리아케 아레나 · 18:00 시작 (17:00 입장)', href: 'https://hearts2heartsofficial.jp/news/2026081203/' },
         { date: '2026-11-23', title: '일본 첫 팬 이벤트 READY! S2U', sub: '도쿄 아리아케 아레나 · 16:00 시작 (15:00 입장)', href: 'https://hearts2heartsofficial.jp/news/2026081203/' },
-        { date: '2026-11-28', title: 'Winter Special Live at UNIVERSAL STUDIOS JAPAN', sub: '오사카 USJ 그래머시 파크 · 11:00 시작 (09:45 입장) · 주최 USJ', href: 'https://hearts2heartsofficial.jp/news/20260925/' }
+        { date: '2026-11-25', title: 'ABEMA 일본 데뷔 기념 특집 방송', sub: '일본 ABEMA K WORLD 채널 · 21:00 JST 방송 · 8월 일본 데뷔 행사와 도쿄 버스 특별편', href: 'https://hearts2heartsofficial.jp/news/20261117/' },
+        { date: '2026-11-28', title: 'Winter Special Live at UNIVERSAL STUDIOS JAPAN', sub: '오사카 USJ 그래머시 파크 · 11:00 시작 (09:45 입장) · 주최 USJ', href: 'https://hearts2heartsofficial.jp/news/20260925/' },
+        { date: '2026-12-12', title: '2026 MUSIC BANK GLOBAL FESTIVAL IN JAPAN 출연', sub: '도쿄 MUFG 스타디움(국립경기장) · 15:00 입장 / 17:00 공연 예정 · 주최 KBS·에니', href: 'https://www.music-bank.jp/' }
       ],
       schedules: [{ title: '일본 공식 일정·공지', sub: '팬 이벤트·공연·발매·변경 확인', href: 'https://hearts2heartsofficial.jp/news/' }],
       news: [
+        { date: '2026.11.20', tag: '예매', title: 'READY! S2U 11.22~23 팬 이벤트 잔여석 · 11.21 12:00부터 선착순 판매', href: 'https://hearts2heartsofficial.jp/news/20261120/' },
+        { date: '2026.11.19', tag: '이벤트', title: '11.22~23 ICONIC HEART CD 현장 구매 · 한정 포토카드와 추첨회 공지', href: 'https://hearts2heartsofficial.jp/news/20261119/' },
+        { date: '2026.11.19', tag: '팬클럽', title: 'READY! S2U 현장 팬클럽 추첨·디지털 스티커·포토스폿 안내', href: 'https://hearts2heartsofficial.jp/news/2026111903/' },
+        { date: '2026.11.19', tag: '팬클럽', title: 'S2U JAPAN 회원증 · MEET 앱 등록 시작', href: 'https://hearts2heartsofficial.jp/news/2026111902/' },
+        { date: '2026.11.17', tag: '방송', title: '11.25 ABEMA 일본 데뷔 기념 특집 21:00 방송 발표', href: 'https://hearts2heartsofficial.jp/news/20261117/' },
         { date: '2026.11.14', tag: '수상', title: 'MMA2026 TOP10·글로벌 TOP10·글로벌 임팩트 아티스트 3관왕', href: 'https://www.sportsworldi.com/newsView/20261114506970' },
         { date: '2026.11.08', tag: '수상', title: 'KGMA2026 베스트 뮤직·글로벌 핫스타상 2관왕', href: 'https://isplus.com/article/view/isp202611080248' },
         { date: '2026.10.26', tag: '굿즈', title: 'ICONIC HEART 한국어판 공식 MD 예약 판매 안내 · 11.01 접수 종료', href: 'https://hearts2heartsofficial.jp/news/20261026/' },
@@ -338,6 +344,7 @@
         { date: '2026.08.12', tag: '공연', title: '11.22~23 일본 첫 팬 이벤트 READY! S2U 개최 발표', href: 'https://hearts2heartsofficial.jp/news/2026081203/' }
       ],
       merch: [
+        { title: 'ICONIC HEART 일본 팬이벤트 현장 한정 셀피 포토카드', sub: '11.22 11:00·11.23 10:30 CD 부스 시작 · 대상 CD 1장당 랜덤 포토카드 1장 · 수량 한정, 날짜별 사진 상이', href: 'https://hearts2heartsofficial.jp/news/20261119/' },
         { title: 'ICONIC HEART (Korean Ver.) 공식 캐릭터 MD', sub: '파자마·인형 키링 등 · SMTOWN 일본 공식 스토어 예약 판매는 11.01 종료 · 출고 2027년 2~3월 예정', href: 'https://hearts2heartsofficial.jp/news/20261026/' },
         { title: 'READY! S2U 일본 팬 이벤트 공식 MD', sub: '아크릴 키링·파카·토트백 등 · 온라인 판매 11.12 20:00부터', href: 'https://hearts2heartsofficial.jp/news/20261106/' },
         { title: 'Hearts2Hearts 공식 응원봉·미니 키링', sub: 'SMTOWN 일본 공식 스토어 · 11.05 20:00(JST) 판매 시작 · 11.11 이후 주문은 공연 전 배송 미보장 · 재고 확인', href: 'https://hearts2heartsofficial.jp/news/20261102/' },
