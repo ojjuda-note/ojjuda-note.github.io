@@ -30,6 +30,8 @@ on:
       - 'tests/pajang-question-copy-db.test.cjs'
       - 'tests/pajang-personality-questions-db.test.cjs'
       - 'scripts/build-pajang-personality-questions.mjs'
+      - 'tests/pajang-relationship-questions-db.test.cjs'
+      - 'scripts/build-pajang-relationship-questions.mjs'
       - 'tests/all-service-word-rules*.test.*'
       - 'tests/all-service-word-masking*.test.*'
       - 'tests/fixtures/all-service-word-masking*'
@@ -113,6 +115,8 @@ on:
       - 'tests/pajang-question-copy-db.test.cjs'
       - 'tests/pajang-personality-questions-db.test.cjs'
       - 'scripts/build-pajang-personality-questions.mjs'
+      - 'tests/pajang-relationship-questions-db.test.cjs'
+      - 'scripts/build-pajang-relationship-questions.mjs'
       - 'tests/all-service-word-rules*.test.*'
       - 'tests/all-service-word-masking*.test.*'
       - 'tests/fixtures/all-service-word-masking*'
@@ -195,7 +199,7 @@ jobs:
       - run: npm --prefix features/pajang run build
       - run: node --test tests/pajang-navigation.test.mjs tests/pajang-navigation-dom.test.cjs
       - name: Check question copy, calendar assignments and safe reruns
-        run: node --test tests/pajang-question-copy-db.test.cjs tests/pajang-personality-questions-db.test.cjs
+        run: node --test tests/pajang-question-copy-db.test.cjs tests/pajang-personality-questions-db.test.cjs tests/pajang-relationship-questions-db.test.cjs
       - name: Check next-question previews and account isolation
         run: node --test tests/pajang-next-question-*.test.cjs
       - run: python -m unittest discover -s tests -p 'test_pajang_program_publish.py'
