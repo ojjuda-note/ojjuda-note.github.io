@@ -108,7 +108,7 @@ export function ChatExchange({peer,lastMessage,children}:{
         const permission=current[kind];
         return <div className="chat-exchange-choice" key={kind}>
           {permission==="none"&&<button type="button" className="chat-exchange-button" disabled={busy} onClick={()=>void update("request",kind)}>
-            <I n={kind==="profile"?"user":"document"} s={17}/>{label} 교환 신청
+            <I n={kind==="profile"?"user":"document"} s={17}/>{label} 교환
           </button>}
           {permission==="sent"&&<div className="chat-exchange-pending"><span>{label} 교환 · 수락 대기</span>
             <button type="button" className="chat-exchange-text" disabled={busy} onClick={()=>void update("withdraw",kind)}>{label} 신청 취소</button>
@@ -123,6 +123,7 @@ export function ChatExchange({peer,lastMessage,children}:{
         </div>;
       })}
     </div>
+    <p className="chat-exchange-safety"><I n="shield" s={15}/><span>프로필은 회원이 직접 작성한 미검증 정보입니다. 실제와 다를 수 있으니 사기·금전 요구에 주의하세요.</span></p>
     {looking&&current[looking]==="accepted"&&<div className="chat-exchange-details" role="region" aria-label={"교환한 "+(looking==="photos"?"사진":"프로필")}>
       {looking==="photos"?<SharedExchangePhotos key={peer} peer={peer}/>:current.peerProfile?
         <PeerProfile profile={current.peerProfile}/>:<p className="sub">작성된 프로필 항목이 아직 없어요.</p>}
