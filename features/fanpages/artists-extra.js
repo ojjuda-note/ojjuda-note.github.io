@@ -460,7 +460,7 @@
       id: 'blackpink', name: 'BLACKPINK', korean: '블랙핑크', category: 'girl', fan: 'BLINK', agency: 'YG Entertainment',
       members: ['지수', '제니', '로제', '리사'],
       debut: '2016.08.08', debutWork: 'SQUARE ONE', songs: ['WHISTLE', 'BOOMBAYAH'],
-      checkedAt: '2026.11.18',
+      checkedAt: '2026.11.21',
       concept: '블랙과 핑크, 서로 다른 매력이 공존하는 무대.',
       official: 'https://ygfamily.com/ko/artists/blackpink/profile', youtube: 'https://www.youtube.com/@BLACKPINK',
       photo: '20240809 Blackpink Pink Carpet 09.png', photoLabel: '핑크 카펫', photoYear: '2024', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
@@ -470,6 +470,8 @@
         commonsPhoto('20260526 Jennie Kim 02.jpg', '제니 · 샤넬 행사', '2026', '티비텐', 'CC BY 4.0')
       ],
       music: [
+        { title: '리사 솔로 · Leave With Me (Featured in Always Lalisa)', date: '2026.11.18', type: '멤버 솔로 싱글 · 다큐멘터리 Always Lalisa 삽입곡 · RCA/LLOUD', songs: ['Leave With Me'], href: 'https://music.apple.com/us/album/leave-with-me-featured-in-always-lalisa-single/6835541230' },
+        { title: '제니 솔로 · Someone to Hold (Steps)', date: '2026.11.06', type: '멤버 솔로 싱글 · 넷플릭스 애니메이션 Steps OST · Netflix Music', songs: ['Someone to Hold'], href: 'https://music.apple.com/us/album/someone-to-hold-from-the-netflix-film-steps-single/6831709118' },
         { title: 'DEADLINE', date: '2026.02.27', type: '미니 3집 · 타이틀 GO', songs: ['JUMP', 'GO', 'Me and my', 'Champion', 'Fxxxboy'], href: 'https://ygfamily.com/en/artists/blackpink/discography/1651' },
         { title: '뛰어 (JUMP)', date: '2025.07.11', type: '디지털 싱글 · DEADLINE 선공개', songs: ['JUMP'], href: 'https://ygfamily.com/en/artists/blackpink/discography/1632' },
         { title: 'BORN PINK', date: '2022.09.16', type: '정규 2집 · 타이틀 Shut Down', songs: ['Pink Venom', 'Shut Down', 'Typa Girl', 'Yeah Yeah Yeah', 'Hard to Love', 'The Happiest Girl', 'Tally', 'Ready For Love'], href: 'https://ygfamily.com/en/artists/blackpink/discography/255' },
@@ -486,6 +488,9 @@
         { title: 'YG BLACKPINK 공식 공지', sub: '행사·예매·변경 사항', href: 'https://ygfamily.com/ko/artists/blackpink/notice' }
       ],
       news: [
+        { date: '2026.11.20', tag: '공식 영상', title: '지수 솔로 · 애니메이션 The Angry Birds Movie 3 수록곡 Sun Showers 공식 MV 공개', href: 'https://www.youtube.com/watch?v=REUpBcmDbTE' },
+        { date: '2026.11.18', tag: '솔로 음악', title: '리사 Leave With Me 공식 싱글·뮤직비디오 공개 · 다큐멘터리 Always Lalisa 수록', href: 'https://music.apple.com/us/album/leave-with-me-featured-in-always-lalisa-single/6835541230' },
+        { date: '2026.11.06', tag: '솔로 음악', title: '제니 Someone to Hold 발표 · 넷플릭스 애니메이션 Steps 공식 OST', href: 'https://www.netflix.com/tudum/articles/steps-cast-release-date' },
         { date: '2026.11.16', tag: '소속사', title: 'YG 3분기 전속계약 명단에서 블랙핑크 제외 · YG는 그룹 활동 논의 중이라고 설명(계약 종료 확정 아님)', href: 'https://www.yna.co.kr/amp/view/AKR20261116160000005' },
         { date: '2026.11.16', tag: '로그인', title: '위버스 BLINK 멤버십(GL/JP) 신규 구매 11/16 14시부터 일시 중단 · 기존 가입자 이용 유지', href: 'https://weverse.io/blackpink/notice/41029' },
         { date: '2026.11.15', tag: '수상', title: '로제·제니, 2026 키즈 초이스 어워즈 개인 부문 수상', href: 'https://www.soompi.com/article/1887086wpp/bts-rose-jennie-kpop-demon-hunters-and-katseye-win-at-2026-nickelodeon-kids-choice-awards' },
