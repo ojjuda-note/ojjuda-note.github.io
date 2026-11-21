@@ -106,7 +106,13 @@ body {background:var(--bg);color:var(--ink)}
 .answer-group header {padding:15px 22px;background:var(--surface-2);border-bottom:1px solid var(--line)}
 .answer-group header time,.own-history time {color:var(--ink-2);font-size:11px;font-weight:650}
 .answer-group h3 {margin:5px 0 0;font-size:19px;line-height:1.5;overflow-wrap:anywhere}
-.answer-group .question-carousel {touch-action:pan-y pinch-zoom;cursor:grab;outline-offset:-3px}
+.answer-group .question-carousel {--question-tint:#79ab8d;background-color:color-mix(in srgb,var(--question-tint) 24%,var(--surface-2));transition:background-color .24s ease;touch-action:pan-y pinch-zoom;cursor:grab;outline-offset:-3px}
+.question-carousel[data-tone="1"] {--question-tint:#c58e9d}
+.question-carousel[data-tone="2"] {--question-tint:#789fc4}
+.question-carousel[data-tone="3"] {--question-tint:#c5a36c}
+.question-carousel[data-tone="4"] {--question-tint:#65aaa3}
+.question-carousel[data-tone="5"] {--question-tint:#a494c2}
+.question-carousel .question-meta time,.question-carousel .question-position {color:color-mix(in srgb,var(--ink-2) 70%,var(--ink))}
 .question-carousel:focus-visible {outline:2px solid var(--berry)}
 .question-carousel[data-dragging=true] {cursor:grabbing;user-select:none}
 .question-meta {display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -118,7 +124,7 @@ body {background:var(--bg);color:var(--ink)}
 .question-position {min-width:38px;text-align:center;color:var(--muted);font:600 11px/1.4 var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap}
 .question-copy {transition:transform .18s ease-out;will-change:transform}
 .question-carousel[data-dragging=true] .question-copy {transition:none}
-@media(prefers-reduced-motion:reduce){.question-copy{transition:none}}
+@media(prefers-reduced-motion:reduce){.answer-group .question-carousel,.question-copy{transition:none}}
 #answers .answercard {display:block;padding:19px 22px;border:0;border-radius:0;box-shadow:none}
 #answers .answercard+.answercard {border-top:1px solid var(--line)}
 #answers .answercard .person {gap:9px;text-align:left}

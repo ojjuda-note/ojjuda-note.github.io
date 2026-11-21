@@ -25,7 +25,7 @@ export default function QuestionCarousel({question,index,count,more,loading,onSt
     cancel();
   }
   return <header className="question-carousel" tabIndex={0} role="group" aria-label="질문 넘기기"
-    aria-roledescription="캐러셀" data-dragging={drag!==0}
+    aria-roledescription="캐러셀" data-dragging={drag!==0} data-tone={index%6}
     onKeyDown={e=>{
       if(e.target!==e.currentTarget||e.altKey||e.ctrlKey||e.metaKey)return;
       if(e.key==="ArrowLeft"){e.preventDefault();if(previous)onStep(-1);}

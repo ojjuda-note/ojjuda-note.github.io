@@ -122,7 +122,7 @@ async function swipe(page,direction,{short=false,vertical=false}={}) {
   const stationTemplate=await fs.readFile(path.join(feature,'station.html'),'utf8');
   const styles=[...stationTemplate.matchAll(/<link\b[^>]*rel="stylesheet"[^>]*>/g)]
     .map(match=>match[0]).filter(tag=>!tag.includes('https://'));
-  const template=`<!doctype html><html lang="ko"><head><meta charset="utf-8">
+  const template=`<!doctype html><html lang="ko" data-world-theme="autumn" data-theme="light"><head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">${styles.join('\n')}
     <title>파장 질문 넘기기 검증</title></head><body><div id="station">
     <div class="station-layout"><main class="station-content wrap"><div id="fixture-root"></div>
@@ -268,6 +268,8 @@ async function swipe(page,direction,{short=false,vertical=false}={}) {
 
     checkpoint='320 390 and 750 pixel layouts';
     await reset();
+    const screenshots=path.join(root,'tests/artifacts/pajang-discovery');
+    await fs.mkdir(screenshots,{recursive:true});
     for(const width of [320,390,750]){
       await page.setViewportSize({width,height:width===750?750:844});
       const dimensions=await page.locator('#answers').evaluate(element=>({
@@ -281,7 +283,18 @@ async function swipe(page,direction,{short=false,vertical=false}={}) {
       assert.ok(dimensions.header.left>=-1&&dimensions.header.right<=width+1,'question fits '+width+'px');
       assert.ok(dimensions.group.left>=-1&&dimensions.group.right<=width+1,'answers fit '+width+'px');
       assert.deepEqual(dimensions.overflow,[],'question and long answers have no horizontal overflow at '+width+'px');
+      await page.locator('.answer-group').screenshot({path:path.join(screenshots,'question-colors-'+width+'-1.png'),animations:'disabled'});
+      await next().click();
+      await shown([b1],2,2);
+      await page.locator('.answer-group').screenshot({path:path.join(screenshots,'question-colors-'+width+'-2.png'),animations:'disabled'});
+      await previous().click();
+      await shown([a1,aOwn],1,2);
     }
+    await page.evaluate(()=>{document.documentElement.dataset.theme='dark';});
+    await page.locator('.answer-group').screenshot({path:path.join(screenshots,'question-colors-dark-1.png'),animations:'disabled'});
+    await next().click();
+    await shown([b1],2,2);
+    await page.locator('.answer-group').screenshot({path:path.join(screenshots,'question-colors-dark-2.png'),animations:'disabled'});
     assert.deepEqual(await page.evaluate(()=>questionSwipeFixture.unexpected),[]);
     assert.deepEqual(errors,[],'no browser runtime errors');
     console.log('PASS pajang question swipe: grouping, touch, keyboard, callbacks, pagination, filters, empty state, 320/390/750px');
