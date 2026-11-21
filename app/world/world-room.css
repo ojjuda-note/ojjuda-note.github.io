@@ -1,3 +1,3 @@
 .bottomnav{grid-template-columns:repeat(3,minmax(0,1fr))}
-.arcade-home{display:grid;gap:16px;min-width:0}.arcade-home .visit-banner{margin:0}.arcade-home .board-leaders{margin:0}.arcade-home #ppanel{position:static;min-width:0;border:1px solid var(--line);border-radius:22px;background:var(--surface);overflow:hidden}
+.arcade-home{display:grid;gap:12px;min-width:0}.arcade-home .visit-banner{margin:0}.arcade-home .board-leaders{margin:0}.arcade-home #ppanel{position:static;min-width:0;border:1px solid var(--line);border-radius:22px;background:var(--surface);overflow:hidden}
 @media(max-width:620px){.arcade-home .visit-banner{flex-wrap:wrap;gap:8px}}

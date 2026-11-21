@@ -221,7 +221,7 @@
 <link rel="stylesheet" href="/shared/media/photo-protection.css?v=20261106-source-folders1">
 <script src="/shared/media/photo-protection.js?v=20261106-source-folders1" defer></script>
 
-<link rel="stylesheet" href="/app/world/world-room.css?v=20261106-source-folders1">
+<link rel="stylesheet" href="/app/world/world-room.css?v=20261122-arcade-ranking-spacing1">
 
 
 
@@ -248,7 +248,7 @@
 <link rel="stylesheet" href="/shared/games/game-entry.css?v=20261109-unified-multiplayer-ui2">
 <script src="/shared/games/game-entry.js?v=20261107-observer-guard1" defer></script>
 <script src="/shared/games/game-friend-invites.js?v=20261115-drinking-invites1" defer></script>
-<link rel="stylesheet" href="/app/world/world-design.css?v=20261116-arcade-card-spacing1">
+<link rel="stylesheet" href="/app/world/world-design.css?v=20261122-arcade-ranking-spacing1">
 <link rel="stylesheet" href="/app/world/world-themes.css?v=20261119-auto-theme1">
 <link rel="stylesheet" href="/app/world/world-green.css?v=20261119-auto-theme1">
 <link rel="stylesheet" href="/features/account/settings-list.css?v=20261119-guest-account1">
@@ -628,7 +628,7 @@ async function Oa(t,e,o){adminMutationPending++;t&&(t.disabled=!0);try{await e()
   메뉴 이름은 버전마다 조금 다를 수 있어요. 안 보이면 메뉴의 <b>다크 모드</b>를 꺼도 돼요.`}function k0(t){if(!Is()||!t&&!fh())return;try{if(!t&&localStorage.getItem(F0))return}catch{}if(document.getElementById("browser-tip"))return;let e=document.createElement("div");e.id="browser-tip",e.setAttribute("role","note"),e.innerHTML=`<p>${Os()}</p><button type="button" class="btn sm pri" id="browser-tip-ok">알겠어요</button>`,document.body.appendChild(e),document.getElementById("browser-tip-ok").addEventListener("click",()=>{try{localStorage.setItem(F0,"1")}catch{}e.remove()})}var Go="0.72.60-beta";
 const sectionReleases={
   hub:{name:'아지트',version:Go,manifest:'/version.json'},
-  arcade:{name:'오락실',version:'1.3.6',manifest:'/features/arcade/version.json'},
+  arcade:{name:'오락실',version:'1.3.7',manifest:'/features/arcade/version.json'},
   park:{name:'공원',version:'1.6.2',manifest:'/park/version.json'}
 };
 function releaseSection(){
