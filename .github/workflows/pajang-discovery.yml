@@ -197,6 +197,8 @@ jobs:
         run: npm --prefix tests run test:themes
       - run: npm --prefix features/pajang ci --ignore-scripts --no-audit --no-fund
       - run: npm --prefix features/pajang run build
+      - name: Print protected member program digest
+        run: sha256sum features/pajang/assets/station.js
       - run: node --test tests/pajang-navigation.test.mjs tests/pajang-navigation-dom.test.cjs
       - name: Check question copy, calendar assignments and safe reruns
         run: node --test tests/pajang-question-copy-db.test.cjs tests/pajang-personality-questions-db.test.cjs tests/pajang-relationship-questions-db.test.cjs
@@ -212,6 +214,8 @@ jobs:
       - run: node --test tests/pajang-account.test.mjs tests/pajang-discovery-gender.test.mjs tests/pajang-location.test.mjs tests/shared-location.test.cjs tests/agit-location.test.mjs tests/park-loading.test.cjs tests/park-frame-cache.test.cjs tests/park-opening.test.cjs
       - run: node --test tests/admin-pajang-moderation-db.test.cjs
       - run: node --test tests/pajang-profile-preferences-db.test.cjs
+      - name: Check chat exchange consent, responses, and profile safety notice
+        run: node --test tests/pajang-chat-exchange-ui.test.cjs
       - name: Check past answer edit permissions and form state
         run: node --test tests/pajang-answer-history-edit-db.test.mjs tests/pajang-answer-edit-form.test.cjs
       - name: Check answer likes and past question writing
@@ -284,6 +288,7 @@ jobs:
 
           digest = hashlib.sha256(Path("features/pajang/assets/station.js").read_bytes()).hexdigest()
           source = Path("supabase/functions/pajang-assets/index.ts").read_text()
+          print("Built member program SHA256", digest)
           assert re.search(r'"station.js": "' + digest + '"', source), "Program differs from the release manifest"
           print("Verified member program", digest)
           PYVERIFY

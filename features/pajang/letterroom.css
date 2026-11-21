@@ -350,3 +350,50 @@ footer,.footerbrand {color:var(--ink-2)}
   #station .radar-location-feedback .secondary:hover:not(:disabled)::before,#station .compass-controls button:hover:not(:disabled)::before {background:var(--accent-soft)}
   #station .own-answer-actions>.secondary:hover:not(:disabled) {text-decoration:underline;text-underline-offset:4px}
 }
+
+
+/* Chat exchange: keep the chat log spacious and place small opt-in controls
+   directly below the composer, never above the conversation. */
+.chat-exchange-actions{margin:13px 0 0;padding:0 5px 8px;color:var(--pajang-text)}
+.chat-exchange-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:10px}
+.chat-exchange-choice{min-width:0}
+.chat-exchange-button{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:44px;
+  padding:9px 12px;border:1px solid var(--line);border-radius:12px;
+  background:color-mix(in srgb,var(--surface-2) 55%,var(--paper));color:var(--pajang-heading);
+  font-size:14px;font-weight:600;line-height:1.4;letter-spacing:-.02em}
+.chat-exchange-button:hover:not(:disabled){background:var(--accent-soft);border-color:var(--accent)}
+.chat-exchange-button svg{flex:none;color:var(--accent-ink)}
+.chat-exchange-pending{min-height:44px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:2px 10px;
+  padding:6px 8px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);
+  color:var(--ink-2);font-size:12px;text-align:center}
+.chat-exchange-pending.received{color:var(--accent-ink);font-weight:600}
+.chat-exchange-shared{display:grid;gap:5px}
+.chat-exchange-text{min-height:31px;padding:5px 8px;color:var(--ink-2);font-size:12px;text-decoration:underline;text-underline-offset:3px}
+.chat-exchange-text:hover{text-decoration-thickness:2px;color:var(--accent-ink)}
+.chat-exchange-details{max-height:50svh;overflow:auto;margin:10px 0 0;padding:14px;border:1px solid var(--line);
+  border-radius:12px;background:var(--paper)}
+.chat-exchange-safety{display:flex;align-items:flex-start;gap:7px;margin:9px 2px 0;color:var(--ink-2);font-size:12px;line-height:1.55;word-break:keep-all}
+.chat-exchange-safety svg{flex:none;margin-top:1px;color:var(--accent-ink)}
+.chat-exchange-feedback,.chat-exchange-failure{margin:8px 0 0;font-size:12px;line-height:1.55;color:var(--ink-2)}
+.chat-exchange-failure{margin:12px 5px;color:var(--pajang-text)}
+.chat-exchange-failure button{min-height:36px;padding:4px 10px;text-decoration:underline;color:var(--accent-ink)}
+.exchange-chat-notices{display:grid;gap:12px;margin:15px auto 6px;max-width:400px}
+.exchange-chat-request{display:flex;align-items:flex-start;gap:10px;padding:13px 14px;
+  border:1px solid var(--line);border-radius:14px;background:var(--paper);
+  box-shadow:0 2px 7px color-mix(in srgb,var(--ink) 5%,transparent)}
+.exchange-chat-symbol{display:grid;place-items:center;flex:none;width:30px;height:30px;border-radius:9px;
+  background:var(--accent-soft);color:var(--accent-ink)}
+.exchange-chat-request-content{min-width:0;flex:1}
+.exchange-chat-request-content p{margin:1px 0 11px;color:var(--pajang-text);font-size:13px;line-height:1.55;font-weight:550}
+.exchange-chat-response{display:flex;gap:8px}
+.exchange-chat-response button{display:flex;align-items:center;justify-content:center;min-width:80px;
+  min-height:40px;padding:7px 13px;border-radius:9px;font-size:13px;font-weight:600}
+.exchange-approve{background:var(--accent);color:var(--on-accent)}
+.exchange-approve:hover:not(:disabled){background:var(--accent-ink)}
+.exchange-decline{background:var(--surface-2);border:1px solid var(--line);color:var(--pajang-text)}
+.exchange-decline:hover:not(:disabled){background:var(--accent-soft)}
+@media(max-width:360px){
+  .chat-exchange-choices{gap:7px}
+  .chat-exchange-button{gap:5px;padding-inline:5px;font-size:12px}
+  .exchange-chat-request{padding:11px}
+}
