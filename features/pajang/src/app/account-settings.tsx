@@ -75,9 +75,6 @@ export function AccountSettings({profileId,onOpen}:{profileId:string;onOpen:(act
           <summary className="ojjuda-settings-row"><span className="ojjuda-settings-label">도움말</span><span className="ojjuda-settings-arrow" aria-hidden="true">›</span></summary>
           <div className="ojjuda-settings-body">
             {row("help","사용법")}
-            <a className="ojjuda-settings-row" href="/features/organization/?from=pajang" target="_top">
-              <span className="ojjuda-settings-label">조직도</span><span className="ojjuda-settings-arrow" aria-hidden="true">›</span>
-            </a>
           </div>
         </details>
         <a className="ojjuda-settings-row" href="/terms.html?from=pajang">
