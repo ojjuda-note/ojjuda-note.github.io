@@ -237,6 +237,20 @@ function rankingCarousel(groups,head,token,items,onChange=()=>{},onResize=()=>{}
  prev.setAttribute('aria-label','이전 게임 순위');next.setAttribute('aria-label','다음 게임 순위');controls.append(prev,position,next);
  head.insertBefore(controls,head.querySelector('.board-rank-back'));
  groups.tabIndex=0;groups.setAttribute('role','region');groups.setAttribute('aria-label','게임순위 목록');
+ let heightFrame=0;
+ function fitVisibleHeight(){
+  cancelAnimationFrame(heightFrame);
+  heightFrame=requestAnimationFrame(()=>{
+   if(!active()||token!==request)return;
+   for(const panel of panels){
+    const viewport=panel.querySelector('.board-rank-viewport');
+    const current=viewport?.querySelector('.board-rank-page[aria-hidden="false"]');
+    if(viewport&&current)viewport.style.height=Math.ceil(current.getBoundingClientRect().height)+'px';
+   }
+   const current=panels[index];
+   if(current)groups.style.height=Math.ceil(current.getBoundingClientRect().height)+'px';
+  });
+ }
  const count=()=>items.reduce((total,item)=>total+item.count(),0);
  function paint(){
   const total=count(),current=items.slice(0,index).reduce((sum,item)=>sum+item.count(),0)+(items[index]?.current()||0);
@@ -255,7 +269,7 @@ function rankingCarousel(groups,head,token,items,onChange=()=>{},onResize=()=>{}
   const next=(value+panels.length)%panels.length,animate=Math.abs(next-index)===1;
   index=next;rankCategory=ids[index];groups.dataset.rankCategory=rankCategory;
   panels.forEach((panel,i)=>{panel.inert=i!==index;panel.setAttribute('aria-hidden',String(i!==index));});
-  paint();if(scroll)align(animate);onChange();
+  paint();if(scroll)align(animate);onChange();fitVisibleHeight();
  }
  function move(direction){
   if(!enabled||!active()||token!==request||count()<2)return;
@@ -304,10 +318,10 @@ function rankingCarousel(groups,head,token,items,onChange=()=>{},onResize=()=>{}
  });resize.observe(groups);
  onResize();paint();select(index,true);
  return {
-  controls,count,move,update:paint,
+  controls,count,move,update(){paint();fitVisibleHeight();},
   setEnabled(value){enabled=value;paint();},
   setAutomatic(value){position.setAttribute('aria-live',value?'off':'polite');},
-  dispose(){cancelAnimationFrame(resizeFrame);events.abort();resize.disconnect();}
+  dispose(){cancelAnimationFrame(resizeFrame);cancelAnimationFrame(heightFrame);events.abort();resize.disconnect();}
  };
 }
   function leaders(token,fresh){
