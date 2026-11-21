@@ -17,7 +17,6 @@ dialog.agit-welcome-dialog {
 }
 dialog.agit-welcome-dialog::backdrop {
   background: rgba(0, 0, 0, .52);
-  backdrop-filter: blur(6px);
 }
 .agit-welcome-card {
   position: relative;
@@ -30,28 +29,15 @@ dialog.agit-welcome-dialog::backdrop {
     radial-gradient(ellipse at 0% 70%, color-mix(in srgb, var(--accent-soft) 55%, transparent), transparent 48%),
     linear-gradient(155deg, var(--surface) 0%, var(--bg) 100%);
 }
-.agit-welcome-card::before,
-.agit-welcome-card::after {
-  content: '';
-  position: absolute;
-  z-index: -1;
-  width: 175px;
-  height: 175px;
-  border: 1px solid color-mix(in srgb, var(--accent) 27%, transparent);
-  border-radius: 50%;
-  pointer-events: none;
-}
-.agit-welcome-card::before { top: -89px; left: -63px; }
-.agit-welcome-card::after { right: -105px; bottom: 95px; }
 .agit-welcome-close {
   position: absolute;
   z-index: 2;
-  top: 15px;
-  right: 16px;
+  top: 12px;
+  right: 12px;
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   border: 0;
   border-radius: 50%;
@@ -61,38 +47,44 @@ dialog.agit-welcome-dialog::backdrop {
   font-weight: 400;
   cursor: pointer;
 }
-.agit-welcome-orbit {
-  position: absolute;
-  inset: 22px 24px auto;
+.agit-welcome-wordmark {
+  position: relative;
   display: flex;
-  justify-content: space-between;
-  color: var(--accent);
-  font-size: 24px;
-  pointer-events: none;
-  user-select: none;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  max-width: 100%;
+  margin: 2px auto 20px;
+  padding: 0 19px 11px;
+  color: var(--accent-ink);
+  font: 700 clamp(36px, 9vw, 45px)/1.28 'Noto Serif KR', 'Noto Sans KR', serif;
+  letter-spacing: -.065em;
+  white-space: nowrap;
 }
-.agit-welcome-orbit span:nth-child(2) { margin-top: 47px; color: var(--accent-ink); font-size: 18px; }
-.agit-welcome-orbit span:nth-child(3) { margin-top: 82px; font-size: 18px; }
-.agit-welcome-heart {
-  display: grid;
-  place-items: center;
-  width: 92px;
-  height: 92px;
-  margin: 0 auto 17px;
-  border: 3px solid color-mix(in srgb, var(--surface) 95%, transparent);
-  border-radius: 32px;
-  background: linear-gradient(140deg, var(--surface), var(--accent-soft));
-  box-shadow: 0 10px 25px color-mix(in srgb, var(--accent) 16%, transparent);
-  font-size: 47px;
-  transform: rotate(-7deg);
-  animation: agit-welcome-pop .62s cubic-bezier(.2, 1.4, .4, 1) both;
+.agit-welcome-wordmark::before {
+  content: '';
+  position: absolute;
+  right: 23px;
+  bottom: 0;
+  left: 20px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+}
+.agit-welcome-wordmark::after {
+  content: '✦';
+  align-self: flex-start;
+  margin: 3px 0 0 10px;
+  color: var(--accent);
+  font: 600 19px/1 'Noto Sans KR', sans-serif;
+  letter-spacing: 0;
 }
 .agit-welcome-eyebrow {
   display: inline-block;
   color: var(--accent-ink);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: .17em;
+  letter-spacing: .13em;
 }
 #agit-welcome-title {
   margin: 13px auto 12px;
@@ -146,22 +138,16 @@ dialog.agit-welcome-dialog::backdrop {
   font-size: 11px;
 }
 .agit-join-dialog .agit-welcome-card { padding-top: 34px; }
-.agit-join-dialog .agit-welcome-heart { width: 74px; height: 74px; margin-bottom: 12px; border-radius: 25px; font-size: 38px; }
 .agit-join-dialog #agit-welcome-title { margin-top: 8px; }
 .agit-join-dialog #agit-welcome-copy { min-height: 0; margin-bottom: 17px; }
 .agit-join-benefits { display: grid; gap: 8px; margin: 0 0 20px; padding: 0; list-style: none; text-align: left; }
 .agit-join-benefits li { display: flex; align-items: center; gap: 11px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 13px; background: color-mix(in srgb, var(--surface) 78%, transparent); color: var(--ink-2); font-size: 12.5px; line-height: 1.6; word-break: keep-all; }
 .agit-join-benefits li > span:first-child { flex: none; font-size: 22px; line-height: 1; }
 .agit-join-benefits b { color: var(--accent-ink); font-weight: 800; }
-@keyframes agit-welcome-pop {
-  from { opacity: 0; transform: translateY(14px) rotate(-13deg) scale(.78); }
-  to { opacity: 1; transform: translateY(0) rotate(-7deg) scale(1); }
-}
 @media (max-width: 380px) {
   .agit-welcome-card { padding: 37px 18px 23px; }
-  .agit-welcome-heart { width: 78px; height: 78px; font-size: 39px; }
+  .agit-welcome-wordmark { font-size: 38px; margin-bottom: 17px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .agit-welcome-heart { animation: none; }
   .agit-welcome-actions button { transition: none; }
 }

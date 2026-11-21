@@ -368,8 +368,7 @@
     dialog.setAttribute('aria-describedby', 'agit-welcome-copy');
     dialog.innerHTML = '<div class="agit-welcome-card">' +
       '<button type="button" class="agit-welcome-close" aria-label="인사 닫기">×</button>' +
-      '<div class="agit-welcome-orbit" aria-hidden="true"><span>✦</span><span>✿</span><span>✧</span></div>' +
-      '<div class="agit-welcome-heart" aria-hidden="true">💗</div>' +
+      '<div class="agit-welcome-wordmark" aria-hidden="true">아지트</div>' +
       '<span class="agit-welcome-eyebrow">OJJUDA AGIT · 오늘의 인사</span>' +
       '<h2 id="agit-welcome-title"></h2><p id="agit-welcome-copy"></p>' +
       '<div class="agit-welcome-actions"><button type="button" class="agit-welcome-okay">오늘도 즐겁게 시작하기</button>' +
