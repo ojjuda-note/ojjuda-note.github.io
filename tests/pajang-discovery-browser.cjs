@@ -1013,7 +1013,7 @@ async function checkNavigation(page){
       await page.locator('.nearby-section').screenshot({path:path.join(dir,'pajang-radar-recent-'+width+'.png'),animations:'disabled'});
     }
     await page.evaluate(()=>window.clearRecentRadar());
-    await page.getByRole('heading',{name:'아직 주변 답변이 없어요',exact:true}).waitFor();
+    await page.getByRole('heading',{name:'지금 표시할 주변 회원이 없어요',exact:true}).waitFor();
     assert.equal(await page.locator('.scope-person').count(),0,'an explicit empty nearby feed never falls back to current-only people');
     await page.evaluate(()=>window.setRecentRadar(false));
     await markerByName('라온').waitFor();
