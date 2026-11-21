@@ -204,6 +204,12 @@ test('public Pajang preferences save atomically and relationship discovery prese
     await as(account(1),()=>rpc('pajang_member',['profile',{name:'구버전 저장',interest:'walk'}]));
     assert.deepEqual((await profile()).preferences,cleared.me.preferences,'legacy profile writes preserve new choices');
     assert.equal((await profile()).version,3);
+    // A public preference read failure may save base fields without touching any saved choice.
+    const baseOnly=await save({name:'기본 정보 복구 저장',region:'서울특별시'});
+    assert.equal(baseOnly.me.name,'기본 정보 복구 저장');
+    assert.equal(baseOnly.me.preferencesVersion,3,'base-only save keeps the current choice version');
+    assert.deepEqual(baseOnly.me.preferences,cleared.me.preferences,'base-only save keeps all selected preferences');
+    assert.deepEqual((await profile()).preferences,cleared.me.preferences,'no hidden preference overwrite');
     const same=await save({preferences:{relationship_intents:[]},preferencesVersion:3});
     assert.equal(same.me.preferencesVersion,3,'unchanged selections do not advance the version');
   });
