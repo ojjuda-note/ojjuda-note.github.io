@@ -90,9 +90,7 @@ test('guests can open Park settings, read policies and reach login', async () =>
     assert.ok(f.setting('world'),'guests can return to Agit');
     assert.ok(f.setting('terms'));
     assert.ok(f.setting('privacy'));
-    assert.equal(f.setting('organization').getAttribute('href'),'/features/organization/?from=park');
-    assert.equal(f.setting('organization').getAttribute('target'),'_top');
-    assert.match(f.setting('organization').closest('details').querySelector('summary').textContent,/도움말/);
+    assert.equal(f.setting('organization'),null,'department directory is retired');
     assert.equal(f.setting('logout'),null);
     assert.equal(f.setting('delete-account'),null);
     f.setting('support').click(); await f.settle();
