@@ -589,6 +589,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "A2O 공식 링크", sub: "공식 채널 모음", href: "https://linktr.ee/a2o.lite" }
     ],
     news: [
+      { date: "2026.11.19", tag: "일정 변경", title: "11/20 아리랑TV K-POPCON 사전 녹화 참여 취소 · A2O 공식 공지", href: "https://x.com/A2O_LITE/status/2123376509545283951" },
       { date: "2026.11.18", tag: "화보", title: "첫 패션 화보 〈NEON AND BEYOND〉 공개 · 하퍼스 바자 12월호 별책 11.21 발간", href: "https://www.harpersbazaar.co.kr/article/1913190" },
       { date: "2026.11.13", tag: "영상", title: "A2O WORLD · NEON INFINITE 뮤직비디오 공개", href: "https://www.youtube.com/watch?v=G_ej20-QWng" },
       { date: "2026.11.13", tag: "행사", title: "12월 18일 KBS 가요대축제 출연 확정", href: "https://www.soompi.com/article/1886817wpp/2026-kbs-song-festival-announces-artist-lineup" },
