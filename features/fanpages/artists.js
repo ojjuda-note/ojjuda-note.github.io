@@ -324,6 +324,7 @@ window.OJJUDA_FAN_ARTISTS = [
     image: "https://pub-dc9a9c6ac2a64ba48bce426ced0ac56a.r2.dev/groups/TWICE/profile.webp", imageCredit: "kpopping / TWICE", imageLink: "https://kpopping.com/kpics/TWICE-Japan-Season-s-Greetings-2026-CAPTURED-MOMENTS-Concept-Photos",
     photos: [
       { label: "Captured Moments", meta: "2026 · CONCEPT", image: "https://pub-dc9a9c6ac2a64ba48bce426ced0ac56a.r2.dev/groups/TWICE/profile.webp", href: "https://kpopping.com/kpics/TWICE-Japan-Season-s-Greetings-2026-CAPTURED-MOMENTS-Concept-Photos", credit: "kpopping" },
+      commonsPhoto('18092026 NAYEON Rocca PhotoCall 6.jpg', '나연 · ROCCA 포토콜', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0'),
       commonsPhoto('20260122 Twice @ This is For World Tour in Los Angeles 0.jpg', 'LA 투어 · 01', '2026', 'Shelby Lee', 'CC BY-SA 4.0'),
       commonsPhoto('20260122 Twice @ This is For World Tour in Los Angeles 1.jpg', 'LA 투어 · 02', '2026', 'Shelby Lee', 'CC BY-SA 4.0'),
       commonsPhoto('20260122 Twice @ This is For World Tour in Los Angeles 2.jpg', 'LA 투어 · 03', '2026', 'Shelby Lee', 'CC BY-SA 4.0'),
@@ -343,14 +344,16 @@ window.OJJUDA_FAN_ARTISTS = [
       { label: "FANS", icon: "✦", url: "https://app.fans/community/twice" }
     ],
     merch: [
+      { title: "TWICE LOVELYS · 반다이 3D 네일 파츠", sub: "2026.11.18 공식 사전예약 발표 · 3종(Vol.1~3) · 2027년 3월 중순 발매 예정 · 재고는 공식몰 확인", href: "https://www.twicejapan.com/news/detail/2069" },
       { title: "NAYEON · NA-sty", sub: "11.20 한국 발매 · 카세트 2종 · 일본 특전 시리얼 등록 11.16 18:00~12.25 18:00(JST) · 재고는 공식몰 확인", href: "https://www.twicejapan.com/news/detail/2059" },
       { title: "THIS IS FOR · 서울 피날레 라이브 LP", sub: "2026.10.16 발매 · 2LP · JYP JAPAN 공식 판매처", href: "https://jypj-store.com/collections/twice-official-goods/products/tw26-tff-0001" },
       { title: "#BEST 2015-2025 · 한정 BOX", sub: "2026.12.16 발매 예정 · 수량·재고는 공식 판매처 확인", href: "https://jypj-store.com/collections/twice-official-goods/products/tw26-bes-0003" },
-      { title: "THIS IS FOR · MUFG STADIUM 라이브 Blu-ray/DVD", sub: "2026.12.02 발매 예정 · 일본 공식 디스코그래피", href: "https://www.twicejapan.com/discography/detail/92/" },
+      { title: "THIS IS FOR · MUFG STADIUM 라이브 Blu-ray/DVD", sub: "2026.12.02 발매 예정 · 11.18 매장별 구매 특전 이미지 공개(스티커·포스트카드 등) · 판매처별 구성 확인", href: "https://www.twicejapan.com/news/detail/2068" },
       { title: "TWICE OFFICIAL", sub: "공식 스토어 · FANS SHOP", href: "https://app.fans/shop/twice" },
       { title: "JYP FANS", sub: "커뮤니티", href: "https://app.fans/community/twice" }
     ],
     music: [
+      { title: "나연 · NA-sty", date: "2026.11.20", type: "솔로 싱글 · BABY ANGEL 타이틀 · 3곡 · 14:00 KST 발매", songs: ["BABY ANGEL", "SHiVER", "BOY"], href: "https://twice.jype.com/notice/tct69xoc" },
       { title: "THIS IS FOR WORLD TOUR FINALE in SEOUL - LIVE", date: "2026.10.16", type: "서울 피날레 라이브 음반 · 26곡", songs: ["FOUR", "THIS IS FOR", "Strategy", "MAKE ME GO", "SET ME FREE"], href: "https://music.apple.com/us/album/this-is-for-world-tour-finale-in-seoul-live/6812503580" },
       { title: "#BEST 2015-2025", date: "2026.08.26", type: "일본 베스트 앨범 · 4CD", songs: ["Like OOH-AHH", "CHEER UP", "TT", "Feel Special", "ME + YOU"], href: "https://www.twicejapan.com/discography/detail/91/" },
       { title: "MISAMO · PLAY", date: "2026.02.04", type: "일본 정규 1집 · 통상반 12곡(구성판별 차이)", songs: ["Confetti", "Hmm", "Not a Goodbye", "Deep Eden", "Red Diamond", "Catch My Eye", "Kitty (MOMO Solo)", "Ma Cherry (SANA Solo)", "Turning Tables (MINA Solo)", "Identity", "Do not touch", "Message"], href: "https://wmg.jp/twice/discography/32400" },
@@ -361,7 +364,7 @@ window.OJJUDA_FAN_ARTISTS = [
     ],
     appearances: [
       { date: "2026-11-20", title: "나연 · NA-sty Spotify 리스닝 파티", sub: "17:30 KST · 나연 참여 · 일부 지역 Spotify Premium 이용자 대상", href: "https://x.com/JYPETWICE/status/2121588975634952562" },
-      { date: "2026-11-20", title: "나연 · NA-sty 싱글 발매", sub: "JYP · 한국 정식 발매일 (예약 공지와 구별)", href: "https://www.twicejapan.com/news/detail/2059" },
+      { date: "2026-11-20", title: "나연 · NA-sty 싱글 발매", sub: "14:00 KST · JYP 공식 안내 기준 · BABY ANGEL 등 3곡", href: "https://twice.jype.com/notice/tct69xoc" },
       { date: "2026-11-21", title: "2026 MAMA AWARDS", sub: "나연 솔로 출연 · 일본 오사카", href: "https://www.cj.net/jp/press-release/view/1132" },
       { date: "2026-11-22", title: "나연 · NA-sty 오사카 구매자 특전회", sub: "WITHMUU JAPAN 주최 · 일본 오사카 · 당첨자에게 장소 별도 안내", href: "https://x.com/withmuu_jp/status/2120761807858241963" },
       { date: "2026-11-27", title: "정연 · tvN 그냥사람친구 첫 방송", sub: "20:35 KST · 정연·주헌 등 출연 · tvN", href: "https://sports.khan.co.kr/article/202611041439003" },
@@ -387,6 +390,10 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "공식 홈페이지", sub: "JYP", href: "https://twice.jype.com/" }
     ],
     news: [
+      { date: "11.19", tag: "영상", title: "나연 BABY ANGEL · JYP 공식 M/V 2차 티저 공개", href: "https://www.youtube.com/watch?v=WuPCu-d35gY" },
+      { date: "11.18", tag: "굿즈", title: "TWICE 일본 MUFG STADIUM 공연 영상 상품 · 매장별 구매 특전 공개", href: "https://www.twicejapan.com/news/detail/2068" },
+      { date: "11.18", tag: "굿즈", title: "TWICE LOVELYS · 반다이 3D 네일 파츠 3종 예약 시작", href: "https://www.twicejapan.com/news/detail/2069" },
+      { date: "11.17", tag: "영상", title: "나연 BABY ANGEL · JYP 공식 M/V 1차 티저 공개", href: "https://www.youtube.com/watch?v=KOZ_7ZSO470" },
       { date: "11.17", tag: "활동", title: "나연, NA-sty 제작 과정·BABY ANGEL 소개 · Spotify 영상 팟캐스트 첫 화 공개", href: "https://sports.khan.co.kr/en/article/202611171831007" },
       { date: "11.16", tag: "협업", title: "쯔위, OWNDAYS 아시아 지역 홍보대사 발표 · 11.30 싱가포르 행사 예고", href: "https://www.owndays.com/sg/en/news/ambassador_tzuyu" },
       { date: "11.16", tag: "영상", title: "MISAMO × ReFa MUSE 새 메이킹 영상 공개", href: "https://www.youtube.com/watch?v=LFE1pgcdc18" },
