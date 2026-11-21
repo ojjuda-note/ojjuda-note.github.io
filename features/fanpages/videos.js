@@ -224,6 +224,9 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'vqkfEUqjl6Y', title: 'Adrenaline', kind: '뮤직비디오', source: 'ATEEZ / KQ ENTERTAINMENT · 2026.02.06' }
   ],
   treasure: [
+    { id: 'zqlW_tk5QQY', title: 'SHOCK · STAGE WE MAKE 4K', kind: '공식 협업 퍼포먼스', source: 'STAGE WE MAKE · TREASURE 공식 홍보 · 2026.11.16' },
+    { id: '2JV2ClC5maI', title: 'SHOCK · SBS 인기가요 11.15', kind: '음악방송 무대', source: 'SBSKPOP X INKIGAYO · YG LIFE 공식 소개 · 2026.11.15' },
+    { id: 'C05KQfR-_5U', title: 'SHOCK · RECORDING BEHIND', kind: '녹음 비하인드', source: 'TREASURE Official / YG · 2026.11.09' },
     { id: 'D63ISSQE-Ng', title: 'SHOCK · MBC 쇼! 음악중심 11.14', kind: '음악방송 무대', source: 'MBCkpop · YG LIFE 공식 임베드 · 2026.11.14' },
     { id: 'u_hpZueWI9g', title: 'SHOCK', kind: '뮤직비디오', source: 'TREASURE Official / YG' },
     { id: 'QERKD90hG98', title: 'IF I', kind: '뮤직비디오', source: 'TREASURE Official / YG' },
