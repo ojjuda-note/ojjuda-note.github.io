@@ -197,6 +197,8 @@ jobs:
         run: npm --prefix tests run test:themes
       - run: npm --prefix features/pajang ci --ignore-scripts --no-audit --no-fund
       - run: npm --prefix features/pajang run build
+      - name: Print protected member program digest
+        run: sha256sum features/pajang/assets/station.js
       - run: node --test tests/pajang-navigation.test.mjs tests/pajang-navigation-dom.test.cjs
       - name: Check question copy, calendar assignments and safe reruns
         run: node --test tests/pajang-question-copy-db.test.cjs tests/pajang-personality-questions-db.test.cjs tests/pajang-relationship-questions-db.test.cjs
