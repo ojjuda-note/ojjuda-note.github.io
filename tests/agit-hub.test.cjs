@@ -318,7 +318,7 @@ test('compact mission cards keep their actions and show completion once',()=>{
   assert.match(cards[0],/data-v="park"/);
   assert.match(cards[0],/title="공원에 글 남기기"/);
   assert.match(cards[0],/aria-label="완료한 미션: 공원가기"/);
-  assert.match(cards[0],/🌷/,'completed cards keep their task icon');
+  assert.match(cards[0],/mission-icons\/park\.svg/,'completed cards keep their task icon');
   assert.equal((cards[0].match(/✓/g)||[]).length,1,'one clear completion badge');
   assert.match(cards[3],/title="추천게임 시작하기"/);
   assert.match(cards[4],/축제방문/);

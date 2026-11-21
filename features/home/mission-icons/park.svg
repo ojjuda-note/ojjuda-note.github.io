@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="park-leaf" x1="6" y1="4" x2="25" y2="24" gradientUnits="userSpaceOnUse"><stop stop-color="#b5e5a5"/><stop offset=".46" stop-color="#6fb77b"/><stop offset="1" stop-color="#3e805d"/></linearGradient>
+    <linearGradient id="park-trunk" x1="13" y1="17" x2="18" y2="28" gradientUnits="userSpaceOnUse"><stop stop-color="#dcae7b"/><stop offset="1" stop-color="#9b704c"/></linearGradient>
+  </defs>
+  <ellipse cx="16" cy="28" rx="10" ry="2" fill="#356a4e" opacity=".14"/>
+  <rect x="13.5" y="16" width="5" height="12" rx="2" fill="url(#park-trunk)"/>
+  <path d="M16 3a7 7 0 0 1 7 6 6.7 6.7 0 0 1 3 12c-2 2-6 2.5-10 2.5S8 23 6 21A6.7 6.7 0 0 1 9 9a7 7 0 0 1 7-6Z" fill="url(#park-leaf)"/>
+  <path d="M10 10a6 6 0 0 1 7-4" fill="none" stroke="#e4f7d9" stroke-width="2" stroke-linecap="round" opacity=".8"/>
+  <path d="M16 20v-8m0 5-4-3m4 5 4-4" fill="none" stroke="#3a7956" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity=".6"/>
+</svg>

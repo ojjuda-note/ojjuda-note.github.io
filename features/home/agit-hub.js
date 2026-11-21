@@ -186,17 +186,17 @@
   function missionMarkup(settings, date) {
     const today = missions(date), done = today.filter(id => isComplete(settings, id, date)).length;
     return `<section class="agit-quests" id="agit-missions" aria-label="오늘의 미션">
-      <header class="agit-section-head"><h2>오늘의 미션</h2><div class="agit-quest-summary"><span class="agit-quest-tally"><b>${done}</b><small>/ ${today.length}</small></span><div class="agit-quest-meter" role="progressbar" aria-valuemin="0" aria-valuemax="${today.length}" aria-valuenow="${done}" aria-label="미션 완료">${today.map((_,i)=>`<span class="${i<done?'is-on':''}"></span>`).join('')}</div></div></header>
+      <header class="agit-section-head"><h2>오늘의 미션</h2><div class="agit-quest-summary"><span class="agit-quest-tally" aria-hidden="true"><b>${done}</b><small>/ ${today.length}</small></span><div class="agit-quest-meter" role="progressbar" aria-valuemin="0" aria-valuemax="${today.length}" aria-valuenow="${done}" aria-valuetext="${today.length}개 중 ${done}개 완료" aria-label="미션 완료"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="8"/>${done?`<circle class="is-on" cx="10" cy="10" r="8" pathLength="100" stroke-dasharray="${done/today.length*100} 100" transform="rotate(-90 10 10)"/>`:''}</svg></div></div></header>
       <div class="agit-quest-grid">${today.map((id,i) => {
         const target=id==='visit'?visitTarget(date):null;
-        const [label,emoji]=target?[`${target.name} 페이지 들어가기`,'🚪']:
+        const [label]=target?[`${target.name} 페이지 들어가기`,'🚪']:
           id==='quiz'?(quizMode(date)==='chosung'?['초성 퀴즈','🔤']:['상식 퀴즈','💡']):missionLabels[id];
         const compactLabel=target?`${target.name}방문`:id==='park'?'공원가기':id==='recommend'?'추천게임':id==='quiz'?label.replace(' ',''):label;
         const finished=isComplete(settings,id,date);
         return `<button type="button" class="agit-quest-card agit-quest-card--${i+1}${finished?' is-done':''}" data-act="agit-task" data-v="${id}" title="${label}" aria-label="${finished?'완료한 미션':'오늘의 미션'}: ${compactLabel}">
-          <span class="agit-quest-emoji" aria-hidden="true">${emoji}</span>
+          <span class="agit-quest-emoji" aria-hidden="true"><img class="agit-quest-icon" src="/features/home/mission-icons/${id}.svg?v=20261121-mission-capsules1" width="22" height="22" alt="" decoding="async"></span>
           <strong class="agit-quest-name">${compactLabel}</strong>
-          <span class="agit-quest-arrow" aria-hidden="true">${finished?'✓':'↗'}</span>
+          <span class="agit-quest-arrow" aria-hidden="true">${finished?'✓':'<svg viewBox="0 0 16 16" focusable="false"><path d="m6 4 4 4-4 4"/></svg>'}</span>
         </button>`;
       }).join('')}</div></section>`;
   }
