@@ -14,9 +14,9 @@ async function harness(signedIn = true, sharedClient = false, options = {}) {
     addEventListener(name, fn) { listeners[name] = fn; },
     head: { append() { throw Error('Supabase is already loaded'); } }
   };
-  let creations = 0;
+  let creations = 0, authChange;
   const client = { auth: {
-    onAuthStateChange() {},
+    onAuthStateChange(callback) { authChange = callback; },
     async getSession() { return { data: { session: signedIn ? { user: { id: 'user-1' }, access_token: 'signed-in-token' } : null } }; }
   } };
   const window = {
@@ -30,7 +30,9 @@ async function harness(signedIn = true, sharedClient = false, options = {}) {
     events.push({ payload: JSON.parse(options.body), options }); return { ok: true };
   } });
   await new Promise(resolve => setImmediate(resolve));
-  return { events, listeners, window, client, created: () => creations, helperCalls:()=>helperCalls };
+  return { events, listeners, window, client, created: () => creations, helperCalls:()=>helperCalls,
+    async changeAuth(session) { authChange('SIGNED_IN', session); await new Promise(resolve => setTimeout(resolve, 5)); }
+  };
 }
 
 function click(listeners, action, href = null) {
@@ -88,6 +90,43 @@ test('standalone member tracking waits for the shared lazy authentication client
   assert.equal(fixture.events[0].payload.p_title,'바이오리듬');
 });
 
+test('Pajang entry, station and legacy feed routes share one member-history entry without private details', async () => {
+  const paths = ['/features/pajang', '/features/pajang/', '/features/pajang/index.html',
+    '/features/pajang/station.html', '/features/pajang/feed.html'];
+  const expected = {p_kind:'page', p_key:'feature:pajang', p_title:'파장'};
+  const hub = await harness(true, true);
+  for (const entry of paths) {
+    const url = entry + '?tab=profile&member=PRIVATE-MEMBER&answer=PRIVATE-ANSWER#PRIVATE-CHAT';
+    const direct = await harness(true, false, {path:url, sharedHelper:true});
+    assert.deepEqual(direct.events.map(event => event.payload), [expected]);
+    assert.equal(direct.created(), 0, 'Pajang history reuses the page authentication helper');
+    assert.equal(direct.helperCalls(), 1);
+    click(hub.listeners, null, 'https://ojjuda.kr' + url);
+  }
+  assert.deepEqual(hub.events.slice(1).map(event => event.payload), [expected],
+    'Pajang route aliases are deduplicated within the existing eight-second window');
+  assert.equal(JSON.stringify(hub.events).includes('PRIVATE'), false);
+  for (const url of ['https://other.example/features/pajang/',
+    'https://ojjuda.kr/features/pajang/private.html', 'https://ojjuda.kr/features/pajang-other/']) {
+    click(hub.listeners, null, url);
+  }
+  assert.equal(hub.events.length, 2, 'external and unrecognized paths do not produce Pajang visits');
+});
+
+test('Pajang guest visits are excluded from member history and sign-in records the current page once', async () => {
+  const guest = await harness(false, true, {path:'/features/pajang/station.html?tab=answers'});
+  assert.equal(guest.events.length, 0);
+  const session = {user:{id:'pajang-member'}, access_token:'pajang-signed-in-token'};
+  await guest.changeAuth(session);
+  assert.deepEqual(guest.events.map(event => event.payload), [{p_kind:'page', p_key:'feature:pajang', p_title:'파장'}]);
+  await guest.changeAuth(session);
+  click(guest.listeners, null, 'https://ojjuda.kr/features/pajang/');
+  assert.equal(guest.events.length, 1, 'auth refresh and an immediate route alias do not duplicate the entry');
+  await guest.changeAuth(null);
+  click(guest.listeners, null, 'https://ojjuda.kr/features/pajang/feed.html');
+  assert.equal(guest.events.length, 1, 'sign-out stops member-history writes');
+});
+
 test('the config client helper coalesces concurrent SDK requests and reuses an existing client', async () => {
   const config=fs.readFileSync(path.join(__dirname,'../config.js'),'utf8');
   const scripts=[];
@@ -106,7 +145,7 @@ test('the config client helper coalesces concurrent SDK requests and reuses an e
   assert.equal(await second,client);
   assert.equal(await window.OjjudaGetClient(),client);
   assert.equal(creations,1);
-  assert.match(scripts.find(script=>script.src.includes('member-navigation')).src,/20261117-page-keys1/);
+  assert.match(scripts.find(script=>script.src.includes('member-navigation')).src,/20261121-pajang-visits1/);
 });
 
 

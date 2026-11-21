@@ -124,7 +124,8 @@ test('the biorhythm page loads authentication and analytics before its paid appl
     assert.equal(analytics.length,1);assert.equal(config.length,1);
     assert.ok(scripts.indexOf(analytics[0])<scripts.indexOf(app));
     assert.ok(scripts.indexOf(config[0])<scripts.indexOf(app));
-    for(const script of [app,...analytics,...config])assert.match(script.src,/20261113-biorhythm-paid1/);
+    for(const script of [app,...config])assert.match(script.src,/20261113-biorhythm-paid1/);
+    assert.match(analytics[0].src,/20261121-pajang-visits1/);
     const source=read('features/biorhythm/app.mjs');
     assert.ok(source.indexOf('await billing.init();')<source.indexOf('OjjudaSiteUsage?.configure'), 'analytics starts after the shared client is ready');
     assert.match(source,/try \{ window\.OjjudaSiteUsage\?\.configure\(\{client:billing\.client\}\); \} catch \{\}/);

@@ -19,6 +19,7 @@ on:
       - 'supabase/migrations/*fortune_visit_analytics*'
       - 'supabase/migrations/*campaign_signup_attribution*'
       - 'tests/fortune-visit-*'
+      - 'tests/pajang-visit-*'
       - 'tests/site-usage*'
       - 'tests/campaign-attribution*'
       - 'tests/package*.json'
@@ -40,6 +41,7 @@ on:
       - 'supabase/migrations/*fortune_visit_analytics*'
       - 'supabase/migrations/*campaign_signup_attribution*'
       - 'tests/fortune-visit-*'
+      - 'tests/pajang-visit-*'
       - 'tests/site-usage*'
       - 'tests/campaign-attribution*'
       - 'tests/package*.json'
@@ -74,6 +76,7 @@ jobs:
           node tests/campaign-attribution-client.test.cjs
           node --test tests/fortune-visit-*.test.cjs tests/site-usage*-db.test.cjs
           node tests/site-usage-ui.test.cjs
+          node --test tests/member-navigation.test.cjs tests/pajang-visit-*.test.cjs
           node tests/inline-scripts.test.cjs
           node scripts/check-source-layout.mjs
       - name: Install browser
@@ -82,3 +85,4 @@ jobs:
         run: |
           node tests/site-usage-responsive.test.cjs
           node tests/campaign-attribution-ui.test.cjs
+          node tests/pajang-visit-browser.cjs
