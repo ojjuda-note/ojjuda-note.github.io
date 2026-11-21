@@ -76,7 +76,7 @@ function installFixture(data) {
   }});
 }
 
-async function touchPath(page,points) {
+async function touchPath(page,points,beforeRelease) {
   const client=await page.context().newCDPSession(page);
   const point=([x,y])=>({x,y,id:1,radiusX:2,radiusY:2,force:1});
   try {
@@ -85,23 +85,31 @@ async function touchPath(page,points) {
       await client.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[point(coordinate)]});
       await page.waitForTimeout(16);
     }
+    if(beforeRelease)await beforeRelease();
     await client.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
     await page.waitForTimeout(100);
   } finally {await client.detach();}
 }
 
-async function swipe(page,direction,{short=false,vertical=false}={}) {
-  const heading=page.locator('header.question-carousel h3');
-  await heading.evaluate(element=>element.scrollIntoView({block:'center',behavior:'instant'}));
-  const box=await heading.boundingBox();
-  assert.ok(box,'question heading has a visible touch target');
+async function swipe(page,direction,{short=false,vertical=false,target='heading',scroll=true,beforeRelease}={}) {
+  const touchTarget=typeof target==='string'?page.locator(target==='body'
+    ?'#answers .answer-group .answercard .quote':'#answers .answer-group header.question-carousel h3').first():target;
+  if(scroll)await touchTarget.evaluate(element=>element.scrollIntoView({block:'center',behavior:'instant'}));
+  const box=await touchTarget.boundingBox();
+  assert.ok(box,'question panel has a visible touch target');
   const distance=short?16:Math.min(140,box.width*.6);
   const dx=vertical?8:(direction==='left'?-distance:distance);
   const dy=vertical?-110:2;
   const x=box.x+box.width/2-dx/2;
-  const y=box.y+box.height/2;
+  const visibleTop=Math.max(20,box.y),visibleBottom=Math.min(page.viewportSize().height-40,box.y+box.height);
+  assert.ok(visibleBottom>visibleTop,'touch target intersects the viewport');
+  const y=(visibleTop+visibleBottom)/2;
   const before=await page.evaluate(()=>scrollY);
-  await touchPath(page,Array.from({length:9},(_,i)=>[x+dx*i/8,y+dy*i/8]));
+  const start=await page.locator('#answers .answer-group').evaluate(element=>({
+    header:element.querySelector('h3').getBoundingClientRect().x,
+    answer:element.querySelector('.quote').getBoundingClientRect().x
+  }));
+  await touchPath(page,Array.from({length:9},(_,i)=>[x+dx*i/8,y+dy*i/8]),beforeRelease?()=>beforeRelease(start):undefined);
   return {before,after:await page.evaluate(()=>scrollY)};
 }
 
@@ -147,9 +155,17 @@ async function swipe(page,direction,{short=false,vertical=false}={}) {
     });
     const page=await context.newPage();page.setDefaultTimeout(10000);
     page.on('pageerror',error=>errors.push(error.message));
-    const previous=()=>page.getByRole('button',{name:'이전 질문',exact:true});
-    const next=()=>page.getByRole('button',{name:'다음 질문',exact:true});
-    const header=()=>page.locator('header.question-carousel');
+    const screenshots=path.join(root,'tests/artifacts/pajang-discovery');
+    await fs.mkdir(screenshots,{recursive:true});
+    const active=()=>page.locator('#answers .answer-group');
+    const viewport=()=>page.locator('#answers .question-viewport');
+    const previous=()=>active().getByRole('button',{name:'이전 질문',exact:true});
+    const next=()=>active().getByRole('button',{name:'다음 질문',exact:true});
+    const header=()=>active().locator('header.question-carousel');
+    const positions=()=>active().evaluate(element=>({
+      header:element.querySelector('h3').getBoundingClientRect().x,
+      answer:element.querySelector('.quote').getBoundingClientRect().x
+    }));
     const reset=async(query='')=>{
       await page.goto(address+query);
       await page.locator('#answers .cardgrid[aria-busy="false"]').waitFor();
@@ -157,14 +173,16 @@ async function swipe(page,direction,{short=false,vertical=false}={}) {
     };
     const shown=async(rows,index,count)=>{
       await page.waitForFunction(({bodies})=>{
-        const visible=[...document.querySelectorAll('#answers .answercard .quote')].map(node=>node.textContent);
-        return JSON.stringify(visible)===JSON.stringify(bodies);
+        const visible=[...document.querySelectorAll('#answers .answer-group .answercard .quote')].map(node=>node.textContent);
+        return document.querySelector('#answers .question-viewport')?.dataset.moving==='false'
+          &&document.querySelector('#answers .question-track')?.getAnimations().every(animation=>animation.playState!=='running')
+          &&JSON.stringify(visible)===JSON.stringify(bodies);
       },{bodies:rows.map(row=>row.body)});
       assert.equal(await page.locator('#answers .answer-group').count(),1,'only one question group is rendered');
       assert.equal(await header().locator('h3').textContent(),rows[0].question,'header belongs to its answers');
       assert.equal(await header().locator('time').getAttribute('datetime'),rows[0].day);
       assert.match(await header().locator('time').textContent(),rows[0].slot==='am'?/오전/:/오후/);
-      assert.match(await page.locator('.question-position').textContent(),new RegExp(index+'\\s*/\\s*'+count+'(?:\\D|$)'));
+      assert.match(await active().locator('.question-position').textContent(),new RegExp(index+'\\s*/\\s*'+count+'(?:\\D|$)'));
     };
 
     await reset();
@@ -172,8 +190,8 @@ async function swipe(page,direction,{short=false,vertical=false}={}) {
     await shown([a1,aOwn],1,2);
     assert.equal(await previous().isDisabled(),true,'first question has no previous action');
     assert.equal(await header().getAttribute('tabindex'),'0','question has a keyboard focus target');
-    await page.locator('.answercard').filter({hasText:aOwn.body}).getByRole('button',{name:'답변 수정',exact:true}).click();
-    await page.locator('.answercard').filter({hasText:a1.body}).getByRole('button',{name:'대화하기',exact:true}).click();
+    await active().locator('.answercard').filter({hasText:aOwn.body}).getByRole('button',{name:'답변 수정',exact:true}).click();
+    await active().locator('.answercard').filter({hasText:a1.body}).getByRole('button',{name:'대화하기',exact:true}).click();
     assert.deepEqual(await page.evaluate(()=>questionSwipeFixture.actions),[
       {action:'edit',value:aOwn},{action:'chat',value:a1.peer}
     ],'edit and matched chat preserve the selected row and person');
@@ -182,9 +200,35 @@ async function swipe(page,direction,{short=false,vertical=false}={}) {
     await swipe(page,'left',{short:true});await shown([a1,aOwn],1,2);
     const vertical=await swipe(page,'left',{vertical:true});await shown([a1,aOwn],1,2);
     assert.ok(vertical.after>vertical.before,'vertical touch still scrolls the page: '+JSON.stringify(vertical));
-    await swipe(page,'left');await shown([b1],2,2);
-    await page.locator('.answercard .person').click();
-    await page.getByRole('button',{name:'신호 보내기',exact:true}).click();
+    const original=await positions();
+    await swipe(page,'left',{target:'body',short:true});await shown([a1,aOwn],1,2);
+    const restored=await positions();
+    assert.ok(Math.abs(restored.header-original.header)<1&&Math.abs(restored.answer-original.answer)<1,
+      'a short body drag returns the complete question and answers to their starting position');
+    const bodyVertical=await swipe(page,'left',{target:'body',vertical:true});await shown([a1,aOwn],1,2);
+    assert.ok(bodyVertical.after>bodyVertical.before,'vertical touch on an answer still scrolls: '+JSON.stringify(bodyVertical));
+
+    checkpoint='question and answers follow the same body drag';
+    const actionsBeforeDrag=await page.evaluate(()=>questionSwipeFixture.actions.length);
+    await swipe(page,'left',{target:'body',beforeRelease:async start=>{
+      const moved=await positions();
+      const headingShift=moved.header-start.header,answerShift=moved.answer-start.answer;
+      assert.ok(headingShift<=-50,'question follows the finger by at least 50px: '+headingShift);
+      assert.ok(Math.abs(headingShift-answerShift)<1,'question and answer move together: '+JSON.stringify({headingShift,answerShift}));
+      assert.equal(await viewport().getAttribute('data-dragging'),'true');
+      const previews=page.locator('#answers .question-preview');
+      assert.ok(await previews.count()>0,'the adjacent question is visible while dragging');
+      assert.equal(await previews.evaluateAll(nodes=>nodes.every(node=>node.inert&&node.getAttribute('aria-hidden')==='true')),true,
+        'preview panels do not expose duplicate actions to keyboards or screen readers');
+      assert.equal(await page.locator('#selected-question').count(),1);
+      assert.equal(await page.locator('#question-answers').count(),1);
+      await viewport().screenshot({path:path.join(screenshots,'question-panel-drag-390.png')});
+    }});
+    await shown([b1],2,2);
+    assert.equal(await page.evaluate(()=>questionSwipeFixture.actions.length),actionsBeforeDrag,
+      'dragging an answer never activates a profile, signal, chat or edit action');
+    await active().locator('.answercard .person').click();
+    await active().getByRole('button',{name:'신호 보내기',exact:true}).click();
     assert.deepEqual(await page.evaluate(()=>questionSwipeFixture.actions.slice(-2)),[
       {action:'profile',value:b1},{action:'signal',value:b1}
     ],'profile and signal use the newly selected question row');
@@ -197,20 +241,33 @@ async function swipe(page,direction,{short=false,vertical=false}={}) {
     await header().focus();await page.keyboard.press('ArrowLeft');await shown([a1,aOwn],1,2);
     await header().focus();await page.keyboard.press('ArrowLeft');await shown([a1,aOwn],1,2);
 
+    checkpoint='a swipe from a long answer brings the next question into view';
+    const longAnswer=active().locator('.answercard').filter({hasText:aOwn.body}).locator('.quote');
+    await longAnswer.evaluate(element=>window.scrollTo({top:scrollY+element.getBoundingClientRect().bottom-innerHeight*.4,behavior:'instant'}));
+    assert.ok((await header().boundingBox()).y<0,'the previous heading is above the visible viewport');
+    await swipe(page,'left',{target:longAnswer,scroll:false});await shown([b1],2,2);
+    const nextHeading=await header().boundingBox();
+    assert.ok(nextHeading.y>=-1&&nextHeading.y+nextHeading.height<=page.viewportSize().height,
+      'the next question is visible after swiping from deep in a long answer: '+JSON.stringify(nextHeading));
+    await previous().click();await shown([a1,aOwn],1,2);
+
     checkpoint='page boundary loads more answers and then advances';
     await next().click();await shown([b1],2,2);
     await page.evaluate(()=>{questionSwipeFixture.holdMore=true;});
     await next().click();
     await page.waitForFunction(()=>typeof questionSwipeFixture.releaseMore==='function');
     await shown([b1],2,2);
+    assert.equal(await header().isVisible(),true,'the current question stays visible while the next page loads');
+    const loadingPanel=await active().boundingBox(),loadingViewport=await viewport().boundingBox();
+    assert.ok(Math.abs(loadingPanel.x-loadingViewport.x)<=1,'loading does not slide the current answers off screen');
     assert.equal(await page.evaluate(()=>questionSwipeFixture.calls.filter(call=>call.p_cursor).length),1);
     await page.evaluate(()=>questionSwipeFixture.releaseMore());
     await shown([c1],3,3);
     assert.equal(await next().isDisabled(),true,'exhausted last page has no next action');
     await previous().click();await shown([b1,b2],2,3);
     await previous().click();await shown([a1,aOwn,a2],1,3);
-    assert.equal(await page.locator('.answercard').count(),3,'duplicate row from another page is not repeated');
-    await page.getByRole('button',{name:'신호 보내기',exact:true}).click();
+    assert.equal(await active().locator('.answercard').count(),3,'duplicate row from another page is not repeated');
+    await active().getByRole('button',{name:'신호 보내기',exact:true}).click();
     assert.deepEqual(await page.evaluate(()=>questionSwipeFixture.actions.at(-1)),{action:'signal',value:a2});
 
     checkpoint='manual pagination keeps the chosen question';
@@ -255,7 +312,7 @@ async function swipe(page,direction,{short=false,vertical=false}={}) {
     await page.locator('.relationship-filters').getByRole('button',{name:'결혼',exact:true}).click();
     await page.locator('#answers .empty').waitFor();
     assert.equal(await header().count(),0);
-    assert.equal(await page.locator('.answercard').count(),0);
+    assert.equal(await active().locator('.answercard').count(),0);
     await page.getByRole('button',{name:'전체 답변 보기',exact:true}).click();
     await shown([a1],1,2);
 
@@ -268,15 +325,13 @@ async function swipe(page,direction,{short=false,vertical=false}={}) {
 
     checkpoint='320 390 and 750 pixel layouts';
     await reset();
-    const screenshots=path.join(root,'tests/artifacts/pajang-discovery');
-    await fs.mkdir(screenshots,{recursive:true});
     for(const width of [320,390,750]){
       await page.setViewportSize({width,height:width===750?750:844});
       const dimensions=await page.locator('#answers').evaluate(element=>({
         viewport:innerWidth,page:document.documentElement.scrollWidth,
-        header:element.querySelector('header.question-carousel').getBoundingClientRect().toJSON(),
+        header:element.querySelector('.answer-group header.question-carousel').getBoundingClientRect().toJSON(),
         group:element.querySelector('.answer-group').getBoundingClientRect().toJSON(),
-        overflow:[...element.querySelectorAll('.question-carousel,.answercard,.quote')]
+        overflow:[...element.querySelectorAll('.answer-group .question-carousel,.answer-group .answercard,.answer-group .quote')]
           .filter(node=>node.scrollWidth>node.clientWidth+1).map(node=>node.className)
       }));
       assert.ok(dimensions.page<=width+1,'page fits '+width+'px: '+JSON.stringify(dimensions));
@@ -295,9 +350,23 @@ async function swipe(page,direction,{short=false,vertical=false}={}) {
     await next().click();
     await shown([b1],2,2);
     await page.locator('.answer-group').screenshot({path:path.join(screenshots,'question-colors-dark-2.png'),animations:'disabled'});
+
+    checkpoint='reduced motion changes the question without a sliding panel';
+    await page.setViewportSize({width:390,height:844});
+    await page.emulateMedia({reducedMotion:'reduce'});
+    await reset();await shown([a1,aOwn],1,2);
+    await swipe(page,'left',{target:'body',beforeRelease:async start=>{
+      const current=await positions();
+      assert.ok(Math.abs(current.header-start.header)<1&&Math.abs(current.answer-start.answer)<1,
+        'reduced motion avoids moving the question and answer panel during a swipe');
+    }});
+    await shown([b1],2,2);
+    await previous().click();
+    assert.equal(await viewport().getAttribute('data-moving'),'false','reduced motion skips the slide transition');
+    await shown([a1,aOwn],1,2);
     assert.deepEqual(await page.evaluate(()=>questionSwipeFixture.unexpected),[]);
     assert.deepEqual(errors,[],'no browser runtime errors');
-    console.log('PASS pajang question swipe: grouping, touch, keyboard, callbacks, pagination, filters, empty state, 320/390/750px');
+    console.log('PASS pajang question swipe: whole-panel drag, body touch, scroll, keyboard, callbacks, pagination, filters, reduced motion, 320/390/750px');
     await context.close();
   } catch(error) {
     error.message='['+checkpoint+'] '+error.message;
