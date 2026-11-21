@@ -109,7 +109,7 @@ export function AnswerLike({answer}:{answer:LikeAnswer}){
     <button type="button" className="answer-like" aria-pressed={state.liked}
       aria-label={`좋아요 ${state.likeCount}개${state.liked?", 취소하기":""}`} aria-busy={state.pending}
       disabled={!state.ready||state.pending} onClick={()=>void likes?.toggle(answer)}>
-      <I n="heart" s={17}/><span>좋아요</span><b>{state.likeCount}</b>
+      <I n="heart" s={17}/><b>{state.likeCount}</b>
     </button>
     {state.error&&<span className="answer-like-error" role="status">{state.error}</span>}
   </div>;
