@@ -287,6 +287,8 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'iUw3LPM7OBU', title: 'Get A Guitar', kind: '뮤직비디오', source: "SMTOWN · 공식 채널" }
   ],
   boynextdoor: [
+    { id: 'dgV6FiuQEUU', title: '치바에 나타난 수상한 너구리?! · KNOCK OFF : CHIBA', kind: '공식 투어 비하인드', source: 'BOYNEXTDOOR 공식 · 2026.11.06' },
+    { id: 'bvX1UN5ZD9o', title: 'KNOCK ON Vol.2 IN SEOUL · BEHINDOOR EP.1', kind: '공식 공연 비하인드', source: 'BOYNEXTDOOR 공식 · 2026.08.08' },
     { id: 'WI4__7z_dJw', title: 'ANIMAL', kind: '뮤직비디오', source: "HYBE LABELS · 공식 채널" },
     { id: 'm2uO4FD5csM', title: 'VIRAL', kind: '뮤직비디오', source: "HYBE LABELS · 공식 채널" },
     { id: 'TcAJfGaO6Xo', title: 'One and Only', kind: '뮤직비디오', source: "HYBE LABELS · 공식 채널" }
