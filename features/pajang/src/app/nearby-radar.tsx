@@ -146,7 +146,7 @@ export default function NearbyRadar({station,sample,autoLocation,onLocationChang
             <h3 className="radar-answer-question">{answer.question}</h3><p className="radar-quote">{answer.body}</p>
           </article>)}</div><button className="primary radar-primary" onClick={()=>onProfile(person.id,person.answers?.[0])}>공개 정보 보기<I n="arrow" s={17}/></button>
           {visible.length>1&&<div className="radar-alternates"><h3>주변 사람</h3><div>{visible.map(p=><button className={p.id===person.id?"sel":""} key={p.id} aria-pressed={p.id===person.id} onClick={()=>setSelected(p.id)}>{p.name}</button>)}</div></div>}</>:
-          <div className="radar-empty"><span className="modalicon"><I n="pin" s={23}/></span><h2>{!enabled?"위치를 숨겼어요":locatedNow?"아직 주변 답변이 없어요":"현재 위치를 확인해 주세요"}</h2><p>{!enabled?"위 스위치를 켜면 주변 인연을 찾을 수 있어요.":locatedNow?"위치를 공개한 주변 회원이 최근 질문 3개 중 하나에 답하면 나타나요.":"위치가 확인되면 주변 인연을 보여 드려요."}</p>
+          <div className="radar-empty"><span className="modalicon"><I n="pin" s={23}/></span><h2>{!enabled?"위치를 숨겼어요":locatedNow?"지금 표시할 주변 회원이 없어요":"현재 위치를 확인해 주세요"}</h2><p>{!enabled?"위 스위치를 켜면 주변 인연을 찾을 수 있어요.":locatedNow?"15km 안에서 오늘 위치를 공개한 회원의 최근 답변을 보여요.":"위치가 확인되면 주변 인연을 보여 드려요."}</p>
           {enabled&&!locatedNow&&<button className="primary" disabled={pending||autoLocation?.pending} onClick={()=>void toggleLocation(true)}>{pending||autoLocation?.pending?"위치 확인 중…":"위치 다시 확인"}</button>}</div>}
 
       </div>

@@ -120,7 +120,9 @@ async function fits(page,dialog,width){
     checkpoint='like-keyboard-and-reload';
     await own().locator('.answer-like').focus();await page.keyboard.press('Enter');
     await page.waitForFunction(()=>document.querySelector('#answers .answer-like')?.getAttribute('aria-pressed')==='true');
-    assert.equal(await own().locator('.answer-like').textContent(),'좋아요2');
+    assert.equal(await own().locator('.answer-like').textContent(),'2','the compact control shows its heart and count');
+    assert.equal(await own().locator('.answer-like b').textContent(),'2');
+    assert.equal(await own().locator('.answer-like').getAttribute('aria-label'),'좋아요 2개, 취소하기');
     assert.equal(await own().getByRole('button',{name:'답변 수정',exact:true}).count(),1,'editing stays independent');
     assert.equal(await page.locator('#answers .answercard').nth(1).getByRole('button',{name:'신호 보내기',exact:true}).count(),1,'signals stay independent');
     await page.reload();await own().waitFor();assert.equal(await own().locator('.answer-like').getAttribute('aria-pressed'),'true');

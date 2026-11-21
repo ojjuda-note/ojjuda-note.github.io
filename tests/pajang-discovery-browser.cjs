@@ -62,6 +62,37 @@ async function checkServiceHeader(page,width) {
     assert.ok(result.styles.includes(stylesheet),'fixture serves '+stylesheet);
 }
 
+async function checkControlGroups(page,width,selector,minimumGroups=1) {
+  const groups=await page.locator(selector).evaluateAll(nodes=>nodes.map(group=>
+    [...group.querySelectorAll('button')].filter(button=>button.getClientRects().length&&getComputedStyle(button).visibility!=='hidden').map(button=>{
+      const {left,right,top,bottom,width,height}=button.getBoundingClientRect();
+      return {name:button.getAttribute('aria-label')||button.textContent.trim(),left,right,top,bottom,width,height};
+    })));
+  assert.ok(groups.length>=minimumGroups&&groups.every(group=>group.length>0),'requested control groups are present: '+selector);
+  const overlaps=(a,b)=>a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1;
+  for(const controls of groups){
+    assert.ok(controls.every(box=>box.width>=44&&box.height>=44),
+      'compact controls keep full touch targets at '+width+'px: '+JSON.stringify(controls));
+    assert.ok(controls.every(box=>box.left>=-1&&box.right<=width+1),
+      'controls fit at '+width+'px: '+JSON.stringify(controls));
+    for(let i=0;i<controls.length;i++)for(let j=i+1;j<controls.length;j++)
+      assert.equal(overlaps(controls[i],controls[j]),false,
+        'adjacent controls do not overlap at '+width+'px: '+JSON.stringify(controls));
+  }
+}
+
+async function checkHomeControls(page,width) {
+  // The new answer DOM is mounted before its finite question-slide animation ends.
+  // Wait for the track, not for bounds to pass: real overflow must still fail below.
+  await page.waitForFunction(()=>{
+    const viewport=document.querySelector('#answers .question-viewport');
+    const track=viewport?.querySelector('.question-track');
+    return viewport?.dataset.moving==='false'&&viewport.dataset.dragging==='false'&&track
+      &&track.getAnimations().every(animation=>animation.playState!=='running'&&!animation.pending);
+  });
+  await checkControlGroups(page,width,'.letter-actions,.today-actions,#answers .answer-group .answer-foot',3);
+}
+
 async function checkSignalPurchaseLayout(page,dir) {
   const menu=page.getByRole('navigation',{name:'파장 메뉴'});
   await page.evaluate(()=>window.setSignalQuota(3));
@@ -835,7 +866,13 @@ async function checkNavigation(page){
       scene.src=css.trim().slice(5,-2);
       await scene.decode();
     });
-    await capture('home-mobile');
+    await checkHomeControls(page,390);await capture('home-mobile');
+    for(const width of [320,750]){
+      await page.setViewportSize({width,height:width===750?750:844});
+      await checkHomeControls(page,width);
+      await capture('home-answered-'+width);
+    }
+    await page.setViewportSize({width:390,height:844});
     await radio('female').tap();await cards.filter({hasText:rows[1].body}).waitFor();
     await answers.locator('article').first().scrollIntoViewIfNeeded();await expectHeaderClean();
     const readingY=await page.evaluate(()=>scrollY);
@@ -1013,7 +1050,7 @@ async function checkNavigation(page){
       await page.locator('.nearby-section').screenshot({path:path.join(dir,'pajang-radar-recent-'+width+'.png'),animations:'disabled'});
     }
     await page.evaluate(()=>window.clearRecentRadar());
-    await page.getByRole('heading',{name:'아직 주변 답변이 없어요',exact:true}).waitFor();
+    await page.getByRole('heading',{name:'지금 표시할 주변 회원이 없어요',exact:true}).waitFor();
     assert.equal(await page.locator('.scope-person').count(),0,'an explicit empty nearby feed never falls back to current-only people');
     await page.evaluate(()=>window.setRecentRadar(false));
     await markerByName('라온').waitFor();
@@ -1236,7 +1273,12 @@ async function checkNavigation(page){
     await page.getByRole('heading',{name:'처음 만난 날, 어떤 이야기를 나누고 싶나요?'}).waitFor();
     await page.evaluate(()=>{window.entryMarker=document.querySelector('.pajang-mast');});
     assert.equal(await page.locator('iframe,dialog.agit-pajang-dialog').count(),0);
-    await capture('entry-mobile');
+    for(const width of [390,320,750]){
+      await page.setViewportSize({width,height:width===750?750:844});
+      await checkControlGroups(page,width,'#welcome .actions');
+      await capture(width===390?'entry-mobile':'entry-'+width);
+    }
+    await page.setViewportSize({width:390,height:844});
     assert.equal(await page.locator('#marks button').count(),0,'sample radar does not block the question');
     await page.locator('.sample-radar summary').click();
     await page.locator('#marks button').first().waitFor();
@@ -1302,6 +1344,13 @@ async function checkNavigation(page){
     assert.equal(await nav.count(),0,'a different auth session cannot mount the previous member state');
     await page.evaluate(()=>{sessionStorage.fixtureMode='unanswered';});
     await page.goto(origin+project+'station.html');
+    await questionCard.getByRole('button',{name:'내 답변 쓰기'}).waitFor();await cards.first().waitFor();
+    for(const width of [320,390,750]){
+      await page.setViewportSize({width,height:width===750?750:844});
+      await checkHomeControls(page,width);
+      await capture('home-unanswered-'+width);
+    }
+    await page.setViewportSize({width:390,height:844});
     await questionCard.getByRole('button',{name:'내 답변 쓰기'}).click();
     const newAnswerDialog=page.getByRole('dialog');
     await newAnswerDialog.waitFor();

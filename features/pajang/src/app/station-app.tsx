@@ -85,6 +85,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   const lock=useRef(false),serverRevision=useRef(0),bottom=useRef<HTMLDivElement>(null);
   const liveRef=useRef(live);liveRef.current=live;
   const locationAccount=useRef("");
+  const locationDay=useRef(initialStation.day);
   const locationRead=useRef<AbortController|null>(null);
   const [autoLocation,setAutoLocation]=useState({pending:false,message:initialStation.locationNotice||""});
   function cancelAutoLocation(){
@@ -93,10 +94,15 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   }
   useEffect(()=>{
     let closed=false,unsubscribe=()=>{};
+    const day=live.day,changedDay=locationDay.current!==day;
+    locationDay.current=day;
+    if(changedDay)setAutoLocation({pending:false,message:""});
     void window.OjjudaGetClient().then(async db=>{
       const {data:{session}}=await db.auth.getSession();
-      if(closed||!session?.user||session.user.is_anonymous)return;
-      const accountId=session.user.id;locationAccount.current=accountId;
+      if(closed||liveRef.current.day!==day||!session?.user||session.user.is_anonymous)return;
+      const accountId=session.user.id;
+      if(locationAccount.current&&locationAccount.current!==accountId)return;
+      locationAccount.current=accountId;
       const service=(window as any).OjjudaLocation;
       const current=liveRef.current;
       service.acceptPreference(accountId,{enabled:current.locationEnabled!==false,version:current.locationVersion??0},true);
@@ -127,10 +133,15 @@ export default function StationApp({initialStation}:{initialStation:Station}){
         serverRevision.current++;
         if(choice.enabled)locate({...next,locationChecked:false} as Station);
       });
-      locate(liveRef.current);
+      // A checked position belongs to its question date. Refresh it once when
+      // the server advances the day, without restarting at noon or on polls.
+      locate(changedDay?{...liveRef.current,locationChecked:false} as Station:liveRef.current);
     }).catch(()=>{});
-    return()=>{closed=true;unsubscribe();locationRead.current?.abort();};
-  },[]);
+    return()=>{
+      closed=true;unsubscribe();
+      const pending=locationRead.current;locationRead.current=null;pending?.abort();
+    };
+  },[live.day]);
   useEffect(()=>{
     if(locationAccount.current)(window as any).OjjudaLocation.acceptPreference(locationAccount.current,
       {enabled:live.locationEnabled!==false,version:live.locationVersion??0},true);

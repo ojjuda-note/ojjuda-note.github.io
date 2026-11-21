@@ -95,6 +95,10 @@ test('likes are desired-state, account-pinned, and synchronized across duplicate
   let finish;
   const f=await fixture(t,{rpc:(name,args)=>name==='pajang_answer_like'&&args.p_liked
     ?new Promise(resolve=>{finish=()=>resolve({data:{peer:args.p_peer,day:args.p_day,slot:args.p_slot,liked:true,likeCount:3}});}):undefined});
+  assert.ok(f.likes().every(button=>button.textContent==='2'&&button.querySelector('svg[aria-hidden="true"]')),
+    'compact likes show the heart icon and count');
+  assert.ok(f.likes().every(button=>button.getAttribute('aria-label')==='좋아요 2개'&&button.getAttribute('aria-pressed')==='false'),
+    'the compact control keeps a complete accessible name and state');
   const readBefore=f.w.likeCheckpoint();
   f.likes()[0].click();f.likes()[1].click();await wait(()=>f.state.calls.length===1);
   assert.ok(f.likes().every(button=>button.disabled&&button.getAttribute('aria-busy')==='true'));
@@ -102,11 +106,11 @@ test('likes are desired-state, account-pinned, and synchronized across duplicate
   assert.equal(f.state.calls[0].headers.Authorization,'Bearer owner-token');
   finish();await wait(()=>f.likes().every(button=>button.getAttribute('aria-pressed')==='true'));
   f.w.hydrateLikes([{...f.w.answer,likeCount:2,liked:false}],readBefore);await turn();
-  assert.ok(f.likes().every(button=>button.textContent==='좋아요3'));
+  assert.ok(f.likes().every(button=>button.textContent==='3'&&button.getAttribute('aria-label')==='좋아요 3개, 취소하기'));
   f.w.hydrateLikes([{...f.w.answer,likeCount:8,liked:true}],f.w.likeCheckpoint());await turn();
-  assert.ok(f.likes().every(button=>button.textContent==='좋아요8'));
+  assert.ok(f.likes().every(button=>button.textContent==='8'&&button.getAttribute('aria-label')==='좋아요 8개, 취소하기'));
   f.state.liked=true;f.state.likeCount=8;f.likes()[1].click();await wait(()=>f.state.calls.length===2&&!f.likes()[0].disabled);
-  assert.equal(f.state.calls[1].args.p_liked,false);assert.ok(f.likes().every(button=>button.textContent==='좋아요7'));
+  assert.equal(f.state.calls[1].args.p_liked,false);assert.ok(f.likes().every(button=>button.textContent==='7'&&button.getAttribute('aria-label')==='좋아요 7개'));
 });
 
 test('a lost like response keeps the count, retries the same intention once, and restores on remount',async t=>{
@@ -115,11 +119,11 @@ test('a lost like response keeps the count, retries the same intention once, and
     if(name==='pajang_answer_like'&&++attempts===1){state.liked=true;state.likeCount=3;return {error:{message:'offline'}};}
   }});
   f.likes()[0].click();await wait(()=>f.w.document.querySelector('.answer-like-error'));
-  assert.equal(f.likes()[0].textContent,'좋아요2');assert.equal(f.likes()[0].getAttribute('aria-pressed'),'false');
+  assert.equal(f.likes()[0].textContent,'2');assert.equal(f.likes()[0].getAttribute('aria-pressed'),'false');
   f.likes()[1].click();await wait(()=>f.likes()[0].getAttribute('aria-pressed')==='true');
   assert.deepEqual(f.state.calls.map(call=>call.args.p_liked),[true,true]);
   f.w.answer={...f.w.answer,liked:true,likeCount:3};f.w.generation++;f.w.renderFixture();
-  await wait(()=>!f.likes()[0].disabled);assert.equal(f.likes()[0].textContent,'좋아요3');assert.equal(f.likes()[0].getAttribute('aria-pressed'),'true');
+  await wait(()=>!f.likes()[0].disabled);assert.equal(f.likes()[0].textContent,'3');assert.equal(f.likes()[0].getAttribute('aria-pressed'),'true');
 });
 
 test('likes reject a silent account switch and ignore an old member response',async t=>{
@@ -132,8 +136,8 @@ test('likes reject a silent account switch and ignore an old member response',as
   }):undefined});
   f.likes()[0].click();await wait(()=>f.state.calls.length===1);f.state.changeUser('new-user');
   f.w.member='new-person';f.w.answer={...f.w.answer,liked:false,likeCount:5};f.w.renderFixture();
-  await wait(()=>!f.likes()[0].disabled&&f.likes()[0].textContent==='좋아요5');
-  finish();await turn();assert.equal(f.likes()[0].textContent,'좋아요5');assert.equal(f.likes()[0].getAttribute('aria-pressed'),'false');
+  await wait(()=>!f.likes()[0].disabled&&f.likes()[0].textContent==='5');
+  finish();await turn();assert.equal(f.likes()[0].textContent,'5');assert.equal(f.likes()[0].getAttribute('aria-pressed'),'false');
   assert.equal(f.state.calls[0].signal.aborted,true);
 });
 
