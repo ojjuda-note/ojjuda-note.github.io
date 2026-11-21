@@ -103,6 +103,11 @@ body {background:var(--bg);color:var(--pajang-text)}
 .today-actions .mobile-near {flex:none;min-height:44px;margin:0}
 .today-actions+.today-columns {margin-top:14px}
 .question-suggestion-help {margin:0 0 16px;color:var(--muted);font-size:12px;line-height:1.6}
+.next-question-preview .questionbox {color:var(--pajang-heading);font-weight:500}
+.next-question-preview .questionbox small {font-size:12px;font-weight:400}
+.next-question-status {display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;margin:12px 0;color:var(--ink-2);font-size:13px}
+.next-question-status button {min-height:44px;padding:6px 3px;color:var(--accent-ink);font-size:13px;text-decoration:underline;text-underline-offset:3px}
+.question-suggestion-form h2 {color:var(--pajang-heading);font-weight:600}
 .question-suggestion-form textarea {font-size:16px}
 .question-suggestion-form textarea:focus-visible {outline-color:var(--berry)}
 @media(hover:hover){.question-suggest:hover:not(:disabled),.today-actions .mobile-near:hover{text-decoration:underline;text-underline-offset:4px}}
