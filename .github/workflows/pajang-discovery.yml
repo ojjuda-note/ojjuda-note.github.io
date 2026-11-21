@@ -286,6 +286,7 @@ jobs:
 
           digest = hashlib.sha256(Path("features/pajang/assets/station.js").read_bytes()).hexdigest()
           source = Path("supabase/functions/pajang-assets/index.ts").read_text()
+          print("Built member program SHA256", digest)
           assert re.search(r'"station.js": "' + digest + '"', source), "Program differs from the release manifest"
           print("Verified member program", digest)
           PYVERIFY
