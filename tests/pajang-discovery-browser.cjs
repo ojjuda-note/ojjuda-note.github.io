@@ -694,7 +694,7 @@ async function checkNavigation(page){
       await page.evaluate(()=>window.finishFlight());
       await page.locator(ready).waitFor();
       assert.equal(await scene.isVisible(),false);
-      if(!member)assert.match(await page.locator('#publication-note').textContent(),/작성일부터 최대 365일간 파장 회원에게/);
+      if(!member)assert.match(await page.locator('#publication-note').textContent(),/질문이 올라온 날부터 최대 365일간 파장 회원에게/);
       if(member){releasePicture?.();await page.unroute(picture);}
       await page.emulateMedia({reducedMotion:'no-preference'});
       if(!member){
@@ -1185,7 +1185,7 @@ async function checkNavigation(page){
     const entryAnswers=page.locator('#answer-fields');
     assert.equal(await entryAnswers.getByRole('combobox').count(),0,'entry offers no date selector');
     assert.equal(await entryAnswers.getByRole('checkbox').count(),0,'entry offers no publication opt-in');
-    assert.match(await entryAnswers.locator('#publication-note').textContent(),/작성일부터 최대 365일간 파장 회원에게/);
+    assert.match(await entryAnswers.locator('#publication-note').textContent(),/질문이 올라온 날부터 최대 365일간 파장 회원에게/);
     await page.locator('#mine').fill('한 번 열린 화면에서 답변을 남겨요.');
     await page.locator('#answer-form').getByRole('button',{name:'답변하기',exact:true}).click();await nav.waitFor();
     const joinWrite=await page.evaluate(()=>window.answerWrites.find(w=>w.action==='join'));
@@ -1247,7 +1247,7 @@ async function checkNavigation(page){
     await newAnswerDialog.waitFor();
     assert.equal(await newAnswerDialog.getByRole('combobox').count(),0,'member composer offers no date selector');
     assert.equal(await newAnswerDialog.getByRole('checkbox').count(),0,'member composer offers no publication opt-in');
-    assert.match(await newAnswerDialog.textContent(),/작성일부터 최대 365일간 파장 회원에게/);
+    assert.match(await newAnswerDialog.textContent(),/질문이 올라온 날부터 최대 365일간 파장 회원에게/);
     await newAnswerDialog.getByLabel('내 이야기').fill('새로 작성한 답변');
     await newAnswerDialog.getByRole('button',{name:'답변하기',exact:true}).click();
     await newAnswerDialog.waitFor({state:'detached'});

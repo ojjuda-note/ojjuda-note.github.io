@@ -4,11 +4,13 @@ import {relationshipIntents,type RelationshipIntentKey} from "../lib/profile-pre
 import {InterestArt} from "./interest-art";
 import {I} from "./icons";
 import QuestionCarousel from "./question-carousel";
+import {AnswerLike,useAnswerLikes} from "./answer-likes";
 
 export type DiscoveryAnswer = {
   peer:string; name:string; region:string; interest:string;
   day:string; slot:Slot; at:number; question:string; body:string;
   own:boolean; sent:boolean; received:boolean;
+  liked?:boolean; likeCount?:number;
   relationship_intents?:RelationshipIntentKey[];
 };
 type Cursor = Record<string, unknown>;
@@ -37,6 +39,7 @@ function firstPage(cache:Map<string,SavedPage>, key:string):Result {
 }
 
 function useAnswers(filter:string, gender:Gender, order:Order, scope:string, openingScope:string, activity:string, visible:boolean) {
+  const likes=useAnswerLikes();
   const visibleRef=useRef(visible);
   visibleRef.current=visible;
   const key = JSON.stringify([filter,gender,order,scope]);
@@ -65,6 +68,7 @@ function useAnswers(filter:string, gender:Gender, order:Order, scope:string, ope
       if (intent==="first") { pages=0; publish(firstPage(cache,key)); }
       if (append) publish({...current,loading:true,error:""});
       try {
+        const likeVersion=likes?.checkpoint()??0;
         const db=await window.OjjudaGetClient();
         if (signal.aborted) return;
         const opening=intent==="first" && filter==="all" && order==="latest" && gender==="all"
@@ -77,6 +81,7 @@ function useAnswers(filter:string, gender:Gender, order:Order, scope:string, ope
         if (!active || request!==revision) return;
         if (error) throw error;
         const page=data as Page;
+        likes?.hydrate(page.items,likeVersion);
         const rows=new Map((append?current.items:[]).map(row=>[rowKey(row),row]));
         for (const row of page.items) rows.set(rowKey(row),row);
         pages=append?pages+1:1;
@@ -107,7 +112,7 @@ function useAnswers(filter:string, gender:Gender, order:Order, scope:string, ope
     // Refresh the first page in place; scrolling back through earlier pages keeps its cursor.
     const poll=window.setInterval(()=>{if(!document.hidden)void read("check");},60000);
     return ()=>{active=false;controller?.abort();load.current=()=>{};window.clearInterval(poll);document.removeEventListener("visibilitychange",onVisible);};
-  },[key,filter,gender,order,cache,openingScope]);
+  },[key,filter,gender,order,cache,openingScope,likes]);
   const wasVisible=useRef(visible);
   useEffect(()=>{if(visible&&!wasVisible.current)load.current("changed");wasVisible.current=visible;},[visible]);
   useEffect(()=>{cache.clear();load.current("changed");},[activity,cache]);
@@ -161,8 +166,9 @@ function GenderSwitch({value,onChange}:{value:Gender;onChange:(next:Gender)=>voi
 type Props = {
   active:boolean; station:Station; revision:number; onProfile:(row:DiscoveryAnswer)=>void;
   onSignal:(row:DiscoveryAnswer)=>void; onChat:(id:string)=>void; onWrite:()=>void; onEdit:(row:DiscoveryAnswer)=>void; onBuySignals?:()=>void;
+  onPastQuestion?:(row:DiscoveryAnswer)=>void;
 };
-export default function AnswerHistory({active,station,revision,onProfile,onSignal,onChat,onWrite,onEdit,onBuySignals}:Props) {
+export default function AnswerHistory({active,station,revision,onProfile,onSignal,onChat,onWrite,onEdit,onBuySignals,onPastQuestion}:Props) {
   const [filter,setFilter]=useState("all");
   const [gender,setGender]=useState<Gender>("all");
   const [order,setOrder]=useState<Order>("latest");
@@ -243,6 +249,14 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
     <div className="cardgrid" aria-busy={result.loading}>
       {result.loading&&result.total===null&&[0,1,2].map(i=><div className="answer-skeleton" key={i} aria-hidden="true"><i/><i/><i/><i/></div>)}
       {selected&&<QuestionCarousel groups={groups} index={index} scope={selectionScope} more={Boolean(result.next)} loading={result.loading} onStep={stepQuestion}
+        renderQuestionAction={answers=>{
+          const question=answers[0],own=answers.find(answer=>answer.own&&answer.peer===station.me?.id);
+          if(question.day===station.day&&question.slot===station.slot)return null;
+          const days=(Date.parse(station.day)-Date.parse(question.day))/86400000;
+          if(!own&&(!(days>=0&&days<=364)||(days===0&&question.slot!=="am")))return null;
+          return onPastQuestion&&<button type="button" className="question-answer-link" aria-haspopup="dialog"
+            onClick={()=>own?onEdit(own):onPastQuestion(question)}><I n="pencil" s={14}/>{own?"내 답변 수정":"답변하기"}</button>;
+        }}
         renderAnswers={answers=>answers.map(row=>{
         const relation=signalsWith(station,row.peer);
         const sent=row.sent||!!relation.outgoing, received=row.received||!!relation.incoming, matched=sent&&received;
@@ -254,6 +268,7 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
           </button>
           <p className="quote">{row.body}</p>
           <div className="answer-foot"><div className="answer-intents" aria-label="원하는 인연">{intents.map(intent=><span key={intent.key} className="tag">{intent.shortLabel}</span>)}</div>
+          <AnswerLike answer={row}/>
           {row.own&&row.peer===station.me?.id&&<button type="button" className="sendlink" aria-haspopup="dialog" onClick={()=>onEdit(row)}>
             <span><I n="pencil" s={17}/>답변 수정</span>
           </button>}

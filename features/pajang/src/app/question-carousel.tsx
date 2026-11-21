@@ -5,10 +5,11 @@ import {I} from "./icons";
 type Props = {
   groups:DiscoveryAnswer[][]; index:number; scope:string; more:boolean; loading:boolean;
   onStep:(direction:number)=>void; renderAnswers:(answers:DiscoveryAnswer[])=>ReactNode;
+  renderQuestionAction?:(answers:DiscoveryAnswer[])=>ReactNode;
 };
 const questionKey=(question:DiscoveryAnswer)=>JSON.stringify([question.day,question.slot,question.question]);
 
-export default function QuestionCarousel({groups,index,scope,more,loading,onStep,renderAnswers}:Props){
+export default function QuestionCarousel({groups,index,scope,more,loading,onStep,renderAnswers,renderQuestionAction}:Props){
   const viewport=useRef<HTMLDivElement>(null),track=useRef<HTMLDivElement>(null);
   const gesture=useRef<{id:number;x:number;y:number;horizontal:boolean}|null>(null);
   const animation=useRef<Animation|null>(null),dragValue=useRef(0),suppressClick=useRef(false);
@@ -143,6 +144,7 @@ export default function QuestionCarousel({groups,index,scope,more,loading,onStep
               </div>
             </div>
             <h3 id={active?"selected-question":undefined}>{question.question}</h3>
+            {renderQuestionAction?.(answers)}
           </header>
           <div id={active?"question-answers":undefined} aria-labelledby={active?"selected-question":undefined}>
             {renderAnswers(answers)}
