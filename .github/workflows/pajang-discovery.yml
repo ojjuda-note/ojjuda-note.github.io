@@ -58,6 +58,7 @@ on:
       - 'supabase/functions/pajang-assets/index.ts'
       - 'ops/publish-pajang-program.py'
       - 'tests/pajang-discovery-browser.cjs'
+      - 'tests/pajang-question-swipe-browser.cjs'
       - 'tests/window-safe-area-ui.test.cjs'
       - 'tests/pajang-question-suggestion.test.cjs'
       - 'tests/pajang-answer-edit-browser.cjs'
@@ -128,6 +129,7 @@ on:
       - 'tests/park-entry-browser.cjs'
       - 'tests/park-opening.test.cjs'
       - 'tests/pajang-discovery-browser.cjs'
+      - 'tests/pajang-question-swipe-browser.cjs'
       - 'tests/window-safe-area-ui.test.cjs'
       - 'tests/pajang-question-suggestion.test.cjs'
       - 'tests/pajang-answer-edit-browser.cjs'
@@ -227,6 +229,8 @@ jobs:
       - run: node tests/pajang-profile-preferences-ui.test.cjs
       - name: Check past answer editing and return navigation
         run: node tests/pajang-answer-edit-browser.cjs
+      - name: Check question swiping and matching answers
+        run: node tests/pajang-question-swipe-browser.cjs
       - run: node tests/pajang-discovery-browser.cjs
       - run: node tests/park-entry-browser.cjs
       - if: always()
