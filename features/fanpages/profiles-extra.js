@@ -246,8 +246,11 @@ if (blackpinkProfile) {
    MBTI, school and hometown information remains unset. */
 const btsProfile = window.OJJUDA_FAN_PROFILES.bts;
 if (btsProfile) {
-  btsProfile.checkedAt = '2026.11.14';
+  btsProfile.checkedAt = '2026.11.18';
   btsProfile.expanded = true;
+  btsProfile.awards = [
+    { year: '2026.11', title: '2026 키즈 초이스 어워즈 3관왕', detail: '11.14(미국 현지) 좋아하는 그룹/듀오, ARIRANG(앨범), SWIM(노래) · 그룹 부문 5번째 수상', href: 'https://www.reuters.com/business/media-telecom/kids-choice-awards-honor-chris-pratt-bts-2026-11-15/' }
+  ];
   btsProfile.records = [
     { year: '2026.07', title: 'FIFA 월드컵 결승 하프타임 공연', detail: '2026.07.19 · 미국 메트라이프 스타디움 · FIFA 공식 무대 공개', href: 'https://www.youtube.com/watch?v=qUzSrkIuP0U' },
     { year: '2026.03', title: '정규 5집 ARIRANG 발매', detail: '2026.03.20 · 타이틀 SWIM · 총 14곡', href: 'https://ibighit.com/ko/bts/discography/detail/arirang' },
