@@ -4,7 +4,7 @@
 const a2oMember = (name, source) => ({ name, birthday: null, height: null, hometown: '', school: '', note: 'A2O', source });
 window.OJJUDA_FAN_PROFILES = {
   rescene: {
-    checkedAt: '2026.11.17',
+    checkedAt: '2026.11.19',
     debut: '2024.03.26', debutWork: 'Re:Scene · UhUh',
     agency: 'THE MUZE Entertainment',
     concept: '향기로 다시 떠오르는 장면, RESCENE.',
@@ -19,6 +19,7 @@ window.OJJUDA_FAN_PROFILES = {
       { year: '2026.07', title: 'MBC 쇼! 음악중심 1위', detail: 'Pretty Girl', href: 'https://news.sbs.co.kr/english/endPagePrintPopup.do?news_id=N1008676108' }
     ],
     records: [
+      { year: '2026.11', title: 'With 공식 MV 3천만 조회', detail: '11.16 RESCENE 공식 발표', href: 'https://artist.mnetplus.world/main/stg/rescene-official/contents/6afae2e08f3fbb2353c1ca5d' },
       { year: '2026.07', title: '멜론 TOP100 1위', detail: 'LOVE ATTACK 역주행', href: 'https://news.sbs.co.kr/amp/news.amp?news_id=N1008649027' },
       { year: '2026', title: '멤버 고향 홍보대사', detail: '거제·수원·고양·경주', href: 'https://www.nocutnews.co.kr/news/6542161' }
     ],

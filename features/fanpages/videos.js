@@ -1,6 +1,8 @@
 /* Official artist, label and broadcaster uploads. YouTube hosts all videos and thumbnails. */
 window.OJJUDA_FAN_VIDEOS = Object.freeze({
   rescene: [
+    { id: 'xUGLDz9U-k8', title: '미나미 · 사랑해볼래, 나 (Ready to Love)', kind: '공식 OST 뮤직비디오', source: 'STONE MUSIC · 2026.11.19' },
+    { id: 'DbOcwO0cdqg', title: '2027 SEASON\'S GREETINGS Behind', kind: '공식 시즌그리팅 비하인드', source: 'RESCENE 공식 YouTube · 2026.11.16' },
     { id: 'xQWsswKhrQo', title: 'With · 인기가요 11.15', kind: '음악방송 무대', source: 'SBSKPOP X INKIGAYO · 2026.11.15' },
     { id: 'LSOE3OKjybs', title: 'MMA2026 · With + Deja Vu + LOVE ATTACK', kind: '공식 시상식 무대', source: '멜론 Melon · 2026.11.14' },
     { id: '5zqZvkkkJ2E', title: 'With · 인기가요 11.08', kind: '음악방송 무대', source: 'SBSKPOP X INKIGAYO · 2026.11.08' },
