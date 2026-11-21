@@ -211,3 +211,85 @@ test('standalone games and shared scripts point to the shipped monthly viewer',(
  assert.ok(sharedUiRevision,'shared results cache revision exists');
  assert.ok(read('world.html').includes('game-results.js?v='+sharedUiRevision));
 });
+
+test('arcade uses one compact ranking link instead of the embedded carousel',()=>{
+ const world=read('world.html');
+ assert.match(world,/<a class="arcade-ranking-entry" href="\/features\/arcade\/all-rankings\.html"/);
+ assert.doesNotMatch(world,/<section data-arcade-rank-root /);
+});
+
+test('full arcade ranking page lists every game including a recorded One Card win',async t=>{
+ const markup=read('features/arcade/all-rankings.html'),script=read('features/arcade/all-rankings.js');
+ const dom=new JSDOM(markup,{url:'https://ojjuda.kr/features/arcade/all-rankings.html',runScripts:'outside-only'});
+ t.after(()=>dom.window.close());
+ const w=dom.window,calls=[];
+ w.OJJUDA_CONFIG={supabaseUrl:'https://fixture.invalid',supabaseKey:'fixture'};
+ w.supabase={createClient:()=>({
+  auth:{getSession:async()=>({data:{session:{user:{id:'member-a',is_anonymous:false}}}}),
+   onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},
+  rpc(name,args){
+   calls.push({name,args});
+   return Promise.resolve({data:Object.fromEntries(args.p_games.map(id=>[id,id==='onecard'?{nick:'원카드회원',score:1}:null])),error:null});
+  }
+ })};
+ w.eval(script);await new Promise(resolve=>setImmediate(resolve));
+ const doc=w.document,entries=doc.querySelectorAll('.rank-entry'),one=doc.querySelector('[data-game="onecard"]');
+ assert.equal(entries.length,26,'all 26 games are present without swiping or paging');
+ assert.equal(doc.querySelectorAll('.rank-section').length,3,'three categories are visible');
+ assert.ok(one,'One Card cannot be hidden behind a carousel');
+ assert.equal(one.querySelector('.first-name').textContent,'1위 · 원카드회원');
+ assert.equal(one.querySelector('.first-score').textContent,'1연승');
+ assert.match(one.href,/monthly-ranking\.html\?game=onecard$/);
+ assert.equal(calls.length,1,'authenticated users share one ranking request');
+ assert.equal(calls[0].name,'community_game_monthly_leaders');
+ assert.equal(calls[0].args.p_games.length,26);
+});
+
+test('guest arcade overview keeps one-card details member-only but shows all game choices',async t=>{
+ const dom=new JSDOM(read('features/arcade/all-rankings.html'),{
+  url:'https://ojjuda.kr/features/arcade/all-rankings.html',runScripts:'outside-only'
+ });
+ t.after(()=>dom.window.close());
+ const w=dom.window,calls=[];
+ w.OJJUDA_CONFIG={supabaseUrl:'https://fixture.invalid',supabaseKey:'fixture'};
+ w.supabase={createClient:()=>({
+  auth:{getSession:async()=>({data:{session:null}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},
+  rpc(name,args){
+   calls.push({name,args});
+   return Promise.resolve({data:{leaders:[{nick:'손님',score:13}]},error:null});
+  }
+ })};
+ w.eval(read('features/arcade/all-rankings.js'));
+ await new Promise(resolve=>setImmediate(resolve));
+ const doc=w.document;
+ assert.equal(doc.querySelectorAll('.rank-entry').length,26);
+ assert.match(doc.querySelector('[data-game="onecard"] .first-name').textContent,/로그인/);
+ assert.equal(doc.querySelector('[data-game="onecard"] .first-score').textContent,'—');
+ assert.equal(doc.querySelector('[data-game="saetbyeol"] .first-score').textContent,'13점');
+ assert.equal(calls.length,13,'guest reads only public solo leaderboards');
+ assert.ok(calls.every(call=>call.name==='community_game_monthly_personal'&&call.args.p_game!=='onecard'));
+});
+
+test('full leaderboard recovers One Card when the shared monthly batch fails',async t=>{
+ const dom=new JSDOM(read('features/arcade/all-rankings.html'),{
+  url:'https://ojjuda.kr/features/arcade/all-rankings.html',runScripts:'outside-only'
+ });
+ t.after(()=>dom.window.close());
+ const w=dom.window,calls=[];
+ w.OJJUDA_CONFIG={supabaseUrl:'https://fixture.invalid',supabaseKey:'fixture'};
+ w.supabase={createClient:()=>({
+  auth:{getSession:async()=>({data:{session:{user:{id:'member-b',is_anonymous:false}}}}),
+   onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},
+  rpc(name,args){
+   calls.push({name,args});
+   if(name==='community_game_monthly_leaders')return Promise.resolve({error:{message:'batch unavailable'}});
+   return Promise.resolve({data:{leaders:args.p_game==='onecard'?[{nick:'원카드복구',score:2}]:[]},error:null});
+  }
+ })};
+ w.eval(read('features/arcade/all-rankings.js'));
+ await new Promise(resolve=>setImmediate(resolve));
+ const one= w.document.querySelector('[data-game="onecard"]');
+ assert.equal(one.querySelector('.first-name').textContent,'1위 · 원카드복구');
+ assert.equal(one.querySelector('.first-score').textContent,'2연승');
+ assert.equal(calls.filter(call=>call.name==='community_game_monthly_personal').length,26);
+});

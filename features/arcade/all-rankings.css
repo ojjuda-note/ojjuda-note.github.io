@@ -1,0 +1,37 @@
+:root{color-scheme:light;--bg:#f2f5fa;--card:#fff;--line:#dfe5ef;--text:#26354a;--muted:#718097;--accent:#5576ad}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);font:14px/1.5 "Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer}
+.rank-top{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px max(16px,env(safe-area-inset-right));border-bottom:1px solid var(--line);background:#f8fafeef;backdrop-filter:blur(12px)}
+.rank-top h1{font-size:17px;line-height:1.35;letter-spacing:-.04em;margin:0}
+.rank-back,.rank-refresh{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-height:34px;padding:5px 9px;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:12px;font-weight:600;white-space:nowrap}
+.rank-back{font-size:20px}.rank-back span{font-size:12px}.rank-refresh{color:#455e85}.rank-refresh:disabled{opacity:.6}
+.rank-main{max-width:1060px;margin:auto;padding:18px 16px calc(35px + env(safe-area-inset-bottom))}
+.rank-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:0 0 12px}
+.rank-heading h2{font-size:22px;font-weight:800;letter-spacing:-.055em;margin:1px 0 0}
+.rank-eyebrow{font-size:10px;font-weight:800;letter-spacing:.16em;color:#7788a3}
+.rank-month{padding:5px 9px;background:#e6ecf6;color:#536b90;border-radius:8px;font-size:11px;font-weight:700;white-space:nowrap}
+.rank-status{margin:0 0 10px;min-height:0;font-size:12px;color:#647992}
+.rank-status:empty{display:none}
+.rank-groups{display:grid;gap:12px;align-items:start}
+.rank-section{min-width:0;padding:12px 12px 6px;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 4px 22px #24375509}
+.rank-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;padding:0 2px}
+.rank-section-head h3{font-size:14px;letter-spacing:-.04em;margin:0;font-weight:800}
+.rank-section-head span{font-size:10px;color:var(--muted)}
+.rank-list{display:grid}
+.rank-entry{display:grid;grid-template-columns:minmax(90px,1.02fr) minmax(0,1.05fr) minmax(46px,.5fr) 10px;align-items:center;gap:7px;min-height:41px;padding:8px 4px;border-top:1px solid #edf0f6}
+.rank-entry:focus-visible,.rank-back:focus-visible,.rank-refresh:focus-visible{outline:2px solid #7193ca;outline-offset:2px}
+.rank-entry:hover{background:#f6f8fd;border-radius:6px}
+.rank-entry .game-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:700;color:#334358}
+.rank-entry .first-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#697b91;font-size:11px}
+.rank-entry .first-name.is-error{color:#a34f55}
+.rank-entry .first-name.is-login{color:#8c7998}
+.rank-entry .first-name.is-record{color:#466a88}
+.rank-entry .first-score{text-align:right;white-space:nowrap;font-size:12px;font-weight:800;font-variant-numeric:tabular-nums;color:#516da0}
+.rank-entry .arrow{text-align:right;color:#9faec3;font-size:17px;font-weight:400;line-height:1}
+.rank-section[data-group="multi"] .first-score{color:#7763a2}
+.rank-section[data-group="adult"] .first-score{color:#a46a77}
+.rank-footnote{color:var(--muted);font-size:11px;line-height:1.7;margin:14px 4px}
+@media(min-width:720px){.rank-groups{grid-template-columns:1fr 1fr;gap:14px}.rank-section:first-child{grid-row:span 2}.rank-main{padding-top:23px}.rank-entry{min-height:43px}}
+@media(max-width:370px){.rank-main{padding-inline:10px}.rank-section{padding:10px 8px 5px}.rank-entry{grid-template-columns:minmax(78px,1fr) minmax(0,.95fr) minmax(45px,.46fr) 8px;gap:5px}.rank-refresh span{display:none}}
