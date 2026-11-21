@@ -9,6 +9,9 @@ const directory=path.join(root,'supabase/migrations');
 const read=name=>fs.readFileSync(path.join(directory,name),'utf8');
 const migrationName=fs.readdirSync(directory).find(name=>name.endsWith('_pajang_personality_questions.sql'));
 const migration=read(migrationName);
+const replacementMigration=read(fs.readdirSync(directory).find(name=>name.endsWith('_pajang_open_trip_question.sql')));
+const replacementSource=JSON.parse(fs.readFileSync(path.join(root,'features/pajang/content/personality-revisions.json'),'utf8'))
+  .find(row=>row.replaces===20245);
 const seeds=fs.readdirSync(directory).filter(name=>/^2026111709010[1-8]_pajang_/.test(name)).sort();
 async function fixture(t){
   const db=new PGlite();t.after(()=>db.close());
@@ -132,4 +135,72 @@ test('incomplete regular and calendar assignments are rejected rather than creat
     `(40001,null,'test','빠진 번호가 있는 질문인가요?',null,null,null,array['첫 답변','두 번째','세 번째'])`,
     `(40002,null,'test','판본이 빠진 질문인가요?','spring',null,12,array['첫 답변','두 번째','세 번째'])`
   ])await assert.rejects(db.exec(`insert into pajang_private.personality_question_catalog(id,ordinal,category,prompt,occasion,edition,turn,samples) values ${values}`),error=>error.code==='23514');
+});
+
+test('the open travel question replaces only the unanswered planning slot and matches its source',async t=>{
+  const db=await fixture(t);await db.exec(migration);
+  assert.ok(replacementSource,'the replacement has a reviewed source entry');
+  assert.equal(replacementSource.id,40001);
+  const today=await question(db,'2026-11-22','am');
+  await db.query(`insert into pajang_private.answers values('2026-11-22','am',$1,'현재 오전 질문에 쓴 답변')`,[today.q[0]]);
+  const before=(await db.query('select * from pajang_private.personality_question_catalog order by id')).rows;
+  const answers=(await db.query('select * from pajang_private.answers order by day,slot')).rows;
+  const definitions=()=>db.query(`select p.oid::regprocedure::text as signature,pg_get_functiondef(p.oid) as definition,p.proacl
+    from pg_proc p where p.oid in ('pajang_private.question_for_window(date,text)'::regprocedure,
+      'pajang_private.validate_question_insert()'::regprocedure) order by signature`);
+  const functions=(await definitions()).rows;
+  const retired=before.find(row=>row.id===replacementSource.replaces);
+  await db.exec(replacementMigration);
+  const after=(await db.query('select * from pajang_private.personality_question_catalog order by id')).rows;
+  assert.equal(after.length,936);
+  assert.equal(new Set(after.map(row=>row.prompt)).size,936);
+  assert.deepEqual(after.filter(row=>row.id!==replacementSource.id),before.filter(row=>row.id!==replacementSource.replaces),
+    'every other regular and seasonal question is unchanged');
+  assert.deepEqual(after.find(row=>row.id===replacementSource.id),{
+    ...retired,id:replacementSource.id,ordinal:replacementSource.ordinal,category:replacementSource.category,
+    prompt:replacementSource.prompt,samples:replacementSource.samples
+  });
+  assert.equal(after.some(row=>row.id===replacementSource.replaces),false);
+  assert.deepEqual(await question(db,'2026-11-22','am'),today);
+  assert.deepEqual(await question(db,'2026-11-22','pm'),{
+    id:replacementSource.id,q:[replacementSource.prompt],answers:replacementSource.samples
+  },'the actual publication selector serves the revised afternoon question');
+  assert.deepEqual((await db.query('select * from pajang_private.answers order by day,slot')).rows,answers);
+  assert.deepEqual((await definitions()).rows,functions,'publication and stale-write guards keep their definitions and privileges');
+});
+
+test('replaying the replacement preserves new answers and a retired prompt cannot be saved by an old form',async t=>{
+  const db=await fixture(t);await db.exec(migration);
+  const retired=await question(db,'2026-11-22','pm');
+  await db.exec(replacementMigration);
+  const next=await question(db,'2026-11-22','pm');
+  assert.notEqual(next.id,retired.id,'the changed meaning has a different question identity');
+  await assert.rejects(db.query(`insert into pajang_private.answers values('2026-11-22','pm',$1,'바뀌기 전 질문에 쓴 답변')`,
+    [retired.q[0]]),error=>error.code==='PT409');
+  await db.query(`insert into pajang_private.answers values('2026-11-22','pm',$1,'새 질문을 읽고 쓴 답변')`,[next.q[0]]);
+  const answers=(await db.query('select * from pajang_private.answers order by day,slot')).rows;
+  const catalog=(await db.query('select * from pajang_private.personality_question_catalog order by id')).rows;
+  await db.exec(replacementMigration);
+  assert.deepEqual((await db.query('select * from pajang_private.answers order by day,slot')).rows,answers);
+  assert.deepEqual((await db.query('select * from pajang_private.personality_question_catalog order by id')).rows,catalog);
+});
+
+test('the replacement refuses concurrent copy changes and never relabels an already answered prompt',async t=>{
+  await t.test('a different editor changed the planning question',async t=>{
+    const db=await fixture(t);await db.exec(migration);
+    await db.query(`update pajang_private.personality_question_catalog set samples=$1 where id=20245`,
+      [['다른 편집자가 검토한 첫 답변','다른 편집자가 검토한 두 번째 답변','다른 편집자가 검토한 세 번째 답변']]);
+    const before=(await db.query('select * from pajang_private.personality_question_catalog order by id')).rows;
+    await assert.rejects(db.exec(replacementMigration),/planning question changed/);await db.exec('rollback');
+    assert.deepEqual((await db.query('select * from pajang_private.personality_question_catalog order by id')).rows,before);
+  });
+  await t.test('the original prompt already received a member answer',async t=>{
+    const db=await fixture(t);await db.exec(migration);
+    const original=await question(db,'2026-11-22','pm');
+    await db.query(`insert into pajang_private.answers values('2026-11-22','pm',$1,'먼저 작성된 회원 답변 원문')`,[original.q[0]]);
+    const answers=(await db.query('select * from pajang_private.answers order by day,slot')).rows;
+    await assert.rejects(db.exec(replacementMigration),/already has answers/);await db.exec('rollback');
+    assert.deepEqual(await question(db,'2026-11-22','pm'),original);
+    assert.deepEqual((await db.query('select * from pajang_private.answers order by day,slot')).rows,answers);
+  });
 });
