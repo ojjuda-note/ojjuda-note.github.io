@@ -3,11 +3,14 @@
   --paper:var(--surface); --muted:var(--ink-2);
   --dark:var(--accent-ink); --purple:var(--accent); --soft:var(--accent-soft);
   --berry:var(--accent); --orange:var(--accent); --sage:var(--accent-ink);
+  --pajang-heading:color-mix(in srgb,var(--ink) 40%,var(--accent-ink));
+  --pajang-text:color-mix(in srgb,var(--ink-2) 78%,var(--pajang-heading));
   --serif:"Nanum Myeongjo","Noto Serif CJK KR","AppleMyungjo","Batang",Georgia,serif;
   --letter-scene:url("https://ziezbdjofcugznowiuda.supabase.co/storage/v1/object/public/pajang-theme/c645eaa78edb29e31f2dce57f4fca38bb9a04754179e3e2ee9faa5e0ac66ea62/letter.webp");
 }
 .radar-location-setting {display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 16px;padding:5px 0 13px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent}
-.radar-location-setting strong {font-size:14px;font-weight:600;color:var(--ink)}
+.radar-location-setting strong {font-size:14px;font-weight:500;color:var(--pajang-heading)}
+.radar-location-setting small {font-size:12px;color:var(--ink-2)}
 .radar-location-setting p {margin:3px 0 0;font-size:13px;color:var(--muted);line-height:1.5;word-break:keep-all}
 .radar-location-setting [role=switch] {position:relative;display:flex;align-items:center;flex:none;width:48px;min-width:48px;height:44px;padding:0 4px;border:0;border-radius:8px;background:transparent}
 .radar-location-setting [role=switch]::before {content:"";position:absolute;inset:8px 0;border:1px solid var(--ink-2);border-radius:15px;background:var(--ink-2);pointer-events:none}
@@ -18,7 +21,7 @@
 .radar-location-feedback {display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 14px;padding:0}
 .radar-location-feedback .radar-feedback {flex:1 1 220px;margin:0;line-height:1.6;overflow-wrap:anywhere}
 .radar-location-feedback button {flex:none}
-body {background:var(--bg);color:var(--ink)}
+body {background:var(--bg);color:var(--pajang-text)}
 .pajang-mast {background:color-mix(in srgb,var(--bg) 97%,transparent);border-color:var(--line);color:var(--ink)}
 .pajang-mast-inner {display:flex;width:min(1120px,calc(100% - 64px));height:68px;gap:18px}
 .pajang-signature {order:-1;font:700 29px/1 var(--serif);letter-spacing:-.09em}
@@ -63,7 +66,7 @@ body {background:var(--bg);color:var(--ink)}
 .station-layout {display:block;width:min(1120px,calc(100% - 64px))}
 .station-content.wrap {padding:28px 0 55px}
 .station-nav {z-index:9;position:fixed;inset:calc(11px + env(safe-area-inset-top)) auto auto 50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px;padding:0;border:0;background:none}
-.station-nav a {min-height:44px;padding:8px 17px;color:var(--muted);border-radius:10px;gap:7px}
+.station-nav a {min-height:44px;padding:8px 17px;color:var(--muted);border-radius:10px;gap:7px;font-weight:500}
 .station-nav a[aria-current=page],.station-nav a:hover {background:var(--accent-soft);color:var(--dark)}
 .station-nav-icon i {background:var(--berry);box-shadow:0 0 0 1px var(--bg)}
 .letter-hero,.entry-intro {position:relative;isolation:isolate;overflow:hidden;border:1px solid var(--line);border-radius:16px;background:var(--hero-bg)}
@@ -73,7 +76,7 @@ body {background:var(--bg);color:var(--ink)}
 .letter-date,.mobile-near,.rail-title,.rail-paper button,.rail-near b,.return-today {display:flex;align-items:center;gap:8px}
 .letter-date,.entry-slot {font-size:13px;font-weight:600;color:var(--berry)}
 .letter-date time {padding-left:10px;border-left:1px solid var(--line);font-size:13px;font-weight:500;color:var(--ink-2)}
-.letter-hero h1,.entry-intro h1 {font:650 clamp(32px,3.7vw,53px)/1.35 var(--serif);letter-spacing:-.075em;text-wrap:balance;color:var(--ink);margin:15px 0 20px}
+.letter-hero h1,.entry-intro h1 {font:500 clamp(32px,3.7vw,53px)/1.45 var(--serif);letter-spacing:-.045em;text-wrap:balance;color:var(--pajang-heading);margin:15px 0 20px}
 .letter-hero h1:last-child {margin-bottom:0}
 .primary,.actions #write,.actions button[type=submit],.composer button {color:var(--on-accent);background:var(--berry);border-radius:10px;font-weight:600}
 .primary:hover,.actions #write:hover,.actions button[type=submit]:hover,.composer button:hover {background:var(--dark)}
@@ -83,8 +86,10 @@ body {background:var(--bg);color:var(--ink)}
 .today-rail {display:grid;gap:16px}
 .rail-paper,.rail-near {padding:20px;text-align:left;border:1px solid var(--line);border-radius:16px;background:var(--paper)}
 .rail-title {justify-content:space-between;color:var(--accent-ink)}
-.rail-title h2,.rail-near strong,.inbox-chats,.answer-group h3,.history-heading h2,.own-history h3,.account-section h2 {font-family:var(--serif);letter-spacing:-.052em}
-.rail-title h2,.rail-near strong {font-size:24px;line-height:1.35;color:var(--ink)}
+.rail-title h2,.rail-near strong,.inbox-chats,.answer-group h3,.history-heading h2,.own-history h3,.account-section h2 {font-family:var(--sans);font-weight:600;letter-spacing:-.035em;color:var(--pajang-heading)}
+.rail-title h2,.rail-near strong {font-size:22px;line-height:1.5}
+.history-heading h2 {font-size:23px;line-height:1.5}
+.person strong {font-weight:600;color:var(--pajang-heading)}
 .rail-paper p,.rail-near span {display:block;margin:7px 0 18px;font-size:14px;color:var(--ink-2)}
 .rail-paper button,.rail-near b {width:fit-content;min-height:44px;color:var(--dark);font-size:13px;font-weight:500}
 .rail-near {position:relative;isolation:isolate;overflow:hidden;background:var(--surface-2);border-color:var(--line)}
@@ -114,8 +119,8 @@ body {background:var(--bg);color:var(--ink)}
 .question-preview {position:absolute;top:0;width:100%;pointer-events:none}
 .question-page header,.answer-group header {padding:15px 22px;background:var(--surface-2);border-bottom:1px solid var(--line)}
 .question-page header time,.answer-group header time,.own-history time {color:var(--ink-2);font-size:13px;font-weight:500}
-.question-page h3,.answer-group h3 {margin:5px 0 0;font-size:19px;line-height:1.5;overflow-wrap:anywhere}
-.question-page .question-header,.answer-group .question-carousel {--question-tint:#79ab8d;background-color:color-mix(in srgb,var(--question-tint) 24%,var(--surface-2));cursor:grab;outline-offset:-3px}
+.question-page h3,.answer-group h3 {margin:7px 0 0;color:var(--pajang-heading);font:500 19px/1.65 var(--sans);letter-spacing:-.025em;overflow-wrap:anywhere}
+.question-page .question-header,.answer-group .question-carousel {--question-tint:#79ab8d;background-color:color-mix(in srgb,var(--question-tint) 16%,var(--surface-2));cursor:grab;outline-offset:-3px}
 .question-header[data-tone="1"],.question-carousel[data-tone="1"] {--question-tint:#c58e9d}
 .question-header[data-tone="2"],.question-carousel[data-tone="2"] {--question-tint:#789fc4}
 .question-header[data-tone="3"],.question-carousel[data-tone="3"] {--question-tint:#c5a36c}
@@ -141,7 +146,7 @@ body {background:var(--bg);color:var(--ink)}
 #answers .answercard .person {gap:9px;text-align:left}
 #answers .answercard .avatar {width:34px;height:34px}
 #answers .answercard .person small {color:var(--muted);font-size:13px}
-#answers .answercard .quote {padding:0;margin:12px 0;color:var(--ink);font:500 clamp(16px,1.6vw,19px)/1.72 var(--sans);letter-spacing:-.029em}
+#answers .answercard .quote {padding:0;margin:14px 0 10px;color:var(--pajang-text);font:400 clamp(16px,1.6vw,19px)/1.8 var(--sans);letter-spacing:-.02em}
 #answers .answer-foot {border:0;padding:0}
 #answers .sendlink {min-width:44px;min-height:44px;border-radius:8px;background:transparent;color:var(--accent-ink);padding:0 3px;font-size:13px;font-weight:500}
 #answers .sendlink:hover:not(:disabled) {background:transparent;text-decoration:underline;text-underline-offset:4px}
@@ -154,7 +159,7 @@ body {background:var(--bg);color:var(--ink)}
 #answers .chips {min-width:0}
 #answers .emptyicon::before,#answers .emptyicon::after {display:none}
 .station-content .innerpage,.station-content .nearby-section {width:min(810px,100%);margin-inline:auto}
-.channel-heading h1,.pagetitle h1,.nearby-heading h1 {font:650 clamp(29px,3.3vw,39px)/1.4 var(--serif);letter-spacing:-.07em}
+.channel-heading h1,.pagetitle h1,.nearby-heading h1 {color:var(--pajang-heading);font:600 clamp(24px,3vw,30px)/1.5 var(--sans);letter-spacing:-.04em}
 .pagetitle,.pagetitle>svg,.emptyicon,.modalicon,.exchange-emblem {color:var(--berry)}
 .emptyicon,.modalicon,.exchange-emblem {background:var(--soft)}
 .seg button.on {background:var(--soft);color:var(--dark);border-color:var(--line)}
@@ -181,7 +186,13 @@ body {background:var(--bg);color:var(--ink)}
 .nearby-heading .questionlabel {color:var(--berry)}
 .dial-info i {background:var(--berry)}
 .dial-info,.dial-foot,.scope-pages,.radar-consent,.radar-feedback,.compass-controls p,.radar-head span,.control span,#sensor-note:not(:empty),.sample-radar .answer small,.sample-radar .answer b {color:var(--ink-2)}
-.radar-quote,.compass-controls b {color:var(--ink)}
+.radar-quote {color:var(--pajang-text);font-weight:400}
+.compass-controls b {color:var(--pajang-heading);font-weight:500}
+.radar-identity h2,.radar-empty h2 {color:var(--pajang-heading);font-size:22px;font-weight:600;letter-spacing:-.035em}
+.nearby-section .radar-answer-question {color:var(--pajang-heading);font-weight:500;line-height:1.65}
+.nearby-section .radar-answer-meta {font-weight:500}
+.nearby-section .radar-answer-list .radar-quote {line-height:1.8;letter-spacing:-.02em}
+.empty h3 {color:var(--pajang-heading);font-weight:600}
 .compass-controls,.control button,.sample-radar .answer {background:var(--paper);border-color:var(--line)}
 .control button {color:var(--dark)}
 .nearby-section button:focus-visible,.sample-radar button:focus-visible {outline-color:var(--berry)}
@@ -223,16 +234,16 @@ body {background:var(--bg);color:var(--ink)}
   .letter-hero {padding:18px}
   .letter-hero::before,.entry-intro::before {background:linear-gradient(90deg,color-mix(in srgb,var(--hero-bg) 92%,transparent) 0%,color-mix(in srgb,var(--hero-bg) 83%,transparent) 32%,color-mix(in srgb,var(--hero-bg) 62%,transparent) 54%,color-mix(in srgb,var(--hero-bg) 10%,transparent) 83%),linear-gradient(0deg,color-mix(in srgb,var(--hero-bg) 67%,transparent),transparent 40%),var(--letter-scene) 66% center/cover no-repeat}
   .letter-copy {max-width:100%}
-  .letter-hero h1 {font-size:clamp(25px,6.8vw,34px);margin:12px 0;line-height:1.4}
+  .letter-hero h1 {font-size:clamp(25px,6.8vw,34px);margin:12px 0;line-height:1.48}
   .letter-date {font-size:13px}
   .letter-date time {font-size:13px}
   .letter-copy .primary {padding:8px 13px}
   .today-rail {display:none}
   .mobile-near {display:flex;margin:7px 0 0 auto;min-height:44px;padding:5px 3px;border-radius:8px;background:transparent;color:var(--sage);font-size:13px;font-weight:500}
   .today-columns {display:block;margin-top:16px}
-  .question-page header,.answer-group header,#answers .answercard {padding:14px 16px}
+  .question-page header,.answer-group header,#answers .answercard {padding:16px}
   .question-page h3,.answer-group h3 {font-size:16px}
-  #answers .history-heading h2 {font-size:clamp(21px,6vw,26px)}
+  #answers .history-heading h2 {font-size:clamp(20px,5.5vw,22px)}
   .listperson {flex-wrap:wrap}.listperson>p {min-width:0}
   .entry-intro .intro {max-width:85%;font-size:13px}
 }
@@ -265,7 +276,7 @@ select option {background:var(--surface);color:var(--ink)}
 .chatintro small,.chatnote,.bubbleline time,.exchange-summary small,.exchange-hint,
 .exchange-status,.exchange-facts dt,#answers .answerdate,#answers .tag,
 footer,.footerbrand {color:var(--ink-2)}
-.tag,.quote,.radar-quote,.exchange-editor .exchange-check b,#answers .answercard .quote {color:var(--ink)}
+.tag,.quote,.radar-quote,.exchange-editor .exchange-check b,#answers .answercard .quote {color:var(--pajang-text)}
 .cardquestion,#answers .cardquestion,.chatintro,.sendlink,.sendlink:hover {color:var(--accent-ink)}
 .navitem.active,.profilebtn,.feednumber,.resultart i,.choice em,.guidelist>div>b,
 .questionbox,.profileanswer,.actions output:not(:empty) {background:var(--accent-soft);color:var(--accent-ink)}
