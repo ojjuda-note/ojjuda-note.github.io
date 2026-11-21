@@ -562,13 +562,6 @@ async function checkNavigation(page){
   assert.equal(await helpMenu.evaluate(el=>el.open),false,'a fresh settings page starts with Help collapsed');
   await helpMenu.locator('summary').click();
   assert.equal(await helpMenu.getAttribute('open'),'','Help expands before its child actions are used');
-  const organization=helpMenu.getByRole('link',{name:'조직도',exact:true});
-  await organization.waitFor({state:'visible'});
-  const organizationUrl=new URL(await organization.getAttribute('href'),page.url());
-  assert.equal(organizationUrl.origin,origin,'organization stays on the current service origin');
-  assert.equal(organizationUrl.pathname,'/features/organization/');
-  assert.deepEqual([...organizationUrl.searchParams],[['from','pajang']],'public organization keeps only the allowed Pajang return source');
-  assert.equal(await organization.getAttribute('target'),'_top');
   await helpMenu.getByRole('button',{name:'사용법',exact:true}).click();
   const help=page.getByRole('dialog',{name:'파장 이용 안내'});
   await help.waitFor();
@@ -1132,8 +1125,8 @@ async function checkNavigation(page){
     const topRows=settings.locator('.ojjuda-settings-list > .ojjuda-settings-row, .ojjuda-settings-list > details.ojjuda-settings-details > summary.ojjuda-settings-row');
     assert.equal(await helpMenu.count(),1,'settings has one Help disclosure');
     assert.equal(await helpMenu.evaluate(el=>el.open),false,'Help is a collapsed top-level menu on entry');
-    assert.deepEqual(await helpRows.locator('.ojjuda-settings-label').allTextContents(),['사용법','조직도'],'usage and organization are the two Help children');
-    for(const index of [0,1])assert.equal(await helpRows.nth(index).isVisible(),false,'collapsed Help hides both children');
+    assert.deepEqual(await helpRows.locator('.ojjuda-settings-label').allTextContents(),['사용법'],'retired department link is absent from Help');
+    for(const index of [0])assert.equal(await helpRows.nth(index).isVisible(),false,'collapsed Help hides the Help action');
     const readRowBounds=elements=>elements.map(el=>{
       const {top,bottom,left,right,height}=el.getBoundingClientRect();
       return {top,bottom,left,right,height};
@@ -1155,9 +1148,9 @@ async function checkNavigation(page){
       await helpMenu.locator('summary').click();
       assert.equal(await helpMenu.evaluate(el=>el.open),true,'the Help summary expands its children');
       const childRows=await helpRows.evaluateAll(readRowBounds);
-      assert.equal(childRows.length,2);
+      assert.equal(childRows.length,1);
       for(const [index,row] of childRows.entries()){
-        assert.equal(await helpRows.nth(index).isVisible(),true,'expanded Help exposes both child actions');
+        assert.equal(await helpRows.nth(index).isVisible(),true,'expanded Help exposes the Help action');
         assert.ok(row.height>=44,`Help child ${index+1} has a full touch target at ${width}px`);
         assert.ok(row.left>=0&&row.right<=width+1,'expanded Help children stay within the viewport');
         if(index)assert.ok(row.top>=childRows[index-1].bottom-1,'Help children stack vertically without overlap');
@@ -1165,7 +1158,7 @@ async function checkNavigation(page){
       assert.equal(await topRows.count(),16,'expanding Help never counts nested actions as top-level settings');
       await helpMenu.locator('summary').click();
       assert.equal(await helpMenu.evaluate(el=>el.open),false);
-      for(const index of [0,1])assert.equal(await helpRows.nth(index).isVisible(),false,'closing Help hides both children again');
+      for(const index of [0])assert.equal(await helpRows.nth(index).isVisible(),false,'closing Help hides the Help action again');
     }
     await settings.getByRole('button',{name:'로그아웃',exact:true}).click();
     const logout=page.getByRole('dialog',{name:'로그아웃',exact:true});

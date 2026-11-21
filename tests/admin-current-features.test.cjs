@@ -60,13 +60,8 @@ async function entry(query, allowed = true, signedIn = true, userError = null) {
  for (const tab of menuTabs) {
   const {redirects} = await entry('?admin=' + tab);
   const destination = new URL(redirects[0]);
-  if (tab === 'organization') {
-   assert.equal(destination.pathname, '/admin/operations.html', 'organization opens the protected standalone page');
-   assert.equal(destination.searchParams.has('admin'), false, 'standalone pages do not pretend to be World tabs');
-  } else {
-   assert.equal(destination.pathname, '/world.html');
-   assert.equal(destination.searchParams.get('admin'), tab, 'direct menu link: ' + tab);
-  }
+  assert.equal(destination.pathname, '/world.html');
+  assert.equal(destination.searchParams.get('admin'), tab);
   assert.equal(new URL(redirects[0]).searchParams.get('from'),menuWindow.OjjudaAdminScope.resolve(null,tab),'the service is inferred from a dedicated direct link');
  }
  for(const [route,service] of [
@@ -83,8 +78,9 @@ async function entry(query, allowed = true, signedIn = true, userError = null) {
  for(const service of ['agit','park','pajang']){
   for(const requested of ['?admin=organization&from='+service,'?from='+service+'#organization']){
    const result=await entry(requested),destination=new URL(result.redirects[0]);
-   assert.equal(destination.pathname,'/admin/operations.html');
-   assert.equal(destination.searchParams.get('from'),service,'organization preserves the administrator service');
+   assert.equal(destination.pathname,'/world.html');
+   assert.equal(destination.searchParams.get('admin'),'overview','retired organization route resolves to safe overview');
+   assert.equal(destination.searchParams.get('from'),service,'retired route preserves administrator service');
   }
   for(const [allowed,signedIn,panel] of [[false,true,'no-permission'],[true,false,'auth-required']]){
    const result=await entry('?admin=organization&from='+service,allowed,signedIn);

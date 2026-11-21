@@ -82,7 +82,7 @@ for(const service of ['agit','park','pajang']){
   host.innerHTML=nav.render({service,area,tab:home,summary});
   assert.equal(host.querySelector('.adm-navigation').dataset.service,service);
   assert.equal(host.querySelector('[data-admin-folder="content"] span').textContent,scope.services[service].label+' 관리');
-  assert.equal(host.querySelector('.adm-menu-group[data-group="headquarters"]'),null,'organization is available through public service help');
+  assert.equal(host.querySelector('.adm-menu-group[data-group="headquarters"]'),null,'retired departments are not included in the menu');
   assert.equal(host.querySelector('a[href*="operations.html"]'),null);
   const items=[...host.querySelectorAll('.adm-menu-groups [data-act="adm-open"]')];
   for(const item of items)assert.equal(scope.allows(service,item.dataset.v),true,`${service} never renders ${item.dataset.v}`);
