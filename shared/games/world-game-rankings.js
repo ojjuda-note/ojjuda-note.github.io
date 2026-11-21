@@ -9,6 +9,8 @@ const nextReset=month=>Date.UTC(Number(month.slice(0,4)),Number(month.slice(5,7)
 const validMonth=month=>typeof month==='string'&&/^\d{4}-(0[1-9]|1[0-2])$/.test(month);
 const monthName=month=>Number(month.slice(0,4))+'년 '+Number(month.slice(5,7))+'월';
 const rankGroups=[{id:'solo',name:'혼자하는 플레이'},{id:'multi',name:'함께하는 플레이'},{id:'adult',name:'어른들 플레이'}];
+// Preview the public solo leaderboards without exposing member-only multiplayer records.
+const publicPreviewGames=new Set(['saetbyeol','screw_box','screw_flat','runner','mole','stacker','breakout','chacha_rush']);
 const multiGames=new Set(['onecard','bang','tank','tour','yut','ttang','janggi','chess','billiards']);
 const adultGames=new Set(['matgo','poker','roulette','photo_ttang']);
 const rankGroupFor=id=>adultGames.has(id)?'adult':multiGames.has(id)?'multi':'solo';
@@ -72,7 +74,31 @@ function readRanking(client,owner,key,query,fresh=false){
  return entry.promise;
 }
 function readLeaders(client,owner,ids,fresh=false){
- return readRanking(client,owner,readKey('leaders',rankingMonth(),ids),()=>client.rpc('community_game_monthly_leaders',{p_games:ids}),fresh);
+ return readRanking(client,owner,readKey('leaders',rankingMonth(),ids),async()=>{
+  // The authenticated batch reader is preferable, but its failure must not
+  // hide results that can still be read individually.
+  if(owner!=='public-preview'){
+   try{
+    const batch=await client.rpc('community_game_monthly_leaders',{p_games:ids}).abortSignal(AbortSignal.timeout(10000));
+    if(!batch.error&&batch.data&&typeof batch.data==='object')return batch;
+   }catch{}
+  }
+  const recovered={};
+  // Limit parallel recovery reads to avoid overwhelming the database.
+  for(let offset=0;offset<ids.length;offset+=4){
+   const chunk=ids.slice(offset,offset+4);
+   const rows=await Promise.all(chunk.map(async id=>{
+    if(owner==='public-preview'&&!publicPreviewGames.has(id))return [id,{__error:true}];
+    try{
+     const response=await client.rpc('community_game_monthly_personal',{p_game:id,p_guest_token:null}).abortSignal(AbortSignal.timeout(7000));
+     if(response.error||!Array.isArray(response.data?.leaders))return [id,{__error:true}];
+     return [id,response.data.leaders[0]||null];
+    }catch{return [id,{__error:true}];}
+   }));
+   for(const [id,row] of rows)recovered[id]=row;
+  }
+  return {data:recovered,error:null};
+ },fresh);
 }
 function readHistory(client,owner,ids,month,fresh=false){
  return readRanking(client,owner,readKey('history',[rankingMonth(),month||rankingMonth()],ids),()=>client.rpc('community_game_monthly_history',{p_games:ids,p_month:month?month+'-01':null}),fresh);
@@ -82,7 +108,16 @@ function shareCurrentLeaders(client,owner,ids,data){
  rankingScope.reads.set(readKey('leaders',data.currentMonth,ids),{response:{data:data.leaders},at:Date.now(),promise:null});
 }
 function mount(host,{client,owner,games={},getGames=null,onOpenGame=null,authorized=()=>true}={}){
-dispose?.();dispose=null;controller=null;scopeFor(client,owner);if(!host)return;
+dispose?.();dispose=null;controller=null;
+const guest=!owner&&!!client;
+if(guest){
+ owner='public-preview';
+ const onlyPublic=catalog=>Object.fromEntries(Object.entries(catalog||{}).filter(([id])=>publicPreviewGames.has(id)));
+ games=onlyPublic(games);
+ const originalGetGames=getGames;
+ if(typeof originalGetGames==='function')getGames=()=>onlyPublic(originalGetGames());
+}
+scopeFor(client,owner);if(!host)return;
 let rankDispose=()=>{},releaseAccess=null,alive=true,request=0,catalogKey=null;
 const rankStates=new Map();
 let view='home',historyMonth=null,historyInfo=null,observedMonth=rankingMonth(),rolloverTimer=0,help=null,rankCategory=null,automaticOverride=null;
@@ -327,8 +362,8 @@ function rankingCarousel(groups,head,token,items,onChange=()=>{},onResize=()=>{}
   function leaders(token,fresh){
    const entries=Object.entries(games);if(!entries.length)return [];
    const section=el('section','','board-leaders');section.setAttribute('aria-label','게임순위');section.dataset.worldSwipe='off';
-   const head=el('header','','board-rank-head'),heading=el('h3'),openHistory=button('게임순위',()=>{if(active()&&token===request)void showHistory(null,false,true);},'board-rank-history-open');
-   openHistory.setAttribute('aria-label','월별 게임순위 보기');openHistory.append(Object.assign(el('span','›'),{ariaHidden:'true'}));heading.append(openHistory);head.append(heading,el('span','이번 달','board-rank-caption'));section.append(head);
+   const head=el('header','','board-rank-head'),heading=el('h3'),openHistory=button(guest?'전체 게임순위':'게임순위',()=>{if(!active()||token!==request)return;if(guest)location.assign('/features/arcade/monthly-ranking.html');else void showHistory(null,false,true);},'board-rank-history-open');
+   openHistory.setAttribute('aria-label',guest?'게임별 이번 달 순위 보기':'월별 게임순위 보기');openHistory.append(Object.assign(el('span','›'),{ariaHidden:'true'}));heading.append(openHistory);head.append(heading,el('span','이번 달','board-rank-caption'));section.append(head);
    const groups=el('div','','board-rank-groups'),targets=new Set(),panels=new Map();section.append(groups);content.append(section);
    let timer=0,hover=false,touching=false,loaded=false,categories=null;
    const motion=matchMedia('(prefers-reduced-motion: reduce)'),events=new AbortController(),options={signal:events.signal};
@@ -442,7 +477,7 @@ function rankingCarousel(groups,head,token,items,onChange=()=>{},onResize=()=>{}
    // Fetch the visible games in one request instead of competing with the feed
    // for thirty separate HTTP/database connections.
    const batch=result(readLeaders(client,owner,entries.map(([id])=>id),fresh)).then(leaders=>{
-    if(active()&&token===request&&typeof CustomEvent==='function'){
+    if(!guest&&active()&&token===request&&typeof CustomEvent==='function'){
      window.dispatchEvent(new CustomEvent('ojjuda:leaders-loaded',{
       detail:{owner,month:rankingMonth(),leaders}
      }));
@@ -459,6 +494,7 @@ function rankingCarousel(groups,head,token,items,onChange=()=>{},onResize=()=>{}
      try{
       const ranking=await (initial?batch:result(readLeaders(client,owner,[key],true)));
       if(!active()||token!==request||version!==loadVersion)return;
+      if(ranking?.[key]?.__error)throw Error('ranking_unavailable');
       record.record=ranking?.[key]||null;record.status='ready';paintTarget(id);
      }catch{if(active()&&token===request&&version===loadVersion){record.status='error';paintTarget(id);}}
      finally{loading=false;panels.get(rankGroupFor(id)).orderByRecords();fitScores();}
