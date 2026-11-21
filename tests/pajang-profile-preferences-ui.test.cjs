@@ -116,9 +116,12 @@ function fixture() {
           });
           if(mode==='error')return error('XX000','프로필을 저장하지 못했어요. 다시 시도해 주세요.');
           const current=records.get(state.me.id), data=args.p_data;
-          if(mode==='conflict'||data.preferencesVersion!==current.version)return error('PT412','다른 화면에서 프로필을 변경했어요. 다시 열어 주세요.');
-          const record={person:state.me.id,preferences:{...current.preferences,...structuredClone(data.preferences)},version:current.version+1};
-          records.set(state.me.id,record);
+          const changingChoices=Object.hasOwn(data,'preferences');
+          if(mode==='conflict'||(changingChoices&&data.preferencesVersion!==current.version))return error('PT412','다른 화면에서 프로필을 변경했어요. 다시 열어 주세요.');
+          const record=changingChoices
+            ? {person:state.me.id,preferences:{...current.preferences,...structuredClone(data.preferences)},version:current.version+1}
+            : current;
+          if(changingChoices)records.set(state.me.id,record);
           Object.assign(state.me,{name:data.name||state.me.name,region:data.region,
             preferences:record.preferences,preferencesVersion:record.version});
           if(Object.hasOwn(data,'interest'))state.me.interest=data.interest;
@@ -466,11 +469,25 @@ async function openGroup(dialog,label) {
     assert.equal(await form.dialog.getByRole('group',{name:'원하는 인연',exact:true}).getByRole('button',{pressed:true}).count(),0,'unsaved selections are not persisted');
     await closeProfile(page,form.dialog);
 
-    // A failed or incomplete read must never turn existing choices into an empty save.
+    // A failed preference read can save nickname/region only; existing choices are never overwritten.
     await page.evaluate(()=>window.preferenceFixture.readResponses.push('error'));
     form=await openProfile(page,{ready:false});
     await form.dialog.getByText('프로필 선택항목을 불러오지 못했어요.',{exact:true}).waitFor();
-    assert.equal(await form.save.isDisabled(),true,'save is disabled after a failed profile read');
+    const beforeFallback=await page.evaluate(()=>window.preferenceFixture.record());
+    const basicSave=form.dialog.getByRole('button',{name:'기본 정보만 저장',exact:true});
+    assert.equal(await basicSave.isDisabled(),false,'a failed choice read does not block base profile edits');
+    assert.equal(await form.dialog.getByRole('group',{name:'원하는 인연',exact:true}).count(),0,'unknown choices are not shown as empty');
+    await form.dialog.getByLabel('닉네임',{exact:true}).fill('닉네임 복구 저장');
+    await basicSave.click();
+    await form.dialog.waitFor({state:'hidden'});
+    const fallbackRequest=await page.evaluate(()=>window.preferenceFixture.saves.at(-1));
+    assert.equal(Object.hasOwn(fallbackRequest.p_data,'preferences'),false,'fallback never submits a preference patch');
+    assert.equal(Object.hasOwn(fallbackRequest.p_data,'preferencesVersion'),false,'fallback never invents a version');
+    assert.equal(fallbackRequest.p_data.name,'닉네임 복구 저장');
+    const afterFallback=await page.evaluate(()=>window.preferenceFixture.record());
+    assert.deepEqual(afterFallback,beforeFallback,'fallback preserves all existing choices and their version');
+    await page.evaluate(()=>window.preferenceFixture.readResponses.push('error'));
+    form=await openProfile(page,{ready:false});
     await form.dialog.getByRole('button',{name:'다시 불러오기',exact:true}).click();
     await page.waitForFunction(button=>!button.disabled,await form.save.elementHandle());
     await closeProfile(page,form.dialog);
