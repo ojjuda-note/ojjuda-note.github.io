@@ -4,7 +4,7 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const {chromium} = require('playwright');
 const {execFileSync} = require('node:child_process');
-const {calendarCases,selectCalendarDate,palette,distinctPalettes}=require('./theme-browser-helpers.cjs');
+const {calendarCases,palette,distinctPalettes}=require('./theme-browser-helpers.cjs');
 const themeOnly=process.env.PAJANG_THEME_ONLY==='1';
 const navigationOnly=process.env.PAJANG_NAVIGATION_ONLY==='1';
 const previousRelease='71785aabf407ca239a27b4811e252a962a725717';
@@ -632,19 +632,19 @@ async function checkNavigation(page){
       for(const appearance of ['light','dark']){
         await page.emulateMedia({colorScheme:appearance});const samples=[];
         for(const [theme,date] of calendarCases){
-          await selectCalendarDate(page,date);const colors=await palette(page,view.selectors);
-          assert.equal(colors.theme,theme);assert.equal(colors.body,colors.bg,view.name+' uses the shared background');
+          const colors=await palette(page,view.selectors,{date});
+          assert.equal(colors.theme,theme,view.name+' '+appearance+' calendar '+date);assert.equal(colors.body,colors.bg,view.name+' uses the shared background');
           if(view.selectors.action)assert.equal(colors.nodes.action.background,colors.accent,view.name+' primary action follows '+theme);
           samples.push(colors);
         }
         distinctPalettes(samples,'Pajang '+view.name+' '+appearance,['bg','accent',...view.changing]);
         const weather=[];
         for(const kind of [null,'rain','snow']){
-          await selectCalendarDate(page,'2026-10-15',kind);const colors=await palette(page,view.selectors);
-          assert.equal(colors.weather,kind||'');weather.push(colors);
+          const colors=await palette(page,view.selectors,{date:'2026-10-15',weather:kind});
+          assert.equal(colors.weather,kind||'',view.name+' '+appearance+' weather '+(kind||'clear'));weather.push(colors);
         }
         assert.equal(new Set(weather.map(colors=>colors.bg)).size,3,view.name+' responds to clear, rain and snow');
-        await selectCalendarDate(page,'2026-12-25','snow');assert.equal((await palette(page)).weather,'','holiday palette takes priority');
+        assert.equal((await palette(page,{},{date:'2026-12-25',weather:'snow'})).weather,'','holiday palette takes priority');
       }
       if(view.name==='entry')assert.equal(await page.locator('#mine').inputValue(),'테마가 바뀌어도 남아야 하는 답변');
       if(view.name==='member')assert.equal(await page.locator('.dialog #editor').inputValue(),'테마가 바뀌어도 남아야 하는 답변');
@@ -1455,4 +1455,3 @@ async function checkNavigation(page){
     console.log('PASS 320/390/1080px layout, artwork-independent startup, tap/swipe/keyboard, delayed results, cancellation, in-memory revisit, and denial');
   } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
-
