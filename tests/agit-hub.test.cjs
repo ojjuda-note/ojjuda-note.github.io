@@ -309,11 +309,20 @@ test('occasion headline and Ojjuda copy replace the everyday greeting',()=>{
   }
 });
 
-test('mobile missions use one compact panel instead of oversized cards',()=>{
-  const css=fs.readFileSync(path.join(__dirname,'../features/home/agit-hub.css'),'utf8');
-  const mobile=css.slice(css.indexOf('@media(max-width:740px)'));
-  assert.match(css,/\.agit-quest-grid\{display:grid;grid-template-columns:minmax\(0,1fr\)/);
-  assert.match(mobile,/\.agit-quest-card\{grid-template-columns:23px 36px minmax\(0,1fr\) 18px/);
+test('compact mission cards keep their actions and show completion once',()=>{
+  const settings={};
+  hub.complete(settings,'park',date);
+  const html=hub.markup(settings,{},date);
+  const cards=[...html.matchAll(/<button\b[^>]*data-act="agit-task"[^>]*>[\s\S]*?<\/button>/g)].map(match=>match[0]);
+  assert.equal(cards.length,5);
+  assert.match(cards[0],/data-v="park"/);
+  assert.match(cards[0],/title="공원에 글 남기기"/);
+  assert.match(cards[0],/aria-label="완료한 미션: 공원 글쓰기"/);
+  assert.match(cards[0],/🌷/,'completed cards keep their task icon');
+  assert.equal((cards[0].match(/✓/g)||[]).length,1,'one clear completion badge');
+  assert.match(cards[3],/title="추천게임 시작하기"/);
+  assert.match(cards[4],/축제 둘러보기/);
+  assert.doesNotMatch(cards.join(''),/agit-quest-number/,'decorative numbers do not consume space');
 });
 
 test('themed hero uses narrow inline white highlights without masking the artwork',()=>{
