@@ -788,6 +788,9 @@ async function checkNavigation(page){
     assert.equal(editWrite.action,'edit-answer');
     assert.equal(Object.hasOwn(editWrite,'archive'),false);
     assert.equal(Object.hasOwn(editWrite,'publicationPolicy'),false);
+    await answers.locator('.cardgrid[aria-busy="false"]').waitFor();
+    assert.equal(await answers.locator('.answer-group h3').textContent(),rows[0].question,'saving another question keeps the selected question');
+    await answers.getByRole('button',{name:'이전 질문',exact:true}).click();
     await cards.filter({hasText:'같이 산책하고 따뜻한 차를 마셔요.'}).waitFor();
     await revise.click();
     assert.equal(await editor.getByLabel('내 이야기').inputValue(),'같이 산책하고 따뜻한 차를 마셔요.');

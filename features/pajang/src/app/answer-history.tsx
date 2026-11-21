@@ -3,6 +3,7 @@ import {signalsWith, type Slot, type Station} from "../lib/station";
 import {relationshipIntents,type RelationshipIntentKey} from "../lib/profile-preferences.mjs";
 import {InterestArt} from "./interest-art";
 import {I} from "./icons";
+import QuestionCarousel from "./question-carousel";
 
 export type DiscoveryAnswer = {
   peer:string; name:string; region:string; interest:string;
@@ -27,6 +28,7 @@ declare global {
 }
 type Intent = "first"|"more"|"check"|"changed";
 const rowKey = (row:DiscoveryAnswer) => row.peer+"/"+row.day+"/"+row.slot;
+const questionKey = (row:DiscoveryAnswer) => JSON.stringify([row.day,row.slot,row.question]);
 const empty = (key:string):Result => ({key,items:[],total:null,next:null,loading:true,changed:false,error:""});
 type SavedPage = {until:number; result:Result};
 function firstPage(cache:Map<string,SavedPage>, key:string):Result {
@@ -168,11 +170,45 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
   const activity=station.people.filter(p=>p.body).map(p=>p.id+":"+p.at).join(",");
   const openingScope=JSON.stringify([station.me?.id,station.day,station.slot]);
   const {result,load}=useAnswers(filter,gender,order,scope,openingScope,activity,active);
-  const groups:DiscoveryAnswer[][]=[];
-  for(const answer of result.items){
-    const last=groups.at(-1);
-    if(last && last[0].day===answer.day && last[0].slot===answer.slot && last[0].question===answer.question)last.push(answer);
-    else groups.push([answer]);
+  const groups=useMemo(()=>{
+    const questions=new Map<string,DiscoveryAnswer[]>();
+    for(const answer of result.items){
+      const key=questionKey(answer),group=questions.get(key);
+      if(group)group.push(answer);else questions.set(key,[answer]);
+    }
+    return [...questions.values()];
+  },[result.items]);
+  const selectionScope=JSON.stringify([station.me?.id,station.day,station.slot,filter,gender,order]);
+  const [selection,setSelection]=useState({scope:selectionScope,question:""});
+  const advance=useRef<{scope:string;question:string}|null>(null);
+  const index=Math.max(0,selection.scope===selectionScope?groups.findIndex(group=>questionKey(group[0])===selection.question):0);
+  const selected=groups[index];
+  useEffect(()=>{
+    if(result.loading)return;
+    const pending=advance.current;
+    if(pending?.scope===selectionScope&&!result.error){
+      const after=groups.findIndex(group=>questionKey(group[0])===pending.question)+1;
+      if(after>0&&groups[after]){
+        advance.current=null;
+        setSelection({scope:selectionScope,question:questionKey(groups[after][0])});
+        return;
+      }
+      // One question may fill several pages. Keep looking until the next question
+      // arrives, without ever showing another question's answers under this heading.
+      if(after>0&&result.next){load.current("more");return;}
+    }
+    advance.current=null;
+    if(selected&&(selection.scope!==selectionScope||!groups.some(group=>questionKey(group[0])===selection.question)))
+      setSelection({scope:selectionScope,question:questionKey(selected[0])});
+  },[groups,result.loading,result.error,result.next,selectionScope,selection,selected,load]);
+  function stepQuestion(direction:number){
+    advance.current=null;
+    const group=groups[index+direction];
+    if(group)setSelection({scope:selectionScope,question:questionKey(group[0])});
+    else if(direction>0&&selected&&result.next&&!result.loading){
+      advance.current={scope:selectionScope,question:questionKey(selected[0])};
+      load.current("more");
+    }
   }
   return <section id="answers" className="feedsection" aria-labelledby="all-answers-title">
     <div className="sectiontitle history-head">
@@ -199,9 +235,10 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
     {result.loading&&result.total===null&&<span className="answer-sr" role="status">답변을 불러오고 있어요.</span>}
     <div className="cardgrid" aria-busy={result.loading}>
       {result.loading&&result.total===null&&[0,1,2].map(i=><div className="answer-skeleton" key={i} aria-hidden="true"><i/><i/><i/><i/></div>)}
-      {groups.map(group=><section className="answer-group" key={rowKey(group[0])}>
-        <header><time dateTime={group[0].day}>{group[0].day.replaceAll("-",".")} · {group[0].slot==="am"?"오전":"오후"}</time><h3>{group[0].question}</h3></header>
-        {group.map(row=>{
+      {selected&&<section className="answer-group" aria-labelledby="selected-question">
+        <QuestionCarousel question={selected[0]} index={index} count={groups.length} more={Boolean(result.next)} loading={result.loading} onStep={stepQuestion}/>
+        <div id="question-answers" aria-labelledby="selected-question">
+        {selected.map(row=>{
         const relation=signalsWith(station,row.peer);
         const sent=row.sent||!!relation.outgoing, received=row.received||!!relation.incoming, matched=sent&&received;
         const intents=relationshipIntents.filter(intent=>row.relationship_intents?.includes(intent.key));
@@ -220,7 +257,7 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
             <span><I n={matched?"chat":sent?"check":"signal"} s={17}/>{matched?"대화하기":sent?"보낸 신호":received?"신호 수락하기":"신호 보내기"}</span>
           </button>}</div>
         </article>;
-      })}</section>)}
+      })}</div></section>}
     </div>
     {result.error&&<p className="notice" role="alert">{result.error}<button onClick={()=>load.current(result.next&&result.items.length?"more":"first")}>다시 시도</button></p>}
     {result.total!==null&&!result.error&&!result.items.length&&<div className="empty"><span className="emptyicon" aria-hidden="true"><I n="wave" s={22}/></span>

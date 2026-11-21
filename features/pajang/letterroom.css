@@ -106,6 +106,19 @@ body {background:var(--bg);color:var(--ink)}
 .answer-group header {padding:15px 22px;background:var(--surface-2);border-bottom:1px solid var(--line)}
 .answer-group header time,.own-history time {color:var(--ink-2);font-size:11px;font-weight:650}
 .answer-group h3 {margin:5px 0 0;font-size:19px;line-height:1.5;overflow-wrap:anywhere}
+.answer-group .question-carousel {touch-action:pan-y pinch-zoom;cursor:grab;outline-offset:-3px}
+.question-carousel:focus-visible {outline:2px solid var(--berry)}
+.question-carousel[data-dragging=true] {cursor:grabbing;user-select:none}
+.question-meta {display:flex;align-items:center;justify-content:space-between;gap:8px}
+.question-meta time {min-width:0;overflow-wrap:anywhere}
+.question-controls {display:flex;align-items:center;gap:2px;flex:none}
+.question-controls button {display:grid;place-items:center;min-width:44px;min-height:44px;border-radius:50%;color:var(--dark);touch-action:manipulation}
+.question-controls button:hover:not(:disabled) {background:var(--accent-soft)}
+.question-controls button:disabled {opacity:.3}
+.question-position {min-width:38px;text-align:center;color:var(--muted);font:600 11px/1.4 var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap}
+.question-copy {transition:transform .18s ease-out;will-change:transform}
+.question-carousel[data-dragging=true] .question-copy {transition:none}
+@media(prefers-reduced-motion:reduce){.question-copy{transition:none}}
 #answers .answercard {display:block;padding:19px 22px;border:0;border-radius:0;box-shadow:none}
 #answers .answercard+.answercard {border-top:1px solid var(--line)}
 #answers .answercard .person {gap:9px;text-align:left}
