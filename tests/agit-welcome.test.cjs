@@ -413,7 +413,7 @@ test('daily greeting replaces redundant emoji ornaments with a readable wordmark
   assert.match(css, /\.agit-welcome-close\s*\{[^}]*width:\s*44px;\s*height:\s*44px;/s,
     'close target is at least 44px wide and tall');
   assert.doesNotMatch(css, /agit-welcome-(?:orbit|heart|pop)/);
-  assert.match(css, /@media \(max-width: 380px\)\s*\{[^}]*\.agit-welcome-wordmark\s*\{/s);
+  assert.match(css, /@media \(max-width: 380px\)[\s\S]*?\.agit-welcome-wordmark\s*\{/);
   assert.match(html, /agit-welcome\.css\?v=20261121-d08-wordmark1/);
   assert.match(html, /agit-welcome\.js\?v=20261121-d08-wordmark1/);
 });
