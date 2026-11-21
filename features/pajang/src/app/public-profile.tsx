@@ -62,11 +62,16 @@ export function ProfileForm({person,isNew,onSave,busy}:{person:Person|null;isNew
   const previousRegion=person?.region;
   const legacyRegion=previousRegion&&!Object.hasOwn(districts,previousRegion.split(" ")[0]);
   const choicesReady=read.status==="ready"&&preferenceDraft.scope===read.scope;
-  const disabled=busy||!choicesReady;
+  // The server accepts a base-profile-only update without touching saved preferences.
+  // A failed preference read must not force a member to abandon a nickname/region edit.
+  const baseOnly=!isNew&&read.status==="error";
+  const disabled=busy||(!choicesReady&&!baseOnly);
   function submit(event:React.FormEvent){
     event.preventDefault();if(disabled)return;
-    onSave({name:name.trim(),region,consent,profilePerson:person?.id??null,
-      preferences:{relationship_intents:preferences.relationship_intents},preferencesVersion:read.version});
+    const data:Record<string,unknown>={name:name.trim(),region,consent,profilePerson:person?.id??null};
+    // Never send empty or stale preferences when their current version is unknown.
+    if(choicesReady){data.preferences={relationship_intents:preferences.relationship_intents};data.preferencesVersion=read.version;}
+    onSave(data);
   }
   return <form className="profileform public-profile-form" onSubmit={submit}>
     <label>닉네임<input value={name} maxLength={textInputMaxLength(name,12)} placeholder="오쭈다 닉네임 사용" disabled={busy} onChange={event=>setName(event.target.value)}/></label>
@@ -81,6 +86,7 @@ export function ProfileForm({person,isNew,onSave,busy}:{person:Person|null;isNew
       </select></label>}
     </div>
     <ReadStatus read={read}/>
+    {baseOnly&&<p className="preference-status" role="status">선택한 인연은 그대로 두고 닉네임과 지역만 저장할 수 있어요.</p>}
     {choicesReady&&<fieldset className="profile-intent-field" disabled={busy}>
       <legend>원하는 인연</legend>
       <p className="preference-help">여러 개 골라도 괜찮아요. 선택한 내용은 파장 회원에게 보여요.</p>
@@ -90,7 +96,7 @@ export function ProfileForm({person,isNew,onSave,busy}:{person:Person|null;isNew
         {intent.label}</button>)}</div>
     </fieldset>}
     {isNew&&<label className="checkrow"><input type="checkbox" required disabled={busy} checked={consent} onChange={event=>setConsent(event.target.checked)}/><span>만 19세 이상이며 파장 회원에게 닉네임과 내가 선택한 공개 정보를 보여 주는 데 동의해요.</span></label>}
-    <button className="primary wide" disabled={disabled||(isNew&&!consent)}>{isNew?"회원 채널 시작하기":"프로필 저장"}<I n="arrow" s={16}/></button>
+    <button className="primary wide" disabled={disabled||(isNew&&!consent)}>{isNew?"회원 채널 시작하기":baseOnly?"기본 정보만 저장":"프로필 저장"}<I n="arrow" s={16}/></button>
   </form>;
 }
 
