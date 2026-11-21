@@ -35,3 +35,51 @@ button{font:inherit;cursor:pointer}
 .rank-footnote{color:var(--muted);font-size:11px;line-height:1.7;margin:14px 4px}
 @media(min-width:720px){.rank-groups{grid-template-columns:1fr 1fr;gap:14px}.rank-section:first-child{grid-row:span 2}.rank-main{padding-top:23px}.rank-entry{min-height:43px}}
 @media(max-width:370px){.rank-main{padding-inline:10px}.rank-section{padding:10px 8px 5px}.rank-entry{grid-template-columns:minmax(78px,1fr) minmax(0,.95fr) minmax(45px,.46fr) 8px;gap:5px}.rank-refresh span{display:none}}
+/* The same automatic Korea-calendar art and palette used by Agit, Park and Pajang. */
+:root[data-world-theme]{
+ --bg:var(--season-bg,#f2f5fa);
+ --card:#fff;
+ --line:color-mix(in srgb,var(--season-accent,#5576ad) 18%,#fff);
+ --accent:var(--season-accent,#5576ad);
+}
+body{
+ background:radial-gradient(ellipse 70% 310px at 88% 0%,var(--season-soft,#e8eef7) 0%,transparent 82%),var(--season-bg,#f2f5fa);
+}
+.rank-top{
+ border-bottom-color:var(--line);
+ background:color-mix(in srgb,var(--season-bg,#f8fafe) 90%,#fff);
+}
+.rank-main{position:relative;isolation:isolate}
+.rank-main::before{
+ content:"";position:absolute;z-index:-1;pointer-events:none;top:-28px;right:-22px;
+ width:min(45vw,330px);height:235px;
+ background-image:var(--hero-art);background-repeat:no-repeat;background-position:center;background-size:contain;
+ opacity:.26;
+}
+.rank-heading h2{color:var(--text)}
+.rank-eyebrow{color:var(--season-accent,#5576ad)}
+.rank-month{
+ background:var(--season-soft,#e6ecf6);
+ color:var(--season-accent,#536b90);
+}
+.rank-section{
+ position:relative;isolation:isolate;overflow:hidden;
+ background:color-mix(in srgb,#fff 89%,var(--season-hero,#f4f6fb));
+ border-color:var(--line);
+}
+.rank-section::before{
+ content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+ background-image:var(--hero-art);background-repeat:no-repeat;
+ background-position:right -24px bottom -20px;background-size:auto 175px;opacity:.19;
+}
+.rank-section>*{position:relative;z-index:1}
+.rank-section-head h3{color:var(--text)}
+.rank-entry{background:rgba(255,255,255,.53);border-top-color:color-mix(in srgb,var(--season-accent,#5576ad) 12%,#fff)}
+.rank-entry:hover{background:color-mix(in srgb,var(--season-soft,#e9edf6) 60%,#fff)}
+.rank-entry .first-score{color:var(--season-accent,#516da0)}
+.rank-section[data-group="multi"] .first-score,.rank-section[data-group="adult"] .first-score{color:var(--season-accent,#516da0)}
+.rank-refresh{color:var(--season-accent,#455e85)}
+@media(max-width:540px){
+ .rank-main::before{width:50vw;height:185px;opacity:.18;right:0}
+ .rank-section::before{background-size:auto 145px;background-position:right -27px bottom -14px;opacity:.16}
+}
