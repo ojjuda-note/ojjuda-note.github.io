@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "test:themes": "node --test world-themes.test.cjs theme-preview-smoke.test.cjs world-weather.test.cjs location-weather.test.cjs theme-weather-proxy.test.cjs",
-    "test:park-composer:unit": "node note-composer-settings.test.cjs && node note-preview-photo.test.cjs && npm run test:park-video:unit && node park-loading.test.cjs && node park-frame-cache.test.cjs && node park-settings-navigation.test.cjs",
+    "test:park-admin-media:unit": "node --test note-admin-media-ui.test.cjs && node park-admin-media-db.test.cjs",
+    "test:park-composer:unit": "node note-composer-settings.test.cjs && node note-preview-photo.test.cjs && npm run test:park-video:unit && npm run test:park-admin-media:unit && node park-loading.test.cjs && node park-frame-cache.test.cjs && node park-settings-navigation.test.cjs",
     "test:park-composer:ui": "node park-note-chat-ui.test.cjs && node mobile-viewport-ui.test.cjs && node guest-access-ui.test.cjs && npm run test:park-video:ui",
     "test:park-composer": "npm run test:park-composer:unit && npm run test:park-composer:ui",
     "test:guest-access": "node --test guest-access.test.cjs world-navigation-departure.test.cjs game-results-arcade.test.cjs game-results-multiplayer.test.cjs archery-ammo-bridge.test.cjs photo-ttang-guest-login.test.cjs && node guest-access-ui.test.cjs && node photo-ttang-trial-ui.test.cjs",
