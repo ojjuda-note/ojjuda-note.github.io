@@ -36,3 +36,9 @@ html:not([data-ojjuda-adult="true"]) [data-rank-group="adult"]{display:none!impo
 .board-rank-groups .board-rank-history-table{overscroll-behavior-x:auto}.board-rank-history-reserve[hidden]{display:none}
 
 .board-rank-groups:focus-visible{outline:2px solid var(--accent-ink,#577c5c);outline-offset:-2px;border-radius:14px}
+
+/* Carousel must not reserve the tallest hidden ranking page. */
+[data-arcade-rank-root] .board-rank-groups{align-items:flex-start}
+[data-arcade-rank-root] .board-rank-group{height:auto;align-self:flex-start}
+[data-arcade-rank-root] .board-rank-viewport{transition:height .18s ease}
+@media(prefers-reduced-motion:reduce){[data-arcade-rank-root] .board-rank-viewport{transition:none}}
