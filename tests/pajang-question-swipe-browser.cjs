@@ -40,7 +40,7 @@ function installFixture(data) {
     me:{id:data.owner,name:'내 계정',region:'대전광역시',interest:'book',body:'오늘의 내 답변'}
   };
   const control = window.questionSwipeFixture = {
-    station:state,calls:[],actions:[],unexpected:[],holdMore:false,releaseMore:null
+    station:state,calls:[],actions:[],unexpected:[],holdMore:false,releaseMore:null,failMore:false
   };
   const ok = items => ({data:{items:structuredClone(items),total:items.length,nextCursor:null,remaining:3},error:null});
   window.pajangArt = {};
@@ -59,13 +59,16 @@ function installFixture(data) {
           if(signal?.aborted)throw new DOMException('Aborted','AbortError');
           const scenario=new URL(location.href).searchParams.get('fixture');
           if(scenario==='keys')return ok(data.keys);
+          if(scenario==='closed')return ok(data.initial);
+          if(scenario==='single')return ok([data.a1,data.aOwn]);
+          if(args.p_cursor&&control.failMore)return {data:null,error:{message:'Could not load the next fixture page'}};
           if(args.p_interest==='marriage')return ok([]);
           if(args.p_interest!=='all'||args.p_gender!=='all'||args.p_order!=='latest')return ok([data.a1,data.b1]);
-          const split=scenario==='split';
+          const split=scenario==='split',knownEnd=scenario==='known-end';
           const result=ok(!args.p_cursor?data.initial:split
             ?args.p_cursor.page===2?data.more.filter(row=>row.peer!==data.c1.peer):[data.c1]
-            :data.more);
-          result.data.total=6;
+            :knownEnd?data.more.filter(row=>row.peer!==data.c1.peer):data.more);
+          result.data.total=knownEnd?5:6;
           result.data.nextCursor=!args.p_cursor?{page:2}:split&&args.p_cursor.page===2?{page:3}:null;
           return result;
         });
@@ -155,6 +158,7 @@ async function swipe(page,direction,{short=false,vertical=false,target='heading'
     });
     const page=await context.newPage();page.setDefaultTimeout(10000);
     page.on('pageerror',error=>errors.push(error.message));
+    page.on('console',message=>{if(/same key|unique.*key/i.test(message.text()))errors.push(message.text());});
     const screenshots=path.join(root,'tests/artifacts/pajang-discovery');
     await fs.mkdir(screenshots,{recursive:true});
     const active=()=>page.locator('#answers .answer-group');
@@ -263,7 +267,43 @@ async function swipe(page,direction,{short=false,vertical=false,target='heading'
     assert.equal(await page.evaluate(()=>questionSwipeFixture.calls.filter(call=>call.p_cursor).length),1);
     await page.evaluate(()=>questionSwipeFixture.releaseMore());
     await shown([c1],3,3);
-    assert.equal(await next().isDisabled(),true,'exhausted last page has no next action');
+    assert.equal(await next().isDisabled(),false,'the last question can continue to the first');
+
+    checkpoint='last question loops to the first by button keyboard and body swipe';
+    const completeReads=await page.evaluate(()=>questionSwipeFixture.calls.length);
+    await next().click();await shown([a1,aOwn,a2],1,3);
+    assert.equal(await previous().isDisabled(),true,'the first question keeps its existing previous boundary');
+    await next().click();await shown([b1,b2],2,3);
+    await next().click();await shown([c1],3,3);
+    await header().focus();await page.keyboard.press('ArrowRight');await shown([a1,aOwn,a2],1,3);
+    await next().click();await shown([b1,b2],2,3);
+    await next().click();await shown([c1],3,3);
+    await swipe(page,'left',{target:'body',beforeRelease:async start=>{
+      const moved=await positions();
+      assert.ok(moved.header-start.header<=-50,'the last page follows the finger while looping');
+      assert.ok(Math.abs((moved.header-start.header)-(moved.answer-start.answer))<1,
+        'the last question and its answers move together at the loop boundary');
+      const preview=await viewport().evaluate(element=>{
+        const current=element.querySelector('.answer-group').getBoundingClientRect();
+        return [...element.querySelectorAll('.question-preview')].map(node=>({
+          day:node.querySelector('time').dateTime,x:node.getBoundingClientRect().x,
+          currentRight:current.right,bodies:[...node.querySelectorAll('.quote')].map(quote=>quote.textContent),
+          hidden:node.inert&&node.getAttribute('aria-hidden')==='true'
+        }));
+      });
+      const first=preview.find(panel=>panel.day===questionA.day&&panel.x>panel.currentRight);
+      assert.ok(first,'the first question enters from the right of the last question');
+      assert.deepEqual(first.bodies,[a1.body,aOwn.body,a2.body]);
+      assert.equal(first.hidden,true);
+      assert.equal(await page.locator('#selected-question').count(),1);
+      assert.equal(await page.locator('#question-answers').count(),1);
+      await viewport().screenshot({path:path.join(screenshots,'question-loop-drag-390.png')});
+    }});
+    await shown([a1,aOwn,a2],1,3);
+    assert.equal(await page.evaluate(()=>questionSwipeFixture.calls.length),completeReads,
+      'looping over fully loaded questions does not reload the feed');
+    await next().click();await shown([b1,b2],2,3);
+    await next().click();await shown([c1],3,3);
     await previous().click();await shown([b1,b2],2,3);
     await previous().click();await shown([a1,aOwn,a2],1,3);
     assert.equal(await active().locator('.answercard').count(),3,'duplicate row from another page is not repeated');
@@ -274,6 +314,58 @@ async function swipe(page,direction,{short=false,vertical=false,target='heading'
     await reset();
     await page.getByRole('button',{name:'답변 더 보기',exact:true}).click();
     await shown([a1,aOwn,a2],1,3);
+
+    checkpoint='two completed questions wrap without duplicate active identifiers';
+    await reset('?fixture=closed');await shown([a1,aOwn],1,2);
+    await next().click();await shown([b1],2,2);
+    await swipe(page,'left',{target:'body',beforeRelease:async()=>{
+      assert.equal(await page.locator('#selected-question').count(),1);
+      assert.equal(await page.locator('#question-answers').count(),1);
+      assert.equal(await page.locator('#answers .answer-group').count(),1);
+      const previews=await viewport().evaluate(element=>{
+        const right=element.querySelector('.answer-group').getBoundingClientRect().right;
+        return [...element.querySelectorAll('.question-preview')].map(node=>({
+          day:node.querySelector('time').dateTime,right:node.getBoundingClientRect().x>right,
+          hidden:node.inert&&node.getAttribute('aria-hidden')==='true'
+        }));
+      });
+      assert.ok(previews.some(panel=>panel.day===questionA.day&&panel.right),
+        'the first of two questions is available on the forward side');
+      assert.ok(previews.every(panel=>panel.hidden));
+    }});
+    await shown([a1,aOwn],1,2);
+    assert.equal(await previous().isDisabled(),true);
+
+    checkpoint='the final server page can contain only already known questions';
+    await reset('?fixture=known-end');
+    await next().click();await shown([b1],2,2);
+    await page.evaluate(()=>{questionSwipeFixture.holdMore=true;});
+    await next().click();
+    await page.waitForFunction(()=>typeof questionSwipeFixture.releaseMore==='function');
+    await shown([b1],2,2);
+    await page.evaluate(()=>questionSwipeFixture.releaseMore());
+    await shown([a1,aOwn,a2],1,2);
+    assert.deepEqual(await page.evaluate(()=>questionSwipeFixture.calls.filter(call=>call.p_cursor).map(call=>call.p_cursor)),
+      [{page:2}],'the last cursor is consumed before looping to the first question');
+    await next().click();await shown([b1,b2],2,2);
+
+    checkpoint='a single completed question has no redundant navigation';
+    await reset('?fixture=single');await shown([a1,aOwn],1,1);
+    assert.equal(await next().isDisabled(),true);
+    assert.equal(await previous().isDisabled(),true);
+    await swipe(page,'left',{target:'body'});await shown([a1,aOwn],1,1);
+    assert.equal(await page.evaluate(()=>questionSwipeFixture.calls.length),1);
+
+    checkpoint='a page failure keeps the last loaded question and can be retried';
+    await reset();await next().click();await shown([b1],2,2);
+    await page.evaluate(()=>{questionSwipeFixture.failMore=true;});
+    await next().click();await page.getByRole('alert').waitFor();
+    await shown([b1],2,2);
+    await page.evaluate(()=>{questionSwipeFixture.failMore=false;});
+    await page.getByRole('button',{name:'다시 시도',exact:true}).click();
+    await shown([b1,b2],2,3);
+    await next().click();await shown([c1],3,3);
+    await next().click();await shown([a1,aOwn,a2],1,3);
 
     checkpoint='boundary continues through pages containing only known questions';
     await reset('?fixture=split');
@@ -354,7 +446,7 @@ async function swipe(page,direction,{short=false,vertical=false,target='heading'
     checkpoint='reduced motion changes the question without a sliding panel';
     await page.setViewportSize({width:390,height:844});
     await page.emulateMedia({reducedMotion:'reduce'});
-    await reset();await shown([a1,aOwn],1,2);
+    await reset('?fixture=closed');await shown([a1,aOwn],1,2);
     await swipe(page,'left',{target:'body',beforeRelease:async start=>{
       const current=await positions();
       assert.ok(Math.abs(current.header-start.header)<1&&Math.abs(current.answer-start.answer)<1,
@@ -364,9 +456,12 @@ async function swipe(page,direction,{short=false,vertical=false,target='heading'
     await previous().click();
     assert.equal(await viewport().getAttribute('data-moving'),'false','reduced motion skips the slide transition');
     await shown([a1,aOwn],1,2);
+    await next().click();await shown([b1],2,2);
+    await next().click();await shown([a1,aOwn],1,2);
+    assert.equal(await viewport().getAttribute('data-moving'),'false','the last-to-first loop also respects reduced motion');
     assert.deepEqual(await page.evaluate(()=>questionSwipeFixture.unexpected),[]);
     assert.deepEqual(errors,[],'no browser runtime errors');
-    console.log('PASS pajang question swipe: whole-panel drag, body touch, scroll, keyboard, callbacks, pagination, filters, reduced motion, 320/390/750px');
+    console.log('PASS pajang question swipe: whole-panel drag, last-to-first loop, body touch, scroll, keyboard, callbacks, pagination, filters, reduced motion, 320/390/750px');
     await context.close();
   } catch(error) {
     error.message='['+checkpoint+'] '+error.message;
