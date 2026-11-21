@@ -516,7 +516,7 @@ if (kissOfLifeProfile) {
 const kiiikiiiProfile = window.OJJUDA_FAN_PROFILES.kiiikiii;
 if (kiiikiiiProfile) {
   kiiikiiiProfile.expanded = true;
-  kiiikiiiProfile.checkedAt = '2026.11.16';
+  kiiikiiiProfile.checkedAt = '2026.11.18';
   kiiikiiiProfile.awards = [
     { year: '2026.11', title: 'MMA2026 3관왕', detail: '11.15 고척스카이돔 · TOP10·베스트 퍼포먼스(여자)·베스트 뮤직스타일', href: 'https://www.bntnews.co.kr/article/view/bnt202611160169' },
     { year: '2026.11', title: 'KGMA2026 대상 포함 3관왕', detail: '11.08 고척스카이돔 · 그랜드 아너스 초이스·베스트 뮤직·베스트 스트리밍송', href: 'https://www.bntnews.co.kr/article/view/bnt202611090129' }
