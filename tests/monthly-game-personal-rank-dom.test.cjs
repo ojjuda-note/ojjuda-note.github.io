@@ -293,3 +293,32 @@ test('full leaderboard recovers One Card when the shared monthly batch fails',as
  assert.equal(one.querySelector('.first-score').textContent,'2연승');
  assert.equal(calls.filter(call=>call.name==='community_game_monthly_personal').length,26);
 });
+
+test('the arcade leaderboard shares the existing automatic calendar themes and artwork',t=>{
+ for(const base of ['all-rankings','monthly-ranking']){
+  const html=read('features/arcade/'+base+'.html');
+  const css=read('features/arcade/'+base+'.css');
+  assert.match(html,/\/app\/world\/world-themes\.css\?v=20261119-auto-theme1/);
+  assert.match(html,/\/app\/world\/world-themes\.js\?v=20261119-auto-theme1/);
+  assert.match(css,/background-image:var\(--hero-art\)/,
+   'the rank board uses the same seasonal or holiday artwork, not an unrelated illustration');
+  assert.match(css,/var\(--season-accent/,
+   'the rank board preserves the current calendar theme colors');
+ }
+ const dom=new JSDOM('<!doctype html><html><head><meta name="theme-color" content="#fff"></head><body></body></html>',{
+  url:'https://ojjuda.kr/features/arcade/all-rankings.html',runScripts:'outside-only'
+ });
+ t.after(()=>dom.window.close());
+ const w=dom.window;
+ w.eval(read('app/world/world-themes.js'));
+ assert.ok(w.OjjudaThemes,'the shared theme calendar loads without the world shell');
+ for(const [day,expected] of [
+  ['2026-04-15','spring'],['2026-07-15','summer'],['2026-11-22','autumn'],['2026-12-15','winter'],
+  ['2026-02-17','seollal'],['2026-09-25','chuseok'],['2026-11-11','pepero'],['2026-12-25','christmas']
+ ]){
+  assert.equal(w.OjjudaThemes.resolve(new Date(day+'T03:00:00Z')),expected,
+   day+' uses the same auto-selected Korean calendar theme as Agit');
+ }
+ assert.ok(w.document.documentElement.dataset.worldTheme,
+  'the shared theme writes data-world-theme for the rank-board artwork');
+});
