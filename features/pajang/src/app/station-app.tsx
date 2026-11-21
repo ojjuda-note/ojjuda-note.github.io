@@ -478,7 +478,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     {(modal.kind==="buySignals"||(modal.kind==="signal"&&available===0&&s.purchasingEnabled))&&me&&<SignalPurchaseForm key={me.id}
       onBusyChange={accountBusy} onWallet={wallet=>applySignalQuota(wallet,me.id)}
       onPurchased={receipt=>{applySignalQuota(receipt,me.id);setError("");if(modal.kind==="buySignals")close();setToast(`신호 ${receipt.quantity}개를 구매했어요. 남은 신호 ${receipt.remaining}개`);}}/>}
-    {modal.kind==="suggestion"&&me&&<QuestionSuggestionForm key={me.id} onBusyChange={accountBusy} onSaved={()=>{close();setToast("질문을 보냈어요. 고마워요!");}}/>}
+    {modal.kind==="suggestion"&&me&&<QuestionSuggestionForm key={me.id} period={period} onBusyChange={accountBusy} onSaved={()=>{close();setToast("질문을 보냈어요. 고마워요!");}}/>}
     {(modal.kind==="logout"||modal.kind==="withdraw")&&<AccountActionForm action={modal.kind} close={close} onBusyChange={accountBusy}/>}
     {modal.kind==="visibility"&&me&&<><h2>답변 공개 설정</h2><AnswerGenderVisibility key={me.id} onSaved={()=>setHistoryRevision(n=>n+1)}/></>}
     {modal.kind==="answers"&&me&&<MyAnswers key={me.id+period} owner={me.id} answered={Boolean(me.body)} revision={historyRevision}
