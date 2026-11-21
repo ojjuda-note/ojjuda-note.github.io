@@ -328,6 +328,27 @@ function clientFixture(hash) {
       state.people=[sameCell[0],{...nearDirection,bearing:270},privateDirection];
       document.dispatchEvent(new Event('visibilitychange'));
     };
+    let recentRadarSnapshot=null;
+    window.setRecentRadar=enabled=>{
+      if(!enabled){
+        Object.assign(state,recentRadarSnapshot);delete state.nearbyPeople;
+      }else{
+        recentRadarSnapshot={day:state.day,slot:state.slot,people:state.people};
+        state.day='2026-11-19';state.slot='am';
+        const answers=[
+          {day:'2026-11-19',slot:'am',question:'계획이 갑자기 바뀌면 어떻게 하나요?',body:'가능한 선택부터 차분히 찾아봐요.',at:3,likeCount:1,liked:false},
+          {day:'2026-11-18',slot:'pm',question:'친구에게 서운하면 어떻게 표현하나요?',body:'마음을 정리한 뒤 직접 이야기해요.',at:2,likeCount:2,liked:true},
+          {day:'2026-11-18',slot:'am',question:'쉬는 날에는 어떻게 기운을 되찾나요?',body:'혼자 산책하며 생각을 정리해요.',at:1,likeCount:0,liked:false},
+        ];
+        state.people=[friend,offered];
+        state.nearbyPeople=[
+          {...nearDirection,id:'recent-past',name:'지난별',body:answers[1].body,range:3,bearing:90,answers:answers.slice(1)},
+          {...nearDirection,id:'recent-all',name:'모아',body:answers[0].body,range:7,bearing:225,answers},
+        ];
+      }
+      document.dispatchEvent(new Event('visibilitychange'));
+    };
+    window.clearRecentRadar=()=>{state.nearbyPeople=[];document.dispatchEvent(new Event('visibilitychange'));};
     window.setNearbyCount(2);state.signals=[{src:'me',dst:'peer1'},{src:'peer1',dst:'me'},{src:'peer2',dst:'me'}];
     if(accepted)state.signals.push({src:'me',dst:'peer2'});
     const entry={...state,joined:mode!=='new',body:mode==='new'?'':state.me.body,nickname:'보리',
@@ -714,7 +735,7 @@ async function checkNavigation(page){
     assert.equal(await page.evaluate(()=>window.artPending),true,'feed is usable with all artwork still pending');
     assert.equal(await page.evaluate(()=>window.authCalls),1);
     assert.deepEqual(await page.evaluate(()=>window.artCalls.slice().sort()),['book.webp','walk.webp']);
-    assert.deepEqual(await group.locator('label span').allTextContents(),['남','','여']);
+    assert.deepEqual(await group.locator('label span').allTextContents(),['전체','남성','여성']);
     const dir=path.join(__dirname,'artifacts/pajang-discovery');
     await fs.mkdir(dir,{recursive:true});
     for(const width of [320,390,750,1080]){
@@ -722,10 +743,13 @@ async function checkNavigation(page){
       await checkServiceHeader(page,width);
       await page.locator('.pajang-mast').screenshot({path:path.join(dir,'service-header-'+width+'.png'),animations:'disabled'});
       assert.ok(await answers.evaluate(el=>el.scrollWidth<=document.documentElement.clientWidth));
-      const bounds=await group.boundingBox();
-      assert.equal(bounds.width,74);assert.equal(bounds.height,26);
-      const title=await answers.getByRole('heading',{name:'모두의 답변'}).boundingBox();
-      assert.ok(bounds.x>=title.x+title.width-1 && Math.abs((bounds.y+bounds.height/2)-(title.y+title.height/2))<10);
+      const targets=await group.locator('label').evaluateAll(nodes=>nodes.map(node=>{
+        const box=node.getBoundingClientRect(),text=node.querySelector('span');
+        return {left:box.left,right:box.right,width:box.width,height:box.height,font:parseFloat(getComputedStyle(text).fontSize)};
+      }));
+      assert.ok(targets.every(box=>box.width>=44&&box.height>=44&&box.font>=14),
+        'gender choices have readable labels and full touch targets at '+width+'px: '+JSON.stringify(targets));
+      assert.ok(targets.every(box=>box.left>=0&&box.right<=width+1),'gender choices fit at '+width+'px');
       await answers.screenshot({path:path.join(dir,'answers-'+width+'.png'),animations:'disabled'});
     }
     await checkSignalPurchaseLayout(page,dir);
@@ -756,6 +780,7 @@ async function checkNavigation(page){
     await selected('female');await cards.filter({hasText:rows[1].body}).waitFor();
     assert.deepEqual(await page.evaluate(n=>window.feedCalls.slice(n),calls),['female'],'one request per swipe');
     await answers.screenshot({path:path.join(dir,'answers-female.png'),animations:'disabled'});
+    await page.keyboard.press('ArrowLeft');await selected('male');
     await page.keyboard.press('ArrowLeft');await selected('all');
     await page.evaluate(()=>{window.denied=true;});
     await radio('male').tap();await answers.getByRole('alert').waitFor();
@@ -959,6 +984,41 @@ async function checkNavigation(page){
     await page.setViewportSize({width:390,height:844});
     console.log('PASS sparse initial circles, symmetric collision dots, five/six-person density transitions, generous dot touch targets, keyboard selection, same-cell 0/1/2/3, twelve-person dots, compass/privacy boundaries and half-speed waves');
     await capture('radar-mobile');
+    await page.evaluate(()=>window.setRecentRadar(true));
+    await markerByName('지난별').waitFor();
+    assert.equal(await page.locator('.scope-person').count(),2,'each nearby member has one marker across the latest three question slots');
+    assert.equal(await markerByName('라온').count(),0,'the current-only people feed is not mixed into an explicit nearby feed');
+    await markerByName('지난별').click();
+    const recentAnswers=page.locator('.radar-answer-list > .radar-answer');
+    assert.equal(await recentAnswers.count(),2,'a member with only previous answers appears on the radar');
+    assert.deepEqual(await recentAnswers.locator('time').allTextContents(),['2026.11.18 · 오후','2026.11.18 · 오전']);
+    assert.deepEqual(await recentAnswers.locator('.radar-quote').allTextContents(),['마음을 정리한 뒤 직접 이야기해요.','혼자 산책하며 생각을 정리해요.']);
+    await page.getByRole('button',{name:'공개 정보 보기',exact:true}).click();
+    const recentProfile=page.getByRole('dialog');
+    await recentProfile.getByRole('heading',{name:'지난별',exact:true}).waitFor();
+    assert.equal(await recentProfile.locator('.questionbox small').innerText(),'친구에게 서운하면 어떻게 표현하나요?',
+      'a past-only member opens the matching question rather than the current question');
+    assert.equal(await recentProfile.getByRole('button',{name:'좋아요 2개, 취소하기',exact:true}).count(),1,
+      'the nearby answer retains its existing like state in the public profile');
+    await recentProfile.getByRole('button',{name:'닫기',exact:true}).click();
+    await markerByName('모아').click();
+    assert.equal(await recentAnswers.count(),3);
+    assert.deepEqual(await recentAnswers.locator('time').allTextContents(),['2026.11.19 · 오전','2026.11.18 · 오후','2026.11.18 · 오전']);
+    assert.equal(await recentAnswers.getByText('현재 질문',{exact:true}).count(),1);
+    for(const width of [320,390,750]){
+      await page.setViewportSize({width,height:width===750?750:844});
+      assert.ok(await page.locator('.nearby-section').evaluate(el=>el.scrollWidth<=document.documentElement.clientWidth),
+        'three nearby answers fit at '+width+'px');
+      await checkPeopleLayout(page);
+      await page.locator('.nearby-section').screenshot({path:path.join(dir,'pajang-radar-recent-'+width+'.png'),animations:'disabled'});
+    }
+    await page.evaluate(()=>window.clearRecentRadar());
+    await page.getByRole('heading',{name:'아직 주변 답변이 없어요',exact:true}).waitFor();
+    assert.equal(await page.locator('.scope-person').count(),0,'an explicit empty nearby feed never falls back to current-only people');
+    await page.evaluate(()=>window.setRecentRadar(false));
+    await markerByName('라온').waitFor();
+    await page.setViewportSize({width:390,height:844});
+    console.log('PASS latest-three-question nearby markers, past-only members, dated answers, public profiles and empty-feed boundaries');
     await page.reload();await page.getByRole('heading',{name:'주변 레이더'}).waitFor();
     await sameCellPeople.first().waitFor();
     await checkCompass(page,'.radar-scope','.radar-bearings text',friendAnchor,fixedPeople);await expectHeaderClean();
