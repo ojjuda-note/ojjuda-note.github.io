@@ -89,5 +89,19 @@ begin
 end;
 $function$;
 
--- CREATE OR REPLACE preserves the prior EXECUTE grant: no additional profile
--- readers gain access to private data, and the invoker RPC wrapper stays intact.
+-- The Data API role has no USAGE on pajang_private (by design). The old
+-- invoker wrapper failed with permission denied for schema pajang_private.
+-- Keep that private schema hidden; this narrowly scoped public wrapper runs
+-- with the existing owner and delegates to the ownership-checked routine.
+create or replace function public.pajang_profile_details(
+  p_action text default 'mine', p_data jsonb default '{}'::jsonb
+) returns jsonb language sql security definer set search_path = '' as
+$wrapper$
+  select pajang_private.profile_details(p_action,p_data);
+$wrapper$;
+
+-- Explicitly allow only authenticated users to call the Data API entrypoint.
+-- The private routine always requires a valid member and checks owner_id.
+revoke all on function public.pajang_profile_details(text,jsonb)
+  from public,anon,authenticated,service_role;
+grant execute on function public.pajang_profile_details(text,jsonb) to authenticated;
