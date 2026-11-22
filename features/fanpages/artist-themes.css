@@ -549,3 +549,12 @@ body[data-artist][data-theme="night"] .channels-section {
   background: linear-gradient(115deg, var(--theme-bg),
     color-mix(in srgb, var(--theme-bg) 65%, var(--group-accent)));
 }
+
+/* &TEAM's long Japanese broadcast and venue names must wrap on 320px screens. */
+body[data-artist="andteam"] .event-card-info strong,
+body[data-artist="andteam"] .event-card-info small {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
