@@ -178,14 +178,14 @@ export function ExchangeProfileEditor({profileId,focusTastes=false,onSaved}:{pro
                   : [...current.preferences.relationship_intents,intent.key]}}:current);}}>{intent.label}</button>;
           })}</div>
         </fieldset>
-      </fieldset>
       <section ref={tastes} className="exchange-tastes unified-public-tastes" aria-label="나를 표현하는 취향" tabIndex={-1}>
         <ProfileTastesFields value={profile.preferences} interest={profile.interest} disabled={busy}
           onInterest={interest=>{setError("");setProfile(current=>current?{...current,interest}:current);}}
           onChange={preferences=>{setError("");setProfile(current=>current?{...current,preferences:{...preferences,relationship_intents:current.preferences.relationship_intents}}:current);}}
           drafts={drafts} onDraft={(key,value)=>{setError("");setDrafts(previous=>({...previous,[key]:value}));}} onAdd={add}/>
       </section>
-      <details ref={privateDetails} className="unified-private-profile">
+      </fieldset>
+      <details ref={privateDetails} className="unified-private-profile" open>
         <summary><span><strong>교환 후 공개 정보</strong><small>상대가 승인한 뒤에만 공개</small></span></summary>
         <div className="unified-private-fields">
           <fieldset disabled={busy}><legend>나이·성별 공개 선택</legend>
