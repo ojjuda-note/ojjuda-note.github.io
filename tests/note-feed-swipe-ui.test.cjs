@@ -32,7 +32,10 @@ assert.ok(bootAt > 0);
       // handlers, pull-to-refresh, card clicks and browser-generated gestures.
       await page.evaluate(() => {
         window.OJJUDA_CONFIG = { supabaseUrl: 'https://test.supabase.co', supabaseKey: 'synthetic' };
-        window.supabase = { createClient: () => ({ schema: () => ({ from: () => {
+        window.supabase = { createClient: () => ({ schema: () => ({
+          // The feed now uses abortable PostgREST RPC directly, not noteRpc's wrapper.
+          rpc: async (name, params) => ({ data: await window.noteRpc(name, params), error: null }),
+          from: () => {
           const q = { select: () => q, eq: () => q, not: () => q, order: () => q,
             contains: () => q, lte: () => q, gte: () => q, or: () => q,
             limit: async () => ({ data: [], error: null }) }; return q;
