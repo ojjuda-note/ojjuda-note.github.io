@@ -26,6 +26,8 @@ async function fixture(context, source, rpc) {
   if (source === 'world') {
     await page.setContent('<base href="https://fixture.test/"><meta name="viewport" content="width=device-width,initial-scale=1"><main class="main" id="world-my"></main>');
     for (const match of world.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)) await page.addStyleTag({ content: match[1] });
+    // The World settings list now lives in shared CSS, not its inline rules.
+    await page.addStyleTag({ content: read('features/account/settings-list.css') });
     await page.evaluate(() => {
       window.$ = { coins: 70, settings: { accent: 'pink', theme: 'light', defaultVis: 'all', notify: {} }, me: { nick: '검사 회원', bio: '', mood: '😊', moodText: '' }, album: [] };
       window.D = { online: true, user: { id: 'synthetic-user', email: 'test@example.invalid' } };
@@ -88,8 +90,8 @@ async function fixture(context, source, rpc) {
         assert.match(helpLabel, /도움말/, 'the wallet control remains before the help section');
         const borderTop=await entry.evaluate(node=>getComputedStyle(node).borderTopWidth);
         if(source==='world'){
-          const peerBorder=await entry.evaluate(node=>getComputedStyle(node.parentElement.querySelector('[data-my-group="notifications"] > summary')).borderTopWidth);
-          assert.equal(borderTop,peerBorder,'charge action follows the current settings-row design');
+          assert.equal(borderTop,'1px','the charge row retains the shared settings-list separator');
+          assert.ok(await entry.evaluate(node=>node.getBoundingClientRect().height>=48),'the charge row stays touch accessible');
         }else assert.equal(borderTop,'0px');
         if (process.env.JU_CHARGE_QA_DIR) {
           fs.mkdirSync(process.env.JU_CHARGE_QA_DIR, { recursive: true });
