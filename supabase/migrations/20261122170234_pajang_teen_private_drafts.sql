@@ -77,7 +77,7 @@ create function public.pajang_teen_draft(p_action text default 'state',p_data js
 returns jsonb language plpgsql security definer set search_path='' as $teen$
 declare
   actor uuid := ojjuda_restaurants_internal.require_member();
-  question_id text;
+  v_question_id text;
   target_user uuid;
   answer_id uuid;
   draft_body text;
@@ -105,8 +105,8 @@ begin
        or jsonb_typeof(p_data->'body') is distinct from 'string' then
       raise exception '질문과 답변을 확인해 주세요.' using errcode='22023';
     end if;
-    question_id := p_data->>'questionId';
-    if not exists(select from pajang_teen_private.questions where id=question_id) then
+    v_question_id := p_data->>'questionId';
+    if not exists(select from pajang_teen_private.questions where id=v_question_id) then
       raise exception '존재하지 않는 질문입니다.' using errcode='22023';
     end if;
     draft_body := btrim(p_data->>'body');
@@ -115,11 +115,11 @@ begin
     end if;
     draft_body := public.mask_banned(draft_body);
     insert into pajang_teen_private.drafts(owner_id,question_id,body)
-      values(actor,question_id,draft_body)
+      values(actor,v_question_id,draft_body)
       on conflict(owner_id,question_id)
       do update set body=excluded.body,updated_at=now(),review_status='pending',reviewed_at=null,reviewed_by=null
       returning id into answer_id;
-    return jsonb_build_object('saved',true,'questionId',question_id,'body',draft_body,'id',answer_id,'reviewStatus','pending');
+    return jsonb_build_object('saved',true,'questionId',v_question_id,'body',draft_body,'id',answer_id,'reviewStatus','pending');
   elsif p_action='delete' then
     if p_data - array['questionId'] <> '{}'::jsonb
        or jsonb_typeof(p_data->'questionId') is distinct from 'string' then
