@@ -14,12 +14,17 @@
  const byId = new Map(games.map(([id,name,unit])=>[id,{name,unit}]));
  const aliases = {__proto__:null,screw:'screw_box',carom4:'billiards',carom3:'billiards',pool8:'billiards'};
  const $ = selector=>document.querySelector(selector);
- const option=$('#ranking-game'),period=$('#ranking-period'),status=$('#ranking-status');
+ const option=$('#ranking-game'),period=$('#ranking-period'),status=$('#ranking-status'),criteria=$('#ranking-criteria');
  const list=$('#ranking-leaders'),mine=$('#ranking-mine'),mineRow=$('#ranking-mine-row'),refresh=$('#ranking-refresh');
  const params=new URL(location.href).searchParams;
  const raw=params.get('game');
  let game=byId.has(raw)?raw:aliases[raw]||'sacheonseong';
  let client=null,request=0,resetTimer=null,lastEndsAt=0,viewerId;
+ function updateCriteria(){
+  if(!criteria)return;
+  criteria.hidden=game!=='janggi';
+  if(game==='janggi')criteria.textContent='장기 순위: 온라인 대전 → 그랜드마스터 → 마스터 → 프로 → 어려움 → 보통 → 쉬움. 난이도가 우선이고, 같은 난이도에서는 연승이 많은 순서예요. 과거 고난도 통합 기록은 어려움급으로 비교해요.';
+ }
  const memberId=session=>session?.user?.is_anonymous?null:(session?.user?.id||null);
  const scoreFormat=new Intl.NumberFormat('ko-KR');
  const periodFormat=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric',hour:'numeric',hourCycle:'h23'});
@@ -59,7 +64,7 @@
   else if(['chess','janggi','billiards'].includes(id)){
    const variant={carom4:'4구',carom3:'3쿠션',pool8:'포켓볼'}[record.variant];
    const labels={online:'회원대결',hard:'어려움',normal:'보통',easy:'쉬움'};
-   if(id==='janggi')Object.assign(labels,{hard:'기존 통합',hard_exact:'어려움',pro:'프로',master:'마스터',grandmaster:'그랜드마스터'});
+   if(id==='janggi')Object.assign(labels,{hard:'과거 고난도 · 어려움급',hard_exact:'어려움',pro:'프로',master:'마스터',grandmaster:'그랜드마스터'});
    const level=labels[record.difficulty];
    if(variant)detail.push(variant);if(level)detail.push(level);
   }
@@ -99,6 +104,7 @@
   resetTimer=setTimeout(()=>{if(Date.now()>=lastEndsAt)void load();else scheduleReset();},Math.max(1000,Math.min(3600000,remaining+500)));
  }
  async function load(){
+  updateCriteria();
   const id=++request;list.replaceChildren();mine.hidden=true;mineRow.replaceChildren();
   status.textContent='이번 달 기록을 불러오는 중…';refresh.disabled=true;lastEndsAt=0;clearTimeout(resetTimer);
   try{
