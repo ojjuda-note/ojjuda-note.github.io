@@ -44,7 +44,7 @@
    parts.push('2인 대국');
    let difficulty=difficulties[row.difficulty];
    // Historical Janggi "hard" includes a legacy combined tier.
-   if(id==='janggi'&&row.difficulty==='hard')difficulty='기존 통합';
+   if(id==='janggi'&&row.difficulty==='hard')difficulty='과거 고난도 · 어려움급';
    if(difficulty)parts.push(difficulty);
   }else if(id==='ttang'||id==='matgo'){
    parts.push('2인 경기');
