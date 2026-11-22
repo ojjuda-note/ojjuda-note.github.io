@@ -44,4 +44,4 @@ jobs:
           test -s features/pajang/assets/teen.js
           test -s features/pajang/assets/teen.css
       - name: Enforce youth age boundary, peer feed, moderation, and UI
-        run: node --test tests/pajang-teen-questions.test.cjs tests/pajang-teen-private-drafts-db.test.cjs tests/pajang-teen-draft-ui.test.cjs tests/pajang-teen-admin-ui.test.cjs
+        run: node --test tests/pajang-teen-questions.test.cjs tests/pajang-teen-private-drafts-db.test.cjs tests/pajang-teen-draft-ui.test.cjs tests/pajang-teen-admin-ui.test.cjs tests/pajang-teen-entry.test.cjs
