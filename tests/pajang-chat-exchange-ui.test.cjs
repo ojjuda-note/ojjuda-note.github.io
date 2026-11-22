@@ -146,3 +146,14 @@ test("sender sees photo exchange confirmation in chat and can cancel without app
   await waitFor(()=>f.state.photos==="none","photo request withdrawn");
   await waitFor(()=>f.request()===null,"no sender notice after cancel");
 });
+
+test("existing outgoing profile and photo requests reappear after opening a conversation",async t=>{
+  const f=await fixture(t,{myCount:5,peerCount:5,eligible:true,profile:"sent",photos:"sent"});
+  await waitFor(()=>f.w.document.querySelectorAll(".exchange-chat-sent").length===2,"both pending request cards restored");
+  const cards=[...f.w.document.querySelectorAll(".exchange-chat-sent")];
+  assert.match(cards[0].textContent,/상대에게 프로필 교환을 신청하였습니다/);
+  assert.match(cards[1].textContent,/상대에게 사진 교환을 신청하였습니다/);
+  assert.ok(cards.every(card=>f.w.document.querySelector(".chatlog").contains(card)));
+  assert.equal(f.button("승인"),undefined);
+  assert.equal(f.button("거부"),undefined);
+});
