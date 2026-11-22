@@ -134,7 +134,9 @@ for (const member of [false, true]) {
       }
       onAuth('INITIAL_SESSION', session);
       const settle = () => new Promise(resolve => window.setTimeout(resolve, 0));
-      await settle();
+      // Guest opening now waits for the actual initial Auth read rather than
+      // starting work from a provisional null event.
+      for (let attempt = 0; attempt < 20 && requested.length === 0; attempt++) await settle();
       assert.equal(requested.length, 1);
       const labels = [...window.document.querySelectorAll('#feed-list .card-meta small')];
       const expectedDate = new NativeDateTimeFormat('ko-KR', {
