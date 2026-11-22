@@ -24,7 +24,7 @@ async function fixture(context, source, rpc) {
   });
   await page.exposeFunction('chargeRpc', rpc);
   if (source === 'world') {
-    await page.setContent('<base href="https://fixture.test/"><meta name="viewport" content="width=device-width,initial-scale=1"><main class="main" id="world-my"></main>');
+    await page.setContent('<base href="https://fixture.test/"><meta name="viewport" content="width=device-width,initial-scale=1"><div class="shell"><aside class="side" aria-hidden="true"></aside><div class="col"><main class="main" id="world-my"></main></div></div>');
     for (const match of world.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)) await page.addStyleTag({ content: match[1] });
     // The World settings list now lives in shared CSS, not its inline rules.
     await page.addStyleTag({ content: read('features/account/settings-list.css') });
@@ -119,7 +119,12 @@ async function fixture(context, source, rpc) {
         assert.equal(await dialog.locator('[data-ju-remaining]').textContent(), `오늘 5회 중 ${5-used}회 남았어요`);
         assert.equal(await page.evaluate(() => chargeBalance), coins);
         assert.equal(await dialog.evaluate(node => node.scrollWidth <= node.clientWidth + 1), true, 'charge contents fit the viewport');
-        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true);
+        const widthCheck=await page.evaluate(()=>({viewport:innerWidth,document:document.documentElement.scrollWidth,
+          overflowing:[...document.querySelectorAll('body *')].filter(el=>{
+            const rect=el.getBoundingClientRect();return rect.width>0&&(rect.right>innerWidth+1||rect.left< -1);
+          }).slice(0,10).map(el=>({tag:el.tagName,className:String(el.className).slice(0,70),rect:{left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right,width:el.getBoundingClientRect().width}}))}));
+        assert.equal(widthCheck.document<=widthCheck.viewport+1,true,
+          `${source} at ${viewport.width}px: charge and host never create page overflow ${JSON.stringify(widthCheck)}`);
         if (process.env.JU_CHARGE_QA_DIR) {
           fs.mkdirSync(process.env.JU_CHARGE_QA_DIR, { recursive: true });
           await page.screenshot({ path: path.join(process.env.JU_CHARGE_QA_DIR, `${source}-${viewport.width}.png`) });
