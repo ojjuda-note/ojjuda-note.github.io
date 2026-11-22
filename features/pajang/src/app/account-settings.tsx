@@ -49,8 +49,7 @@ export function AccountSettings({profileId,onOpen}:{profileId:string;onOpen:(act
     <section className="ojjuda-settings-group" aria-labelledby="account-profile-title">
       <h2 className="ojjuda-settings-heading" id="account-profile-title">내 계정</h2>
       <div className="ojjuda-settings-list">
-        {row("edit","공개 프로필 수정")}
-        {row("privateProfile","교환용 프로필·취향 수정")}
+        {row("edit","내 프로필 수정")}
         {row("privatePhotos","교환용 사진 관리")}
       </div>
     </section>
