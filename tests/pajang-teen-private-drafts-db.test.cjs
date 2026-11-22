@@ -26,6 +26,7 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
   ].join('\n'));
   await db.exec(migration('20261122163836_pajang_age_groups.sql'));
   await db.exec(migration('20261122170234_pajang_teen_private_drafts.sql'));
+  await db.exec(migration('20261122170500_pajang_teen_visible_feed.sql'));
   for(const [name,id] of Object.entries(actors)){
     await db.query('insert into auth.users values($1,false)',[id]);
     await db.query('insert into ojjuda_account_internal.member_identity values($1,$2)',[
@@ -40,6 +41,9 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
     'select public.admin_pajang_teen_moderation($1,$2,$3) as result',[action,answer,report])).rows[0].result;
   const fail=async(action,data={},code='42501')=>assert.rejects(
     ()=>invoke(action,data),e=>e.code===code,action);
+  const feed=async question=>(await db.query('select public.pajang_teen_feed($1,20) as value',[question])).rows[0].value;
+  const interact=async(action,target,data={})=>(await db.query('select public.pajang_teen_interact($1,$2,$3) as value',[action,target,data])).rows[0].value;
+  const moderateComment=async(action,target=null)=>(await db.query('select public.admin_pajang_teen_comments($1,$2) as value',[action,target])).rows[0].value;
   const sample=questionData[0];
   await login('teenA');
   const state=await invoke('state');
@@ -77,6 +81,53 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
   assert.equal(pre.reports.length,0);
   assert.equal(pre.drafts.length,2);
   assert.deepEqual(await moderation('approve',saved.id),{updated:true,status:'approved'});
+  // The approved answer is now visible to 14-18-year-olds only.
+  await login('teenB');
+  const peerFeed=await feed(sample.id);
+  assert.equal(peerFeed.visibility,'teen-only');
+  assert.equal(peerFeed.items.length,1);
+  assert.equal(peerFeed.items[0].authorId,actors.teenA);
+  assert.equal(peerFeed.items[0].body,'다르게 답해요');
+  assert.equal(peerFeed.items[0].authorName,'파장 회원');
+  assert.equal((await feed(questionData[1].id)).items.length,0);
+  await assert.rejects(()=>feed('bad-id'),e=>e.code==='22023');
+  const likeResult=await interact('like',saved.id,{liked:true});
+  assert.deepEqual(likeResult,{liked:true,likeCount:1});
+  assert.equal((await feed(sample.id)).items[0].likeCount,1);
+  const comment=await interact('comment',saved.id,{body:'그렇게 생각할 수도 있겠네요.'});
+  assert.equal(comment.status,'pending');
+  assert.equal((await interact('comments',saved.id)).items[0].reviewStatus,'pending');
+  await login('teenA');
+  assert.equal((await interact('comments',saved.id)).items.length,0,'unapproved comments are not public');
+  await login('adult');
+  await assert.rejects(()=>feed(sample.id),e=>e.code==='42501');
+  await assert.rejects(()=>interact('comments',saved.id),e=>e.code==='42501');
+  await assert.rejects(()=>interact('like',saved.id,{liked:true}),e=>e.code==='42501');
+  await login('admin');
+  const commentQueue=await moderateComment('queue');
+  assert.equal(commentQueue.comments.length,1);
+  assert.equal(commentQueue.comments[0].id,comment.id);
+  assert.deepEqual(await moderateComment('approve',comment.id),{updated:true,status:'approved'});
+  await login('teenA');
+  const visibleComment=(await interact('comments',saved.id)).items[0];
+  assert.equal(visibleComment.id,comment.id);
+  assert.equal(visibleComment.body,'그렇게 생각할 수도 있겠네요.');
+  assert.equal(visibleComment.authorId,actors.teenB);
+  assert.equal((await feed(sample.id)).items[0].commentCount,1);
+  assert.deepEqual(await interact('report-comment',comment.id,{reason:'other'}),{reported:true});
+  await login('admin');
+  const reportQueue=await moderateComment('queue');
+  assert.equal(reportQueue.reports.length,1);
+  assert.deepEqual(await moderateComment('hide',comment.id),{updated:true,status:'hidden'});
+  assert.deepEqual(await moderateComment('resolve-report',reportQueue.reports[0].id),{resolved:true});
+  await login('teenA');
+  assert.equal((await interact('comments',saved.id)).items.length,0);
+  await login('teenB');
+  assert.deepEqual(await invoke('block',{targetUser:actors.teenA}),{blocked:true});
+  assert.equal((await feed(sample.id)).items.length,0,'blocked authors are excluded');
+  await assert.rejects(()=>interact('like',saved.id,{liked:true}),e=>e.code==='42501');
+  await invoke('unblock',{targetUser:actors.teenA});
+  assert.equal((await feed(sample.id)).items.length,1);
   await login('teenA');
   assert.equal((await invoke('state')).answers[0].body,'다르게 답해요');
   await fail('report',{answerId:saved.id,reason:'bullying'});
@@ -92,6 +143,8 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
   assert.deepEqual(await moderation('resolve',null,reportId),{resolved:true});
   assert.deepEqual(await moderation('resolve',null,reportId),{resolved:false});
   await login('teenB');
+  assert.equal((await feed(sample.id)).items.length,0,'hidden answers are not publicly accessible');
+  await assert.rejects(()=>interact('comments',saved.id),e=>e.code==='42501');
   await fail('report',{answerId:saved.id,reason:'bullying'});
   await fail('report',{answerId:b.id,reason:'other'});
   await login('teenA');
