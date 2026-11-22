@@ -70,6 +70,7 @@ function quietLocatedReload(tries = 0) {   // 허용된 위치가 늦게 도착�
   loadFeed(false, true);
 }
 let feedSnapshot = null, feedLoading = false, replyLoading = false;
+let feedRecoveryTimer = null;
 let noteState = null, noteStateRun = 0, noticeElement = null, featureMessage = null;
 const parkEmbedded = window.parent !== window && location.pathname.startsWith('/park/');
 const guestReturnKey = 'ojjuda.park.compose-login.v1';
@@ -1331,8 +1332,36 @@ function filteredFeed() {
   if (after) request = request.or(after);
   return request.order('created_at', { ascending: false }).order('id', { ascending: false }).limit(20);
 }
+const FEED_REQUEST_TIMEOUT_MS = 8500;
+async function feedWithinDeadline(pending, controller = null) {
+  let timer;
+  try {
+    return await Promise.race([
+      Promise.resolve(pending),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => {
+          const error = new Error('Park feed timed out');
+          error.name = 'TimeoutError';
+          reject(error);
+          controller?.abort();
+        }, FEED_REQUEST_TIMEOUT_MS);
+      })
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+async function getFeedCards(parameters) {
+  const controller = new AbortController();
+  const request = query().rpc('list_cards', parameters);
+  const result = await feedWithinDeadline(typeof request.abortSignal === 'function'
+    ? request.abortSignal(controller.signal) : request, controller);
+  if (result?.error) throw result.error;
+  return result?.data;
+}
 async function loadFeed(more = false, quiet = false) {
   if (!client || (more && feedLoading)) return false;
+  if (feedRecoveryTimer !== null) { clearTimeout(feedRecoveryTimer); feedRecoveryTimer = null; }
   window.OjjudaParkFeedStarted = true;
   if (!more) feedDeferred = false;
   const searchContext = $('#feed-search-context');
@@ -1377,20 +1406,20 @@ async function loadFeed(more = false, quiet = false) {
   }
   let data, error;
   if (feedMode === 'events') {
-    try { data = await noteRpc('list_my_events', {}); } catch (cause) { error = cause; }
+    try { data = await feedWithinDeadline(noteRpc('list_my_events', {})); } catch (cause) { error = cause; }
   } else if (feedMode === 'all' && !feedTerm) {
     try {
       const pendingOpening = !more && !quiet && feedSort === 'latest' && !nearbyPosition
         ? window.OjjudaParkOpening?.take?.(session?.user?.id) : undefined;
-      const opening = pendingOpening ? await pendingOpening : undefined;
+      const opening = pendingOpening ? await feedWithinDeadline(pendingOpening) : undefined;
       if (version !== feedRun) return false;
-      data = opening ? opening.data : await noteRpc('list_cards', { p_sort: feedSort === 'latest' ? 'recent' : feedSort,
+      data = opening ? opening.data : await getFeedCards({ p_sort: feedSort === 'latest' ? 'recent' : feedSort,
         p_lat: nearbyPosition?.latitude ?? null, p_lon: nearbyPosition?.longitude ?? null,
         p_radius_m: 30000, p_limit: 20,
         p_cursor: nearbySnapshot ? { offset: nearbyOffset, snapshot: nearbySnapshot } : { offset: nearbyOffset } });
     } catch (cause) { error = cause; }
   } else {
-    try { ({ data, error } = await filteredFeed()); } catch (cause) { error = cause; }
+    try { ({ data, error } = await feedWithinDeadline(filteredFeed())); } catch (cause) { error = cause; }
   }
   if (version !== feedRun) return false;
   feedLoading = false;
@@ -1401,6 +1430,16 @@ async function loadFeed(more = false, quiet = false) {
     banner(feedSort === 'nearby' && error?.name === 'GeolocationPositionError' ? '위치 권한을 확인해 주세요' : '노트 연결을 확인해 주세요');
     const retry = node('button', 'button', '다시 시도');
     retry.type = 'button'; retry.dataset.retryFeed = more ? 'more' : 'first'; list.append(retry);
+    // Retry one transient failure in place; never loop, overlap a newer load, or retry hidden screens.
+    if (!more && !quiet && (error?.name === 'TimeoutError' || error?.code === '57014'
+      || Number(error?.status) >= 500)) {
+      feedRecoveryTimer = setTimeout(() => {
+        feedRecoveryTimer = null;
+        if (version === feedRun && !feedLoading && !feed.hidden && !document.hidden) {
+          void loadFeed(false, true);
+        }
+      }, 1400);
+    }
     updateComposer(); return false;
   }
   ready = true; banner(feedMode === 'all' && feedSort === 'nearby' ? '현재 위치 기준 · 반경 30km' : '');
@@ -4111,7 +4150,7 @@ if (client) {
     receiveAuth(current);
   });
   const initialAuthVersion = authEventVersion;
-  client.auth.getSession().then(({ data, error }) => {
+  feedWithinDeadline(client.auth.getSession()).then(({ data, error }) => {
     if (authEventVersion !== initialAuthVersion) return;
     if (error) console.warn('Note Auth:', error);
     receiveAuth(error ? null : data?.session || null);

@@ -12,7 +12,7 @@
     delete window.OjjudaParkOpening?.take;
   };
   window.addEventListener('pagehide',cleanup,{once:true});
-  timer=setTimeout(cleanup,15000);
+  timer=setTimeout(cleanup,8500);
   const request=(async()=>{
     let client;
     try{

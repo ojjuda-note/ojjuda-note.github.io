@@ -89,6 +89,8 @@ jobs:
           node-version: '22'
       - name: Install locked test dependencies
         run: npm --prefix tests ci --ignore-scripts
+      - name: Verify Park loading, timeouts and first-page recovery
+        run: node --test tests/park-loading.test.cjs tests/park-opening.test.cjs
       - name: Build pinned Park video dependencies
         run: |
           npm --prefix note/vendor ci --ignore-scripts
