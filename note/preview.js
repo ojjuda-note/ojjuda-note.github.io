@@ -1353,11 +1353,9 @@ async function feedWithinDeadline(pending, controller = null) {
 }
 async function getFeedCards(parameters) {
   const controller = new AbortController();
-  const request = query().rpc('list_cards', parameters);
-  const result = await feedWithinDeadline(typeof request.abortSignal === 'function'
-    ? request.abortSignal(controller.signal) : request, controller);
-  if (result?.error) throw result.error;
-  return result?.data;
+  // Reuse the same authenticated RPC boundary as other Park actions. This
+  // keeps fixture overrides and production read/abort behavior consistent.
+  return feedWithinDeadline(noteRpc('list_cards', parameters, controller.signal), controller);
 }
 async function loadFeed(more = false, quiet = false) {
   if (!client || (more && feedLoading)) return false;
@@ -3641,8 +3639,10 @@ function noteSpamMessage(error) {
   const windowText = seconds % 60 === 0 ? `${seconds / 60}분` : `${seconds}초`;
   return `${windowText}에 ${amount(details.max_posts, 2)}개까지만 쓸 수 있어요. ${amount(details.retry_after_seconds, 1)}초 뒤 다시 시도해 주세요.`;
 }
-async function noteRpc(name, parameters = {}) {
-  const { data, error } = await query().rpc(name, parameters);
+async function noteRpc(name, parameters = {}, signal = null) {
+  const pending = query().rpc(name, parameters);
+  const { data, error } = await (signal && typeof pending.abortSignal === 'function'
+    ? pending.abortSignal(signal) : pending);
   if (error) throw error;
   return data;
 }
