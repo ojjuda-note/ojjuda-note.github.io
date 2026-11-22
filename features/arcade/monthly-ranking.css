@@ -74,3 +74,5 @@ main::before{
  main::before{width:55vw;height:195px;right:-18px;opacity:.16}
  .intro::before,.board::before,.my-rank::before{background-size:auto 145px;opacity:.11}
 }
+
+.ranking-criteria{font-size:12px;line-height:1.65;color:var(--season-accent,#476b5b);margin:10px 0 0;padding:8px 10px;border-radius:10px;background:var(--season-soft,#edf6ec)}
