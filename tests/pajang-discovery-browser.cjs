@@ -537,7 +537,10 @@ function clientFixture(hash) {
         if(event.target.closest('[data-pajang-launch]'))sessionStorage.openStart=String(Date.now());
       },true);
       function paint(){
-        const target=document.querySelector(mode==='new'?'#welcome #answer-form button[type=submit]':'#answers article .quote');
+        const target=mode==='new'
+           ? [...document.querySelectorAll('#welcome #answer-form button[type=submit], #welcome #write')]
+             .find(node=>node.getClientRects().length)
+           : document.querySelector('#answers article .quote');
         if(target?.getClientRects().length && sessionStorage.openStart){
           sessionStorage.openMs=String(Date.now()-Number(sessionStorage.openStart));return;
         }
