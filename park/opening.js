@@ -3,7 +3,7 @@
   'use strict';
   if(window.OjjudaParkFeedStarted)return;
   const opening={client:null};
-  let active=true,claimed=false,owner,subscription,timer;
+  let active=true,claimed=false,startedRead=false,owner,subscription,timer;
   const controller=new AbortController();
   const cleanup=()=>{
     active=false;controller.abort();clearTimeout(timer);subscription?.unsubscribe();
@@ -40,6 +40,9 @@
     }).data?.subscription;
     // A deep link needs its card, not an unused page of the general feed.
     if(new URL(location.href).searchParams.has('card'))return;
+    // If the full feed has already started, do not issue a redundant warm-up query.
+    if(window.OjjudaParkFeedStarted)return;
+    startedRead=true;
     const result=await client.schema('ojjuda_note').rpc('list_cards',{
       p_sort:'recent',p_lat:null,p_lon:null,p_radius_m:30000,p_limit:20,p_cursor:{offset:0}
     }).abortSignal(controller.signal);
@@ -60,7 +63,15 @@
   opening.take=function(userId){
     if(claimed||!active)return;
     claimed=true;
-    return request.then(result=>active&&owner===(userId||null)?result:undefined).finally(cleanup);
+    // Do not hold the visible feed behind a warm-up that never reached the server.
+    if(!startedRead){cleanup();return Promise.resolve(undefined);}
+    let deadline;
+    // The first real feed request has its own deadline. Never wait for two
+    // full request timeouts in series when the warm-up is stalled.
+    return Promise.race([
+      request.then(result=>active&&owner===(userId||null)?result:undefined),
+      new Promise(resolve=>{deadline=setTimeout(()=>resolve(undefined),900);})
+    ]).finally(()=>{clearTimeout(deadline);cleanup();});
   };
   window.OjjudaParkOpening=opening;
 })();

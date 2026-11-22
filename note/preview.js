@@ -1393,17 +1393,7 @@ async function loadFeed(more = false, quiet = false) {
     button.addEventListener('click', () => refreshNearbyPosition(button, version));
     list.replaceChildren(note, button); return true;
   }
-  // 위치를 이미 허용했으면 뒤에서 받아 와요. 카드 목록은 위치를 기다리지 않고 바로 불러와요(휴대폰이 위치를 잡는 데 몇 초씩 걸려요).
-  // 위치가 오면, 아직 첫 페이지를 보고 있을 때만 화면을 깜빡이지 않고 조용히 다시 불러 거리와 범위 안 이벤트를 더해요.
-  if (!more && feedMode === 'all' && !feedTerm && feedSort !== 'nearby' && !nearbyPosition && !quiet && !backgroundLocating) {
-    backgroundLocating = true;
-    positionIfAlreadyGranted().then(grantedPosition => {
-      backgroundLocating = false;
-      if (!grantedPosition || nearbyPosition) return;
-      nearbyPosition = grantedPosition;
-      quietLocatedReload();
-    }).catch(() => { backgroundLocating = false; });
-  }
+  // Always request the public cards first. A previously granted GPS fix can wait until the first page is painted.
   let data, error;
   if (feedMode === 'events') {
     try { data = await feedWithinDeadline(noteRpc('list_my_events', {})); } catch (cause) { error = cause; }
@@ -1486,6 +1476,29 @@ async function loadFeed(more = false, quiet = false) {
   updateComposer();
   consumeInitialCard();
   if (!stack.length) resumeGuestWriting(null);
+  // Let the browser paint actual cards before doing location/permission work.
+  // Location is optional for the latest feed; a later fix quietly refreshes it.
+  if (!more && !quiet && feedMode === 'all' && !feedTerm && feedSort !== 'nearby'
+      && !nearbyPosition && !backgroundLocating && !document.hidden) {
+    backgroundLocating = true;
+    const locationEpoch = identityEpoch;
+    const locateAfterPaint = () => {
+      if (locationEpoch !== identityEpoch || version !== feedRun
+          || !locationIsEnabled() || nearbyPosition || document.hidden || !detail.hidden) {
+        backgroundLocating = false;
+        return;
+      }
+      void positionIfAlreadyGranted().then(grantedPosition => {
+        if (locationEpoch !== identityEpoch || version !== feedRun
+            || !grantedPosition || nearbyPosition || !locationIsEnabled()) return;
+        nearbyPosition = grantedPosition;
+        quietLocatedReload();
+      }).catch(() => {}).finally(() => { backgroundLocating = false; });
+    };
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => requestAnimationFrame(locateAfterPaint));
+    } else setTimeout(locateAfterPaint, 0);
+  }
   return true;
 }
 function locationErrorText(error) {
