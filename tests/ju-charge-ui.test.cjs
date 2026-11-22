@@ -81,9 +81,11 @@ async function fixture(context, source, rpc) {
       for (const source of ['world','note']) {
         const current = await fixture(context, source, rpc); fixtures.push(current);
         const { page } = current;
-        const entry = page.locator('.ju-charge-entry');
+        const entry = page.locator(source === 'world' ? '.ojjuda-settings-row[data-ju-charge-open]' : '.ju-charge-entry');
         assert.equal(await entry.count(), 1);
-        assert.equal(await entry.evaluate(node => node.parentElement.nextElementSibling.querySelector('.my-menu-title').textContent), '도움말');
+        const helpLabel = await entry.evaluate(node => node.closest('.ojjuda-settings')?.querySelector('[data-my-group="help"] .ojjuda-settings-label')?.textContent
+          || node.parentElement.nextElementSibling?.querySelector('.my-menu-title')?.textContent);
+        assert.match(helpLabel, /도움말/, 'the wallet control remains before the help section');
         assert.equal(await entry.evaluate(node => getComputedStyle(node).borderTopWidth), '0px');
         if (process.env.JU_CHARGE_QA_DIR) {
           fs.mkdirSync(process.env.JU_CHARGE_QA_DIR, { recursive: true });
