@@ -427,3 +427,42 @@ test('a stalled Park feed is aborted and a single automatic retry restores cards
     dom.window.close();
   }
 });
+
+test('a stalled initial auth session still opens the public Park feed', async () => {
+  const dom = new JSDOM(read('park/index.html'), {
+    url: 'https://fixture.test/park/', runScripts: 'outside-only', pretendToBeVisual: true
+  });
+  const w = dom.window, doc = w.document, nativeSetTimeout = w.setTimeout.bind(w);
+  try {
+    w.scrollTo = () => {};
+    w.matchMedia = () => ({ matches: false });
+    w.setTimeout = (fn, delay, ...args) => nativeSetTimeout(fn, delay === 8500 ? 15 : delay, ...args);
+    let reads = 0;
+    w.OJJUDA_CONFIG = { supabaseUrl: 'https://fixture.test', supabaseKey: 'test' };
+    w.supabase = { createClient: () => ({
+      auth: {
+        onAuthStateChange() {},
+        getSession: () => new Promise(() => {})
+      },
+      schema: () => ({
+        rpc(name) {
+          if (name === 'list_cards') {
+            reads++;
+            return Promise.resolve({ data: [{
+              id: '12345678-1234-4123-8123-000000000002', kind: 'memo',
+              body: '공개 카드', tags: [], background_key: '10',
+              created_at: '2026-11-22T06:00:00Z'
+            }] });
+          }
+          return Promise.resolve({ data: [] });
+        }
+      })
+    }) };
+    w.eval(read('note/preview.js'));
+    await new Promise(resolve => nativeSetTimeout(resolve, 100));
+    assert.equal(reads, 1, 'authentication stalls must not block public feed access');
+    assert.ok(doc.querySelector('#feed-list [data-card-id="12345678-1234-4123-8123-000000000002"]'));
+  } finally {
+    dom.window.close();
+  }
+});
