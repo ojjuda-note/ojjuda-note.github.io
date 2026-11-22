@@ -81,10 +81,15 @@ async function fixture(context, source, rpc) {
       for (const source of ['world','note']) {
         const current = await fixture(context, source, rpc); fixtures.push(current);
         const { page } = current;
-        const entry = page.locator('.ju-charge-entry');
+        // World uses the unified Settings row; Park keeps its own my-menu entry.
+        const entry = page.locator(source === 'world' ? '#world-my [data-ju-charge-open]' : '.ju-charge-entry');
         assert.equal(await entry.count(), 1);
-        assert.equal(await entry.evaluate(node => node.parentElement.nextElementSibling.querySelector('.my-menu-title').textContent), '도움말');
-        assert.equal(await entry.evaluate(node => getComputedStyle(node).borderTopWidth), '0px');
+        if (source === 'note') {
+          assert.equal(await entry.evaluate(node => node.parentElement.nextElementSibling.querySelector('.my-menu-title').textContent), '도움말');
+          assert.equal(await entry.evaluate(node => getComputedStyle(node).borderTopWidth), '0px');
+        } else {
+          assert.match(await entry.textContent(), /쭈 충전/);
+        }
         if (process.env.JU_CHARGE_QA_DIR) {
           fs.mkdirSync(process.env.JU_CHARGE_QA_DIR, { recursive: true });
           await page.screenshot({ path: path.join(process.env.JU_CHARGE_QA_DIR, `${source}-menu-${viewport.width}.png`), fullPage: true });
