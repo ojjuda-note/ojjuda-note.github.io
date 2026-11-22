@@ -12,11 +12,28 @@
 
 `baselines/*.json`에는 실제 원본에서 읽은 버전·시작 주소·Manifest ID·색상·기능 설정과 원본 SHA-256을 기록합니다. 해당 파일이 없거나 패키지가 맞지 않으면 빌드를 중단합니다. 원본 소스가 복원됐다고 표현하지 않습니다.
 
+## 앱 실행 대문 제거 후보 (2026-11-22)
+
+휴대폰 녹화에서 세 앱의 별도 소개 화면(‘아지트 들어가기’, ‘공원 들어가기’, ‘파장 들어가기’)이 반복되는 것을 확인했습니다. Play 등록 v1 원본의 `launchUrl`은 `ojjuda.com` 시작 주소를 가리킵니다. 웹 서비스 `ojjuda.kr`를 배포해도 기존 APK/AAB 안에 기록된 주소 자체는 바뀌지 않습니다.
+
+새 Android 후보의 실제 홈 화면 시작 주소는 아래와 같이 변경합니다.
+
+| 앱 | 새 TWA 시작 주소 | 비로그인 시 |
+|---|---|---|
+| 아지트 | `https://ojjuda.kr/world.html?tab=hub` | 아지트의 기존 로그인·회원가입 입장 |
+| 공원 | `https://ojjuda.kr/world.html?place=park` | 공원 카드 구경 및 회원 로그인 안내 |
+| 파장 | `https://ojjuda.kr/features/pajang/` | 기존 만 19세 이상 회원 전용 로그인 안내 |
+
+원본 v1의 시작 주소와 서명 정보는 `baselines/`에 그대로 보존합니다. `scripts/launch_routes.py`가 후보 빌드의 `launchUrl`·`hostName`·`webManifestUrl`·내장 매니페스트를 일관되게 생성합니다. `ojjuda.kr`의 Digital Asset Links에 등록된 서명 인증서로 검증된 Play 배포를 확인해야 TWA 전체 화면을 보장할 수 있습니다.
+
+**중요:** 새 코드는 GitHub Pages 업데이트만으로 기존 설치 앱에 전달되지 않습니다. unsigned AAB 후보 빌드·검사는 배포가 아니며, 기존 Play 업로드 키로 서명하고 테스터 또는 운영 배포 채널에서 앱 업데이트를 제공해야 합니다. 기존 앱 서명키를 새로 만들거나 회원 기기에 강제 설치하지 않습니다.
+
+
 - Gradle 8.11.1, Android Gradle Plugin 8.9.1, Android Browser Helper 2.7.4를 고정했습니다.
 - minSdk 24, target/compileSdk 36, build-tools 36.0.0입니다. 원본과 같은 AGP를 사용하며 SDK 36 호환 경고 억제 설정도 명시했습니다.
 - 원래 `Application`, `LauncherActivity`, `DelegationService` 컴포넌트 이름을 보존합니다. 실제 LauncherActivity는 항상 활성 상태이고, 홈/앱 목록 아이콘용 alias 8개만 전환합니다.
 - `INTERNET`(공개 달력 확인)과 `RECEIVE_BOOT_COMPLETED`(재부팅 후 예약 복구) 일반 권한을 추가합니다. 정확한 알람·위치·알림·배터리 최적화 예외 권한은 요청하지 않습니다.
-- 원본의 `https://https://ojjuda.kr` trusted origin과 scheme이 포함된 host는 `https://ojjuda.kr` 및 `ojjuda.kr`로 바로잡았습니다. `assetStatements`도 하나의 올바른 JSON 배열로 구성합니다. 웹 Digital Asset Links의 실제 Play 앱 서명 인증서 연결은 별도 배포 검증 대상입니다.
+- 원본의 `https://https://ojjuda.kr` trusted origin과 scheme이 포함된 host는 정규 형태로 바로잡았습니다. 새 후보의 기본 호스트는 `ojjuda.kr`이며 이전 `ojjuda.com`은 호환용 허용 출처로만 남깁니다. `assetStatements`도 하나의 올바른 JSON 배열로 구성합니다. 웹 Digital Asset Links의 실제 Play 앱 서명 인증서 연결은 별도 배포 검증 대상입니다.
 
 ## 날짜와 행사 규칙
 
