@@ -1145,7 +1145,7 @@ async function checkNavigation(page){
       assert.ok(await settings.evaluate(el=>el.scrollWidth<=document.documentElement.clientWidth));
       assert.ok(await accountHome.evaluate(el=>el.getBoundingClientRect().height>=44));
       const rows=await topRows.evaluateAll(readRowBounds);
-      assert.equal(rows.length,16,'the 16 top-level settings rows include the Help summary and exclude its nested actions');
+      assert.equal(rows.length,15,'the 15 top-level settings rows include the Help summary and one unified profile editor');
       for(const [index,row] of rows.entries()){
         assert.ok(row.height>=44,`settings row ${index+1} has a full touch target at ${width}px`);
         assert.ok(row.left>=0&&row.right<=width+1,'settings rows stay within the viewport');
