@@ -3030,6 +3030,10 @@ async function om(t,e){
  const sessionEvent=worldAuthEvent,client=S;
  worldAuthSubscription=client.auth.onAuthStateChange((event,session)=>{
   if(binding!==worldAuthBinding||client!==S)return;
+  // A cold standalone app may deliver a provisional null INITIAL_SESSION before
+  // getSession has restored its stored member. Do not render the guest entrance
+  // until that initial read finishes; explicit SIGNED_OUT still acts immediately.
+  if(event==="INITIAL_SESSION"&&!session?.user)return;
   const sequence=++worldAuthEvent,user=session?.user||null,previousId=D.user?.id||null;
   const changed=previousId!==(user?.id||null);
   // Invalidate synchronously: a resolved profile promise may run before this
