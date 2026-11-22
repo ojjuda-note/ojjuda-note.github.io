@@ -32,3 +32,27 @@ test('Agit warms only the signed-in account and stops on off, logout, hiding or 
     await login({id:'later'});assert.equal(reads.length,4);
   }finally{dispose();}
 });
+
+
+test('opening Park does not warm GPS before cards are available', async()=>{
+  const surface=new EventTarget();
+  surface.document=new EventTarget();surface.document.hidden=false;
+  surface.location={search:'?place=park'};
+  const reads=[];
+  const db={auth:{
+    getSession:async()=>({data:{session:{user:{id:'member'}}}}),
+    onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})
+  }};
+  const service={readPosition:options=>{reads.push(options);return new Promise(()=>{});},
+    subscribe:()=>()=>{},forget(){}};
+  const dispose=warmLocationOnAgit(db,{surface,service});
+  const settle=()=>new Promise(resolve=>setTimeout(resolve,5));
+  try{
+    await settle();
+    assert.equal(reads.length,0,'direct Park entry leaves the browser free for its first cards');
+    surface.location.search='?tab=hub';
+    surface.document.dispatchEvent(new Event('visibilitychange'));
+    await settle();
+    assert.equal(reads.length,1,'normal Agit location warm-up resumes after leaving Park');
+  }finally{dispose();}
+});
