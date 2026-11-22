@@ -158,7 +158,7 @@ test('public Pajang preferences save atomically and relationship discovery prese
   // Install the existing protected profile RPC and the new unified editor
   // migration on the same fixture used for public preferences and exchange.
   await db.exec(`create or replace function public.mask_banned(t text) returns text
-    language sql immutable set search_path='' as $ select t $;`);
+    language sql immutable set search_path='' as $mask$ select t $mask$;`);
   // Reproduce the already-installed original RPC without replaying its one-time
   // dynamic public-save text migration, which this older PGlite fixture does not need.
   const detailsSource=read('20261119062521_pajang_profile_details_editor.sql');
@@ -166,7 +166,7 @@ test('public Pajang preferences save atomically and relationship discovery prese
     detailsSource.indexOf('create function public.pajang_profile_details(')));
   await db.exec(`create function public.pajang_profile_details(p_action text default 'mine',
     p_data jsonb default '{}'::jsonb) returns jsonb language sql security invoker set search_path=''
-    as $ select pajang_private.profile_details(p_action,p_data) $;
+    as $rpc$ select pajang_private.profile_details(p_action,p_data) $rpc$;
     revoke all on function pajang_private.profile_details(text,jsonb),public.pajang_profile_details(text,jsonb)
       from public,anon,authenticated,service_role;
     grant execute on function pajang_private.profile_details(text,jsonb),public.pajang_profile_details(text,jsonb)
