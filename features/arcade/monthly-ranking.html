@@ -18,7 +18,7 @@
 <script src="/games/mole/ranking.js?v=20261117-arcade-score-repair1" defer></script>
 <script src="/shared/games/score-format.js?v=20261117-saetbyeol-growth1" defer></script>
 <script src="/shared/games/ranking-details.js?v=20261122-rank-details1" defer></script>
-<script src="./monthly-ranking.js?v=20261122-rank-details1" defer></script>
+<script src="./monthly-ranking.js?v=20261122-janggi-priority1" defer></script>
 <script src="/shared/navigation/section-back.js?v=20261119-history1" data-return-to="hub" defer></script></head>
 <body>
 <header class="topbar"><a class="home" href="/world.html?tab=hub" aria-label="오쭈다 아지트로 돌아가기">← 아지트</a><strong>오쭈다 아지트</strong><span>월간 게임 순위</span></header>
@@ -29,6 +29,7 @@
     <p>매월 1일 오전 1시(한국시간)에 새 순위가 시작돼요. 이전 기록은 그대로 보관해요.</p>
     <label class="chooser" for="ranking-game">게임 선택 <select id="ranking-game" aria-label="순위를 볼 게임"></select></label>
     <p id="ranking-period" class="period" aria-live="polite">순위를 준비하고 있어요…</p>
+    <p id="ranking-criteria" class="ranking-criteria" hidden></p>
   </section>
   <section class="board" aria-labelledby="leaders-title">
     <div class="section-head"><div><span class="eyebrow">LEADERBOARD</span><h2 id="leaders-title">현재 1~10위</h2></div><button id="ranking-refresh" type="button">새로고침</button></div>
