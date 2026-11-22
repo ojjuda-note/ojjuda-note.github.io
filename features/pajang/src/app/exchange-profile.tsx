@@ -82,7 +82,7 @@ export function ExchangeProfileEditor({profileId,focusTastes=false,onSaved}:{pro
   const [error,setError]=useState(""),[retry,setRetry]=useState(0),[busy,setBusy]=useState(false);
   const saving=useRef(false),mounted=useRef(false);
   const errorMessage=useRef<HTMLParagraphElement>(null);
-  const tastes=useRef<HTMLElement>(null),focusedTastes=useRef(false);
+  const tastes=useRef<HTMLElement>(null),privateDetails=useRef<HTMLDetailsElement>(null),focusedTastes=useRef(false);
   const profileReady=profile?.person===profileId;
   useEffect(()=>{
     mounted.current=true;
@@ -138,7 +138,8 @@ export function ExchangeProfileEditor({profileId,focusTastes=false,onSaved}:{pro
       }).map(({label})=>label);
       if(typeof saved.name!=="string"||!saved.name.trim())changed.push("닉네임");
       if(saved.region!==profile.region)changed.push("공개 활동 지역");
-      if(saved.preferences.relationship_intents.join("|")!==prepared.preferences.relationship_intents.join("|"))changed.push("원하는 인연");
+      if(JSON.stringify([...saved.preferences.relationship_intents].sort())!==
+        JSON.stringify([...prepared.preferences.relationship_intents].sort()))changed.push("원하는 인연");
       if(saved.showAge!==profile.showAge)changed.push("나이 공개 설정");
       if(saved.showGender!==profile.showGender)changed.push("성별 공개 설정");
       if(changed.length)
@@ -151,9 +152,10 @@ export function ExchangeProfileEditor({profileId,focusTastes=false,onSaved}:{pro
   return <><h2>내 프로필 수정</h2><p className="sub">닉네임·활동 지역·취향은 파장 회원에게 공개되고, 상세 정보는 프로필 교환을 승인한 상대에게만 보여요.</p>
     {error&&!profileReady&&<p className="error" role="alert">{error} <button className="quiet" onClick={()=>setRetry(n=>n+1)}>다시 시도</button></p>}
     {!profileReady&&!error&&<p className="sub" role="status">회원정보와 취향을 확인하고 있어요.</p>}
-    {profileReady&&profile&&<form className="profileform exchange-editor" onSubmit={save} onInvalidCapture={event=>{
+    {profileReady&&profile&&<form className="profileform exchange-editor unified-profile-editor" onSubmit={save} onInvalidCapture={event=>{
       event.preventDefault();
       const input=event.target as HTMLInputElement;
+      if(input.name==="height"&&privateDetails.current)privateDetails.current.open=true;
       setError(input.name==="height"?"키는 1~300cm 사이의 숫자로 입력해 주세요.":"입력한 내용을 확인해 주세요.");
     }}>
       <fieldset className="unified-public-profile" disabled={busy}>
@@ -182,7 +184,7 @@ export function ExchangeProfileEditor({profileId,focusTastes=false,onSaved}:{pro
           onChange={preferences=>{setError("");setProfile({...profile,preferences});}}
           drafts={drafts} onDraft={(key,value)=>{setError("");setDrafts(previous=>({...previous,[key]:value}));}} onAdd={add}/>
       </section>
-      <details className="unified-private-profile">
+      <details ref={privateDetails} className="unified-private-profile">
         <summary><span><strong>교환 후 공개 정보</strong><small>상대가 승인한 뒤에만 공개</small></span></summary>
         <div className="unified-private-fields">
           <fieldset disabled={busy}><legend>나이·성별 공개 선택</legend>
