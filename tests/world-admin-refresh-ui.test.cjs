@@ -22,6 +22,12 @@ gm(()=>worldTest.actions.tab({tab:'hub'}));
 // Match boot order: initial rendering happens before the server role check.
 my();D.online=true;D.user={id:sessionStorage.getItem('fixture-user')||'admin-a'};
 D.isAdmin=sessionStorage.getItem('fixture-role')!=='member';
+// A legacy saved route predates the browser history router; simulate that
+// historical reload only for the legacy migration exercise below.
+if(sessionStorage.getItem('fixture-legacy-restore')==='true'){
+  history.replaceState(null,'',location.href);
+  sessionStorage.removeItem('fixture-legacy-restore');
+}
 restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
 `+world.slice(world.indexOf('</script>',boot));
 (async()=>{
