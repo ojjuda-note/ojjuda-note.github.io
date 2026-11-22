@@ -24,7 +24,7 @@ test('teen draft UI keeps real save/delete actions and stays absent from product
   const esbuild=require(require.resolve('esbuild',{paths:[path.join(root,'features/pajang')]}));
   const bundled=await esbuild.build({
     entryPoints:[path.join(root,'features/pajang/src/app/teen-draft.tsx')],
-    bundle:true,write:false,platform:'browser',format:'esm',
+    bundle:true,write:false,outdir:path.join(root,'tests','compiled-teen-preview'),platform:'browser',format:'esm',
     jsx:'automatic',target:'es2022',loader:{'.tsx':'tsx'}
   });
   assert.ok(bundled.outputFiles.some(file=>file.path.endsWith('.js')),'preview UI should compile');
