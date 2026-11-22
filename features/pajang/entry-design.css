@@ -171,7 +171,8 @@
 #welcome .actions :is(form,output,small) {grid-column:1/-1}
 #welcome .actions output:empty {display:none}
 #welcome .actions form {margin:0;padding:0;border:0;background:transparent}
-#welcome .actions button[type=submit] {min-height:44px;padding:10px 14px;border-radius:10px;font-weight:600}
+#welcome .actions button[type=submit] {min-height:44px;padding:10px 14px;border-radius:10px;background:var(--accent);color:var(--on-accent);font-weight:600}
+#welcome .actions .cancel-form {min-height:44px}
 #welcome .actions small {margin:2px 0 0;font-size:11px;line-height:1.7}
 #welcome .actions input:not([type=checkbox]),#welcome .actions select,#welcome .actions textarea {font-size:16px;border-radius:10px;padding:10px 12px}
 #welcome .actions .consent {line-height:1.75}
