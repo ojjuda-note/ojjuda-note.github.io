@@ -187,6 +187,8 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'Q7IFjVUUb_E', title: 'RUN IT', kind: '뮤직비디오', source: 'Stray Kids / JYP Entertainment · 2026.06.24' }
   ],
   txt: [
+    { id: 'd1NgdkCMZAg', title: "PERFECT STORM · COMEBACK D+2 LIVE", kind: '공식 컴백 라이브', source: 'TXT Official · 2026.11.18' },
+    { id: 'fnln00F15_M', title: 'PERFECT STORM 컴백 쇼케이스', kind: '공식 컴백 무대', source: 'Mnet M2 / MPD · 2026.11.16' },
     { id: 'M9G4guYg-i8', title: 'Angel Bite', kind: '뮤직비디오', source: 'HYBE LABELS / BIGHIT MUSIC · 2026.11.16' },
     { id: 'jOnLqqDRfY4', title: '하루에 하루만 더 (Stick With You)', kind: '뮤직비디오', source: 'HYBE LABELS / BIGHIT MUSIC · 2026.04.13' },
     { id: 'IcwHopeT5gY', title: 'Beautiful Strangers', kind: '뮤직비디오', source: 'HYBE LABELS / BIGHIT MUSIC · 2025.07.21' },
