@@ -70,6 +70,7 @@ restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
    await page.evaluate(view=>{
      history.replaceState(null,'',location.href);
      sessionStorage.setItem('ojjuda.world.admin-view',JSON.stringify({...view,userId:'admin-a'}));
+     sessionStorage.setItem('fixture-legacy-restore','true');
    },view);
    await reload();
    assert.equal((await current()).area,view.area==='note'?'trash':'operations');
