@@ -13,7 +13,7 @@ world=world.replace('<script type="module">',`<script>${nav}</script><script typ
 const boot=world.indexOf('j1(()=>H());gm(');
 assert.ok(boot>0);
 world=world.slice(0,boot)+`
-window.worldTest={state:g,auth:D,admin:L,actions:sr,render:H,clear:clearWorldAdminView};
+window.worldTest={state:g,auth:D,admin:L,actions:sr,render:H,restore:restoreWorldAdminView,clear:clearWorldAdminView};
 U.cleanupMedia=async()=>({});U.overview=async()=>({});U.contentFeed=async()=>[];U.chatFeed=async()=>[];
 window.OjjudaNoteAdmin={getTabs:()=>[{id:'cards',label:'카드'},{id:'risk',label:'위험 신호'}],
  mount:(el,options)=>{window.noteOptions=options;el.textContent=options.initialTab},unmount(){},
@@ -67,10 +67,10 @@ restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
      history.replaceState(null,'',location.href);
      sessionStorage.setItem('ojjuda.world.admin-view',JSON.stringify({...view,userId:'admin-a'}));
      const navigation=performance.getEntriesByType('navigation')[0]?.type;
-     const restored=restoreWorldAdminView(null);
-     const before={area:L.area,tab:L.tab,restored};
-     H();
-     return {navigation,before,after:{area:L.area,tab:L.tab}};
+     const restored=worldTest.restore(null);
+     const before={area:worldTest.admin.area,tab:worldTest.admin.tab,restored};
+     worldTest.render();
+     return {navigation,before,after:{area:worldTest.admin.area,tab:worldTest.admin.tab}};
    },view);
    const area=view.area==='note'?'trash':'operations',tab=view.area==='note'?'trash-cards':'spam';
    assert.equal(state.navigation,'reload','legacy state is tested on an actual page refresh');
