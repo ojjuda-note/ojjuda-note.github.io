@@ -358,7 +358,7 @@ for (const kind of ['answer','signal','chat','public','exchange','suggestion']) 
   const f = await fixture(t,{mode:kind==='exchange'||kind==='suggestion'?kind:'station',chat:kind==='chat'});
   let input,form;
   if(kind==='public'){
-    await openPublicProfile(f);input=f.control('닉네임');form=f.q('.public-profile-form');
+    await openPublicProfile(f);input=f.control('닉네임');form=f.q('.unified-profile-editor');
   }else if(kind==='answer'||kind==='signal'){
     if(kind==='signal'){await wait(()=>f.q('#answers .sendlink'));f.q('#answers .sendlink').click();}
     else f.q('.letter-hero button').click();
