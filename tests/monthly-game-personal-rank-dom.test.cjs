@@ -329,7 +329,7 @@ test('ranking match details use only actual difficulty and participant metadata'
  const w=dom.window;w.eval(read('games/solitaire/rules.js'));w.eval(read('games/mines/rules.js'));
  w.eval(read('games/mole/ranking.js'));w.eval(read('shared/games/ranking-details.js'));
  const describe=w.OjjudaRankingDetails.describe;
- assert.equal(describe('janggi',{score:9,difficulty:'hard'}),'2인 대국 · 기존 통합');
+ assert.equal(describe('janggi',{score:9,difficulty:'hard'}),'2인 대국 · 과거 고난도 · 어려움급');
  assert.equal(describe('janggi',{score:2,difficulty:'normal'}),'2인 대국 · 보통');
  assert.equal(describe('chess',{score:3,difficulty:'online'}),'2인 대국 · 온라인 대전');
  assert.equal(describe('billiards',{score:1,difficulty:'easy',variant:'carom4'}),'4구 · 2인 대국 · 쉬움');
@@ -369,7 +369,7 @@ test('all-game overview shows ranking conditions directly under the winning name
  const detail=id=>d.querySelector('[data-game="'+id+'"] .first-detail').textContent;
  assert.equal(detail('onecard'),'5인 경기 · 컴퓨터 포함');
  assert.equal(detail('tank'),'12인 경기 · 상대 11명');
- assert.equal(detail('janggi'),'2인 대국 · 기존 통합');
+ assert.equal(detail('janggi'),'2인 대국 · 과거 고난도 · 어려움급');
  assert.equal(detail('yut'),'참가 인원 미기록');
  assert.equal(d.querySelector('[data-game="onecard"] .first-name').textContent,'1위 · 카드 승자');
  assert.equal(d.querySelector('[data-game="tank"] .first-score').textContent,'16연승');
@@ -394,4 +394,35 @@ test('monthly top ten also shows real opponents and difficulty for each winner',
  await new Promise(resolve=>setImmediate(resolve));
  assert.equal(w.document.querySelector('#ranking-leaders .rank-person small').textContent,'12인 경기 · 상대 11명');
  assert.equal(w.document.querySelector('#ranking-leaders .rank-points').textContent,'16연승');
+});
+
+test('Janggi explains that higher difficulty ranks ahead of longer lower-tier winning streaks',async t=>{
+ const dom=new JSDOM(page,{url:'https://ojjuda.kr/features/arcade/monthly-ranking.html?game=janggi',runScripts:'outside-only'});
+ t.after(()=>dom.window.close());
+ const w=dom.window;w.AbortSignal=AbortSignal;
+ w.OJJUDA_CONFIG={supabaseUrl:'https://fixture.invalid',supabaseKey:'fixture'};
+ w.supabase={createClient:()=>({
+  auth:{getSession:async()=>({data:{session:{user:{id:'member-a',is_anonymous:false}}}}),onAuthStateChange(){}},
+  rpc(){return {abortSignal:async()=>({data:{month:'2026-11',startsAt:'2026-10-31T16:00:00Z',endsAt:'2026-11-30T16:00:00Z',leaders:[],mine:null},error:null})};}
+ })};
+ w.eval(viewer);
+ await new Promise(resolve=>setImmediate(resolve));
+ const criteria=w.document.querySelector('#ranking-criteria');
+ assert.ok(criteria,'monthly leaderboard should display the ranking precedence for Janggi');
+ assert.equal(criteria.hidden,false);
+ assert.match(criteria.textContent,/난이도가 우선/);
+ assert.match(criteria.textContent,/같은 난이도에서는 연승/);
+ assert.ok(criteria.textContent.indexOf('그랜드마스터')<criteria.textContent.indexOf('마스터'));
+ assert.ok(criteria.textContent.indexOf('마스터')<criteria.textContent.indexOf('프로'));
+ assert.ok(criteria.textContent.indexOf('프로')<criteria.textContent.indexOf('어려움'));
+ assert.ok(criteria.textContent.indexOf('어려움')<criteria.textContent.indexOf('보통'));
+ assert.ok(criteria.textContent.indexOf('보통')<criteria.textContent.indexOf('쉬움'));
+ const game=w.document.querySelector('#ranking-game');
+ game.value='chess';game.dispatchEvent(new w.Event('change'));
+ assert.equal(criteria.hidden,true,'other game leaderboards should not receive Janggi-only rules');
+ game.value='janggi';game.dispatchEvent(new w.Event('change'));
+ assert.equal(criteria.hidden,false,'switching back restores the correct criteria');
+ const overview=read('features/arcade/all-rankings.css');
+ assert.match(overview,/data-game="janggi".*game-name::after/);
+ assert.match(overview,/난이도 우선/);
 });
