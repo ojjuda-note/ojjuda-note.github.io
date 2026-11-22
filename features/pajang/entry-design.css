@@ -225,3 +225,23 @@
 @media(prefers-reduced-motion:reduce) {
   .pajang-envelope,.pajang-water-ring {animation:none}
 }
+
+/* Verified app entry: keep the answer, not another illustrated entrance. */
+@media (display-mode: standalone), (display-mode: minimal-ui) {
+  /* The guest invitation renders only after Auth confirms no member. */
+  #gate .flight-scene { display:none!important; }
+  #welcome[data-member-entry="direct"] { margin-block:12px 20px; }
+  #welcome[data-member-entry="direct"] .entry-intro {
+    min-height:0;padding:6px 0 0;border:0;border-radius:0;
+    background:transparent;box-shadow:none;
+  }
+  #welcome[data-member-entry="direct"] .entry-intro::before,
+  #welcome[data-member-entry="direct"] .entry-scene,
+  #welcome[data-member-entry="direct"] .entry-intro .intro,
+  #welcome[data-member-entry="direct"] .sample-radar,
+  #welcome[data-member-entry="direct"] .cancel-form { display:none!important; }
+  #welcome[data-member-entry="direct"] .entry-intro h1 {
+    max-width:none;margin:6px 0;font-size:clamp(19px,4.6vw,25px);line-height:1.4;
+  }
+  #welcome[data-member-entry="direct"] .actions { margin:12px 0 0; }
+}

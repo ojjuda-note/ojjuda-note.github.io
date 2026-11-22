@@ -1391,17 +1391,7 @@ async function loadFeed(more = false, quiet = false) {
     button.addEventListener('click', () => refreshNearbyPosition(button, version));
     list.replaceChildren(note, button); return true;
   }
-  // 위치를 이미 허용했으면 뒤에서 받아 와요. 카드 목록은 위치를 기다리지 않고 바로 불러와요(휴대폰이 위치를 잡는 데 몇 초씩 걸려요).
-  // 위치가 오면, 아직 첫 페이지를 보고 있을 때만 화면을 깜빡이지 않고 조용히 다시 불러 거리와 범위 안 이벤트를 더해요.
-  if (!more && feedMode === 'all' && !feedTerm && feedSort !== 'nearby' && !nearbyPosition && !quiet && !backgroundLocating) {
-    backgroundLocating = true;
-    positionIfAlreadyGranted().then(grantedPosition => {
-      backgroundLocating = false;
-      if (!grantedPosition || nearbyPosition) return;
-      nearbyPosition = grantedPosition;
-      quietLocatedReload();
-    }).catch(() => { backgroundLocating = false; });
-  }
+  // Public cards load before location warm-up, which starts after first paint.
   let data, error;
   if (feedMode === 'events') {
     try { data = await feedWithinDeadline(noteRpc('list_my_events', {})); } catch (cause) { error = cause; }
@@ -1484,6 +1474,28 @@ async function loadFeed(more = false, quiet = false) {
   updateComposer();
   consumeInitialCard();
   if (!stack.length) resumeGuestWriting(null);
+  // Location is optional; fetch it after cards have had time to paint.
+  if (!more && !quiet && feedMode === 'all' && !feedTerm && feedSort !== 'nearby'
+      && !nearbyPosition && !backgroundLocating && !document.hidden) {
+    backgroundLocating = true;
+    const locationEpoch = identityEpoch;
+    const locateAfterPaint = () => {
+      if (locationEpoch !== identityEpoch || version !== feedRun
+          || !locationIsEnabled() || nearbyPosition || document.hidden || !detail.hidden) {
+        backgroundLocating = false;
+        return;
+      }
+      void positionIfAlreadyGranted().then(grantedPosition => {
+        if (locationEpoch !== identityEpoch || version !== feedRun
+            || !grantedPosition || nearbyPosition || !locationIsEnabled()) return;
+        nearbyPosition = grantedPosition;
+        quietLocatedReload();
+      }).catch(() => {}).finally(() => { backgroundLocating = false; });
+    };
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => requestAnimationFrame(locateAfterPaint));
+    } else setTimeout(locateAfterPaint, 0);
+  }
   return true;
 }
 function locationErrorText(error) {
@@ -4145,7 +4157,9 @@ notificationController = window.OjjudaNoteNotifications?.install({
   onKeepCard: (id, cardKind) => confirmPermanent({ id, kind: cardKind })
 });
 if (client) {
-  client.auth.onAuthStateChange((_event, current) => {
+  client.auth.onAuthStateChange((event, current) => {
+    // Do not show a public guest entrance before the stored session is loaded.
+    if(event==='INITIAL_SESSION'&&!current?.user)return;
     authEventVersion++;
     receiveAuth(current);
   });

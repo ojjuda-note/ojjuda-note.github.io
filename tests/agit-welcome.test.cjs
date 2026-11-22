@@ -103,6 +103,23 @@ function assertUnshownMember(fixture) {
   assert.equal(fixture.storage.has('ojjuda.agit-welcome.v1:shown-day'), false);
 }
 
+test('signed-in standalone Agit opens its hub without a member greeting modal', async t => {
+  const f = welcomeFixture(t);
+  f.scope.matchMedia = query => ({ matches: query === '(display-mode: standalone)' });
+  f.enter(true);
+  await f.advance(4000);
+  assert.equal(f.shown.length, 0, 'installed member app never covers the hub with an opening dialog');
+  assertUnshownMember(f);
+});
+
+test('signed-out standalone Agit still shows its public invitation', async t => {
+  const f = welcomeFixture(t);
+  f.scope.matchMedia = query => ({ matches: query === '(display-mode: standalone)' });
+  f.enter(false);
+  await f.advance(2000);
+  assert.equal(f.shown.length, 1, 'public invitation is preserved for guests');
+});
+
 for (const member of [false, true]) {
   const kind = member ? 'member greeting' : 'guest signup prompt';
   test(`${kind} waits during direct Park entry and appears after returning to Agit`, async t => {

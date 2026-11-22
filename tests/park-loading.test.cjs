@@ -125,9 +125,18 @@ for (const member of [false, true]) {
         }
       };
       window.eval(read('note/preview.js'));
+      if (member) {
+        // Supabase can emit a provisional empty initial event while restoring
+        // the persisted session on an Android app cold start.
+        onAuth('INITIAL_SESSION', null);
+        assert.equal(window.document.getElementById('park-guest-entry').hidden, true,
+          'a not-yet-resolved member never sees the Park guest entrance');
+      }
       onAuth('INITIAL_SESSION', session);
       const settle = () => new Promise(resolve => window.setTimeout(resolve, 0));
-      await settle();
+      // Guest opening now waits for the actual initial Auth read rather than
+      // starting work from a provisional null event.
+      for (let attempt = 0; attempt < 20 && requested.length === 0; attempt++) await settle();
       assert.equal(requested.length, 1);
       const labels = [...window.document.querySelectorAll('#feed-list .card-meta small')];
       const expectedDate = new NativeDateTimeFormat('ko-KR', {
@@ -464,5 +473,30 @@ test('a stalled initial auth session still opens the public Park feed', async ()
     assert.ok(doc.querySelector('#feed-list [data-card-id="12345678-1234-4123-8123-000000000002"]'));
   } finally {
     dom.window.close();
+  }
+});
+
+
+test('Park paints its public cards before optional GPS and defers feature-only styles',()=>{
+  const source=read('note/preview.js'), html=read('park/index.html');
+  const start=source.indexOf('async function loadFeed('),end=source.indexOf('function locationErrorText(',start);
+  assert.ok(start>=0&&end>start);
+  const feedSource=source.slice(start,end);
+  assert.ok(feedSource.indexOf('for (const card of data || []) {')>=0);
+  assert.ok(feedSource.indexOf('for (const card of data || []) {')<feedSource.indexOf('const locateAfterPaint ='),
+    'the card DOM is built before location acquisition starts');
+  assert.match(feedSource,/requestAnimationFrame\(\(\) => requestAnimationFrame\(locateAfterPaint\)\)/,
+    'allow the first cards to paint before checking GPS');
+  assert.ok(feedSource.indexOf('positionIfAlreadyGranted()')>feedSource.indexOf('const locateAfterPaint ='));
+  for(const path of ['/note/map.css','/note/composer-tools.css','/note/notifications.css',
+    '/features/wallet/ju-charge.css','/features/account/settings-list.css']){
+    const tag=html.split('\n').find(line=>line.includes('href="'+path+'?'));
+    assert.ok(tag,'expected stylesheet '+path);
+    assert.match(tag,/media="print" onload="this\.media='all'"/);
+  }
+  for(const path of ['/note/style.css','/note/features.css','/park/design.css']){
+    const tag=html.split('\n').find(line=>line.includes('href="'+path+'?'));
+    assert.ok(tag,'expected essential feed style '+path);
+    assert.doesNotMatch(tag,/media="print"/,'feed styles must remain immediately available');
   }
 });

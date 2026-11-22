@@ -109,6 +109,31 @@ for (const outcome of ['sign-out', 'account B']) {
   });
 }
 
+test('cold installed World app waits for the persisted member before showing any guest entrance', async () => {
+  const f = fixture({ initial: 'A', delayedSession: true });
+  const pending = f.start();
+  f.emit('INITIAL_SESSION');
+  await f.flush();
+  assert.equal(f.screens.includes('guest'), false, 'an initial null event is not a confirmed logout');
+  assert.equal(f.screens.includes('start:guest'), false);
+  f.sessions[0].resolve({ data: { session: { user: member('A') } } });
+  await f.flush();
+  assert.deepEqual(f.profiles.map(read => read.owner), ['A']);
+  await f.finishProfile('A'); await pending;
+  assert.equal(f.screens.includes('guest'), false);
+  assert.deepEqual(f.saved.map(row => row.owner), ['A']);
+});
+
+test('a truly signed-out World app shows the public entrance after the initial read', async () => {
+  const f = fixture({ initial: null, delayedSession: true });
+  const pending = f.start(); f.emit('INITIAL_SESSION');
+  await f.flush();
+  assert.equal(f.screens.includes('guest'), false);
+  f.sessions[0].resolve({ data: { session: null } });
+  await f.flush(); await pending;
+  assert.equal(f.screens.filter(screen => screen === 'guest').length, 1);
+});
+
 test('sign-out during a profile read cannot boot or attach the old account', async () => {
   const f = fixture(), start = f.start(); await f.flush();
   f.emit('SIGNED_OUT'); f.profiles[0].resolve(profile('A')); await f.flush(); await start;
