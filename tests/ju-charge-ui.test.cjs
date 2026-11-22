@@ -86,7 +86,11 @@ async function fixture(context, source, rpc) {
         const helpLabel = await entry.evaluate(node => node.closest('.ojjuda-settings')?.querySelector('[data-my-group="help"] .ojjuda-settings-label')?.textContent
           || node.parentElement.nextElementSibling?.querySelector('.my-menu-title')?.textContent);
         assert.match(helpLabel, /도움말/, 'the wallet control remains before the help section');
-        assert.equal(await entry.evaluate(node => getComputedStyle(node).borderTopWidth), '0px');
+        const borderTop=await entry.evaluate(node=>getComputedStyle(node).borderTopWidth);
+        if(source==='world'){
+          const peerBorder=await entry.evaluate(node=>getComputedStyle(node.parentElement.querySelector('[data-my-group="notifications"] > summary')).borderTopWidth);
+          assert.equal(borderTop,peerBorder,'charge action follows the current settings-row design');
+        }else assert.equal(borderTop,'0px');
         if (process.env.JU_CHARGE_QA_DIR) {
           fs.mkdirSync(process.env.JU_CHARGE_QA_DIR, { recursive: true });
           await page.screenshot({ path: path.join(process.env.JU_CHARGE_QA_DIR, `${source}-menu-${viewport.width}.png`), fullPage: true });
