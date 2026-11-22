@@ -51,7 +51,7 @@
   }else if(['yut','tour','bang','poker'].includes(id)){
    const limits={yut:[2,8],tour:[2,8],bang:[4,7],poker:[2,4]}[id];
    const players=matchSize(row,...limits);
-   parts.push(players?players+'인 경기':'참가 인원 미기록');
+   parts.push(players?(id==='yut'?players+'팀 경기':players+'인 경기'):'참가 인원 미기록');
    if(id==='yut'){
     if(row.mode==='easy')parts.push('쉬운 놀이');
     else if(row.mode==='island')parts.push('보통 · 장애물 놀이');
