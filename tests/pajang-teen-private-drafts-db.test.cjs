@@ -194,4 +194,11 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
     const row=(await db.query('select relrowsecurity from pg_class where oid=$1::regclass',['pajang_teen_private.'+table])).rows[0];
     assert.equal(row.relrowsecurity,true);
   }
+  await db.query("insert into auth.users(id) select ('10000000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid from generate_series(5,7) n");
+  await db.query("insert into pajang_teen_private.drafts(owner_id,question_id,body,review_status,share_consented_at) select u.id,q.id,'Previously approved content','approved',now() from auth.users u cross join pajang_teen_private.questions q where u.id in ('10000000-0000-4000-8000-000000000005','10000000-0000-4000-8000-000000000006','10000000-0000-4000-8000-000000000007')");
+  await login('admin');
+  const pendingQueue=await moderation('queue');
+  assert.equal(pendingQueue.drafts.length,1,'60 approved posts must not bury pending content');
+  assert.equal(pendingQueue.drafts[0].id,b.id);
+
 });
