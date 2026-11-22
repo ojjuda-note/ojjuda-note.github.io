@@ -464,7 +464,13 @@ adminTabsByArea.content.push(["rewards","상품권 등록"]);
 var worldAdminService="agit";
 function adminScopeAllows(tab){return window.OjjudaAdminScope?.allows(worldAdminService,tab)!==false;}
 function adminServiceLabel(){return window.OjjudaAdminScope?.services[worldAdminService]?.label||"아지트";}
-var worldAdminViewKey="ojjuda.world.admin-view",worldAdminViewReady=false;
+var worldAdminViewKey="ojjuda.world.admin-view",worldAdminOwnerKey="ojjuda.world.admin-owner",worldAdminViewReady=false;
+function boundWorldAdminOwner(){try{return sessionStorage.getItem(worldAdminOwnerKey)}catch{return null}}
+function bindWorldAdminOwner(){
+ if(!D.online||!D.isAdmin||!D.user?.id)return false;
+ try{sessionStorage.setItem(worldAdminOwnerKey,D.user.id)}catch{}
+ return true;
+}
 // Capture owners before the provisional guest/hub bootstrap can rewrite the
 // browser route or clear an earlier administrator session. Navigation is never
 // authority: a new account must enter administration explicitly.
@@ -475,6 +481,9 @@ function clearWorldAdminView(){worldAdminService="agit";try{sessionStorage.remov
 function saveWorldAdminView(){
  if(!worldAdminViewReady)return;
  if(g.tab!=="admin"||!D.online||!D.isAdmin||!D.user?.id){clearWorldAdminView();return}
+ // The provisional shell must never rebind a previous administrator's view
+ // to another signed-in account while restoring browser history.
+ if(boundWorldAdminOwner()&&boundWorldAdminOwner()!==D.user.id){clearWorldAdminView();return}
  try{sessionStorage.setItem(worldAdminViewKey,JSON.stringify({userId:D.user.id,service:worldAdminService,area:L.area,tab:L.tab,noteTab:L.noteTab,reportSource:L.reportSource,riskType:L.riskType,archiveType:L.archiveType,spamType:L.spamType}))}catch{}
 }
 function normalizeAdminView(view){
@@ -501,7 +510,15 @@ function normalizeAdminView(view){
 function restoreWorldAdminView(requestedTab){
  worldAdminViewReady=true;
  requestedTab=adminRetiredTabs[requestedTab]||requestedTab;
- if(!D.online||!D.isAdmin||!D.user?.id||worldAdminBootOwners.some(owner=>owner!==D.user.id)){clearWorldAdminView();return false}
+ const ownerBound=boundWorldAdminOwner();
+ if(!D.online||!D.isAdmin||!D.user?.id||ownerBound&&ownerBound!==D.user.id||worldAdminBootOwners.some(owner=>owner!==D.user.id)){
+  clearWorldAdminView();
+  if(g.tab==="admin")g.tab="my";
+  // Clear an outdated binding only after rejecting the stale route. The new
+  // account may enter administration explicitly after its own role check.
+  if(ownerBound&&D.online&&D.user?.id&&ownerBound!==D.user.id)try{sessionStorage.removeItem(worldAdminOwnerKey)}catch{}
+  return false;
+ }
  let view;
  const noteAliases={note:"cards","note-cards":"cards","note-risk":"risk","note-map":"map","note-archive":"archive","note-settings":"settings","note-spam":"spam"};
  const visited=history.state?.ojjudaWorldHistory?.route;
@@ -521,7 +538,9 @@ function restoreWorldAdminView(requestedTab){
  g.tab="admin";L.area=view.area;L.tab=view.tab;
  L.noteTab=typeof view.noteTab==="string"&&/^[a-z-]{1,40}$/.test(view.noteTab)?view.noteTab:"cards";
  L.riskType=L.archiveType=L.spamType="cards";
- L.reportSource=view.reportSource==="note"?"note":"world";syncAdminContentFilters();return true;
+ L.reportSource=view.reportSource==="note"?"note":"world";syncAdminContentFilters();
+ if(!ownerBound)bindWorldAdminOwner();
+ return true;
 }
 function adminDataTab(){return L.tab;}
 let adminMenuSummary={owner:null,data:null,pending:false};
@@ -3149,7 +3168,7 @@ var Zb=[["all","전체 공개"],["friends","친구만"],["me","나만 보기"]];
  o.remote&&ec(o,viewer.current).then(comments=>{if(comments&&viewer.current())viewer.comments.innerHTML=Yn(o);}).catch(error=>{
   if(!viewer.current())return;console.error(error);viewer.comments.innerHTML='<div class="note">댓글을 불러오지 못했어요</div>';
  });
-}function Kb(t){let e=String(t&&t.message||""),o;return(o=e.match(/gb_fast:(\d+)/))?`방명록은 조금 천천히 남겨 주세요. ${o[1]}초 뒤에 다시 남길 수 있어요`:(o=e.match(/gb_many:(\d+)/))?`한 방에는 10분에 3개까지 남길 수 있어요. ${o[1]}분 뒤에 다시 남겨 주세요`:(o=e.match(/gb_hour:(\d+)/))?`방명록은 1시간에 20개까지 남길 수 있어요. ${o[1]}분 뒤에 다시 남겨 주세요`:/gb_dup/.test(e)?"같은 글을 여러 번 남길 수 없어요":/banned_word/.test(e)?"쓸 수 없는 표현이 들어 있어요":/row-level security|42501/.test(e+(t&&t.code||""))?"이 방에는 방명록을 남길 수 없어요":"방명록을 남기지 못했어요. 잠시 뒤 다시 시도해 주세요"}function sm(t,e){let o=$.friends.find(r=>r.id===t);o&&(closeWorldHouse(false),g.visiting=t,g.visitData=Object.assign({isMe:!1,tvMedia:null},o,{roomIdx:0}),g.tab="home",g.sec=e||"all",g.albumFilter="all",g.albumFolder="all",g.visitPos={gx:4,gy:6},g.visited.has(t)||(g.visited.add(t),o.visits.today++,o.visits.total++,I()),H(),window.scrollTo(0,0),D.online&&void openWorldHouse())}function ty(){if(qt)return;let t=document.querySelector(".stage, .door-stage");if(!t||t.querySelector(".surf-wave"))return;let e=document.createElement("div");e.className="surf-wave cover",e.setAttribute("aria-hidden","true"),t.appendChild(e)}function dm(){let t=document.querySelector(".surf-wave");t&&t.remove()}var sr={"where-owner"(t){t.msg&&M(t.msg)},"notice-open"(){ct(`<div class="mhead"><h3>📢 공지</h3><div class="row"><button type="button" class="btn sm pri" data-act="feedback-open" aria-haspopup="dialog" title="고장신고·문의·의견 보내기">제안</button><button type="button" class="btn sm ghost" data-act="close">닫기</button></div></div><p style="margin:0;white-space:pre-wrap;line-height:1.6">${w(wt.notice||"")}</p>`,"공지")},"charge-toggle"(){g.chargeOpen=!g.chargeOpen,H()},"note-soon"(){M("익명카드는 준비 중이에요. 곧 만나요! ✨")},"app-update"(){I1()},"app-update-dismiss"(){dismissSectionUpdate()},"door-toggle"(){if(D.online&&!D.doorReady){M("서버 설정이 필요해요. 관리자가 update_door.sql을 먼저 실행해야 해요");return}if(D.online&&D.doorWritable===!1){M("서버 설정이 필요해요. 관리자가 update_door_fix.sql을 실행해야 해요");return}$.doorClosed?($.doorClosed=!1,I(),H(),M("문을 열었어요. 친구들이 다시 놀러 올 수 있어요")):Tt("문을 닫을까요? 친구를 포함해 아무도 내 방과 글을 볼 수 없어요. 언제든 다시 열 수 있어요.","문 닫기",()=>{$.doorClosed=!0,I(),H(),M("문을 닫았어요. 푹 쉬어요 🌙")})},tab(t){if(!["hub","arcade","park","my","admin"].includes(t.tab))t={...t,tab:"hub"};worldVisitRequest++;if(t.tab==="admin"&&g.tab!=="admin"){worldAdminService="agit";L.area="account";L.tab="overview";}if(t.tab==="park"||t.tab==="arcade"){g.visiting=null;g.visitData=null;g.sel=null;if(g.tab!=="place"||g.place?.id!==t.tab)xf(t.tab,undefined,true);else g.place.fromMainMenu=true;return;}if(t.tab==="shop")t={...t,tab:"friends"};g.tab=t.tab,g.visiting=null,g.visitData=null,g.sel=null,t.tab==="home"&&(g.sec=g.sec||"diary"),H(),window.scrollTo(0,0);if(isWorldHouseTab())void openWorldHouse()},"go-home"(){sr.tab({tab:"home"})},sec(t){In(t.sec)},afilter(t){g.albumFilter=t.f,st()},async"diary-post"(t,e){let o=z("#d-body").value.trim(),r=z("#d-title").value.trim(),a=z("#d-vis").value;if(!o&&!g.pendingFile){M("내용을 적어주세요"),z("#d-body").focus();return}let i=null;if(g.pendingFile){e.disabled=!0;let l=await tc([g.pendingFile],{vis:a});if(e.disabled=!1,!l.length)return;i=l[0]}$.diary.unshift({id:$t(),title:r,body:o,vis:a,media:i,at:Date.now(),likes:0,liked:!1}),g.pendingFile=null,I(),st(),M("다이어리를 올렸어요")},like(t){let e=Rt(),o=e.diary.find(a=>a.id===t.id);if(!o)return;let r=o.liked;if(o.liked=!r,o.likes+=r?-1:1,st(),D.online&&(e.isMe||e.real)){Bd(o.id,r).catch(a=>{console.error(a),o.liked=r,o.likes+=r?1:-1,st(),M("공감을 저장하지 못했어요")});return}I()},"diary-del"(t){Tt("이 다이어리를 삭제할까요?","삭제",()=>{let e=$.diary.findIndex(o=>o.id===t.id);e>=0&&$.diary.splice(e,1),I(),st(),M("삭제했어요")})},"open-media"(t){nm(t.id)},"m-comment"(t,e){
+}function Kb(t){let e=String(t&&t.message||""),o;return(o=e.match(/gb_fast:(\d+)/))?`방명록은 조금 천천히 남겨 주세요. ${o[1]}초 뒤에 다시 남길 수 있어요`:(o=e.match(/gb_many:(\d+)/))?`한 방에는 10분에 3개까지 남길 수 있어요. ${o[1]}분 뒤에 다시 남겨 주세요`:(o=e.match(/gb_hour:(\d+)/))?`방명록은 1시간에 20개까지 남길 수 있어요. ${o[1]}분 뒤에 다시 남겨 주세요`:/gb_dup/.test(e)?"같은 글을 여러 번 남길 수 없어요":/banned_word/.test(e)?"쓸 수 없는 표현이 들어 있어요":/row-level security|42501/.test(e+(t&&t.code||""))?"이 방에는 방명록을 남길 수 없어요":"방명록을 남기지 못했어요. 잠시 뒤 다시 시도해 주세요"}function sm(t,e){let o=$.friends.find(r=>r.id===t);o&&(closeWorldHouse(false),g.visiting=t,g.visitData=Object.assign({isMe:!1,tvMedia:null},o,{roomIdx:0}),g.tab="home",g.sec=e||"all",g.albumFilter="all",g.albumFolder="all",g.visitPos={gx:4,gy:6},g.visited.has(t)||(g.visited.add(t),o.visits.today++,o.visits.total++,I()),H(),window.scrollTo(0,0),D.online&&void openWorldHouse())}function ty(){if(qt)return;let t=document.querySelector(".stage, .door-stage");if(!t||t.querySelector(".surf-wave"))return;let e=document.createElement("div");e.className="surf-wave cover",e.setAttribute("aria-hidden","true"),t.appendChild(e)}function dm(){let t=document.querySelector(".surf-wave");t&&t.remove()}var sr={"where-owner"(t){t.msg&&M(t.msg)},"notice-open"(){ct(`<div class="mhead"><h3>📢 공지</h3><div class="row"><button type="button" class="btn sm pri" data-act="feedback-open" aria-haspopup="dialog" title="고장신고·문의·의견 보내기">제안</button><button type="button" class="btn sm ghost" data-act="close">닫기</button></div></div><p style="margin:0;white-space:pre-wrap;line-height:1.6">${w(wt.notice||"")}</p>`,"공지")},"charge-toggle"(){g.chargeOpen=!g.chargeOpen,H()},"note-soon"(){M("익명카드는 준비 중이에요. 곧 만나요! ✨")},"app-update"(){I1()},"app-update-dismiss"(){dismissSectionUpdate()},"door-toggle"(){if(D.online&&!D.doorReady){M("서버 설정이 필요해요. 관리자가 update_door.sql을 먼저 실행해야 해요");return}if(D.online&&D.doorWritable===!1){M("서버 설정이 필요해요. 관리자가 update_door_fix.sql을 실행해야 해요");return}$.doorClosed?($.doorClosed=!1,I(),H(),M("문을 열었어요. 친구들이 다시 놀러 올 수 있어요")):Tt("문을 닫을까요? 친구를 포함해 아무도 내 방과 글을 볼 수 없어요. 언제든 다시 열 수 있어요.","문 닫기",()=>{$.doorClosed=!0,I(),H(),M("문을 닫았어요. 푹 쉬어요 🌙")})},tab(t){if(!["hub","arcade","park","my","admin"].includes(t.tab))t={...t,tab:"hub"};worldVisitRequest++;if(t.tab==="admin"&&D.online&&D.isAdmin&&D.user?.id)bindWorldAdminOwner();if(t.tab==="admin"&&g.tab!=="admin"){worldAdminService="agit";L.area="account";L.tab="overview";}if(t.tab==="park"||t.tab==="arcade"){g.visiting=null;g.visitData=null;g.sel=null;if(g.tab!=="place"||g.place?.id!==t.tab)xf(t.tab,undefined,true);else g.place.fromMainMenu=true;return;}if(t.tab==="shop")t={...t,tab:"friends"};g.tab=t.tab,g.visiting=null,g.visitData=null,g.sel=null,t.tab==="home"&&(g.sec=g.sec||"diary"),H(),window.scrollTo(0,0);if(isWorldHouseTab())void openWorldHouse()},"go-home"(){sr.tab({tab:"home"})},sec(t){In(t.sec)},afilter(t){g.albumFilter=t.f,st()},async"diary-post"(t,e){let o=z("#d-body").value.trim(),r=z("#d-title").value.trim(),a=z("#d-vis").value;if(!o&&!g.pendingFile){M("내용을 적어주세요"),z("#d-body").focus();return}let i=null;if(g.pendingFile){e.disabled=!0;let l=await tc([g.pendingFile],{vis:a});if(e.disabled=!1,!l.length)return;i=l[0]}$.diary.unshift({id:$t(),title:r,body:o,vis:a,media:i,at:Date.now(),likes:0,liked:!1}),g.pendingFile=null,I(),st(),M("다이어리를 올렸어요")},like(t){let e=Rt(),o=e.diary.find(a=>a.id===t.id);if(!o)return;let r=o.liked;if(o.liked=!r,o.likes+=r?-1:1,st(),D.online&&(e.isMe||e.real)){Bd(o.id,r).catch(a=>{console.error(a),o.liked=r,o.likes+=r?1:-1,st(),M("공감을 저장하지 못했어요")});return}I()},"diary-del"(t){Tt("이 다이어리를 삭제할까요?","삭제",()=>{let e=$.diary.findIndex(o=>o.id===t.id);e>=0&&$.diary.splice(e,1),I(),st(),M("삭제했어요")})},"open-media"(t){nm(t.id)},"m-comment"(t,e){
  const input=z("#m-cm"),submitted=input?.value,text=submitted?.trim();if(!text)return;
  const record=Rt().album.find(item=>item.id===t.id),viewer=mediaCommentViewer();
  if(!record||!viewer.current()||!viewer.modal.contains(e))return;
