@@ -62,7 +62,10 @@ function fixture(url='https://ojjuda.kr/world.html'){
   t.actions.tab({tab:'hub'});
   t.actions.tab({tab:'arcade'});assert.equal(active(),'arcade');
   assert.equal(w.document.querySelector('#pstage'),null,'the old arcade illustration is removed');
-  assert.ok(w.document.querySelector('[data-arcade-rank-root]'));
+  assert.equal(w.document.querySelector('[data-arcade-rank-root]'),null,'the ranking widget now lives on the dedicated rankings page');
+  const rankingsLink=w.document.querySelector('.arcade-overview .arcade-ranking-entry');
+  assert.ok(rankingsLink,'Arcade has a visible ranking entry');
+  assert.equal(rankingsLink.getAttribute('href'),'/features/arcade/all-rankings.html');
   assert.ok(w.document.querySelector('[data-arcade-games=solo]'));
   assert.ok(w.document.querySelector('[data-arcade-games=multi]'));
   assert.equal(w.document.querySelector('[data-arcade-adult]'),null,'guests have no adult section');
@@ -118,7 +121,7 @@ function fixture(url='https://ojjuda.kr/world.html'){
   assertArcadeCategories();
   delete w.OjjudaMatgoAccess;t.auth.online=false;t.auth.user=null;t.render();
   assertArcadeCategories();
-  assert.ok(w.document.querySelector('[data-arcade-rank-root]').compareDocumentPosition(w.document.querySelector('#ppanel'))&w.Node.DOCUMENT_POSITION_FOLLOWING,'rankings precede games');
+  assert.ok(w.document.querySelector('.arcade-overview').compareDocumentPosition(w.document.querySelector('#ppanel'))&w.Node.DOCUMENT_POSITION_FOLLOWING,'the ranking link precedes games');
   assert.equal(t.state.placeT,null,'arcade presence needs no repeating scene-update timer');
   const room=t.state.place,presence=t.presence();room.live=true;room.presenceStatus='auth';
   presence.onConnection(room);
