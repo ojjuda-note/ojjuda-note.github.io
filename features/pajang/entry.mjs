@@ -194,6 +194,9 @@ async function start(firstEntry) {
   // mobile keyboard. A first-time member still completes consent in this form.
   if (view === 'feed' || view === 'write') openForm(view === 'feed' ? 'feed' : 'answer');
   else openForm('answer', false);
+  // The member has passed Auth and Pajang membership checks. Installed-app
+  // launches show the answer directly, not the decorated public entry scene.
+  $('welcome').dataset.memberEntry = 'direct';
   mine.oninput = () => { mine.setCustomValidity(''); mine.maxLength = textInputMaxLength(mine.value,220); };
   form.onsubmit = async event => {
     event.preventDefault();
