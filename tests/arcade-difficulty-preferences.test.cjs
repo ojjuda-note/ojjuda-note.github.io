@@ -62,14 +62,17 @@ test('each new arcade entrance starts with single-player, even if opponent mode 
   });
   try{
     const w=dom.window,host=w.document.getElementById('host');
-    host.innerHTML=html();
+    host.innerHTML='<div id="bd-menu">'+html()+'</div>';
     w.eval(fs.readFileSync(path.join(root,'shared/games/game-entry.js'),'utf8'));
     const card=()=>host.querySelector('.game-entry');
     const selected=type=>card().querySelector('[data-entry-mode="'+type+'"]').getAttribute('aria-pressed');
     assert.equal(selected('computer'),'true');
     card().querySelector('[data-entry-mode="opponent"]').click();
     assert.equal(selected('opponent'),'true');
-    host.innerHTML=html();
+    host.querySelector('#bd-menu').innerHTML=html();
+    await new Promise(resolve=>setImmediate(resolve));
+    assert.equal(selected('opponent'),'true','redrawing one open menu keeps the active tab');
+    host.innerHTML='<div id="bd-menu">'+html()+'</div>';
     await new Promise(resolve=>setImmediate(resolve));
     assert.equal(selected('computer'),'true','reopening must always default to single player');
     assert.equal(selected('opponent'),'false');
