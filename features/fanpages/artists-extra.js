@@ -2242,7 +2242,7 @@
         "Under the skin",
         "Scent of you"
       ],
-      "checkedAt": '2026.11.17',
+      "checkedAt": '2026.11.22',
       "concept": "다른 개성을 지닌 아홉 멤버가 음악과 무대로 하나가 되는 팀.",
       "official": "https://www.andteam-official.jp/",
       "youtube": "https://www.youtube.com/@andTEAM_official",
@@ -2322,41 +2322,28 @@
       ],
       appearances: [
         {
-          "date": "2026-12-26",
-          "title": "Mark on You 홀 투어 · 삿포로 추가 공연",
-          "sub": "삿포로 문화예술극장 hitaru · 17:00 입장 / 18:00 시작 JST/KST · LUNÉ 선예매 추첨 11/18 12:00~11/23 23:59",
-          "href": "https://www.andteam-official.jp/news/d6fe308a947f"
-        },
-        {
-          "date": "2026-11-18",
-          "title": "Mark on You 홀 투어 · 오사카",
-          "sub": "그랑큐브 오사카 · 17:00 입장 / 18:00 개연 JST/KST · 예매·변경 사항은 공식 공지 확인",
-          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
-        },
-        {
-          "date": "2026-11-18",
-          "title": "JO·TAKI 후지TV ホンマでっか!?TV 출연",
-          "sub": "21:00~21:54 JST/KST 방송 · JO·TAKI 출연",
-          "href": "https://www.andteam-official.jp/news/a84de8968609"
-        },
-        {
-          "date": "2026-11-18",
-          "endDate": "2026-11-19",
-          "title": "JO·TAKI·MAKI TBS よるのブランチ 출연",
-          "sub": "11/18 23:56~11/19 00:55 JST/KST 방송 · JO·TAKI·MAKI 출연",
-          "href": "https://www.andteam-official.jp/news/2c290411ba85"
-        },
-        {
-          "date": "2026-11-19",
-          "title": "Mark on You 홀 투어 · 오사카",
-          "sub": "그랑큐브 오사카 · 17:00 입장 / 18:00 개연 JST/KST · 예매·변경 사항은 공식 공지 확인",
-          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
-        },
-        {
           "date": "2026-11-22",
           "title": "EJ·FUMA·JO·MAKI · ABEMA 슈퍼 포뮬러 2026 VTR",
           "sub": "13:00경 JST/KST 방송 예정 · 녹화 영상 출연 · 생중계 사정에 따라 시간 변경 가능",
           "href": "https://www.andteam-official.jp/news/bc623a596e4f"
+        },
+        {
+          "date": "2026-11-25",
+          "title": "JO · 일본TV DayDay. 생방송 출연",
+          "sub": "09:00~11:10 JST/KST · JO 첫 요일 멤버 생출연 · 생방송 사정에 따라 변경 가능",
+          "href": "https://www.andteam-official.jp/news/c3add3d3d90a"
+        },
+        {
+          "date": "2026-11-25",
+          "title": "JO · 영화 원댄스 × D.LEAGUE 특별 콜라보",
+          "sub": "도쿄 TOYOTA ARENA TOKYO · 18:30 JST/KST 시작 · D.LEAGUE 26-27 ROUND.4 BLOCK VIBE",
+          "href": "https://www.andteam-official.jp/news/eefcf7cbeaa9"
+        },
+        {
+          "date": "2026-11-26",
+          "title": "TAKI · 닛케이 CNBC 특별 프로그램 출연",
+          "sub": "닛케이 CNBC · 11:35~12:20 JST/KST 방송 · 11/19 공식 발표",
+          "href": "https://www.andteam-official.jp/news/493c38d3ea9b"
         },
         {
           "date": "2026-11-27",
@@ -2371,6 +2358,12 @@
           "href": "https://www.andteam-official.jp/news/5053213ee98e"
         },
         {
+          "date": "2026-11-28",
+          "title": "&TEAM · 일본TV 베스트 아티스트 2026 생방송",
+          "sub": "닛폰TV · 1부 16:00~17:00, 2부 19:00~22:54 JST/KST 전체 방송 · 그룹 출연 시간은 공식 안내 확인",
+          "href": "https://www.andteam-official.jp/news/6f9c60c13c77"
+        },
+        {
           "date": "2026-11-29",
           "title": "JO · 영화 원댄스 개봉 기념 무대인사 · 나고야",
           "sub": "TOHO 시네마즈 나고야 사카에 · 10:20 상영 후 무대인사 · 출연자 변경 가능",
@@ -2381,6 +2374,12 @@
           "title": "JO · 영화 원댄스 개봉 기념 무대인사 · 오사카",
           "sub": "TOHO 시네마즈 우메다 · 13:40 상영 후 / 17:10 상영 전 무대인사 · 출연자 변경 가능",
           "href": "https://www.andteam-official.jp/news/5053213ee98e"
+        },
+        {
+          "date": "2026-12-04",
+          "title": "EJ·FUMA·HARUA·TAKI·MAKI · 일본TV 예능 출연",
+          "sub": "12/3(木) 심야 24:59~25:29 JST/KST = 12/4 00:59~01:29 · 世界の&TEAM FANTASTICSにムチャブリカンペ",
+          "href": "https://www.andteam-official.jp/news/562146fe66fd"
         },
         {
           "date": "2026-12-10",
@@ -2424,6 +2423,18 @@
           "title": "&TEAM Mark on You · 홀 투어",
           "sub": "일본 에히메 마쓰야마 시민회관 · 17:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
           "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2026-12-24",
+          "title": "NICHOLAS·YUMA · GIANNA HOMMES 06 표지 발매",
+          "sub": "일본 잡지 GIANNA HOMMES 06 · 두 멤버 각각 단독 표지판 발매 · 발행사 NUMBER SEVEN",
+          "href": "https://www.andteam-official.jp/news/85d01d80238b"
+        },
+        {
+          "date": "2026-12-26",
+          "title": "Mark on You 홀 투어 · 삿포로 추가 공연",
+          "sub": "삿포로 문화예술극장 hitaru · 17:00 입장 / 18:00 시작 JST/KST · LUNÉ 선예매 추첨 11/18 12:00~11/23 23:59",
+          "href": "https://www.andteam-official.jp/news/d6fe308a947f"
         },
         {
           "date": "2026-12-27",
@@ -2582,19 +2593,55 @@
           "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
         }
       ],
-      "schedules": [
+      news: [
         {
-          "title": "&TEAM 공식 일정",
-          "sub": "공연·방송 등 활동 달력 · 변경 여부 확인",
-          "href": "https://www.andteam-official.jp/schedule"
+          "date": "2026.11.21",
+          "tag": "수상",
+          "title": "제68회 일본 레코드 대상 특별상 수상 발표",
+          "href": "https://www.andteam-official.jp/news/ffef3907e21b"
         },
         {
-          "title": "&TEAM 공식 티켓",
-          "sub": "투어·예매·변경·취소 공지",
-          "href": "https://www.andteam-official.jp/ticket"
-        }
-      ],
-      news: [
+          "date": "2026.11.20",
+          "tag": "방송",
+          "title": "JO, 11/25 일본TV DayDay. 생방송 출연 공식 발표",
+          "href": "https://www.andteam-official.jp/news/c3add3d3d90a"
+        },
+        {
+          "date": "2026.11.20",
+          "tag": "방송",
+          "title": "&TEAM, 11/28 일본TV 베스트 아티스트 2026 생방송 출연 발표",
+          "href": "https://www.andteam-official.jp/news/6f9c60c13c77"
+        },
+        {
+          "date": "2026.11.20",
+          "tag": "화보",
+          "title": "NICHOLAS·YUMA, 12/24 발매 GIANNA HOMMES 06 각각 단독 표지 확정",
+          "href": "https://www.andteam-official.jp/news/85d01d80238b"
+        },
+        {
+          "date": "2026.11.20",
+          "tag": "방송",
+          "title": "EJ·FUMA·HARUA·TAKI·MAKI, 12/4 새벽 일본TV 예능 출연 발표",
+          "href": "https://www.andteam-official.jp/news/562146fe66fd"
+        },
+        {
+          "date": "2026.11.19",
+          "tag": "콜라보",
+          "title": "JO, 11/25 영화 원댄스 × D.LEAGUE 특별 콜라보 참여 발표",
+          "href": "https://www.andteam-official.jp/news/eefcf7cbeaa9"
+        },
+        {
+          "date": "2026.11.19",
+          "tag": "굿즈",
+          "title": "Weverse Shop 11/20~12/4 블랙프라이데이 판매 발표",
+          "href": "https://www.andteam-official.jp/news/e5ce8c121d84"
+        },
+        {
+          "date": "2026.11.19",
+          "tag": "방송",
+          "title": "TAKI, 11/26 닛케이 CNBC 특별 프로그램 출연 발표",
+          "href": "https://www.andteam-official.jp/news/493c38d3ea9b"
+        },
         {
           "date": "2026.11.17",
           "tag": "공연",
@@ -2643,7 +2690,6 @@
           "title": "11월 18~19일 오사카 공연 LUNÉ 회원 특전 예약 시작",
           "href": "https://www.andteam-official.jp/news/631419a2c417"
         },
-
         {
           "date": "2026.11.12",
           "tag": "광고",
@@ -2686,7 +2732,6 @@
           "sub": "공식 Weverse Shop · 2026.12.16 11:00 JST 판매 시작 · 랜덤 10종 · 품절·재고는 판매처 확인",
           "href": "https://www.andteam-official.jp/news/4b7089b11b28"
         },
-
         {
           "title": "&TEAM CAFE THE WOLF BUTLERS 공식 MD",
           "sub": "예약 11/12 12:00~2027/1/31 18:00 JST · 수량 한정·일본 내 배송 · 2027년 4월 중순 이후 순차 발송 예정",
@@ -2706,6 +2751,11 @@
           "title": "&TEAM 공식 상품 목록",
           "sub": "Weverse Shop · 앨범·응원봉·공식 MD · 재고·가격은 판매처 확인",
           "href": "https://shop.weverse.io/ko/shop/USD/artists/75"
+        },
+        {
+          "title": "&TEAM 2026 Weverse Shop 블랙프라이데이",
+          "sub": "2026.11.20 12:00~12.04 23:59 JST · 일본 국내 배송 · 2027.01.25 이후 순차 발송 예정 · 현재 가격·재고는 공식 판매처 확인",
+          "href": "https://www.andteam-official.jp/news/e5ce8c121d84"
         }
       ],
       campaigns: [
@@ -2723,13 +2773,19 @@
           "sub": "TAKARA TOMY 애니메이션 BEYBLADE X 베이킹덤 편 신 오프닝 주제가 · 공식 발표 9/17, 음원 발매 10/10",
           "href": "https://www.andteam-official.jp/news/3727e6736b51"
         },
-
         {
           "kind": "광고",
           "date": "2026.11.12",
           "title": "&TEAM 'For us' × 미쓰이 라라포트·아울렛 BLACK FRIDAY",
           "sub": "일본 TV CM 삽입곡(일부 지역 제외) · 2026.11.29까지 순차 방영",
           "href": "https://www.andteam-official.jp/news/48bd3c0789e7"
+        },
+        {
+          "kind": "콜라보",
+          "date": "2026.11.19",
+          "title": "JO · 영화 원댄스 × D.LEAGUE 특별 콜라보",
+          "sub": "11/19 공식 발표 · 11/25 D.LEAGUE 26-27 ROUND.4 BLOCK VIBE, TOYOTA ARENA TOKYO 출연",
+          "href": "https://www.andteam-official.jp/news/eefcf7cbeaa9"
         }
       ],
       "accent": "#528b73",
