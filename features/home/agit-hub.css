@@ -91,37 +91,37 @@ body:has(.agit-hub) .bottomnav button.on{color:var(--accent-ink,#245a48)}
 .agit-quest-name{min-width:0;max-width:100%;color:var(--agit-muted);font-size:11px;font-weight:650;letter-spacing:-.035em;line-height:1.25;word-break:keep-all;overflow-wrap:anywhere}
 .agit-quest-check{position:absolute;right:-4px;bottom:-3px;display:grid;place-items:center;width:16px;height:16px;border:2px solid var(--surface,#fff);border-radius:50%;background:color-mix(in srgb,var(--quest-tone) 85%,#1b2430);color:#fff;font-size:9px;font-weight:850;line-height:1}
 
-/* Four compact, illustrated destinations with a distinct pastel identity. */
+/* Calm, editorial-style illustrated banners: one hierarchy, four subtle accents. */
 .agit-life-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
 .agit-life-tile{
- --banner-light:#edf5eb;--banner-deep:#dcebd7;--banner-border:#cbdcc7;
- --banner-title:#2f573b;--banner-sub:#58715d;--banner-accent:#6c9e77;
- position:relative;isolation:isolate;display:grid;grid-template-columns:clamp(138px,36%,250px) minmax(0,1fr);
- align-items:stretch;min-width:0;height:clamp(114px,15vw,146px);
- overflow:hidden;padding:0;border:1px solid var(--banner-border);border-radius:23px;
- background:linear-gradient(115deg,var(--banner-light),var(--banner-deep));
- box-shadow:0 7px 20px rgba(42,55,49,.075),inset 0 1px 0 rgba(255,255,255,.75);
- color:var(--banner-title);text-align:left;text-decoration:none;cursor:pointer;
+ --banner-paper:#f9fbf8;--banner-tint:#eaf2eb;--banner-stroke:#dce6dc;
+ --banner-ink:#2e4334;--banner-muted:#65796a;--banner-accent:#628a6c;
+ position:relative;isolation:isolate;display:grid;
+ grid-template-columns:clamp(138px,36%,250px) minmax(0,1fr);
+ align-items:stretch;min-width:0;height:clamp(114px,15vw,146px);overflow:hidden;padding:0;
+ border:1px solid var(--banner-stroke);border-radius:20px;
+ background:linear-gradient(110deg,var(--banner-paper) 16%,var(--banner-tint) 145%);
+ box-shadow:0 5px 18px rgba(45,51,45,.065),inset 0 1px 0 rgba(255,255,255,.88);
+ color:var(--banner-ink);text-align:left;text-decoration:none;cursor:pointer;
  transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease
 }
-.agit-life-tile--1{--banner-light:#edf6ed;--banner-deep:#dbead7;--banner-border:#c5dcc6;--banner-title:#2c583e;--banner-sub:#587461;--banner-accent:#6a9d7a}
-.agit-life-tile--3{--banner-light:#eff7ff;--banner-deep:#dcebf9;--banner-border:#c8dcf0;--banner-title:#285274;--banner-sub:#53748d;--banner-accent:#6899c5}
-.agit-life-tile--2{--banner-light:#fff5e9;--banner-deep:#f9e3d1;--banner-border:#f0d7bf;--banner-title:#7d4e35;--banner-sub:#936e56;--banner-accent:#dba172}
-.agit-life-tile--4{--banner-light:#f9f0fa;--banner-deep:#eddef3;--banner-border:#e2cfe8;--banner-title:#684775;--banner-sub:#87698d;--banner-accent:#b58abf}
-.agit-life-tile::before{content:"";position:absolute;z-index:-1;right:-7%;top:-50%;width:40%;height:200%;border:1px solid rgba(255,255,255,.54);border-radius:50%;box-shadow:0 0 0 24px rgba(255,255,255,.08);pointer-events:none}
-.agit-life-tile:hover{transform:translateY(-3px);border-color:var(--banner-accent);box-shadow:0 13px 26px rgba(42,55,49,.12),inset 0 1px 0 rgba(255,255,255,.85)}
-.agit-life-tile:active{transform:translateY(0) scale(.995)}
+.agit-life-tile--1{--banner-paper:#f9fbf8;--banner-tint:#e9f1ea;--banner-stroke:#d9e5dc;--banner-ink:#2e4537;--banner-muted:#687a6b;--banner-accent:#678e73}
+.agit-life-tile--3{--banner-paper:#f9fbfd;--banner-tint:#e6eff5;--banner-stroke:#d9e3eb;--banner-ink:#344e60;--banner-muted:#6a8090;--banner-accent:#688fa9}
+.agit-life-tile--2{--banner-paper:#fdfaf7;--banner-tint:#f5e9df;--banner-stroke:#eee0d5;--banner-ink:#684e3c;--banner-muted:#907665;--banner-accent:#b58b6b}
+.agit-life-tile--4{--banner-paper:#fbf9fc;--banner-tint:#f0e8f2;--banner-stroke:#e8dfe9;--banner-ink:#644f69;--banner-muted:#8a748e;--banner-accent:#a081a7}
+.agit-life-tile:hover{transform:translateY(-2px);border-color:var(--banner-accent);box-shadow:0 11px 26px rgba(45,51,45,.11),inset 0 1px 0 rgba(255,255,255,.93)}
+.agit-life-tile:active{transform:translateY(0)}
 .agit-life-top{position:absolute;z-index:3;top:50%;right:clamp(12px,2.5vw,24px);transform:translateY(-50%)}
-.agit-life-tile-arrow{display:grid;place-items:center;width:38px;height:38px;border:1px solid rgba(255,255,255,.85);border-radius:50%;background:rgba(255,255,255,.83);color:var(--banner-title);font-size:21px;font-weight:750;line-height:1;box-shadow:0 3px 12px rgba(50,50,50,.09);backdrop-filter:blur(5px);transition:transform .2s ease,background .2s ease}
-.agit-life-tile:hover .agit-life-tile-arrow{transform:translateX(3px);background:#fff}
-.agit-life-art{position:relative;z-index:1;display:block;min-width:0;width:100%;height:100%;overflow:hidden;background:var(--banner-light)}
-.agit-life-art::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 67%,var(--banner-light) 100%);pointer-events:none}
-.agit-life-art img{display:block;width:100%;height:100%;object-fit:cover;object-position:center;transition:transform .3s ease}
-.agit-life-tile:hover .agit-life-art img{transform:scale(1.055)}
-.agit-life-title{position:relative;z-index:2;display:grid;align-content:center;gap:4px;min-width:0;padding:12px 54px 12px clamp(15px,2.6vw,26px)}
-.agit-life-title::before{content:"";display:block;width:23px;height:3px;margin-bottom:4px;border-radius:999px;background:var(--banner-accent)}
-.agit-life-title strong{color:var(--banner-title);font-size:clamp(19px,2.55vw,25px);font-weight:850;letter-spacing:-.055em;line-height:1.26;word-break:keep-all}
-.agit-life-title small{color:var(--banner-sub);font-size:clamp(11px,1.55vw,14px);font-weight:600;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agit-life-tile-arrow{display:grid;place-items:center;width:33px;height:33px;border:1px solid var(--banner-stroke);border-radius:50%;background:rgba(255,255,255,.74);color:var(--banner-accent);font-size:19px;font-weight:700;line-height:1;box-shadow:0 2px 6px rgba(40,44,41,.045);transition:transform .2s ease,background .2s ease}
+.agit-life-tile:hover .agit-life-tile-arrow{transform:translate(2px,-2px);background:var(--banner-paper)}
+.agit-life-art{position:relative;z-index:1;display:block;min-width:0;width:100%;height:100%;overflow:hidden;background:var(--banner-paper)}
+.agit-life-art::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 65%,var(--banner-paper) 100%);pointer-events:none}
+.agit-life-art img{display:block;width:100%;height:100%;object-fit:cover;object-position:center;transition:transform .28s ease}
+.agit-life-tile:hover .agit-life-art img{transform:scale(1.045)}
+.agit-life-title{position:relative;z-index:2;display:grid;align-content:center;gap:4px;min-width:0;padding:11px 52px 11px clamp(14px,2.6vw,26px)}
+.agit-life-title::before{content:"";display:block;width:24px;height:2px;margin-bottom:5px;border-radius:99px;background:var(--banner-accent)}
+.agit-life-title strong{color:var(--banner-ink);font-size:clamp(19px,2.45vw,24px);font-weight:850;letter-spacing:-.055em;line-height:1.27;word-break:keep-all}
+.agit-life-title small{color:var(--banner-muted);font-size:clamp(11px,1.5vw,13px);font-weight:550;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .agit-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:29px;padding:17px 3px 0;border-top:1px solid var(--line,#d8e7dd);color:var(--ink-2,#62756a);font-size:12px}
 .agit-footer button{display:inline-flex;align-items:center;gap:8px;padding:8px 0 8px 10px;border:0;background:transparent;color:var(--accent-ink,#245a48);font-size:12px;font-weight:700}
 .agit-footer button span{font-size:16px}
@@ -197,14 +197,14 @@ body:has(.agit-hub) .bottomnav button.on{color:var(--accent-ink,#245a48)}
  .agit-life{margin-top:20px}
  .agit-section-head h2{font-size:24px}
  .agit-life-grid{gap:10px}
- .agit-life-tile{height:114px;border-radius:19px}
+ .agit-life-tile{height:114px;border-radius:18px}
  .agit-life-title{padding:9px 48px 9px 15px}
- .agit-life-title strong{font-size:19px}
+ .agit-life-title strong{font-size:19px;letter-spacing:-.05em}
  .agit-life-title small{font-size:12px}
 }
 @media(max-width:390px){
  .agit-life-tile{grid-template-columns:minmax(112px,37%) minmax(0,1fr)}
- .agit-life-tile-arrow{width:33px;height:33px;font-size:19px}
+ .agit-life-tile-arrow{width:32px;height:32px;font-size:18px}
  .agit-life-title{padding-right:42px}
  .agit-hero{grid-template-columns:minmax(0,1fr) minmax(110px,.65fr)}
  .agit-hero-story{padding-left:16px}
@@ -310,11 +310,11 @@ body:has(.agit-hub) .bottomnav button.on{color:var(--accent-ink,#245a48)}
 }
 
 
-/* Keep all four themes legible when the site uses dark colors. */
-:root[data-theme=dark] .agit-life-tile--1{--banner-light:#263d32;--banner-deep:#314d3e;--banner-border:#476b53;--banner-title:#e4f5e7;--banner-sub:#bfd9c7;--banner-accent:#8ab89b}
-:root[data-theme=dark] .agit-life-tile--3{--banner-light:#273c4b;--banner-deep:#324c63;--banner-border:#4d6a81;--banner-title:#e4f1fd;--banner-sub:#c0d8ed;--banner-accent:#93b5d4}
-:root[data-theme=dark] .agit-life-tile--2{--banner-light:#4b382e;--banner-deep:#5e4535;--banner-border:#80624e;--banner-title:#fff0de;--banner-sub:#f1d3b9;--banner-accent:#e9b791}
-:root[data-theme=dark] .agit-life-tile--4{--banner-light:#433548;--banner-deep:#56415b;--banner-border:#745d79;--banner-title:#faeefe;--banner-sub:#e4cbe7;--banner-accent:#d0a4db}
+/* The restrained palette keeps the same contrast in dark mode. */
+:root[data-theme=dark] .agit-life-tile--1{--banner-paper:#283a30;--banner-tint:#334c3a;--banner-stroke:#46644e;--banner-ink:#e6f4e9;--banner-muted:#bed5c4;--banner-accent:#99bca0}
+:root[data-theme=dark] .agit-life-tile--3{--banner-paper:#293946;--banner-tint:#344a5c;--banner-stroke:#4d6678;--banner-ink:#e8f2f9;--banner-muted:#bfd3e0;--banner-accent:#9cb7cb}
+:root[data-theme=dark] .agit-life-tile--2{--banner-paper:#42382f;--banner-tint:#574437;--banner-stroke:#75604d;--banner-ink:#f8ecdf;--banner-muted:#e4cdb8;--banner-accent:#d7b18d}
+:root[data-theme=dark] .agit-life-tile--4{--banner-paper:#3d3340;--banner-tint:#4f3e52;--banner-stroke:#6b5770;--banner-ink:#f7eef9;--banner-muted:#ddc9e0;--banner-accent:#c8a4ce}
 
 /* Green theme details follow the system dark palette without changing artwork. */
 :root[data-theme=dark] .agit-life-art{background:var(--surface-2,#293e32)}
