@@ -42,9 +42,11 @@
     link.href='./monthly-ranking.html?game='+encodeURIComponent(id);
     link.setAttribute('aria-label',name+' 월간 순위 자세히 보기');
     const title=make('span',name,'game-name'),nickname=make('span','불러오는 중…','first-name'),
+     detail=make('small',null,'first-detail'),person=make('span',null,'first-person'),
      score=make('strong','—','first-score'),arrow=make('span','›','arrow');
-    arrow.setAttribute('aria-hidden','true');link.append(title,nickname,score,arrow);
-    rows.set(id,{nickname,score,link});list.append(link);
+    person.append(nickname,detail);
+    arrow.setAttribute('aria-hidden','true');link.append(title,person,score,arrow);
+    rows.set(id,{nickname,detail,score,link});list.append(link);
    }
    section.append(heading,list);fragment.append(section);
   }
@@ -67,7 +69,7 @@
  }
  function paint(id,value,issue){
   const row=rows.get(id),game=gameById.get(id);if(!row||!game)return;
-  const nick=row.nickname,score=row.score;
+  const nick=row.nickname,score=row.score;row.detail.textContent='';row.link.removeAttribute('title');
   nick.classList.remove('is-error','is-login','is-record');
   if(issue){
    nick.textContent=issue==='member'?'로그인 후 확인':issue==='adult'?'성인 인증 후 확인':'조회 실패 · 새로고침';
@@ -78,10 +80,14 @@
    nick.textContent='이번 달 기록 없음';score.textContent='—';return;
   }
   nick.textContent='1위 · '+String(value.nick||'익명').slice(0,80);nick.classList.add('is-record');
+  const detail=window.OjjudaRankingDetails?.describe?.(id,value)||'';
+  row.detail.textContent=detail;
+  if(detail)row.link.title=game.name+' · '+detail;
+  else row.link.removeAttribute('title');
   score.textContent=valueFor(game,value);
  }
  function reset(){
-  for(const [id,row] of rows){row.nickname.textContent='불러오는 중…';row.nickname.className='first-name';row.score.textContent='—';}
+  for(const row of rows.values()){row.nickname.textContent='불러오는 중…';row.nickname.className='first-name';row.detail.textContent='';row.link.removeAttribute('title');row.score.textContent='—';}
  }
  function create(){
   if(client)return client;

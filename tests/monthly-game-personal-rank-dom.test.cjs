@@ -322,3 +322,76 @@ test('the arcade leaderboard shares the existing automatic calendar themes and a
  assert.ok(w.document.documentElement.dataset.worldTheme,
   'the shared theme writes data-world-theme for the rank-board artwork');
 });
+
+test('ranking match details use only actual difficulty and participant metadata',t=>{
+ const dom=new JSDOM('',{url:'https://ojjuda.kr/features/arcade/all-rankings.html',runScripts:'outside-only'});
+ t.after(()=>dom.window.close());
+ const w=dom.window;w.eval(read('games/solitaire/rules.js'));w.eval(read('games/mines/rules.js'));
+ w.eval(read('games/mole/ranking.js'));w.eval(read('shared/games/ranking-details.js'));
+ const describe=w.OjjudaRankingDetails.describe;
+ assert.equal(describe('janggi',{score:9,difficulty:'hard'}),'2인 대국 · 기존 통합');
+ assert.equal(describe('janggi',{score:2,difficulty:'normal'}),'2인 대국 · 보통');
+ assert.equal(describe('chess',{score:3,difficulty:'online'}),'2인 대국 · 온라인 대전');
+ assert.equal(describe('billiards',{score:1,difficulty:'easy',variant:'carom4'}),'4구 · 2인 대국 · 쉬움');
+ assert.equal(describe('tank',{score:16,opponents:11}),'12인 경기 · 상대 11명');
+ assert.equal(describe('tank',{score:2,opponents:3}),'4인 경기 · 상대 3명');
+ assert.equal(describe('onecard',{score:1}),'5인 경기 · 컴퓨터 포함');
+ assert.equal(describe('onecard',{score:1,mode:'solo'}),'5인 경기 · 컴퓨터 포함 · 컴퓨터 대전');
+ assert.equal(describe('yut',{score:6}),'참가 인원 미기록','never invent unrecorded Yut participants');
+ assert.equal(describe('yut',{score:6,players:4,mode:'island'}),'4팀 경기 · 보통 · 장애물 놀이');
+ assert.equal(describe('tour',{score:2,player_count:3}),'3인 경기');
+ assert.equal(describe('bang',{score:3,players:15}),'참가 인원 미기록','reject invalid participant counts');
+ assert.equal(describe('mines',{score:1}), '', 'do not invent a difficulty from invalid scoring');
+ assert.equal(describe('tank',{score:0,opponents:11}),'','zero scores are not wins');
+});
+
+test('all-game overview shows ranking conditions directly under the winning name',async t=>{
+ const markup=read('features/arcade/all-rankings.html'),script=read('features/arcade/all-rankings.js');
+ assert.match(markup,/shared\/games\/ranking-details\.js/);
+ const dom=new JSDOM(markup,{url:'https://ojjuda.kr/features/arcade/all-rankings.html',runScripts:'outside-only'});
+ t.after(()=>dom.window.close());
+ const w=dom.window;
+ w.OJJUDA_CONFIG={supabaseUrl:'https://fixture.invalid',supabaseKey:'fixture'};
+ w.supabase={createClient:()=>({
+  auth:{getSession:async()=>({data:{session:{user:{id:'member-a',is_anonymous:false}}}}),
+   onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},
+  rpc(_name,args){
+   return Promise.resolve({data:Object.fromEntries(args.p_games.map(id=>[id,
+    id==='onecard'?{nick:'카드 승자',score:1}:
+    id==='tank'?{nick:'탱크 승자',score:16,opponents:11}:
+    id==='janggi'?{nick:'장기 승자',score:9,difficulty:'hard'}:
+    id==='yut'?{nick:'윷 승자',score:6}:null])),error:null});
+  }
+ })};
+ w.eval(read('shared/games/ranking-details.js'));
+ w.eval(script);await new Promise(resolve=>setImmediate(resolve));
+ const d=w.document;
+ const detail=id=>d.querySelector('[data-game="'+id+'"] .first-detail').textContent;
+ assert.equal(detail('onecard'),'5인 경기 · 컴퓨터 포함');
+ assert.equal(detail('tank'),'12인 경기 · 상대 11명');
+ assert.equal(detail('janggi'),'2인 대국 · 기존 통합');
+ assert.equal(detail('yut'),'참가 인원 미기록');
+ assert.equal(d.querySelector('[data-game="onecard"] .first-name').textContent,'1위 · 카드 승자');
+ assert.equal(d.querySelector('[data-game="tank"] .first-score').textContent,'16연승');
+ assert.equal(d.querySelector('[data-game="chess"] .first-detail').textContent,'','empty leaders show no fake detail');
+ assert.equal(d.querySelectorAll('.rank-entry').length,26);
+});
+
+test('monthly top ten also shows real opponents and difficulty for each winner',async t=>{
+ const markup=read('features/arcade/monthly-ranking.html');
+ assert.match(markup,/shared\/games\/ranking-details\.js/);
+ const dom=new JSDOM(markup,{url:'https://ojjuda.kr/features/arcade/monthly-ranking.html?game=tank',runScripts:'outside-only'});
+ t.after(()=>dom.window.close());
+ const w=dom.window;w.AbortSignal=AbortSignal;
+ w.OJJUDA_CONFIG={supabaseUrl:'https://fixture.invalid',supabaseKey:'fixture'};
+ w.supabase={createClient:()=>({
+  auth:{getSession:async()=>({data:{session:{user:{id:'member-a',is_anonymous:false}}}}),onAuthStateChange(){}},
+  rpc(){return {abortSignal:async()=>({data:{month:'2026-11',startsAt:'2026-10-31T16:00:00Z',endsAt:'2026-11-30T16:00:00Z',
+   leaders:[{nick:'탱크 챔피언',score:16,opponents:11}],mine:null},error:null})};}
+ })};
+ w.eval(read('shared/games/ranking-details.js'));
+ w.eval(read('features/arcade/monthly-ranking.js'));
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(w.document.querySelector('#ranking-leaders .rank-person small').textContent,'12인 경기 · 상대 11명');
+ assert.equal(w.document.querySelector('#ranking-leaders .rank-points').textContent,'16연승');
+});

@@ -41,6 +41,8 @@
   return ((unit==='점'||unit==='G')&&window.OjjudaScoreFormat?window.OjjudaScoreFormat(score):number(record.score))+unit;
  }
  function describe(record,id){
+  const shared=window.OjjudaRankingDetails?.describe?.(id,record);
+  if(typeof shared==='string'&&shared)return shared;
   const detail=[];
   if(id==='sacheonseong'||id==='archery'){
    if(Number.isInteger(Number(record.stage))&&Number(record.stage)>0)detail.push(number(record.stage)+'단계');
