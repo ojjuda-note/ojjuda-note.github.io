@@ -130,6 +130,7 @@
     helpTitle.append(node('span', 'ojjuda-settings-label', '도움말'), helpArrow);
     const helpBody = node('div', 'ojjuda-settings-body');
     link(helpBody, 'guide', '사용법', '/guide.html?from=park');
+    link(helpBody, 'organization', '조직도', '/features/organization/?from=park');
     helpMenu.append(helpTitle, helpBody); help.append(helpMenu);
     const apps = group('앱 다운로드');
     apps.classList.add('app-store-downloads');
