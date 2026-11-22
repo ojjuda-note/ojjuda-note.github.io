@@ -162,6 +162,9 @@ def prepare():
         write(res / 'raw/web_app_manifest.json', json.dumps(baseline['webManifest'], ensure_ascii=False, indent=2) + '\n')
         for theme in THEMES:
             source = masters[(app, theme)]
+            background_color = subprocess.check_output(
+                [magick, str(source), '-format', '%[pixel:p{0,0}]', 'info:'], text=True
+            ).strip()
             for density, legacy, adaptive in DENSITIES:
                 for name, size, crop in [(f'icon_{theme}', legacy, True), (f'background_{theme}', adaptive, False)]:
                     destination = res / f'mipmap-{density}/{name}.png'
@@ -169,6 +172,11 @@ def prepare():
                     command = [magick, str(source)]
                     if crop:
                         command += ['-gravity', 'center', '-crop', '800x800+0+0', '+repage']
+                    else:
+                        # Keep the full wordmark inside the adaptive safe zone, with a matching border.
+                        command += ['-filter', 'Lanczos', '-resize', '80%', '+repage',
+                                    '-background', background_color, '-gravity', 'center',
+                                    '-extent', '1024x1024', '+repage']
                     command += ['-filter', 'Lanczos', '-resize', f'{size}x{size}', '-strip', str(destination)]
                     subprocess.run(command, check=True)
                     inventory.append({'path': str(destination.relative_to(OUTPUT)), 'size': size, 'sha256': hashlib.sha256(destination.read_bytes()).hexdigest()})

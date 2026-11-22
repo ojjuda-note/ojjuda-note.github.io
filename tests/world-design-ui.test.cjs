@@ -4,7 +4,7 @@ const {calendarCases,selectCalendarDate,palette,distinctPalettes}=require('./the
 const root=path.join(__dirname,'..'),read=f=>fs.readFileSync(path.join(root,f),'utf8');
 const proof=process.env.WORLD_DESIGN_PROOF_DIR||'/tmp/world-design-proof';fs.mkdirSync(proof,{recursive:true});
 let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
-world=world.replace('</head>','<script>'+read('features/home/agit-hub.js')+'\n'+read('park/world-park-notes.js')+'\n'+read('app/world/world-themes.js')+'\n'+read('shared/games/world-game-rankings.js')+'\n'+read('shared/games/world-game-assets.js')+'\n'+read('features/arcade/arcade-rooms.js')+'\n'+read('app/world/world-navigation.js').split('/* World-only ambient audio;')[0]+'</script></head>');
+world=world.replace('</head>','<script>'+read('features/home/agit-hub.js')+'\n'+read('shared/brand/service-banners.js')+'\n'+read('park/world-park-notes.js')+'\n'+read('app/world/world-themes.js')+'\n'+read('shared/games/world-game-rankings.js')+'\n'+read('shared/games/world-game-assets.js')+'\n'+read('features/arcade/arcade-rooms.js')+'\n'+read('app/world/world-navigation.js').split('/* World-only ambient audio;')[0]+'</script></head>');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
  $.me.nick='오쭈다';$.me.bio='오늘도 반가워요.';$.coins=250;D.online=false;S={rpc:async()=>({data:{ok:true,rooms:[],mine:null}})};
@@ -43,72 +43,13 @@ world=world.slice(0,boot)+`
  assert.equal(await page.locator('#plog,#pmsg,[data-act=pl-send],[data-act=pl-react],.arcade-welcome [data-tab=park]').count(),0);
  const brand=await page.locator('.side>.brand').boundingBox(),nav=await page.locator('.sidenav').boundingBox();assert.ok(Math.abs((brand.y+brand.height/2)-(nav.y+nav.height/2))<3,'brand and desktop menu share one row');
  await page.screenshot({path:path.join(proof,'arcade-desktop.png'),fullPage:true});
- const soloRanks=page.locator('.board-leaders [data-rank-group=solo]'),multiRanks=page.locator('.board-leaders [data-rank-group=multi]');
- const selectRankCategory=async key=>{
-  const groups=page.locator('[data-arcade-rank-root] .board-rank-groups');
-  for(let i=0;await groups.getAttribute('data-rank-category')!==key&&i<30;i++)await page.getByRole('button',{name:'다음 게임 순위',exact:true}).click();
-  assert.equal(await groups.getAttribute('data-rank-category'),key);
- };
- assert.equal(await page.locator('.board-leaders [data-rank-group]').count(),2);assert.equal(await page.locator('[data-rank-group=adult]').count(),0);
- assert.equal(await page.locator('.board-leaders [data-rank-group][aria-hidden=false]').count(),1,'rankings expose one category at a time');
- const desktopRanks=await soloRanks.evaluate(group=>({width:group.parentElement.clientWidth,count:group.querySelectorAll('.board-rank-page[aria-hidden=false] [data-game]').length,rows:[...group.querySelectorAll('.board-rank-page[aria-hidden=false] table')].map(table=>table.querySelectorAll('[data-game]').length)}));
- assert.equal(desktopRanks.count,Math.min(4,desktopRanks.width>=960?9:desktopRanks.width>=640?6:3),'desktop shows as many distinct games as its width allows');
- assert.ok(desktopRanks.rows.every(count=>count<=3),'desktop tables remain three rows high');
- await page.setViewportSize({width:390,height:850});
- await page.waitForFunction(()=>document.querySelectorAll('.board-leaders [data-rank-group=solo] .board-rank-page[aria-hidden=false] [data-game]').length===3);
- assert.equal(await page.locator('.board-leaders .board-rank-controls').count(),1,'one shared pager serves every ranking category');
- assert.equal(await page.locator('.board-rank-group .board-rank-controls').count(),0,'category cards have no nested pager');
- assert.equal(await page.locator('.board-rank-carousel-controls .board-rank-position').innerText(),'1 / 3','the mobile counter includes all solo and multiplayer pages');
- await page.getByRole('button',{name:'다음 게임 순위',exact:true}).click();assert.equal(await soloRanks.getAttribute('data-rank-page'),'1');
- assert.equal(await page.locator('.board-rank-carousel-controls .board-rank-position').innerText(),'2 / 3');
- assert.deepEqual(await soloRanks.locator('.board-rank-page[aria-hidden=false] [data-game]').evaluateAll(rows=>rows.map(row=>row.dataset.game)),['mole'],'the last solo page shows only its remaining game');
- assert.deepEqual(await soloRanks.locator('.board-rank-page').evaluateAll(pages=>pages.map(page=>[...page.querySelectorAll('[data-game]')].map(row=>row.dataset.game))),[['mines','runner','stacker'],['mole']],'current rankings keep every solo game exactly once across pages');
- assert.equal(await multiRanks.getAttribute('data-rank-page'),'0','paging solo rankings leaves multiplayer unchanged');
- await page.getByRole('button',{name:'다음 게임 순위',exact:true}).click();
- assert.equal(await page.locator('.board-rank-groups').getAttribute('data-rank-category'),'multi','the next arrow crosses from the last solo page into multiplayer');
- assert.equal(await page.locator('.board-rank-carousel-controls .board-rank-position').innerText(),'3 / 3');
- await page.getByRole('button',{name:'이전 게임 순위',exact:true}).click();
- assert.equal(await page.locator('.board-rank-groups').getAttribute('data-rank-category'),'solo','the previous arrow crosses back to the preceding category');
- assert.equal(await soloRanks.getAttribute('data-rank-page'),'1','backward traversal lands on its last page');
- const swipe=await soloRanks.locator('.board-rank-group-head').boundingBox();
- await page.mouse.move(swipe.x+swipe.width-12,swipe.y+swipe.height/2);await page.mouse.down();
- await page.mouse.move(swipe.x+12,swipe.y+swipe.height/2,{steps:6});await page.mouse.up();
- assert.equal(await page.locator('.board-rank-groups').getAttribute('data-rank-category'),'multi','a horizontal drag uses the same cross-category traversal');
- assert.equal(await page.locator('.board-rank-carousel-controls .board-rank-position').innerText(),'3 / 3');
- await page.getByRole('button',{name:'탱크게임 게임 열기',exact:true}).click();assert.equal(await page.evaluate(()=>window.openedGame),'tank');
- const historyButton=page.getByRole('button',{name:'월별 게임순위 보기',exact:true});await historyButton.focus();await page.keyboard.press('Enter');
- await page.locator('.board-rank-history[aria-busy=false]').waitFor();
- assert.equal(await page.locator('.board-rank-history .board-rank-groups').getAttribute('data-rank-category'),'multi','history retains the selected category');
- assert.equal(await page.locator('.board-rank-history [data-game]').count(),5,'monthly history keeps every allowed game');
- assert.equal(await page.locator('.board-rank-history [data-rank-group=solo] [data-game]').count(),4);
- assert.equal(await page.locator('.board-rank-history [data-rank-group=multi] [data-game]').count(),1);
- assert.equal(await page.locator('.board-rank-month').evaluate(n=>n===document.activeElement),true,'keyboard opening focuses the month selector');
- await selectRankCategory('solo');
- const historySolo=page.locator('.board-rank-history [data-rank-group=solo]'),readsBeforeHistoryPage=await page.evaluate(()=>designFixture.rankReads.length);
- assert.equal(await historySolo.locator('[data-game]:not([hidden])').count(),3,'monthly history also shows three games at a time');
- assert.equal(await page.locator('.board-rank-history .board-rank-controls').count(),1,'monthly history also has one shared pager');
- await page.getByRole('button',{name:'다음 게임 순위',exact:true}).click();
- assert.deepEqual(await historySolo.locator('[data-game]:not([hidden])').evaluateAll(rows=>rows.map(row=>row.dataset.game)),['mole'],'monthly history shows only its remaining game');
- assert.deepEqual(await historySolo.locator('[data-game]').evaluateAll(rows=>rows.map(row=>row.dataset.game).sort()),['mines','mole','runner','stacker'],'monthly history keeps every solo game exactly once while paging');
- assert.equal(await page.evaluate(()=>designFixture.rankReads.length),readsBeforeHistoryPage,'monthly paging reuses its data');
- await page.getByLabel('월 선택',{exact:true}).selectOption('2026-09');await page.locator('.board-rank-history[aria-busy=false]').waitFor();
- assert.equal(await historySolo.getAttribute('data-rank-page'),'0','a month change returns to the first history page');
- assert.equal(await page.locator('.board-rank-history .board-rank-groups').getAttribute('data-rank-category'),'solo','a month change preserves its category');
- assert.equal(await page.locator('.board-rank-history [data-game=tank] .board-leader-score').textContent(),'25승');
- assert.equal(await page.locator('.board-rank-history [data-game=tank] .board-leader-nick').textContent(),'지난달우승자');
- for(const width of [320,390]){await page.setViewportSize({width,height:850});await fits('monthly history '+width);assert.equal(await page.locator('.board-rank-month').inputValue(),'2026-09');}
- await page.screenshot({path:path.join(proof,'monthly-rankings-mobile.png'),fullPage:true});
- const readsBeforeBack=await page.evaluate(()=>designFixture.rankReads.length);await page.goBack();await soloRanks.locator('.board-rank-track').waitFor();
- assert.equal(await page.evaluate(()=>designFixture.state.tab==='place'&&designFixture.state.place?.id==='arcade'),true,'browser Back closes monthly history without leaving the Arcade');
- assert.equal(await page.locator('.board-rank-track').count(),2);assert.equal(await soloRanks.getAttribute('data-rank-page'),'1','back restores the solo carousel page');
- assert.equal(await multiRanks.getAttribute('data-rank-page'),'0','back restores the multiplayer carousel page independently');
- assert.equal(await page.locator('.board-leaders .board-rank-groups').getAttribute('data-rank-category'),'solo','Back retains the history category');
- assert.equal(await historyButton.evaluate(n=>n===document.activeElement),true,'back returns focus to the ranking title');
- assert.equal(await page.evaluate(()=>designFixture.rankReads.length),readsBeforeBack,'returning reuses recent current-month leaders');
- await historyButton.click();await page.locator('.board-rank-history[aria-busy=false]').waitFor();
- assert.equal(await page.evaluate(()=>designFixture.navigation.back()),true,'native Back consumes the monthly-history view');await soloRanks.locator('.board-rank-track').waitFor();
- assert.equal(await page.evaluate(()=>designFixture.state.place?.id),'arcade');
- await historyButton.click();await page.locator('.board-rank-history[aria-busy=false]').waitFor();await page.getByRole('button',{name:'이번 달 순위로 돌아가기',exact:true}).click();await soloRanks.locator('.board-rank-track').waitFor();
+ // The embedded rank carousel was retired: the Arcade now links directly to
+ // the complete game ranking page, which owns the tables and paging behavior.
+ const rankEntry=page.locator('.arcade-ranking-entry');
+ assert.equal(await rankEntry.count(),1,'the Arcade has one compact ranking link');
+ assert.equal(await rankEntry.getAttribute('href'),'/features/arcade/all-rankings.html');
+ assert.match(await rankEntry.textContent(),/게임순위/);
+ assert.equal(await page.locator('.board-leaders,.board-rank-controls').count(),0,'the old embedded ranking carousel is absent');
  for(const width of [320,390,768,900,1280]){
   await page.setViewportSize({width,height:900});await fits('arcade '+width);assert.equal(await page.locator(width<900?'.bottomnav':'.sidenav').isVisible(),true);
   assert.equal(await page.locator('[data-arcade-games] .game-version').count(),0,'release metadata stays out of the menu at '+width);
@@ -146,11 +87,11 @@ world=world.slice(0,boot)+`
  assert.equal(await page.locator('.bottomnav [aria-current=page]').getAttribute('data-tab'),'hub','the Agit click selects its own destination');
  assert.deepEqual(await page.locator('[data-act=agit-daily]').evaluateAll(buttons=>buttons.map(button=>({id:button.dataset.v,images:button.querySelectorAll('img').length}))),[{id:'group',images:1},{id:'restaurants',images:1},{id:'festival',images:1}],'Hub preserves the current daily card order and covers');
  assert.equal(await page.locator('#agit-daily h2').innerText(),'일상 둘러보기');
- assert.equal(await page.locator('#agit-daily a[href="/features/fanpages/index.html"]').count(),1,'Fanpage remains visible between Group and Restaurants');
+ assert.equal(await page.locator('#agit-daily a[href="/features/fanpages/index.html"]').count(),1,'Fanpage remains visible after Festival');
  assert.deepEqual(await page.locator('[data-act=agit-daily][aria-label*="회원 전용"]').evaluateAll(buttons=>buttons.map(button=>button.dataset.v)),['group'],'only Group requires membership in the current daily tools');
  const dailyCovers=page.locator('#agit-daily img, .agit-reading-grid img');
  assert.deepEqual(await dailyCovers.evaluateAll(images=>images.map(image=>image.getAttribute('src'))),
-  ['group','fanpages','restaurants','festival','biorhythm','tarot','saju'].map(id=>'/features/home/daily-'+id+'.webp'));
+  ['group','restaurants','festival','fanpages','biorhythm','tarot','saju'].map(id=>'/features/home/daily-'+id+'.webp'));
  const readings=page.locator('.agit-reading-grid > a');
  assert.deepEqual(await readings.locator('strong').allTextContents(),['바이오리듬','타로','사주']);
  for(const width of [320,768,390]){
@@ -161,6 +102,21 @@ world=world.slice(0,boot)+`
   assert.ok(boxes.every((b,i)=>b.y===boxes[0].y&&b.width>=44&&b.fits&&(!i||b.x>=boxes[i-1].x+boxes[i-1].width-1)),'three readable links share one row at '+width);
   await fits('Hub '+width);
  }
+ // The compact reciprocal links live together at the end of Settings.
+ await page.locator('.bottomnav [data-tab=my]').click();
+ const serviceBanners=page.locator('ojjuda-service-banners[current="agit"]');
+ await serviceBanners.locator('.ojjuda-service-banner').first().waitFor();
+ assert.equal(await serviceBanners.evaluate(node=>node.parentElement.lastElementChild===node),true,'service banners are last in Settings');
+ assert.deepEqual(await serviceBanners.locator('.ojjuda-service-banner').evaluateAll(links=>links.map(link=>link.dataset.service)),['park','pajang']);
+ for(const width of [320,390,750]){
+  await page.setViewportSize({width,height:850});
+  const boxes=await serviceBanners.locator('.ojjuda-service-banner').evaluateAll(links=>links.map(link=>{
+   const {x,y,width,height}=link.getBoundingClientRect();return {x,y,width,height,fits:link.scrollWidth<=link.clientWidth+1};
+  }));
+  assert.ok(boxes.every(box=>box.fits&&box.height>=44&&box.x>=0&&box.x+box.width<=width+1),'service banners fit at '+width);
+  assert.ok(Math.abs(boxes[0].y-boxes[1].y)<=1&&boxes[1].x>=boxes[0].x+boxes[0].width,'both service banners share one row at '+width);
+ }
+ await page.setViewportSize({width:390,height:850});
  // Read rendered colors, not only the theme attribute or illustration URL.
  const placeAppearances={};
  for(const appearance of ['light','dark']){
@@ -168,26 +124,20 @@ world=world.slice(0,boot)+`
   const samples=[];
   for(const [theme,date] of calendarCases){
    await selectCalendarDate(page,date);
-   const colors=await palette(page,{park:'.agit-park-open',pajang:'.agit-pajang-open'});
+   const colors=await palette(page,{park:'.ojjuda-service-banner[data-service="park"]',pajang:'.ojjuda-service-banner[data-service="pajang"]'});
    assert.equal(colors.theme,theme);assert.equal(colors.body,colors.bg,'Agit background follows '+theme);
-   const placeAccents=await page.evaluate(()=>Object.fromEntries(['park','pajang'].map(name=>{
-    const banner=document.querySelector('.agit-'+name+'-banner'),swatch=document.createElement('span');
-    swatch.hidden=true;swatch.style.backgroundColor='var(--place-accent)';banner.append(swatch);
-    const accent=getComputedStyle(swatch).backgroundColor;swatch.remove();return [name,accent];
-   })));
    for(const name of ['park','pajang']){
-    assert.notEqual(placeAccents[name],'rgba(0, 0, 0, 0)',name+' has its own visible accent');
-    assert.equal(colors.nodes[name].background,placeAccents[name],name+' entrance uses its own accent');
+    assert.notEqual(colors.nodes[name].image,'none',name+' has its own visible background');
     if(samples.length)assert.deepEqual(colors.nodes[name],samples[0].nodes[name],name+' keeps its identity across calendar themes in '+appearance);
    }
-   assert.notEqual(colors.nodes.park.background,colors.nodes.pajang.background,'Park and Pajang remain visually distinct in '+appearance);
+   assert.notEqual(colors.nodes.park.image,colors.nodes.pajang.image,'Park and Pajang remain visually distinct in '+appearance);
    samples.push(colors);
   }
   distinctPalettes(samples,'Agit '+appearance,['bg','accent']);
   placeAppearances[appearance]=samples[0].nodes;
  }
  for(const name of ['park','pajang']){
-  assert.notEqual(placeAppearances.light[name].background,placeAppearances.dark[name].background,name+' entrance background adapts to dark mode');
+  assert.notEqual(placeAppearances.light[name].image,placeAppearances.dark[name].image,name+' entrance background adapts to dark mode');
   assert.notEqual(placeAppearances.light[name].color,placeAppearances.dark[name].color,name+' entrance text adapts to dark mode');
  }
  await page.emulateMedia({colorScheme:'light'});await page.evaluate(()=>OjjudaThemes.sync());
@@ -203,7 +153,7 @@ world=world.slice(0,boot)+`
  await page.screenshot({path:path.join(proof,'settings-mobile.png'),fullPage:true});
  // Check Hub -> Settings -> Back before subsection visits add their own history.
  await page.getByRole('button',{name:'설정 닫기',exact:true}).click();
- await page.locator('.agit-park-banner').waitFor();
+ await page.locator('.agit-hub').waitFor();
  assert.equal(await page.evaluate(()=>designFixture.state.tab),'hub','the settings close button returns to the actual previous Agit visit');
  assert.equal(await page.locator('.bottomnav [aria-current=page]').getAttribute('data-tab'),'hub','the restored Agit is selected');
  assert.equal(await page.locator('.world-settings-page').count(),0,'the settings screen is closed after history traversal');
@@ -230,7 +180,7 @@ world=world.slice(0,boot)+`
  assert.ok(settingsLayout.rowHeights.every(height=>height>=44),'settings rows retain touch-friendly targets');
  await page.screenshot({path:path.join(proof,'settings-desktop.png'),fullPage:true});
  await page.evaluate(()=>Object.assign(designFixture.auth,designFixture.guestAuth));
- await page.locator('.sidenav [data-tab=hub]').click();await page.locator('.agit-park-banner').waitFor();
+ await page.locator('.sidenav [data-tab=hub]').click();await page.locator('.agit-hub').waitFor();
  // Inspect every theme in the real Arcade, including the dark variant.
  await page.locator('.sidenav [data-tab=arcade]').click();await page.evaluate(()=>{clearInterval(designFixture.state.placeT);designFixture.rank();});
  assert.equal(await page.evaluate(()=>designFixture.state.tab==='place'&&designFixture.state.place?.id==='arcade'),true);
@@ -239,13 +189,13 @@ world=world.slice(0,boot)+`
  const shapes=await page.locator('.side .ojjuda-theme-logo path').evaluateAll(nodes=>nodes.map(n=>'d="'+n.getAttribute('d')+'"'));
  assert.deepEqual(shapes,original,'logo silhouette and smile remain the original paths');
  const keys=await page.evaluate(()=>OjjudaThemes.order);
- for(const key of keys){await page.evaluate(k=>document.documentElement.dataset.worldTheme=k,key);await fits(key);assert.equal(await page.locator('.side .ojjuda-theme-logo').evaluate(n=>getComputedStyle(n).color===getComputedStyle(n.querySelector('path')).fill),true,'logo fill follows the theme');assert.ok(await page.locator('[data-arcade-rank-root]').evaluate(n=>getComputedStyle(n,':before').backgroundImage.includes('/assets/design/')));}
+ for(const key of keys){await page.evaluate(k=>document.documentElement.dataset.worldTheme=k,key);await fits(key);assert.equal(await page.locator('.side .ojjuda-theme-logo').evaluate(n=>getComputedStyle(n).color===getComputedStyle(n.querySelector('path')).fill),true,'logo fill follows the theme');assert.equal(await page.locator('.arcade-ranking-entry').isVisible(),true,'ranking link stays visible in '+key);}
  await page.evaluate(()=>document.documentElement.dataset.worldTheme='christmas');await page.screenshot({path:path.join(proof,'christmas-desktop.png'),fullPage:true});
  await page.emulateMedia({colorScheme:'dark'});await page.waitForFunction(()=>document.documentElement.dataset.theme==='dark');await fits('dark theme');await page.screenshot({path:path.join(proof,'dark-desktop.png'),fullPage:true});
  // The live host and the real Park stylesheet order must resolve the same palette.
  await page.emulateMedia({colorScheme:'light'});
- await page.locator('.sidenav [data-tab=hub]').click();
- await page.locator('.agit-park-banner').click();
+ await page.locator('.sidenav [data-tab=my]').click();
+ await page.locator('.ojjuda-service-banner[data-service="park"]').click();
  await page.waitForFunction(()=>document.documentElement.classList.contains('world-park-active'));
  await page.waitForFunction(()=>document.querySelector('.park-app iframe')?.contentWindow?.OjjudaThemes);
  const park=page.frames().find(frame=>new URL(frame.url()).pathname==='/park/');

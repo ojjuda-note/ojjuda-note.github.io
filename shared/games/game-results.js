@@ -48,6 +48,29 @@
   const outcomeOf = value => own(TITLES, value) ? value : 'complete';
   const motionReduced = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
   const nodes = value => (Array.isArray(value) ? value : value ? [value] : []).filter(node => node && typeof node.nodeType === 'number');
+  const ACTION_ORDER = Object.freeze({ exit: 0, secondary: 1, primary: 2 });
+  const actionRank = node => own(ACTION_ORDER, node.dataset.gameResultAction) ? ACTION_ORDER[node.dataset.gameResultAction] : 1;
+  // Explicit roles keep exit on the left and play/continue on the right in both
+  // visual and keyboard order. Unmarked stage selectors retain their own order.
+  function orderActions(container) {
+    const selector = '.game-result-actions, .game-result-navigation';
+    const rows = [...(container.matches?.(selector) ? [container] : []), ...container.querySelectorAll(selector)];
+    for (const row of rows) {
+      const children = [...row.children], actions = children.filter(node => node.matches('button, a'));
+      if (!actions.some(node => own(ACTION_ORDER, node.dataset.gameResultAction))) continue;
+      const sorted = actions.slice().sort((a, b) => actionRank(a) - actionRank(b));
+      if (sorted.every((node, index) => node === actions[index])) continue;
+      let index = 0;
+      for (const node of children) row.append(node.matches('button, a') ? sorted[index++] : node);
+    }
+  }
+  function actionMarkup(value) {
+    if (typeof value !== 'string') return '';
+    if (!value.includes('data-game-result-action')) return value;
+    const row = document.createElement('div'); row.className = 'game-result-actions'; row.innerHTML = value;
+    orderActions(row);
+    return row.innerHTML;
+  }
   function icon(outcome) {
     const path = POSITIVE.has(outcome)
       ? '<path d="M17 8h30v13c0 11-7 18-15 18S17 32 17 21V8Z"/><path d="M17 12H9v7c0 7 4 12 12 12m26-19h8v7c0 7-4 12-12 12M32 39v12m-10 4h20"/><path class="game-result-icon-star" d="m32 14 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1Z"/>'
@@ -70,7 +93,7 @@
       + '<h2 class="game-result-title" id="' + id + '">' + escape(options.title ?? TITLES[outcome]) + '</h2>'
       + '<div class="game-result-metric">' + escape(typeof options.metric === 'string' || typeof options.metric === 'number' ? options.metric : '') + '</div>'
       + '<p class="game-result-encouragement"' + (encouragement ? '' : ' hidden') + '>' + escape(encouragement) + '</p>'
-      + '<div class="game-result-actions">' + (typeof options.actions === 'string' ? options.actions : '') + '</div>'
+      + '<div class="game-result-actions">' + actionMarkup(options.actions) + '</div>'
       + '<div class="game-result-extra">' + (typeof options.extra === 'string' ? options.extra : '') + '</div>'
       + '<div class="game-result-social">' + rankingLinks(game, 'game-result-monthly-link')
       + (share ? '<button type="button" class="game-result-share" data-game-result-share><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 15V3m-4 4 4-4 4 4M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>공유하기</button>' : '') + '</div>'
@@ -85,6 +108,7 @@
     card.querySelector('.game-result-effects')?.replaceChildren();
   }
   function activate(card) {
+    orderActions(card);
     if (!card.isConnected) return;
     const outcome = card.dataset.resultOutcome;
     const signature = outcome + '|' + card.dataset.resultKey;
@@ -178,6 +202,7 @@
     for (const action of Array.isArray(options.actions) ? options.actions : []) {
       const button = document.createElement('button'); button.type = 'button'; button.className = 'game-result-action';
       if (action.id) button.id = action.id;
+      if (own(ACTION_ORDER, action.role)) button.dataset.gameResultAction = action.role;
       if (action.autofocus) button.autofocus = true;
       if (action.requiresPlay) button.setAttribute('data-game-result-play', '');
       button.textContent = action.label || '확인'; button.disabled = action.disabled === true;
@@ -204,7 +229,7 @@
     activeDialog = handle; document.body.append(dialog);
     if (typeof dialog.showModal === 'function') dialog.showModal(); else dialog.setAttribute('open', '');
     activate(card);
-    const first = actionRow.querySelector('[autofocus]:not(:disabled)') || card.querySelector('button:not(:disabled)'); first?.focus({ preventScroll: true });
+    const first = actionRow.querySelector('[autofocus]:not(:disabled)') || actionRow.querySelector('[data-game-result-action="primary"]:not(:disabled)') || card.querySelector('button:not(:disabled)'); first?.focus({ preventScroll: true });
     return handle;
   }
   function close() { activeDialog?.close(); }

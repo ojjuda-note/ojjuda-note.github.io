@@ -61,6 +61,7 @@ async function fixture(member = true, {hosted = false, submitInquiry, mutationLi
   w.OJJUDA_CONFIG = {supabaseUrl:'https://fixture.test',supabaseKey:'fixture-key'};
   w.supabase = {createClient:() => client};
   w.OjjudaAccountDeletion = {run:async() => {calls.push('deleteAccount');}};
+  w.eval(read('shared/brand/service-banners.js'));
   w.eval(read('note/support.js'));
   w.eval(read('note/preview.js') + '\nwindow.parkFixture={setBusy(value){managementBusy=value;},openCard(id){openCard(id);},backCard(){goBack();},closeManagement(){closeManagement();}};\n' + read('park/integration.js'));
   const settle = () => new Promise(resolve => w.setTimeout(resolve,0));
@@ -82,6 +83,8 @@ test('guests can open Park settings, read policies and reach login', async () =>
   try {
     assert.equal(f.api.navigate('settings'),true);
     assert.ok(f.root());
+    assert.equal(f.root().lastElementChild.localName,'ojjuda-service-banners');
+    assert.deepEqual([...f.root().querySelectorAll('.ojjuda-service-banner')].map(link=>link.dataset.service),['agit','pajang']);
     assert.equal(f.api.navigationAction(),'settings');
     assert.ok(f.setting('login'),'guest settings have a login entry');
     assert.ok(f.setting('world'),'guests can return to Agit');
@@ -395,12 +398,14 @@ test('Park settings shows its administrator mode only for the matching verified 
     f.api.setAdminAccess({userId:'park-member-a',allowed:true});
     assert.equal(f.setting('admin').textContent,'공원 관리자모드›');
     assert.equal(f.setting('admin').classList.contains('park-settings-row'),true,'administrator entry shares the existing settings layout');
+    assert.equal(f.root().lastElementChild.localName,'ojjuda-service-banners','asynchronous administrator access keeps service banners at the bottom');
     f.w.parkFixture.setBusy(true); f.setting('admin').click();
     assert.equal(entries().length,0,'an unfinished account save blocks leaving settings');
     assert.ok(f.root());
     f.w.parkFixture.setBusy(false);
     f.api.setAdminAccess({userId:'park-member-a',allowed:false});
     assert.equal(f.setting('admin'),null,'revoked access disappears immediately');
+    assert.equal(f.root().lastElementChild.localName,'ojjuda-service-banners','revoking access leaves the same final banner row');
     assert.equal(f.api.navigate('admin'),false);
     await f.changeUser({user:{id:'park-member-a',user_metadata:{is_admin:true,role:'admin'}}});
     f.api.navigate('settings');

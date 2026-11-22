@@ -61,41 +61,67 @@ body:has(.agit-hub) .bottomnav button.on{color:var(--accent-ink,#245a48)}
 .agit-stamp-button:hover:not(:disabled){background:color-mix(in srgb,var(--accent,#245a48) 85%,var(--ink,#223a30));transform:translateY(-2px)}
 .agit-stamp-button:disabled{background:var(--accent-soft,#e5f1e8);color:var(--ink-2,#62756a);cursor:default}
 
-/* All five daily missions in one compact, readable panel. */
+/* One horizontal icon dock keeps all five daily actions in view. */
 .agit-quests,.agit-life{margin-top:34px}
+.agit-life .agit-section-head{margin-bottom:8px}
 .agit-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:0 3px 16px}
 .agit-section-kicker{display:block;margin-bottom:3px;color:var(--accent-ink,#245a48);font-size:12px;font-weight:650}
 .agit-section-head h2{margin:0;color:var(--agit-ink);font-size:27px;font-weight:850;letter-spacing:-.065em;line-height:1.28}
-.agit-quest-summary{display:flex;align-items:center;gap:13px}
-.agit-quest-tally{display:flex;align-items:baseline;gap:4px;white-space:nowrap}
-.agit-quest-tally b{color:var(--accent,#245a48);font-size:29px;font-weight:850;line-height:1}
-.agit-quest-tally small{color:var(--ink-2,#62756a);font-size:13px;font-weight:750}
-.agit-quest-meter{display:flex;align-items:center;gap:4px}
-.agit-quest-meter span{width:19px;height:7px;border-radius:9px;background:var(--accent-soft,#e5f1e8)}
-.agit-quest-meter span.is-on{background:var(--accent,#245a48)}
-.agit-quest-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:0;overflow:hidden;border:1px solid var(--line,#d8e7dd);border-radius:20px;background:var(--surface,#fff);box-shadow:0 8px 24px color-mix(in srgb,var(--accent) 5%,transparent)}
-.agit-quest-card{--quest-color:var(--accent-ink);--quest-icon:var(--accent-soft);display:grid;grid-template-columns:30px 42px minmax(0,1fr) auto;align-items:center;gap:13px;min-width:0;min-height:70px;padding:11px 20px;border:0;border-bottom:1px solid var(--line,#d8e7dd);background:transparent;color:var(--agit-ink);text-align:left;cursor:pointer;transition:background .18s}
-.agit-quest-card:last-child{border-bottom:0}
-.agit-quest-card:hover{background:var(--surface-2,#f3f8f4)}
-.agit-quest-card:focus-visible{outline:2px solid var(--accent,#245a48);outline-offset:-3px}
-.agit-quest-card.is-done{background:var(--accent-soft,#e5f1e8);--quest-color:var(--accent-ink);--quest-icon:var(--accent-soft)}
-.agit-quest-number{color:var(--quest-color);font-size:12px;font-weight:850}
-.agit-quest-emoji{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:var(--quest-icon);color:var(--quest-color);font-size:22px}
-.agit-quest-name{min-width:0;font-size:16px;font-weight:800;letter-spacing:-.04em;line-height:1.35;word-break:keep-all}
-.agit-quest-arrow{justify-self:end;color:var(--quest-color);font-size:22px;font-weight:650}
+.agit-quests{display:grid;grid-template-columns:minmax(0,1fr);gap:9px;min-width:0;margin-top:12px;padding:12px 10px 10px;border:1px solid var(--agit-line);border-radius:20px;background:linear-gradient(125deg,var(--surface,#fff),color-mix(in srgb,var(--accent-soft,#e5f1e8) 38%,var(--surface,#fff)));box-shadow:0 4px 14px color-mix(in srgb,var(--accent,#245a48) 5%,transparent)}
+.agit-quest-head{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;padding:0 4px}
+.agit-quest-head h2{margin:0;color:var(--agit-ink);font-size:15px;font-weight:800;letter-spacing:-.05em;line-height:1.25;white-space:nowrap}
+.agit-quest-summary{display:flex;align-items:center;gap:6px;flex:none}
+.agit-quest-tally{display:flex;align-items:baseline;gap:2px;white-space:nowrap}
+.agit-quest-tally b{color:var(--accent-ink,#245a48);font-size:13px;font-weight:800;line-height:1}
+.agit-quest-tally small{color:var(--ink-2,#62756a);font-size:10px;font-weight:700;line-height:1}
+.agit-quest-meter{display:block;flex:none;width:34px;height:4px;overflow:hidden;border-radius:9px;background:var(--agit-line)}
+.agit-quest-meter span{display:block;height:100%;border-radius:inherit;background:var(--accent-ink,#245a48)}
+.agit-quest-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;min-width:0}
+.agit-quest-card{--quest-tone:#3e866b;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:5px;min-width:0;min-height:62px;padding:3px 1px 2px;border:0;border-radius:13px;background:transparent;color:var(--agit-ink);text-align:center;cursor:pointer;transition:background .18s}
+.agit-quest-card--2{--quest-tone:#4e7fa8}
+.agit-quest-card--3{--quest-tone:#a8762b}
+.agit-quest-card--4{--quest-tone:#7861a5}
+.agit-quest-card--5{--quest-tone:#a96883}
+.agit-quest-card:hover{background:color-mix(in srgb,var(--quest-tone) 5%,transparent)}
+.agit-hub .agit-quest-card:focus-visible{outline:2px solid var(--accent-ink,#245a48);outline-offset:2px}
+.agit-quest-orb{position:relative;display:grid;place-items:center;flex:none;width:40px;height:40px;border:1px solid color-mix(in srgb,var(--quest-tone) 23%,transparent);border-radius:14px;background:linear-gradient(145deg,color-mix(in srgb,var(--quest-tone) 16%,var(--surface,#fff)),color-mix(in srgb,var(--quest-tone) 6%,var(--surface,#fff)));box-shadow:inset 0 1px 0 color-mix(in srgb,var(--surface,#fff) 90%,transparent),0 3px 5px color-mix(in srgb,var(--quest-tone) 10%,transparent);transition:transform .18s,box-shadow .18s}
+.agit-quest-icon{display:block;width:32px;height:32px;object-fit:contain;filter:drop-shadow(0 1px 1px color-mix(in srgb,var(--quest-tone) 14%,transparent))}
+.agit-quest-card:hover .agit-quest-orb{transform:translateY(-2px);box-shadow:inset 0 1px 0 color-mix(in srgb,var(--surface,#fff) 90%,transparent),0 5px 8px color-mix(in srgb,var(--quest-tone) 15%,transparent)}
+.agit-quest-card:active .agit-quest-orb{transform:scale(.94)}
+.agit-quest-card.is-done .agit-quest-orb{border-color:color-mix(in srgb,var(--quest-tone) 55%,transparent);background:linear-gradient(145deg,color-mix(in srgb,var(--quest-tone) 25%,var(--surface,#fff)),color-mix(in srgb,var(--quest-tone) 12%,var(--surface,#fff)))}
+.agit-quest-name{min-width:0;max-width:100%;color:var(--agit-muted);font-size:11px;font-weight:650;letter-spacing:-.035em;line-height:1.25;word-break:keep-all;overflow-wrap:anywhere}
+.agit-quest-check{position:absolute;right:-4px;bottom:-3px;display:grid;place-items:center;width:16px;height:16px;border:2px solid var(--surface,#fff);border-radius:50%;background:color-mix(in srgb,var(--quest-tone) 85%,#1b2430);color:#fff;font-size:9px;font-weight:850;line-height:1}
 
-/* Every corner has a little personality, but the grid stays orderly. */
-.agit-life-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}
-.agit-life-tile{position:relative;display:flex;flex-direction:column;gap:0;min-width:0;overflow:hidden;padding:0;border:1px solid var(--line,#d8e7dd);border-radius:21px;background:var(--surface,#fff);color:var(--agit-ink);text-align:left;text-decoration:none;cursor:pointer;transition:transform .18s,box-shadow .18s}
-.agit-life-tile:hover{transform:translateY(-3px);box-shadow:0 12px 24px color-mix(in srgb,var(--accent) 10%,transparent)}
-.agit-life-top{position:absolute;z-index:1;top:8px;right:8px}
-.agit-life-tile-arrow{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:color-mix(in srgb,var(--surface,#fff) 87%,transparent);color:var(--accent-ink,#245a48);font-size:17px;font-weight:650;box-shadow:0 2px 7px color-mix(in srgb,var(--accent) 8%,transparent)}
-.agit-life-art{display:block;width:100%;aspect-ratio:3/2;overflow:hidden;background:var(--accent-soft,#e5f1e8)}
-.agit-life-art img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .18s}
-.agit-life-tile:hover img{transform:scale(1.055)}
-.agit-life-title{display:grid;gap:3px;padding:10px 13px}
-.agit-life-title strong{font-size:18px;font-weight:850;letter-spacing:-.055em;line-height:1.3;word-break:keep-all}
-.agit-life-title small{color:var(--ink-2,#62756a);font-size:12px;font-weight:550;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Gallery-quality illustrated destinations: clean image mats and clear typography. */
+.agit-life-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:5px}
+.agit-life-tile{
+ --banner-paper:#fcfdfb;--banner-tint:#eef4ee;--banner-stroke:#dfe7df;
+ --banner-ink:#2b3830;--banner-muted:#6c796e;--banner-accent:#688876;
+ position:relative;isolation:isolate;display:grid;
+ grid-template-columns:clamp(108px,37%,222px) minmax(0,1fr);
+ align-items:stretch;min-width:0;height:clamp(96px,10vw,116px);overflow:hidden;padding:0;
+ border:1px solid var(--banner-stroke);border-radius:18px;
+ background:linear-gradient(105deg,var(--banner-paper) 0%,var(--banner-paper) 60%,var(--banner-tint) 135%);
+ box-shadow:0 4px 12px rgba(40,48,42,.055),0 1px 2px rgba(40,48,42,.04);
+ color:var(--banner-ink);text-align:left;text-decoration:none;cursor:pointer;
+ transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease
+}
+.agit-life-tile--1{--banner-paper:#fcfdfb;--banner-tint:#edf3ed;--banner-stroke:#dce7de;--banner-ink:#2e4335;--banner-muted:#708073;--banner-accent:#668e71}
+.agit-life-tile--3{--banner-paper:#fcfdfe;--banner-tint:#edf3f8;--banner-stroke:#dce6ed;--banner-ink:#31475b;--banner-muted:#718292;--banner-accent:#7295af}
+.agit-life-tile--2{--banner-paper:#fefcf9;--banner-tint:#f8f1e9;--banner-stroke:#eee3d9;--banner-ink:#604a3b;--banner-muted:#8c7a6c;--banner-accent:#b69478}
+.agit-life-tile--4{--banner-paper:#fdfcfe;--banner-tint:#f5f0f7;--banner-stroke:#ebe2ec;--banner-ink:#5d4c64;--banner-muted:#89798d;--banner-accent:#aa8aaa}
+.agit-life-tile:hover{transform:translateY(-2px);border-color:var(--banner-accent);box-shadow:0 9px 20px rgba(40,48,42,.09)}
+.agit-life-tile:active{transform:translateY(0)}
+.agit-life-top{position:absolute;z-index:2;top:50%;right:clamp(13px,2.1vw,22px);transform:translateY(-50%)}
+.agit-life-tile-arrow{display:grid;place-items:center;width:30px;height:30px;border:1px solid var(--banner-stroke);border-radius:50%;background:color-mix(in srgb,var(--banner-paper) 87%,transparent);color:var(--banner-accent);font-size:18px;font-weight:600;line-height:1;transition:transform .18s ease,border-color .18s ease}
+.agit-life-tile:hover .agit-life-tile-arrow{transform:translateX(3px);border-color:var(--banner-accent)}
+/* The artwork touches the banner edges; no inner bars or letterboxing. */
+.agit-life-art{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;overflow:hidden;margin:0;border:0;border-radius:0;background:var(--banner-tint)}
+.agit-life-art img{display:block;width:100%;height:100%;object-fit:cover;object-position:center;transition:transform .22s ease}
+.agit-life-tile:hover .agit-life-art img{transform:scale(1.025)}
+.agit-life-title{display:grid;align-content:center;gap:6px;min-width:0;padding:10px 49px 10px clamp(13px,2.3vw,23px)}
+.agit-life-title strong{color:var(--banner-ink);font-size:clamp(18px,2.35vw,23px);font-weight:800;letter-spacing:-.055em;line-height:1.28;word-break:keep-all}
+.agit-life-title small{color:var(--banner-muted);font-size:clamp(11px,1.5vw,13px);font-weight:550;line-height:1.38;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .agit-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:29px;padding:17px 3px 0;border-top:1px solid var(--line,#d8e7dd);color:var(--ink-2,#62756a);font-size:12px}
 .agit-footer button{display:inline-flex;align-items:center;gap:8px;padding:8px 0 8px 10px;border:0;background:transparent;color:var(--accent-ink,#245a48);font-size:12px;font-weight:700}
 .agit-footer button span{font-size:16px}
@@ -168,21 +194,18 @@ body:has(.agit-hub) .bottomnav button.on{color:var(--accent-ink,#245a48)}
  .agit-stamp-button{min-width:118px;min-height:40px;font-size:11px;padding:8px}
  .agit-stamp-days{gap:4px}
  .agit-stamp-day strong{width:min(35px,100%);border-radius:10px}
- .agit-quests,.agit-life{margin-top:30px}
+ .agit-life{margin-top:20px}
  .agit-section-head h2{font-size:24px}
- .agit-quest-tally b{font-size:23px}
- .agit-quest-grid{border-radius:17px}
- .agit-quest-card{grid-template-columns:23px 36px minmax(0,1fr) 18px;gap:9px;min-height:62px;padding:10px 12px}
- .agit-quest-emoji{width:36px;height:36px;border-radius:11px;font-size:19px}
- .agit-quest-name{font-size:14px;line-height:1.32}
- .agit-quest-arrow{font-size:18px}
- .agit-life-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
- .agit-life-tile{border-radius:15px}
- .agit-life-title{padding:8px 10px}
- .agit-life-title strong{font-size:16px}
- .agit-life-title small{font-size:11px}
+ .agit-life-grid{gap:5px}
+ .agit-life-tile{height:90px;border-radius:16px;grid-template-columns:41% minmax(0,1fr)}
+ .agit-life-title{gap:4px;padding:7px 44px 7px 14px}
+ .agit-life-title strong{font-size:19px;letter-spacing:-.055em}
+ .agit-life-title small{font-size:12px}
 }
 @media(max-width:390px){
+ .agit-life-tile{grid-template-columns:41% minmax(0,1fr)}
+ .agit-life-tile-arrow{width:27px;height:27px;font-size:16px}
+ .agit-life-title{padding-right:38px}
  .agit-hero{grid-template-columns:minmax(0,1fr) minmax(110px,.65fr)}
  .agit-hero-story{padding-left:16px}
  .agit-hero-story h1{font-size:28px}
@@ -194,11 +217,8 @@ body:has(.agit-hub) .bottomnav button.on{color:var(--accent-ink,#245a48)}
  .agit-stamp-days{grid-column:1;grid-row:2}
  .agit-stamp-button{grid-column:1;grid-row:3;justify-self:stretch}
  .agit-stamp-days{gap:2px}
- .agit-quest-grid{gap:6px}
- .agit-quest-card{padding-inline:5px}
- .agit-quest-main strong{font-size:11px}
 }
-@media(prefers-reduced-motion:reduce){.agit-play-button,.agit-stamp-button,.agit-quest-card,.agit-life-tile,.agit-life-art img{transition:none}.agit-stamp-day.is-today.is-stamped strong{animation:none}}
+@media(prefers-reduced-motion:reduce){.agit-play-button,.agit-stamp-button,.agit-quest-card,.agit-quest-orb,.agit-life-tile,.agit-life-art img,.agit-life-tile-arrow{transition:none}.agit-stamp-day.is-today.is-stamped strong{animation:none}.agit-quest-card:hover .agit-quest-orb,.agit-quest-card:active .agit-quest-orb{transform:none}}
 
 /* Responsive hero: keep the story clear of the illustration at every width. */
 @media(min-width:511px) and (max-width:740px){
@@ -236,30 +256,24 @@ body:has(.agit-hub) .bottomnav button.on{color:var(--accent-ink,#245a48)}
 @media(max-width:360px){
  .agit-section-head{align-items:center;flex-wrap:wrap;gap:8px}
  .agit-section-head h2{white-space:nowrap}
- .agit-quest-summary{gap:8px;margin-left:auto}
- .agit-quest-meter{gap:3px}
- .agit-quest-meter span{width:15px}
 }
 
 
-/* Wide screens organize missions and daily places side by side. */
+/* The mission dock spans the page, followed by the daily destinations. */
 @media(min-width:640px){
  .agit-hub{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:clamp(14px,2.4vw,24px);align-items:start}
- .agit-hero,.agit-checkin,.agit-footer{grid-column:1/-1}
- .agit-quests{grid-column:1}
- .agit-life{grid-column:2}
- .agit-quests,.agit-life{min-width:0;margin-top:clamp(26px,3vw,36px)}
- .agit-quests .agit-section-head,.agit-life .agit-section-head{min-height:60px}
- .agit-quest-summary{gap:8px}
- .agit-life-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .agit-hero,.agit-checkin,.agit-quests,.agit-life,.agit-footer{grid-column:1/-1}
+ .agit-quests{grid-template-columns:minmax(128px,.7fr) minmax(0,3fr);align-items:center;gap:16px;margin-top:16px;padding:12px 16px}
+ .agit-quest-head{display:grid;justify-content:start;gap:8px;padding:4px 16px 4px 0;border-right:1px solid var(--agit-line)}
+ .agit-quest-head h2{font-size:16px}
+ .agit-quest-grid{gap:10px}
+ .agit-quest-card{min-height:64px}
+ .agit-quest-orb{width:44px;height:44px;border-radius:15px}
+ .agit-quest-icon{width:36px;height:36px}
+ .agit-quest-name{font-size:12px}
+ .agit-life{min-width:0;margin-top:22px}
+ .agit-life-grid{grid-template-columns:minmax(0,1fr)}
  .agit-footer{margin-top:27px}
-}
-@media(min-width:640px) and (max-width:740px){
- .agit-quest-meter span{width:14px}
- .agit-quest-card{min-height:73px}
-}
-@media(min-width:741px){
- .agit-quest-card{min-height:95px}
 }
 @media(min-width:900px){
  .agit-hub{grid-template-columns:minmax(0,.93fr) minmax(0,1.07fr)}
@@ -295,91 +309,16 @@ body:has(.agit-hub) .bottomnav button.on{color:var(--accent-ink,#245a48)}
   .agit-reading-copy { padding:10px 6px; }
 }
 
-/* Green theme details follow the system dark palette without changing artwork. */
-:root[data-theme=dark] .agit-life-art{background:var(--surface-2,#293e32)}
 
-/* Each destination keeps its own identity alongside the seasonal home theme. */
-.agit-park-banner {
-  --place-ink:#173f30; --place-muted:#355c47; --place-accent:#236247; --place-hover:#184c36;
-  --place-start:#eff9d9; --place-end:#a9dabc; --place-line:#a9cdae; --place-shadow:#3c775c24;
-}
-.agit-pajang-banner {
-  --place-ink:#512e5c; --place-muted:#6d466f; --place-accent:#853f70; --place-hover:#6e305d;
-  --place-start:#fff0e8; --place-end:#dac1ee; --place-line:#dab9d7; --place-shadow:#925f8c24;
-}
-.agit-place-banner {
-  position:relative; isolation:isolate; overflow:hidden; grid-column:1/-1;
-  display:flex; align-items:center; min-height:192px; margin-top:16px;
-  border:1px solid var(--place-line); border-radius:24px;
-  background:radial-gradient(ellipse at 78% 10%,#ffffff70,transparent 55%),linear-gradient(112deg,var(--place-start) 8%,var(--place-end));
-  box-shadow:0 4px 0 color-mix(in srgb,var(--place-line) 65%,transparent),0 10px 24px var(--place-shadow),inset 0 1px 0 #ffffffb3;
-  color:var(--place-ink); text-align:left; text-decoration:none;
-  transition:transform .2s ease,box-shadow .2s ease;
-}
-.agit-place-banner::before {
-  content:""; position:absolute; z-index:-1; right:3%; top:50%; width:38%; aspect-ratio:1;
-  border:1px solid #ffffff66; border-radius:50%; background:#ffffff24; transform:translateY(-50%);
-  box-shadow:0 0 0 17px #ffffff12; pointer-events:none;
-}
-.agit-place-art {
-  position:absolute; z-index:0; right:1%; top:50%; width:47%; height:112%;
-  object-fit:contain; object-position:center; transform:translateY(-50%); pointer-events:none;
-  filter:drop-shadow(0 8px 9px var(--place-shadow)); transition:transform .25s ease;
-}
-.agit-place-copy {
-  position:relative; z-index:1; display:grid; justify-items:start; align-content:center; gap:10px;
-  width:57%; min-width:0; padding:22px 0 22px clamp(18px,3vw,32px); word-break:keep-all;
-}
-.agit-place-brand {display:flex; flex-wrap:wrap; align-items:center; gap:8px; max-width:100%; color:var(--place-ink)}
-.agit-place-brand b {font-size:clamp(27px,3.4vw,34px); line-height:1.15; font-weight:850; letter-spacing:-.045em}
-.agit-place-brand small {padding:4px 7px; border:1px solid #ffffff80; border-radius:999px; background:#ffffff73; color:var(--place-muted); font-size:10px; line-height:1.3; font-weight:650; white-space:nowrap}
-.agit-place-title {margin:0; color:var(--place-ink); font-size:clamp(16px,2vw,20px); line-height:1.45; font-weight:650; letter-spacing:-.035em}
-.agit-place-open {
-  display:inline-flex; align-items:center; justify-content:center; gap:10px; max-width:100%; min-height:36px; margin-top:2px; padding:8px 13px;
-  border:1px solid #ffffff29; border-radius:13px; background:var(--place-accent); color:#fff;
-  box-shadow:0 3px 7px var(--place-shadow),inset 0 1px 0 #ffffff29; font-size:12px; line-height:1.4; font-weight:750;
-}
-.agit-place-open>span {font-size:18px; line-height:1}
-.agit-hub .agit-place-banner:focus-visible {outline-color:var(--place-accent)}
-.agit-place-banner:focus-visible .agit-place-open {background:var(--place-hover)}
-@media(hover:hover) {
-  .agit-place-banner:hover {transform:translateY(-3px); box-shadow:0 5px 0 color-mix(in srgb,var(--place-line) 65%,transparent),0 15px 30px var(--place-shadow),inset 0 1px 0 #ffffffb3}
-  .agit-place-banner:hover .agit-place-art {transform:translateY(-50%) scale(1.035)}
-  .agit-place-banner:hover .agit-place-open {background:var(--place-hover)}
-}
-:root[data-theme=dark] .agit-park-banner {
-  --place-ink:#eef8df; --place-muted:#d9eccd; --place-accent:#bce3ae; --place-hover:#d0eec5;
-  --place-start:#203b31; --place-end:#376447; --place-line:#52785b; --place-shadow:#0d231d55;
-}
-:root[data-theme=dark] .agit-pajang-banner {
-  --place-ink:#fff1f6; --place-muted:#f5dce9; --place-accent:#edbeda; --place-hover:#f6d4e8;
-  --place-start:#3e2b41; --place-end:#684361; --place-line:#875e7f; --place-shadow:#29122a55;
-}
-:root[data-theme=dark] .agit-place-banner {background:radial-gradient(ellipse at 78% 10%,#ffffff12,transparent 55%),linear-gradient(112deg,var(--place-start) 8%,var(--place-end));box-shadow:0 4px 0 color-mix(in srgb,var(--place-line) 50%,transparent),0 10px 24px var(--place-shadow),inset 0 1px 0 #ffffff1a}
-:root[data-theme=dark] .agit-place-brand small {border-color:#ffffff29; background:#ffffff0d}
-:root[data-theme=dark] .agit-place-open {color:var(--place-start)}
-:root[data-theme=dark] .agit-place-banner::before {border-color:#ffffff1f; background:#ffffff08; box-shadow:0 0 0 17px #ffffff05}
-@media(max-width:540px) {
-  .agit-place-banner {min-height:168px; border-radius:21px}
-  .agit-place-copy {width:59%; gap:8px; padding:18px 0 18px 17px}
-  .agit-place-brand {gap:6px}
-  .agit-place-brand b {font-size:27px}
-  .agit-place-brand small {padding:4px 6px; font-size:9px}
-  .agit-place-title {font-size:16px}
-  .agit-place-art {right:0; width:46%; height:105%}
-  .agit-place-open {gap:8px; padding:8px 11px; font-size:11px}
-}
-@media(max-width:350px) {
-  .agit-place-copy {padding-left:15px}
-  .agit-place-brand {align-items:flex-start; flex-direction:column; gap:5px}
-  .agit-place-art {width:44%}
-}
-@media(prefers-reduced-motion:reduce) {
-  .agit-place-banner,.agit-place-art {transition:none}
-  .agit-place-banner:hover {transform:none}
-  .agit-place-banner:hover .agit-place-art {transform:translateY(-50%)}
-}
-.agit-pajang-banner+.agit-reading-grid {margin-top:14px}
+/* The restrained palette keeps the same contrast in dark mode. */
+:root[data-theme=dark] .agit-life-tile--1{--banner-paper:#283a30;--banner-tint:#334c3a;--banner-stroke:#46644e;--banner-ink:#e6f4e9;--banner-muted:#bed5c4;--banner-accent:#99bca0}
+:root[data-theme=dark] .agit-life-tile--3{--banner-paper:#293946;--banner-tint:#344a5c;--banner-stroke:#4d6678;--banner-ink:#e8f2f9;--banner-muted:#bfd3e0;--banner-accent:#9cb7cb}
+:root[data-theme=dark] .agit-life-tile--2{--banner-paper:#42382f;--banner-tint:#574437;--banner-stroke:#75604d;--banner-ink:#f8ecdf;--banner-muted:#e4cdb8;--banner-accent:#d7b18d}
+:root[data-theme=dark] .agit-life-tile--4{--banner-paper:#3d3340;--banner-tint:#4f3e52;--banner-stroke:#6b5770;--banner-ink:#f7eef9;--banner-muted:#ddc9e0;--banner-accent:#c8a4ce}
+
+/* Green theme details follow the system dark palette without changing artwork. */
+:root[data-theme=dark] .agit-life-art{background:var(--banner-tint)}
+
 .agit-pajang-dialog {position:fixed;box-sizing:border-box;padding:0;margin:auto;border:1px solid var(--line);border-radius:22px;width:min(570px,calc(100vw - 24px));max-width:none;height:min(760px,91dvh);max-height:94dvh;overflow:hidden;background:var(--bg);color:var(--ink);box-shadow:0 18px 72px color-mix(in srgb,var(--ink) 22%,transparent)}
 .agit-pajang-dialog::backdrop {background:color-mix(in srgb,var(--ink) 64%,transparent)}
 .agit-pajang-dialog[open] {display:flex;flex-direction:column}

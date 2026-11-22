@@ -1,6 +1,6 @@
 import {call, client, sameMember, requireMember, showGate, answeredRound} from './member.mjs?v=20261119-guest-account1';
 import {mountStation, prepareProgram} from './load-station.mjs?v=20261119-guest-account1';
-import {enhanceGuestGate} from './entry-design.mjs?v=20261120-organization-help1';
+import {enhanceGuestGate} from './entry-design.mjs?v=20261122-org-display-only1';
 import {prepareLocation} from './location.mjs?v=20261119-kma-current1';
 import {themeFor, interests} from './questions.mjs?v=20261120-question-copy1';
 import {textInputMaxLength} from '../../shared/content/text-length.mjs';
@@ -43,7 +43,7 @@ function enterMain(destination = main, savedStation) {
     const style=document.createElement('link');
     style.rel='stylesheet';
     style.media='print';
-    style.href='./station.css?v=20261119-dots1';
+    style.href='./station.css?v=20261122-light-controls1';
     const styled=new Promise((resolve,reject)=>{style.onload=resolve;style.onerror=reject;});
     document.querySelector('link[href*="shell.css"]').before(style);
     await Promise.all([styled,mountStation(async()=>{
@@ -163,7 +163,7 @@ async function start(firstEntry) {
   const write = $('write');
   const browse = $('browse');
   const answerFields = $('answer-fields');
-  function openForm(destination) {
+  function openForm(destination, focus = true) {
     mode = destination;
     if (destination === 'feed' && entry.joined) return enterMain(feed);
     const joiningOnly = destination === 'feed';
@@ -172,9 +172,9 @@ async function start(firstEntry) {
     form.hidden = false;
     answerFields.hidden = joiningOnly;
     answerFields.disabled = joiningOnly;
-    submit.textContent = joiningOnly ? '참여하고 '+nextName+' 보기' : '답변 공개하고 오늘로';
+    submit.textContent = joiningOnly ? '참여하고 '+nextName+' 보기' : '답변하기';
     write.setAttribute('aria-expanded', String(!joiningOnly));
-    (!entry.joined ? form.elements.consent : mine).focus();
+    if (focus) (!entry.joined ? form.elements.consent : mine).focus();
   }
   write.onclick = () => openForm('answer');
   browse.onclick = () => openForm('feed');
@@ -189,7 +189,11 @@ async function start(firstEntry) {
     status.textContent = '';
     trigger.focus();
   };
+  // This screen is only reached after a verified member session. Skip its
+  // second welcome action and show the answer immediately, without opening the
+  // mobile keyboard. A first-time member still completes consent in this form.
   if (view === 'feed' || view === 'write') openForm(view === 'feed' ? 'feed' : 'answer');
+  else openForm('answer', false);
   mine.oninput = () => { mine.setCustomValidity(''); mine.maxLength = textInputMaxLength(mine.value,220); };
   form.onsubmit = async event => {
     event.preventDefault();
@@ -204,7 +208,7 @@ async function start(firstEntry) {
     const joiningOnly = mode === 'feed';
     status.textContent = joiningOnly ? '참여 정보를 확인하고 있어요.' : '답변을 저장하고 있어요.';
     try {
-      const data = joiningOnly ? {} : {body, day:entry.day, slot:entry.slot, archive:true};
+      const data = joiningOnly ? {} : {body, day:entry.day, slot:entry.slot, archive:true, publicationPolicy:"year-v1"};
       if (!joiningOnly && entry.question) data.questionId = entry.question.id;
       if (!entry.joined) {
         const {province, city, interest, consent} = form.elements;

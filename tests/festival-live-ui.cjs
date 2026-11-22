@@ -118,6 +118,19 @@ async function verifyCard(page, id, name) {
     assert.equal(gimjangAttendance?.kind, 'actual');
     assert.equal(gimjangAttendance?.year, 2026);
     console.log('PASS November 20 live JSON: 780 events and 2026 official Gimjang attendance');
+    // November 22: officially verified Gyeonggi exhibition and performance sources.
+    const n65Performance = [
+      'gyeonggi-moma-review-2026', 'gyeonggi-moma-index-asia-2026',
+      'gyeonggi-museum-archive-30th-2026', 'gyeonggi-museum-donation-extension-2026',
+      'njp-stars-trigrams-exhibition-2026', 'njp-translocal-moon-echo-2026',
+      'njp-lounge-ha-jimin-2026', 'silhak-jeonui-lee-donation-2026',
+      'silhak-water-of-life-kimkim-2026', 'gyeonggi-phil-masterpiece-vi-20261210',
+      'ansan-december-gift-20261205', 'ansan-bono-music-dec-2026',
+      'ansan-asac-quad-flame-20270123'
+    ];
+    assert(payload.events.length >= 793, 'Deployed data missing November 22 Gyeonggi performances');
+    n65Performance.forEach(id => assert(ids.has(id), 'Missing new Gyeonggi event in live JSON: ' + id));
+    console.log('PASS November 22 live JSON: 13 Gyeonggi performances/exhibitions');
     console.log('PASS production JSON: at least 715 entries, November 14 updates and official attendance');
 
     await page.goto(origin + '/games/festival-schedule/index.html?period=all&category=festival&view=list&q=익산',
@@ -166,6 +179,12 @@ async function verifyCard(page, id, name) {
     await verifyCard(page, 'daejeon-sumi-jo-continuum-20261231', '조수미');
     await page.locator('#search').fill('더 드레서');
     await verifyCard(page, 'sejong-play-the-dresser-20261218', '더 드레서');
+    await page.locator('#search').fill('사랑노동아시아하기');
+    await verifyCard(page, 'gyeonggi-moma-index-asia-2026', '사랑노동아시아하기');
+    await page.locator('#search').fill('무소륵스키 전람회의 그림');
+    await verifyCard(page, 'gyeonggi-phil-masterpiece-vi-20261210', '전람회의 그림');
+    await page.locator('#search').fill('12월의 선물');
+    await verifyCard(page, 'ansan-december-gift-20261205', '12월의 선물');
     await page.locator('#search').fill('북케이션 위크');
     await verifyCard(page, 'jeju-bookation-week-2026', '북케이션 위크');
     await page.locator('#search').fill('산타왔수다');
@@ -231,6 +250,12 @@ async function verifyCard(page, id, name) {
     await verifyCard(festivalFrame, 'cheongju-linephilharmonic-nostalgia-20261121', '라인필하모닉');
     await festivalFrame.locator('#search').fill('조수미');
     await verifyCard(festivalFrame, 'daejeon-sumi-jo-continuum-20261231', '조수미');
+    await festivalFrame.locator('#search').fill('사랑노동아시아하기');
+    await verifyCard(festivalFrame, 'gyeonggi-moma-index-asia-2026', '사랑노동아시아하기');
+    await festivalFrame.locator('#search').fill('무소륵스키 전람회의 그림');
+    await verifyCard(festivalFrame, 'gyeonggi-phil-masterpiece-vi-20261210', '전람회의 그림');
+    await festivalFrame.locator('#search').fill('12월의 선물');
+    await verifyCard(festivalFrame, 'ansan-december-gift-20261205', '12월의 선물');
     await festivalFrame.locator('#search').fill('북케이션 위크');
     await verifyCard(festivalFrame, 'jeju-bookation-week-2026', '북케이션 위크');
     await festivalFrame.locator('#search').fill('');

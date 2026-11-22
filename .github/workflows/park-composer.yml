@@ -7,6 +7,7 @@ on:
       - 'park/**'
       - 'supabase/functions/park-video/**'
       - 'supabase/migrations/*park*video*.sql'
+      - 'supabase/migrations/*park_admin*.sql'
       - 'groups/**'
       - 'shared/viewport/**'
       - 'features/wallet/ju-decorations.*'
@@ -14,6 +15,9 @@ on:
       - 'world.html'
       - 'tests/note-composer-settings.test.cjs'
       - 'tests/note-preview-photo.test.cjs'
+      - 'tests/note-admin-media*.cjs'
+      - 'tests/note-admin-workflow-ui.test.cjs'
+      - 'tests/park-admin-media-db.test.cjs'
       - 'tests/note-card-video*.test.*'
       - 'tests/card-video-upload.test.cjs'
       - 'tests/park-video*.test.*'
@@ -32,6 +36,7 @@ on:
       - 'park/**'
       - 'supabase/functions/park-video/**'
       - 'supabase/migrations/*park*video*.sql'
+      - 'supabase/migrations/*park_admin*.sql'
       - 'groups/**'
       - 'shared/viewport/**'
       - 'features/wallet/ju-decorations.*'
@@ -39,6 +44,9 @@ on:
       - 'world.html'
       - 'tests/note-composer-settings.test.cjs'
       - 'tests/note-preview-photo.test.cjs'
+      - 'tests/note-admin-media*.cjs'
+      - 'tests/note-admin-workflow-ui.test.cjs'
+      - 'tests/park-admin-media-db.test.cjs'
       - 'tests/note-card-video*.test.*'
       - 'tests/card-video-upload.test.cjs'
       - 'tests/park-video*.test.*'
@@ -71,6 +79,7 @@ jobs:
       GROUP_COMPOSER_QA_DIR: ${{ github.workspace }}/tests/artifacts/park-composer/groups
       PARK_FONT_PROOF_DIR: ${{ github.workspace }}/tests/artifacts/park-composer/fonts
       PARK_VIDEO_PROOF_DIR: ${{ github.workspace }}/tests/artifacts/park-composer/videos
+      PARK_ADMIN_MEDIA_PROOF_DIR: ${{ github.workspace }}/tests/artifacts/park-composer/admin-media
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -80,6 +89,8 @@ jobs:
           node-version: '22'
       - name: Install locked test dependencies
         run: npm --prefix tests ci --ignore-scripts
+      - name: Verify Park loading, timeouts and first-page recovery
+        run: node --test tests/park-loading.test.cjs tests/park-opening.test.cjs
       - name: Build pinned Park video dependencies
         run: |
           npm --prefix note/vendor ci --ignore-scripts
@@ -92,12 +103,17 @@ jobs:
           fi
       - name: Check values, attachments, account boundaries and iframe lifecycle
         run: npm --prefix tests run test:park-composer:unit
+      - name: Check monthly font purchases, expiry and free fonts
+        run: node tests/park-monthly-fonts-db.test.cjs && node tests/park-monthly-fonts-client.test.cjs
       - name: Check group drafts, post types and existing form values
         run: node tests/group-board-dom.test.cjs
       - name: Install Chromium
         id: browser
         working-directory: tests
         run: npx playwright install --with-deps chromium
+      - name: Check administrator attachments, playback and existing card actions
+        if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
+        run: node tests/note-admin-media-browser.cjs && node tests/note-admin-workflow-ui.test.cjs
       - name: Check Park brush lettering, numerals and punctuation
         if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
         run: node tests/park-calligraphy-finals-ui.test.cjs

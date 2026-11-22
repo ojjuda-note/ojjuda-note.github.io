@@ -28,6 +28,10 @@ on:
       - 'tests/pajang-signal-purchase*.test.*'
       - 'tests/pajang-content-validation.test.cjs'
       - 'tests/pajang-question-copy-db.test.cjs'
+      - 'tests/pajang-personality-questions-db.test.cjs'
+      - 'scripts/build-pajang-personality-questions.mjs'
+      - 'tests/pajang-relationship-questions-db.test.cjs'
+      - 'scripts/build-pajang-relationship-questions.mjs'
       - 'tests/all-service-word-rules*.test.*'
       - 'tests/all-service-word-masking*.test.*'
       - 'tests/fixtures/all-service-word-masking*'
@@ -58,13 +62,27 @@ on:
       - 'supabase/functions/pajang-assets/index.ts'
       - 'ops/publish-pajang-program.py'
       - 'tests/pajang-discovery-browser.cjs'
+      - 'tests/pajang-navigation*'
+      - 'tests/pajang-question-swipe-browser.cjs'
       - 'tests/window-safe-area-ui.test.cjs'
       - 'tests/pajang-question-suggestion.test.cjs'
+      - 'tests/pajang-next-question-*.test.cjs'
       - 'tests/pajang-answer-edit-browser.cjs'
       - 'tests/pajang-answer-edit-form.test.cjs'
       - 'tests/pajang-answer-history-edit-db.test.mjs'
+      - 'tests/pajang-answer-likes-db.test.cjs'
+      - 'tests/pajang-past-questions-db.test.cjs'
+      - 'tests/pajang-nearby-recent*.cjs'
+      - 'tests/pajang-answer-interactions*.cjs'
+      - 'tests/fixtures/pajang-answer-likes-fixture.cjs'
+      - 'tests/fixtures/pajang-answer-feeds-before-likes.sql'
+      - 'tests/fixtures/pajang-past-questions-fixture.cjs'
+      - 'tests/fixtures/pajang-before-past-questions.sql'
       - 'tests/pajang-profile-preferences-ui.test.cjs'
       - 'tests/pajang-profile-preferences-db.test.cjs'
+      - 'tests/pajang-age-groups-db.test.cjs'
+      - 'tests/pajang-adult-endpoint-guards-db.test.cjs'
+      - 'tests/pajang-adult-only-retirement.test.cjs'
       - 'tests/pajang-exchange-profile.test.cjs'
       - 'tests/pajang-exchange-height.test.mjs'
       - 'tests/test_pajang_program_publish.py'
@@ -98,6 +116,10 @@ on:
       - 'tests/pajang-signal-purchase*.test.*'
       - 'tests/pajang-content-validation.test.cjs'
       - 'tests/pajang-question-copy-db.test.cjs'
+      - 'tests/pajang-personality-questions-db.test.cjs'
+      - 'scripts/build-pajang-personality-questions.mjs'
+      - 'tests/pajang-relationship-questions-db.test.cjs'
+      - 'scripts/build-pajang-relationship-questions.mjs'
       - 'tests/all-service-word-rules*.test.*'
       - 'tests/all-service-word-masking*.test.*'
       - 'tests/fixtures/all-service-word-masking*'
@@ -128,13 +150,27 @@ on:
       - 'tests/park-entry-browser.cjs'
       - 'tests/park-opening.test.cjs'
       - 'tests/pajang-discovery-browser.cjs'
+      - 'tests/pajang-navigation*'
+      - 'tests/pajang-question-swipe-browser.cjs'
       - 'tests/window-safe-area-ui.test.cjs'
       - 'tests/pajang-question-suggestion.test.cjs'
+      - 'tests/pajang-next-question-*.test.cjs'
       - 'tests/pajang-answer-edit-browser.cjs'
       - 'tests/pajang-answer-edit-form.test.cjs'
       - 'tests/pajang-answer-history-edit-db.test.mjs'
+      - 'tests/pajang-answer-likes-db.test.cjs'
+      - 'tests/pajang-past-questions-db.test.cjs'
+      - 'tests/pajang-nearby-recent*.cjs'
+      - 'tests/pajang-answer-interactions*.cjs'
+      - 'tests/fixtures/pajang-answer-likes-fixture.cjs'
+      - 'tests/fixtures/pajang-answer-feeds-before-likes.sql'
+      - 'tests/fixtures/pajang-past-questions-fixture.cjs'
+      - 'tests/fixtures/pajang-before-past-questions.sql'
       - 'tests/pajang-profile-preferences-ui.test.cjs'
       - 'tests/pajang-profile-preferences-db.test.cjs'
+      - 'tests/pajang-age-groups-db.test.cjs'
+      - 'tests/pajang-adult-endpoint-guards-db.test.cjs'
+      - 'tests/pajang-adult-only-retirement.test.cjs'
       - 'tests/pajang-exchange-profile.test.cjs'
       - 'tests/pajang-exchange-height.test.mjs'
       - 'ops/publish-pajang-program.py'
@@ -167,9 +203,13 @@ jobs:
         run: npm --prefix tests run test:themes
       - run: npm --prefix features/pajang ci --ignore-scripts --no-audit --no-fund
       - run: npm --prefix features/pajang run build
+      - name: Print protected member program digest
+        run: sha256sum features/pajang/assets/station.js
       - run: node --test tests/pajang-navigation.test.mjs tests/pajang-navigation-dom.test.cjs
       - name: Check question copy, calendar assignments and safe reruns
-        run: node --test tests/pajang-question-copy-db.test.cjs
+        run: node --test tests/pajang-question-copy-db.test.cjs tests/pajang-personality-questions-db.test.cjs tests/pajang-relationship-questions-db.test.cjs
+      - name: Check next-question previews and account isolation
+        run: node --test tests/pajang-next-question-*.test.cjs
       - run: python -m unittest discover -s tests -p 'test_pajang_program_publish.py'
       - run: node --test tests/pajang-exchange-profile.test.cjs tests/pajang-exchange-height.test.mjs tests/pajang-private-exchange.test.mjs
       - run: node --test tests/pajang-account-toolbar.test.cjs tests/pajang-signal-purchase-db.test.mjs tests/pajang-signal-purchase-ui.test.cjs
@@ -180,8 +220,20 @@ jobs:
       - run: node --test tests/pajang-account.test.mjs tests/pajang-discovery-gender.test.mjs tests/pajang-location.test.mjs tests/shared-location.test.cjs tests/agit-location.test.mjs tests/park-loading.test.cjs tests/park-frame-cache.test.cjs tests/park-opening.test.cjs
       - run: node --test tests/admin-pajang-moderation-db.test.cjs
       - run: node --test tests/pajang-profile-preferences-db.test.cjs
+      - name: Verify age tiers without opening adult features to minors
+        run: node --test tests/pajang-age-groups-db.test.cjs
+      - name: Check server-side adult API isolation across profile, exchange, and media
+        run: node --test tests/pajang-adult-endpoint-guards-db.test.cjs
+      - name: Prevent reintroducing retired youth functionality
+        run: node --test tests/pajang-adult-only-retirement.test.cjs
+      - name: Check chat exchange consent, responses, and profile safety notice
+        run: node --test tests/pajang-chat-exchange-ui.test.cjs
       - name: Check past answer edit permissions and form state
         run: node --test tests/pajang-answer-history-edit-db.test.mjs tests/pajang-answer-edit-form.test.cjs
+      - name: Check answer likes and past question writing
+        run: node --test tests/pajang-answer-likes-db.test.cjs tests/pajang-past-questions-db.test.cjs tests/pajang-answer-interactions.test.cjs
+      - name: Check nearby answers from the latest three question slots
+        run: node --test tests/pajang-nearby-recent*.test.cjs
       - run: node tests/note-composer-settings.test.cjs
       - name: Install Chromium and Korean fonts
         working-directory: tests
@@ -227,6 +279,10 @@ jobs:
       - run: node tests/pajang-profile-preferences-ui.test.cjs
       - name: Check past answer editing and return navigation
         run: node tests/pajang-answer-edit-browser.cjs
+      - name: Check answer likes and past question navigation
+        run: node tests/pajang-answer-interactions-browser.cjs
+      - name: Check question swiping and matching answers
+        run: node tests/pajang-question-swipe-browser.cjs
       - run: node tests/pajang-discovery-browser.cjs
       - run: node tests/park-entry-browser.cjs
       - if: always()
@@ -244,6 +300,7 @@ jobs:
 
           digest = hashlib.sha256(Path("features/pajang/assets/station.js").read_bytes()).hexdigest()
           source = Path("supabase/functions/pajang-assets/index.ts").read_text()
+          print("Built member program SHA256", digest)
           assert re.search(r'"station.js": "' + digest + '"', source), "Program differs from the release manifest"
           print("Verified member program", digest)
           PYVERIFY

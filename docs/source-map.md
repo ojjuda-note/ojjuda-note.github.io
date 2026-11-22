@@ -44,10 +44,10 @@
 | 팬페이지 (리센느·아이돌) | `features/fanpages/` | `정적 공식 출처 링크` |
 | 별천지 빈방 (2026-11-10 운영 종료) | `byeolcheonji/`, `star/` 종료 안내 화면 | `byeolcheonji` 서버·기록은 보관, 정기 작업은 중단 |
 | 공통 게임 월간 순위 화면 | `features/arcade/monthly-ranking.html`, `.css`, `.js` | `community_game_monthly_personal` RPC |
+| 공개 조직도 | `features/organization/` (`index.html`, `page.js`, `chart.js`, `style.css`, `organization.json`) | 아지트·공원·파장 설정 → 도움말에서 로그인 없이 보는 AI 업무 조직. 공개 JSON에는 이름·등급·일반 역할·조직 구조만 포함하며 내부 점검·평가·실적·자동화 자료는 제외 |
+| 운영본부 내부 조직도 | `admin/operations.html`, `operations.js` 및 `features/organization/chart.js`, `style.css` | 관리자 전용 `admin_organization_read` RPC와 `admin_organization_documents`의 RLS 유지. AI 배정 기능 없이 운영본부 조직과 담당 업무를 관리자 화면에서 조회 |
 | 공통 게임 입장·결과 순위 링크 | `shared/games/game-results.js`, `.css` | 게임별 최고 기록은 기존 RPC 유지 |
 | 회원 정지·영구정지 | `admin/` | `admin-ban` |
-| 공개 조직도 | `features/organization/` (`index.html`, `page.js`, `chart.js`, `style.css`, `organization.json`) | 아지트·공원·파장 설정 → 도움말에서 로그인 없이 보는 AI 업무 조직. 공개 JSON에는 이름·등급·일반 역할·조직 구조만 포함하며 내부 점검·평가·실적·자동화 자료는 제외 |
-| 운영본부 내부 조직도 | `admin/operations.html`, `operations.js` 및 `features/organization/chart.js`, `style.css` | 관리자 전용 `admin_organization_read` RPC와 `admin_organization_documents`의 RLS 유지. 공용 렌더러를 재사용하며 상세 점검·업무 확인 자료는 관리자 화면에서만 조회 |
 | 계정 복구 | `shared/auth/` | `member-recovery` |
 | 오류 신고 | `shared/diagnostics/` | `feedback-codex` |
 | 운세·리듬 구매내역 관리 | `admin/fortune-purchases.js`, `.css` | 관리자 전용 `admin_fortune_purchases`로 바이오리듬·타로·사주의 실제 결제 항목·사용 쭈 조회 |

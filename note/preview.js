@@ -70,6 +70,7 @@ function quietLocatedReload(tries = 0) {   // 허용된 위치가 늦게 도착�
   loadFeed(false, true);
 }
 let feedSnapshot = null, feedLoading = false, replyLoading = false;
+let feedRecoveryTimer = null;
 let noteState = null, noteStateRun = 0, noticeElement = null, featureMessage = null;
 const parkEmbedded = window.parent !== window && location.pathname.startsWith('/park/');
 const guestReturnKey = 'ojjuda.park.compose-login.v1';
@@ -105,6 +106,43 @@ const PHOTO_GROUPS = [
 ];
 const PHOTO_FIRST = PHOTO_GROUPS[0].first, PHOTO_LAST = PHOTO_GROUPS.at(-1).last;
 const FONT_CODES = ['default', 'round', 'serif', 'nanum-myeongjo', 'handwriting', 'heart', 'calligraphy', 'mono'];
+const FREE_FONT_CODES = ['default', 'round', 'serif'];
+const fontPurchaseRequests = new Map();
+async function ensureComposeFont(userId, epoch, run) {
+  const font = $('#compose-font').value;
+  if (FREE_FONT_CODES.includes(font)) return true;
+  const unchangedCard = editingId && cache.get(editingId);
+  if (unchangedCard?.style?.font === font && Date.parse(unchangedCard.style_until) > Date.now()) return true;
+  const current = () => session?.user?.id === userId && identityEpoch === epoch
+    && composerRun === run && !backdrop.hidden && $('#compose-font').value === font;
+  let failureMessage = '';
+  busy = true; setComposerInputs(); updateComposer();
+  try {
+    const licenses = await noteRpc('list_my_card_font_entitlements');
+    if (!current()) return false;
+    if (licenses.some(item => item.font === font && Date.parse(item.expires_at) > Date.now())) return true;
+    const label = $('#compose-font').selectedOptions[0].textContent.split(' · 10')[0];
+    if (!window.confirm(`${label} 글꼴을 10쭈로 구매할까요? 구매한 시각부터 1개월 동안 여러 카드에 사용할 수 있어요. 기간이 끝나면 카드 글꼴도 기본으로 돌아가며, 자동 갱신은 없어요.`)) return false;
+    const key = `${userId}:${font}`;
+    if (!fontPurchaseRequests.has(key)) fontPurchaseRequests.set(key, crypto.randomUUID());
+    const result = await noteRpc('purchase_card_font', { p_font: font, p_request_id: fontPurchaseRequests.get(key) });
+    if (!current()) return false;
+    fontPurchaseRequests.delete(key);
+    if (!result?.expires_at || Date.parse(result.expires_at) <= Date.now()) throw Error('Font entitlement expired');
+    void loadWorldBalance(userId);
+    return true;
+  } catch (error) {
+    if (current()) failureMessage = /Insufficient coins/i.test(error.message || '')
+      ? '쭈가 부족해요. 쭈를 충전하거나 기본 무료 글꼴을 골라 주세요.'
+      : '글꼴 이용권을 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.';
+    return false;
+  } finally {
+    if (session?.user?.id === userId && identityEpoch === epoch && composerRun === run) {
+      busy = false; setComposerInputs(); updateComposer();
+      if (failureMessage) composeMessage.textContent = failureMessage;
+    }
+  }
+}
 const SELF_HOSTED_FONTS = ['heart', 'nanum-myeongjo'];
 const EFFECT_CODES = ['none', 'sparkle', 'frame', 'rain', 'shimmer', 'rainbow', 'snow',
   'starlight', 'fireflies', 'petals', 'bubbles', 'aurora', 'confetti', 'sunbeams',
@@ -1294,8 +1332,36 @@ function filteredFeed() {
   if (after) request = request.or(after);
   return request.order('created_at', { ascending: false }).order('id', { ascending: false }).limit(20);
 }
+const FEED_REQUEST_TIMEOUT_MS = 8500;
+async function feedWithinDeadline(pending, controller = null) {
+  let timer;
+  try {
+    return await Promise.race([
+      Promise.resolve(pending),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => {
+          const error = new Error('Park feed timed out');
+          error.name = 'TimeoutError';
+          reject(error);
+          controller?.abort();
+        }, FEED_REQUEST_TIMEOUT_MS);
+      })
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+async function getFeedCards(parameters) {
+  const controller = new AbortController();
+  const request = query().rpc('list_cards', parameters);
+  const result = await feedWithinDeadline(typeof request.abortSignal === 'function'
+    ? request.abortSignal(controller.signal) : request, controller);
+  if (result?.error) throw result.error;
+  return result?.data;
+}
 async function loadFeed(more = false, quiet = false) {
   if (!client || (more && feedLoading)) return false;
+  if (feedRecoveryTimer !== null) { clearTimeout(feedRecoveryTimer); feedRecoveryTimer = null; }
   window.OjjudaParkFeedStarted = true;
   if (!more) feedDeferred = false;
   const searchContext = $('#feed-search-context');
@@ -1340,20 +1406,20 @@ async function loadFeed(more = false, quiet = false) {
   }
   let data, error;
   if (feedMode === 'events') {
-    try { data = await noteRpc('list_my_events', {}); } catch (cause) { error = cause; }
+    try { data = await feedWithinDeadline(noteRpc('list_my_events', {})); } catch (cause) { error = cause; }
   } else if (feedMode === 'all' && !feedTerm) {
     try {
       const pendingOpening = !more && !quiet && feedSort === 'latest' && !nearbyPosition
         ? window.OjjudaParkOpening?.take?.(session?.user?.id) : undefined;
-      const opening = pendingOpening ? await pendingOpening : undefined;
+      const opening = pendingOpening ? await feedWithinDeadline(pendingOpening) : undefined;
       if (version !== feedRun) return false;
-      data = opening ? opening.data : await noteRpc('list_cards', { p_sort: feedSort === 'latest' ? 'recent' : feedSort,
+      data = opening ? opening.data : await getFeedCards({ p_sort: feedSort === 'latest' ? 'recent' : feedSort,
         p_lat: nearbyPosition?.latitude ?? null, p_lon: nearbyPosition?.longitude ?? null,
         p_radius_m: 30000, p_limit: 20,
         p_cursor: nearbySnapshot ? { offset: nearbyOffset, snapshot: nearbySnapshot } : { offset: nearbyOffset } });
     } catch (cause) { error = cause; }
   } else {
-    try { ({ data, error } = await filteredFeed()); } catch (cause) { error = cause; }
+    try { ({ data, error } = await feedWithinDeadline(filteredFeed())); } catch (cause) { error = cause; }
   }
   if (version !== feedRun) return false;
   feedLoading = false;
@@ -1364,6 +1430,16 @@ async function loadFeed(more = false, quiet = false) {
     banner(feedSort === 'nearby' && error?.name === 'GeolocationPositionError' ? '위치 권한을 확인해 주세요' : '노트 연결을 확인해 주세요');
     const retry = node('button', 'button', '다시 시도');
     retry.type = 'button'; retry.dataset.retryFeed = more ? 'more' : 'first'; list.append(retry);
+    // Retry one transient failure in place; never loop, overlap a newer load, or retry hidden screens.
+    if (!more && !quiet && (error?.name === 'TimeoutError' || error?.code === '57014'
+      || Number(error?.status) >= 500)) {
+      feedRecoveryTimer = setTimeout(() => {
+        feedRecoveryTimer = null;
+        if (version === feedRun && !feedLoading && !feed.hidden && !document.hidden) {
+          void loadFeed(false, true);
+        }
+      }, 1400);
+    }
     updateComposer(); return false;
   }
   ready = true; banner(feedMode === 'all' && feedSort === 'nearby' ? '현재 위치 기준 · 반경 30km' : '');
@@ -2612,7 +2688,7 @@ function updateComposer() {
   const selected = !isGuestComposer() && $('#compose-font').value === 'calligraphy';
   const convert = $('#convert-calligraphy');
   convert.setAttribute('aria-pressed', String(selected));
-  convert.textContent = selected ? '캘리그라피 해제' : '캘리그라피로 변환';
+  convert.textContent = selected ? '캘리그라피 해제' : '캘리그라피로 변환 · 10쭈 / 1개월';
   convert.disabled = busy || draftLoading || !authKnown;
   updatePaidSubmit();
   $('.compose-photo')?.classList.toggle('tags-chip', document.activeElement !== tags && !!tags.value.trim());
@@ -3046,6 +3122,8 @@ async function publishCard() {
     await publishGuestCard(body);
     return;
   }
+  if (!await ensureComposeFont(actionUserId, actionEpoch, actionComposerRun)) return;
+  if (session?.user?.id !== actionUserId || identityEpoch !== actionEpoch || composerRun !== actionComposerRun || backdrop.hidden) return;
   let draftToken = null, publishKind = kind, publishParent = parentId;
   recordDraft(); busy = true; setComposerInputs(); updateComposer();
   if (!editId && kind !== 'event' && draftController) {
@@ -4072,7 +4150,7 @@ if (client) {
     receiveAuth(current);
   });
   const initialAuthVersion = authEventVersion;
-  client.auth.getSession().then(({ data, error }) => {
+  feedWithinDeadline(client.auth.getSession()).then(({ data, error }) => {
     if (authEventVersion !== initialAuthVersion) return;
     if (error) console.warn('Note Auth:', error);
     receiveAuth(error ? null : data?.session || null);

@@ -105,5 +105,7 @@ export async function requireMember(action='entry',onSession,onResult) {
     rememberRound(user.id,action==='state'?result.data?.me?.body:result.data?.body,result.data?.nextAt);
     if(changed)return;
     return result.data;
-  }catch(e){showGate(e.code==='42501'?'이 계정은 파장을 이용할 수 없어요. 만 19세 이상 회원 전용이에요.':'회원 정보를 확인하지 못했어요. 잠시 후 다시 열어주세요.');}
+  }catch(e){
+    showGate(e.code==='42501'?'이 계정은 파장을 이용할 수 없어요. 만 19세 이상 회원 전용이에요.':'회원 정보를 확인하지 못했어요. 잠시 후 다시 열어주세요.');
+  }
 }

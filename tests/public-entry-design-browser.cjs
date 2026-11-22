@@ -335,7 +335,12 @@ async function openSpace(page, space) {
     await page.goto(origin + '/features/pajang/?member=1');
     await page.locator('#welcome').waitFor({ state: 'visible' });
     await mainInvitation(page, 'pajang', 'pajang-member-invitation');
-    assert.equal(await page.locator('#gate').isVisible(), false, 'verified members enter the existing question flow');
+    assert.equal(await page.locator('#gate').isVisible(), false, 'verified members skip the public entrance');
+    assert.equal(await page.locator('#answer-form').isVisible(), true, 'signed-in members see the answer form without another tap');
+    assert.equal(await page.locator('#write').isVisible(), false, 'the redundant write-entry action stays hidden');
+    assert.equal(await page.locator('#browse').isVisible(), false, 'the redundant browse-entry action stays hidden');
+    assert.equal(await page.locator('#answer-form button[type="submit"]').innerText(), '답변하기');
+    assert.equal(await page.locator('#join-fields').isVisible(), true, 'new members still confirm participation');
     assert.deepEqual(await page.evaluate(() => entryFixture.downloads), [], 'the first question does not fetch the protected member program');
     await page.goto(origin + '/features/pajang/station.html');
     await page.locator('#gate > .pajang-invitation').waitFor({ state: 'visible' });

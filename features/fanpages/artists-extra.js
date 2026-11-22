@@ -163,10 +163,11 @@
       members: ['릴리', '해원', '설윤', '배이', '지우', '규진'],
       debut: '2022.02.22', debutWork: 'AD MARE', songs: ['O.O', '占 (TANK)'],
       concept: '새로운 조합으로 넓혀 가는 NMIXX의 음악 세계.',
-      checkedAt: '2026.11.20',
+      checkedAt: '2026.11.22',
       official: 'https://nmixx.jype.com/', youtube: 'https://www.youtube.com/@NMIXXOfficial',
       photo: 'Nmixx in Frankfurt 20260324 (1).jpg', photoLabel: '프랑크푸르트 공연', photoYear: '2026', credit: 'PFNKa', license: 'CC BY 4.0',
       morePhotos: [
+        commonsPhoto('Nmixx in Frankfurt 20260324 (5).jpg', '프랑크푸르트 무대 · 단체', '2026', 'PFNKa', 'CC BY 4.0'),
         commonsPhoto('20260320 NMIXX Amsterdam concert 01.jpg', '암스테르담 월드투어 무대', '2026', 'Robbie Klinkenberg', 'CC BY 4.0'),
         commonsPhoto('20260320 NMIXX Amsterdam concert 12.jpg', '암스테르담 공연 현장', '2026', 'Robbie Klinkenberg', 'CC BY 4.0'),
         commonsPhoto('20260320 NMIXX Amsterdam concert 04 Lily.jpg', '암스테르담 공연 릴리', '2026', 'Robbie Klinkenberg', 'CC BY 4.0'),
@@ -178,7 +179,6 @@
         { title: 'AD MARE', date: '2022.02.22', type: '데뷔 싱글 · 타이틀 O.O', songs: ['O.O', '占 (TANK)'], href: 'https://nmixx.jype.com/discography/514qe3en' }
       ],
       appearances: [
-        { date: '2026-11-21', title: 'Strange Muse 메이크스타 스페셜 영상통화', sub: '13:00 KST · 사전 추첨 당첨자 대상 · 응모 11.17 종료 · MAKESTAR', href: 'https://www.makestar.com/product/21920' },
         { date: '2026-11-27', title: '첫 월드투어 ZERO FRONTIER 피날레', sub: '인천 인스파이어 아레나 · 19:00 · JYP 주최', href: 'https://nol.yanolja.com/ticket/products/26013946' },
         { date: '2026-11-28', title: '첫 월드투어 ZERO FRONTIER 피날레', sub: '인천 인스파이어 아레나 · 17:00 · JYP 주최', href: 'https://nol.yanolja.com/ticket/products/26013946' },
         { date: '2026-11-29', title: '첫 월드투어 ZERO FRONTIER 피날레', sub: '인천 인스파이어 아레나 · 16:00 · JYP 주최', href: 'https://nol.yanolja.com/ticket/products/26013946' },
@@ -192,6 +192,8 @@
         { date: '2026-12-20', title: 'N=MIXX 일본 발매 기념 오사카 이벤트', sub: '일본 인텍스 오사카 3호관 · 구매자 응모 추첨(11.04 신청 종료) · 시간은 공식 안내 확인', href: 'https://nmixxjapan.com/s/222o/page/best_album_n_mixx' }
       ],
       news: [
+        { date: '2026.11.21', tag: '수상', title: '2026 MAMA 베스트 송 톱10 · Blue Valentine 수상', href: 'https://www.soompi.com/article/1889392wpp/winners-of-2026-mama-awards-chapter-2' },
+        { date: '2026.11.20', tag: '수상', title: '2026 MAMA 팬스 초이스 여성 TOP10 수상', href: 'https://www.soompi.com/article/1889291wpp/winners-of-2026-mama-awards-chapter-1' },
         { date: '2026.11.18', tag: '굿즈', title: '인천 투어 피날레 공식 MD 판매 일정 공개 · 11.20~22 선판매, 11.25~12.06 예약', href: 'https://app.fans/shop/nmixx/promotion/tz2effem3z' },
         { date: '2026.11.17', tag: '인터뷰', title: '브라질 UOL 단독 인터뷰 · Strange Muse와 MIXXTOPIA의 다음 이야기', href: 'https://www.uol.com.br/toca/noticias/2026/11/17/nmixx-encerra-era-mixxtopia-com-ep-strange-muse.ghtm' },
         { date: '2026.11.06', tag: '팬이벤트', title: 'N=MIXX · 12.02 시부야·12.11 나고야 멤버별 사인·하이바이 이벤트 발표', href: 'https://nmixxjapan.com/s/222o/news/detail/10030' },
@@ -204,7 +206,7 @@
         { date: '발매 예정', tag: '소식', title: '일본 첫 베스트 앨범 N=MIXX, 12월 9일 발매 안내', href: 'https://nmixxjapan.com/s/222o/page/best_album_n_mixx' }
       ],
       merch: [
-        { title: 'ZERO FRONTIER 인천 피날레 공식 MD', sub: 'FANS SHOP · 11.20 14:00~11.22 23:59 얼리 액세스, 11.25 14:00~12.06 23:59 예약 · 재고는 판매처 확인', href: 'https://app.fans/shop/nmixx/promotion/tz2effem3z' },
+        { title: 'ZERO FRONTIER 인천 피날레 공식 MD', sub: 'FANS SHOP · 11.20 14:00~11.22 23:59 얼리 액세스 · 11.25 14:00~12.06 23:59 예약 · 재고는 판매처 확인', href: 'https://app.fans/shop/nmixx/promotion/tz2effem3z' },
         { title: 'N=MIXX 일본 첫 베스트 앨범', sub: '2026.12.09 일본 발매 예정 · 초회 A/B·통상반 및 매장별 특전 · 예약·재고는 공식 판매처 확인', href: 'https://nmixxjapan.com/s/222o/page/best_album_n_mixx' },
         { title: 'Strange Muse 공식 앨범', sub: 'JYP JAPAN · 포맷·재고·특전은 판매처에서 확인', href: 'https://jypj-store.com/collections/nmixx-music' },
         { title: 'NMIXX OFFICIAL LIGHT STICK VER.2', sub: 'JYP JAPAN · 공식 응원봉', href: 'https://jypj-store.com/collections/nmixx-official-goods' },

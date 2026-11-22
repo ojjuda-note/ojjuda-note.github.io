@@ -13,7 +13,7 @@ const publicCard=(patch={})=>({room_no:1842,kind:'yut',native:true,title:'친구
 
 // Canvas and transport are deliberately isolated; entrance, shared room cards,
 // form events and page lifecycle run the production code in the same DOM.
-function fixture(t,{actor='member-a',url='https://example.test/games/yut/',cards=[],enterGate=null,createGate=null,joinGate=null,storage=null}={}){
+function fixture(t,{actor='member-a',url='https://example.test/games/yut/',cards=[],enterGate=null,createGate=null,joinGate=null,storage=null,difficulty=null}={}){
   const dom=new JSDOM(source('../games/yut/index.html'),{url,runScripts:'outside-only',pretendToBeVisual:true});
   const w=dom.window,doc=w.document,calls={enter:0,list:0,create:[],join:[],cancel:[],start:0,close:0,legacy:0,directoryCreated:0,directoryClosed:0};
   const state={actor,cards,room:null,onUpdate:null,onAuthChange:null,startGate:null,startError:null};
@@ -25,6 +25,7 @@ function fixture(t,{actor='member-a',url='https://example.test/games/yut/',cards
   w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
   w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};
   if(storage)for(const [key,value] of Object.entries(storage))w.sessionStorage.setItem(key,JSON.stringify(value));
+  if(difficulty)w.localStorage.setItem('ojjuda.yut.difficulty.v1',difficulty);
   function view(patch={}){
     return {host:'host-key',isHost:true,seats:['host-key'],seat:0,setup:{count:4,mode:'easy',counts:[4,4,4,4],animals:[11,9,5,8],offset:11},game:null,status:'',connected:true,
       directory:true,room_no:1842,title:'친구와 윷놀이',names:{'host-key':'민준'},players:[{key:'host-key',name:'민준',seat:0,is_host:true}],...patch};
@@ -101,6 +102,7 @@ test('a member picks a public room and the named waiting room stays open',async 
   assert.match(f.doc.getElementById('online-lobby-body').textContent,/민준/);assert.match(f.doc.getElementById('online-lobby-body').textContent,/다온/);
   assert.equal(f.w.location.hash,'');assert.equal(new URL(f.w.location.href).searchParams.get('room'),'1842');
   assert.equal(f.button('게임 시작'),undefined,'a guest cannot start the host room');
+  assert.deepEqual([...f.doc.querySelectorAll('#online-lobby .room-actions > button')].map(button=>button.textContent), ['방 나가기']);
 });
 
 test('creating a room uses the common title and capacity form and preserves the new lobby',async t=>{
@@ -110,6 +112,7 @@ test('creating a room uses the common title and capacity form and preserves the 
   assert.match(f.doc.getElementById('online-lobby').textContent,/저녁에 한 판/);
   assert.match(f.doc.getElementById('online-lobby-body').textContent,/6/);
   assert.equal(f.doc.getElementById('arcade-room-form'),null);assert.equal(f.calls.legacy,0);
+  assert.deepEqual([...f.doc.querySelectorAll('#online-lobby .room-actions > button')].map(button=>button.textContent), ['방 나가기','게임 시작']);
 });
 
 test('a delayed online entry does not replace a computer game selection',async t=>{
@@ -204,4 +207,48 @@ test('a BFCache return creates a fresh directory and restores the public room li
   assert.equal(f.doc.querySelector('.arcade-room-card'),null);assert.equal(new URL(f.w.location.href).searchParams.has('room'),false);
   staleUpdate({...staleRoom,game:rules.newGame(4)});await f.settle();
   assert.equal(f.doc.getElementById('tabletop').hidden,true);assert.equal(f.doc.getElementById('online-lobby').hidden,true);
+});
+
+test('arcade Yut entry link and router start solo unless multiplayer is explicitly requested',()=>{
+  const world=source('../world.html');
+  const tile=world.match(/<a class="gbtn" data-v="yut" href="([^"]+)"/);
+  assert.ok(tile,'arcade Yut tile exists');
+  const tileUrl=new URL(tile[1],'https://ojjuda.kr');
+  assert.equal(tileUrl.pathname,'/games/yut/');
+  assert.equal(tileUrl.searchParams.has('mode'),false,'a normal tile click must not force multiplayer');
+  assert.equal(tileUrl.searchParams.has('room'),false);
+  const start=world.indexOf('function openWorldYut(options={}){');
+  const end=world.indexOf('function openWorldGameLink(',start);
+  assert.ok(start>0&&end>start,'the world router is present');
+  const assigned=[];
+  const route=new Function('URL','location',world.slice(start,end)+';return openWorldYut;')(
+    URL,{origin:'https://ojjuda.kr',assign:value=>{assigned.push(value);return value;}}
+  );
+  route();
+  assert.equal(new URL(assigned.at(-1),'https://ojjuda.kr').searchParams.has('mode'),false);
+  route({mode:'online'});
+  assert.equal(new URL(assigned.at(-1),'https://ojjuda.kr').searchParams.get('mode'),'online');
+  route({create:true});
+  assert.equal(new URL(assigned.at(-1),'https://ojjuda.kr').searchParams.get('create'),'1');
+  route({roomNo:1842});
+  const invited=new URL(assigned.at(-1),'https://ojjuda.kr');
+  assert.equal(invited.searchParams.get('room'),'1842');
+  assert.equal(invited.searchParams.has('mode'),false,'explicit room links preserve the room');
+});
+
+test('Yut opens in computer mode and restores the last selected normal/easy difficulty',async t=>{
+  const f=fixture(t),doc=f.doc;
+  const active=page=>page.doc.querySelector('#entry-controls [data-kind][aria-pressed="true"]')?.dataset.kind;
+  assert.equal(active(f),'computer','first Yut entrance must be single-player');
+  const select=doc.getElementById('game-mode');
+  assert.equal(select.value,'island','normal obstacle mode is the initial setting');
+  assert.match(select.selectedOptions[0].textContent,/보통/);
+  select.value='easy';select.dispatchEvent(new f.w.Event('change'));
+  assert.equal(f.w.localStorage.getItem('ojjuda.yut.difficulty.v1'),'easy');
+  const reopened=fixture(t,{difficulty:'easy'});
+  assert.equal(active(reopened),'computer','saved difficulty must not restore multiplayer');
+  assert.equal(reopened.doc.getElementById('game-mode').value,'easy');
+  assert.match(reopened.doc.getElementById('game-mode').selectedOptions[0].textContent,/쉬움/);
+  const invited=fixture(t,{url:'https://example.test/games/yut/?mode=online'});
+  assert.equal(active(invited),'online','explicit online access still opens the multiplayer tab');
 });

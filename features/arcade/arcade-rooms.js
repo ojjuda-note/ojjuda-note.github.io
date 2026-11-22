@@ -79,8 +79,8 @@
         <div class="arcade-room-game"><img src="${artworkUrl}" alt="" width="36" height="28"><b>${name}</b></div>
         <div class="arcade-room-copy"><span class="arcade-room-number">방 #${escape(room.room_no)}${room.is_host ? ' · 내 방' : room.is_member ? ' · 참여한 방' : ''}</span><h4>${escape(room.title)}</h4><p>${escape(room.host_name)} <span>· ${escape(room.players)}/${escape(room.capacity)}명</span></p></div>
         <div class="arcade-room-actions"><span class="arcade-room-state${playing ? ' playing' : ''}">${playing ? '대전 중' : '상대 기다리는 중'}</span>
-        <button class="btn sm${!playing || room.is_member ? ' pri' : ''}" data-arcade-action="join" data-room="${escape(room.room_no)}"${busy || (playing && !room.is_member) || (!playing && room.is_member && !room.native) || (!room.is_member && room.players>=room.capacity) ? ' disabled' : ''}>${action}</button>
-        ${room.is_host && !playing ? `<button class="arcade-cancel" data-arcade-action="cancel" data-room="${escape(room.room_no)}"${busy ? ' disabled' : ''}>대기 취소</button>` : ''}</div></article>`;
+        <div class="arcade-room-buttons">${room.is_host && !playing ? `<button class="btn sm arcade-cancel" data-arcade-action="cancel" data-room="${escape(room.room_no)}"${busy ? ' disabled' : ''}>대기 취소</button>` : ''}
+        <button class="btn sm${!playing || room.is_member ? ' pri' : ''}" data-arcade-action="join" data-room="${escape(room.room_no)}"${busy || (playing && !room.is_member) || (!playing && room.is_member && !room.native) || (!room.is_member && room.players>=room.capacity) ? ' disabled' : ''}>${action}</button></div></div></article>`;
     }
     function emptyRoomMessage(search, status) {
       if (!owner) return '로그인하면 대전방을 만들고 참여할 수 있어요.';
@@ -336,7 +336,7 @@
         return;
       }
       if (room.kind !== 'janggi' || room.is_member) { void join(room); return; }
-      options.renderModal(`<div class="mhead"><h3>방 #${escape(room.room_no)} 참여</h3><button class="btn sm ghost" data-act="close">닫기</button></div><form id="arcade-join-form"><p>${escape(room.title)}</p>${layoutSelect('hehe')}<div class="mfoot"><button type="submit" class="btn pri">이 배치로 참여</button></div></form>`, '장기방 참여');
+      options.renderModal(`<div class="mhead"><h3>방 #${escape(room.room_no)} 참여</h3><button class="btn sm ghost" data-act="close">닫기</button></div><form id="arcade-join-form"><p>${escape(room.title)}</p>${layoutSelect('hehe')}<div class="mfoot"><button type="button" class="btn" data-act="close">취소</button><button type="submit" class="btn pri">이 배치로 참여</button></div></form>`, '장기방 참여');
       document.getElementById('arcade-join-form').onsubmit = event => { event.preventDefault(); void join(room, event.target.elements.layout.value); };
     }
     async function cancelNative(room, actor) {

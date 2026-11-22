@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <defs><linearGradient id="recommend-pad" x1="6" y1="7" x2="27" y2="26" gradientUnits="userSpaceOnUse"><stop stop-color="#b8adf3"/><stop offset=".5" stop-color="#8a80cb"/><stop offset="1" stop-color="#585b9f"/></linearGradient></defs>
+  <ellipse cx="16" cy="27.5" rx="12" ry="2" fill="#55517d" opacity=".15"/>
+  <path d="M10 8h12c4 0 6 4 7 9l1 5c.6 4-3.4 6-6 3l-4-4h-8l-4 4c-2.6 3-6.6 1-6-3l1-5c1-5 3-9 7-9Z" fill="#575893"/>
+  <path d="M10 6.5h12c4 0 6 4 7 9l1 5c.6 4-3.4 6-6 3l-4-4h-8l-4 4c-2.6 3-6.6 1-6-3l1-5c1-5 3-9 7-9Z" fill="url(#recommend-pad)"/>
+  <path d="M6.5 13c.9-2.4 2-3.5 4-3.5h5" fill="none" stroke="#e3dcff" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>
+  <path d="M9 12.5v7m-3.5-3.5h7" fill="none" stroke="#f8f6ff" stroke-width="2.4" stroke-linecap="round"/>
+  <circle cx="23.7" cy="12.8" r="2" fill="#f3c491"/>
+  <circle cx="20.2" cy="17.1" r="2" fill="#c3e3e6"/>
+  <path d="M15 16h2" stroke="#4c508a" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

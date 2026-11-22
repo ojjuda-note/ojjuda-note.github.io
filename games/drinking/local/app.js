@@ -4,7 +4,7 @@ const $=selector=>document.querySelector(selector);
 const playerKey='oj.party.'+document.getElementById('access-content').dataset.member+'.players';
 const turnOrderKey=playerKey+'.turnOrder';
 const app=$('#app'), settings=$('#settings'), feedback=$('#feedback'), fx=window.PartyFX;
-const entryRevision=new URL(location.href).searchParams.get('v')||'20261120-partyroulette-extra1';
+const entryRevision=new URL(location.href).searchParams.get('v')||'20261120-service-actions1';
 let entryRequest=0;
 // Half of each gum line, measured on the toy artwork from the hinge to the front.
 // Coordinates locate touch targets; the visible crown tilts inward independently.
@@ -114,6 +114,7 @@ function art(id,cls=''){
 }
 function btn(label,action,cls='start',value=''){return '<button type="button" class="'+cls+'" data-action="'+action+'" data-value="'+esc(value)+'">'+esc(label)+'</button>'}
 function actions(...buttons){return '<div class="actions">'+buttons.join('')+'</div>'}
+function roundActions(...buttons){return '<div class="actions drinking-round-actions">'+buttons.join('')+'</div>'}
 function choiceList(items,action){return '<div class="options">'+items.map(([value,label])=>btn(label,action,'choice',value)).join('')+'</div>'}
 const defaultPlayers=()=>Array.from({length:4},(_,i)=>'참가자 '+(i+1));
 let seatNames=defaultPlayers();
@@ -171,7 +172,7 @@ async function loadRoundBank(r){
   r.bank=loaded?prompts.list(kind):[];
   if(r.bank.length)return true;
   const message=loaded?'아직 등록된 내용이 없어요.':'내용을 불러오지 못했어요. 연결을 확인해 주세요.';
-  shell('<h2>'+message+'</h2>'+actions(btn('다시 시도',kind==='bomb'?'start-bomb':'start'),btn('게임 목록','menu','quiet')));
+  shell('<h2>'+message+'</h2>'+roundActions(btn('게임 목록','menu','quiet'),btn('다시 시도',kind==='bomb'?'start-bomb':'start')));
   return false;
 }
 async function startBomb(){
@@ -342,7 +343,7 @@ async function openLocal(id){
 }
 function end(title,desc,sound='result'){
   stopClock();round.phase='done';if(sound)fx.play(sound);
-  shell('<span class="turn-tag">라운드 결과</span><h2>'+esc(title)+'</h2><p>'+esc(desc)+'</p>'+actions(btn('한 판 더',game.id==='bomb'?'bomb-setup':game.id==='truth'?'truth-setup':'start'),btn('게임 목록','menu','quiet')),true)
+  shell('<span class="turn-tag">라운드 결과</span><h2>'+esc(title)+'</h2><p>'+esc(desc)+'</p>'+roundActions(btn('게임 목록','menu','quiet'),btn('한 판 더',game.id==='bomb'?'bomb-setup':game.id==='truth'?'truth-setup':'start')),true)
 }
 function secretSetup(){
   cleanup();
@@ -685,7 +686,7 @@ function animateBottle(now){
     $('.bottle-dial [data-seat="'+seat+'"]').classList.add('winning-seat');
     $('#bottle-title').textContent=seatNames[seat]+'님 당첨!';
     $('#bottle-hint').textContent='병 입구가 '+(seat+1)+'번 자리를 가리켰어요.';
-    $('#spin-status').innerHTML=actions(btn('다시 돌리기','spin'),btn('자리 옮기기','edit-seats','quiet'),btn('게임 목록','menu','quiet'));
+    $('#spin-status').innerHTML=roundActions(btn('게임 목록','menu','quiet'),btn('자리 옮기기','edit-seats','quiet'),btn('다시 돌리기','spin'));
     fx.play('finish');
     markLocalHost();
     window.DrinkingGameScreen?.local(game.id,r,app);
@@ -780,7 +781,7 @@ function nextShape(){
     '<p>가장 느린 반응 시간은 '+slowest+' ms예요.</p>'+
     '<table class="sm-results" aria-label="참가자별 반응 시간"><thead><tr>'+
       '<th scope="col">참가자</th><th scope="col">반응 시간</th></tr></thead><tbody>'+rows+'</tbody></table>'+
-    actions(btn('한 판 더','start'),btn('게임 목록','menu','quiet')));
+    roundActions(btn('게임 목록','menu','quiet'),btn('한 판 더','start')));
 }
 
 function startWatch(){
@@ -828,7 +829,7 @@ function nextWatch(){
   const rows=ordered.map(p=>'<tr><th scope="row">'+name(p.i)+'</th><td>'+(p.score/100).toFixed(2)+'초</td><td>'+(p.error/100).toFixed(2)+'초</td></tr>').join('');
   shell('<span class="turn-tag">라운드 결과</span><h2>'+winners.map(p=>name(p.i)).join(' · ')+(winners.length>1?' 공동 1등!':' 1등!')+'</h2>'+
     '<p>목표 시간에 가장 가깝게 멈췄어요.</p><p>목표 '+(r.target/100).toFixed(1)+'초</p><table class="watch-results"><thead><tr><th>참가자</th><th>기록</th><th>목표와 차이</th></tr></thead><tbody>'+rows+'</tbody></table>'+
-    actions(btn('한 판 더','watch-setup'),btn('게임 목록','menu','quiet')));
+    roundActions(btn('게임 목록','menu','quiet'),btn('한 판 더','watch-setup')));
 }
 function privateScreen(title,description,face,button){
   shell('<span class="turn-tag">비공개 · '+(round.pos+1)+' / '+players.length+'</span><h2>'+title+'</h2><p>'+description+'</p><div class="private-card '+(round.revealed?'':'hidden-face')+'">'+art(round.revealed?game.id:'back','secret-art')+'<strong>'+face+'</strong></div>'+button)
@@ -878,7 +879,7 @@ function kingResult(){
   const r=round,numbers=r.second==null?[r.number]:[r.number,r.second];
   const recipients=numbers.map(n=>'<div><dt>카드 '+n+'번</dt><dd>'+name(r.roles.indexOf(n))+'</dd></div>').join('');
   const next=numbers.find(n=>!r.answers[n]);
-  let footer=actions(btn('한 판 더','start'),btn('게임 목록','menu','quiet'));
+  let footer=roundActions(btn('게임 목록','menu','quiet'),btn('한 판 더','start'));
   if(r.phase==='king-answer'){
     footer='<p>'+name(r.roles.indexOf(next))+'님, 이 미션을 할까요?</p>'+
       actions(btn('동의','king-yes', 'start',next),btn('패스','king-no','quiet',next));
@@ -1112,19 +1113,19 @@ function votesDone(){
     const rows=players.map((_,i)=>'<li><span>'+name(i)+'</span><b>'+r.counts[i]+'표</b></li>').join('');
     return shell('<span class="turn-tag">투표 결과</span><h2>'+top.map(esc).join(' · ')+(top.length>1?' 공동 1위':'님이 가장 많이 지목됐어요')+'</h2>'+
       '<p>'+esc(r.prompt)+'</p><ul class="party-scores" aria-label="참가자별 득표수">'+rows+'</ul>'+
-      actions(btn('새 질문으로 한 판 더','start'),btn('게임 목록','menu','quiet')),true);
+      roundActions(btn('게임 목록','menu','quiet'),btn('새 질문으로 한 판 더','start')),true);
   }
   if(r.voteKind==='minority'){
     const sets=[[],[]];r.votes.forEach((v,i)=>sets[v].push(name(i)));
     const [a,b]=sets.map(group=>group.length);
     const heading=a===b?'정확히 반반!':a*b===0?'모두 같은 선택!':'소수파는 '+r.pair[a<b?0:1]+'!';
-    return shell('<span class="turn-tag">투표 결과</span><h2>'+esc(heading)+'</h2>'+sets.map((group,i)=>'<div class="results-line"><strong>'+esc(r.pair[i])+' · '+group.length+'표</strong><br>'+(group.join(', ')||'선택한 사람 없음')+'</div>').join('')+actions(btn('다른 질문으로 한 판','start'),btn('게임 목록','menu','quiet')),true)
+    return shell('<span class="turn-tag">투표 결과</span><h2>'+esc(heading)+'</h2>'+sets.map((group,i)=>'<div class="results-line"><strong>'+esc(r.pair[i])+' · '+group.length+'표</strong><br>'+(group.join(', ')||'선택한 사람 없음')+'</div>').join('')+roundActions(btn('게임 목록','menu','quiet'),btn('다른 질문으로 한 판','start')),true)
   }
   const counts=players.map(()=>0);r.votes.forEach(i=>counts[i]++);const highest=Math.max(...counts),picks=counts.flatMap((v,i)=>v===highest?[i]:[]);
   const title=picks.length>1?'최다 득표가 동점이에요':picks[0]===r.secret?'찾았어요!':'정체를 숨겼어요!';
   const role=game.id==='liar'?'라이어':'다른 미션을 받은 사람';
   const answer=game.id==='liar'?'제시어 · '+esc(r.word):'공통 미션 · '+esc(r.pair[0])+'<br>다른 미션 · '+esc(r.pair[1]);
-  shell('<span class="turn-tag">투표 결과</span><h2>'+title+'</h2><p>'+role+'은 <strong>'+name(r.secret)+'</strong></p><div class="results-line">'+answer+'</div><p>최다 득표 · '+picks.map(name).join(', ')+' ('+highest+'표)</p>'+actions(btn('한 판 더','start'),btn('게임 목록','menu','quiet')),true)
+  shell('<span class="turn-tag">투표 결과</span><h2>'+title+'</h2><p>'+role+'은 <strong>'+name(r.secret)+'</strong></p><div class="results-line">'+answer+'</div><p>최다 득표 · '+picks.map(name).join(', ')+' ('+highest+'표)</p>'+roundActions(btn('게임 목록','menu','quiet'),btn('한 판 더','start')),true)
 }
 function playerSettings(){
   if(game)return;

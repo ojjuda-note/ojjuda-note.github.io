@@ -1,0 +1,2654 @@
+[
+  {
+    "id": 30001,
+    "occasion": "spring",
+    "edition": 0,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "봄에 새 모임에 가입한다면 첫날 어떻게 적응하나요?",
+    "samples": [
+      "먼저 옆 사람에게 말을 걸어요.",
+      "진행 방식을 보며 천천히 참여해요.",
+      "공통 관심사가 있는 사람을 찾아요."
+    ]
+  },
+  {
+    "id": 30002,
+    "occasion": "spring",
+    "edition": 0,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "봄나들이를 가기로 한 날 갑자기 비가 오면 어떻게 하나요?",
+    "samples": [
+      "실내에서 할 만한 일을 바로 찾아요.",
+      "함께 가는 사람들과 다시 의논해요.",
+      "다른 날로 미루고 집에서 쉬어요."
+    ]
+  },
+  {
+    "id": 30003,
+    "occasion": "spring",
+    "edition": 0,
+    "turn": 2,
+    "category": "seasonal_behavior",
+    "prompt": "새로운 계절이 시작되면 생활 습관을 어떻게 바꾸나요?",
+    "samples": [
+      "바꿀 습관 하나를 정해 기록해요.",
+      "필요하다고 느낄 때 조금씩 바꿔요.",
+      "하던 생활을 유지하는 편이에요."
+    ]
+  },
+  {
+    "id": 30004,
+    "occasion": "spring",
+    "edition": 0,
+    "turn": 3,
+    "category": "seasonal_behavior",
+    "prompt": "벚꽃 구경을 갔는데 사람이 예상보다 많으면 어떻게 하나요?",
+    "samples": [
+      "다른 조용한 길을 찾아 걸어요.",
+      "사람들과 어울려 분위기를 즐겨요.",
+      "같이 온 사람의 생각을 먼저 물어요."
+    ]
+  },
+  {
+    "id": 30005,
+    "occasion": "spring",
+    "edition": 0,
+    "turn": 4,
+    "category": "seasonal_behavior",
+    "prompt": "봄에 새 취미를 시작할 때 누구와 배우고 싶나요?",
+    "samples": [
+      "친구와 함께 시작하면 편해요.",
+      "혼자 배워 보면서 집중하고 싶어요.",
+      "처음 만나는 사람들과 배워 보고 싶어요."
+    ]
+  },
+  {
+    "id": 30006,
+    "occasion": "spring",
+    "edition": 0,
+    "turn": 5,
+    "category": "seasonal_behavior",
+    "prompt": "봄맞이 정리를 할 때 오래된 물건은 어떻게 처리하나요?",
+    "samples": [
+      "최근에 썼는지를 기준으로 정리해요.",
+      "추억이 있는 물건은 따로 모아 둬요.",
+      "사진을 찍어 두고 필요한 사람에게 줘요."
+    ]
+  },
+  {
+    "id": 30007,
+    "occasion": "spring",
+    "edition": 0,
+    "turn": 6,
+    "category": "seasonal_behavior",
+    "prompt": "소풍 준비를 여럿이 함께 한다면 어떤 역할이 편한가요?",
+    "samples": [
+      "전체 준비 목록을 만드는 일이 편해요.",
+      "맡은 음식이나 물건을 챙기고 싶어요.",
+      "빠진 것이 없는지 살피는 일이 편해요."
+    ]
+  },
+  {
+    "id": 30008,
+    "occasion": "spring",
+    "edition": 0,
+    "turn": 7,
+    "category": "seasonal_behavior",
+    "prompt": "따뜻한 봄날 갑자기 시간이 생기면 무엇부터 하나요?",
+    "samples": [
+      "친구에게 함께 나갈 수 있는지 물어요.",
+      "혼자 걸으며 생각을 정리해요.",
+      "미뤄 둔 일을 끝내고 쉬어요."
+    ]
+  },
+  {
+    "id": 30009,
+    "occasion": "spring",
+    "edition": 0,
+    "turn": 8,
+    "category": "seasonal_behavior",
+    "prompt": "봄나들이 중 친구와 걷는 속도가 다르면 어떻게 하나요?",
+    "samples": [
+      "천천히 함께 걸을 수 있게 맞춰요.",
+      "쉬어 갈 장소를 정하자고 말해요.",
+      "각자 걷고 만날 지점을 정해요."
+    ]
+  },
+  {
+    "id": 30010,
+    "occasion": "spring",
+    "edition": 0,
+    "turn": 9,
+    "category": "seasonal_behavior",
+    "prompt": "봄에 새로운 일을 맡게 되면 무엇을 먼저 알고 싶나요?",
+    "samples": [
+      "제가 맡을 범위와 마감을 알고 싶어요.",
+      "함께 일할 사람들을 먼저 알고 싶어요.",
+      "직접 해 볼 수 있는 일이 무엇인지 궁금해요."
+    ]
+  },
+  {
+    "id": 30011,
+    "occasion": "spring",
+    "edition": 0,
+    "turn": 10,
+    "category": "seasonal_behavior",
+    "prompt": "날이 풀려 약속이 늘어나면 혼자만의 시간은 어떻게 챙기나요?",
+    "samples": [
+      "약속 없는 날을 미리 비워 둬요.",
+      "피곤해지면 약속을 조정해요.",
+      "만남 사이에 짧게 혼자 쉬어요."
+    ]
+  },
+  {
+    "id": 30012,
+    "occasion": "spring",
+    "edition": 0,
+    "turn": 11,
+    "category": "seasonal_behavior",
+    "prompt": "봄이 끝날 무렵 새로 시작한 일을 어떻게 돌아보나요?",
+    "samples": [
+      "시작할 때 세운 목표와 비교해요.",
+      "하면서 즐거웠는지를 생각해요.",
+      "계속할지 다른 일을 할지 정해요."
+    ]
+  },
+  {
+    "id": 30051,
+    "occasion": "summer",
+    "edition": 0,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "여름휴가 일정을 잡을 때 가장 먼저 정하는 것은 무엇인가요?",
+    "samples": [
+      "함께 갈 사람과 날짜부터 정해요.",
+      "얼마나 쓸 수 있는지 먼저 정해요.",
+      "쉬고 싶은지 돌아다닐지 먼저 정해요."
+    ]
+  },
+  {
+    "id": 30052,
+    "occasion": "summer",
+    "edition": 0,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "휴가지에서 친구가 갑자기 일정을 바꾸자고 하면 어떻게 하나요?",
+    "samples": [
+      "새 일정이 괜찮은지 들어 보고 정해요.",
+      "꼭 가고 싶던 곳은 남기자고 말해요.",
+      "하루쯤 각자 다니자고 제안해요."
+    ]
+  },
+  {
+    "id": 30053,
+    "occasion": "summer",
+    "edition": 0,
+    "turn": 2,
+    "category": "seasonal_behavior",
+    "prompt": "더위 때문에 예민해졌을 때 주변 사람에게 어떻게 표현하나요?",
+    "samples": [
+      "조금 쉬고 싶다고 미리 이야기해요.",
+      "말수를 줄이고 혼자 진정해요.",
+      "어떤 점이 불편한지 바로 말해요."
+    ]
+  },
+  {
+    "id": 30054,
+    "occasion": "summer",
+    "edition": 0,
+    "turn": 3,
+    "category": "seasonal_behavior",
+    "prompt": "여름휴가를 함께 간다면 자유 시간은 얼마나 필요한가요?",
+    "samples": [
+      "하루에 한두 시간은 혼자 보내고 싶어요.",
+      "대부분 함께 다니는 것이 좋아요.",
+      "하고 싶은 일이 다를 때만 나눠 다녀요."
+    ]
+  },
+  {
+    "id": 30055,
+    "occasion": "summer",
+    "edition": 0,
+    "turn": 4,
+    "category": "seasonal_behavior",
+    "prompt": "휴가지에서 길을 잘못 들었을 때 가장 먼저 어떻게 하나요?",
+    "samples": [
+      "지도를 보고 돌아갈 길을 찾아요.",
+      "근처 사람에게 길을 물어봐요.",
+      "새 길에서 둘러볼 곳을 찾아봐요."
+    ]
+  },
+  {
+    "id": 30056,
+    "occasion": "summer",
+    "edition": 0,
+    "turn": 5,
+    "category": "seasonal_behavior",
+    "prompt": "친구들이 여름휴가 계획을 맡기면 어떻게 준비하나요?",
+    "samples": [
+      "선호하는 활동을 먼저 물어봐요.",
+      "제가 짠 계획을 보여 주고 조정해요.",
+      "각자 가고 싶은 곳을 맡아 정하게 해요."
+    ]
+  },
+  {
+    "id": 30057,
+    "occasion": "summer",
+    "edition": 0,
+    "turn": 6,
+    "category": "seasonal_behavior",
+    "prompt": "무더운 날 약속 장소까지 가기 힘들 것 같으면 어떻게 하나요?",
+    "samples": [
+      "미리 연락해서 장소를 바꿔 봐요.",
+      "잠깐 쉬었다 갈 수 있게 일찍 나가요.",
+      "상대에게 만나는 시간을 늦추자고 해요."
+    ]
+  },
+  {
+    "id": 30058,
+    "occasion": "summer",
+    "edition": 0,
+    "turn": 7,
+    "category": "seasonal_behavior",
+    "prompt": "여름휴가에서 돌아온 다음 날은 어떻게 보내고 싶나요?",
+    "samples": [
+      "집에서 조용히 쉬며 짐을 풀어요.",
+      "다시 일상에 맞춰 할 일을 시작해요.",
+      "사진을 정리하며 여행을 떠올려요."
+    ]
+  },
+  {
+    "id": 30059,
+    "occasion": "summer",
+    "edition": 0,
+    "turn": 8,
+    "category": "seasonal_behavior",
+    "prompt": "야외에서 놀다가 소나기를 만나면 어떤 반응이 먼저 나오나요?",
+    "samples": [
+      "비를 피할 장소부터 찾아요.",
+      "예상 밖의 상황이 조금 재미있어요.",
+      "남은 일정을 어떻게 할지 걱정돼요."
+    ]
+  },
+  {
+    "id": 30060,
+    "occasion": "summer",
+    "edition": 0,
+    "turn": 9,
+    "category": "seasonal_behavior",
+    "prompt": "친구와 휴가 예산이 다를 때 어떻게 맞추나요?",
+    "samples": [
+      "각자 쓸 수 있는 금액을 먼저 말해요.",
+      "공통으로 할 활동만 정해요.",
+      "둘 다 편하게 쓸 수 있는 곳을 찾아요."
+    ]
+  },
+  {
+    "id": 30061,
+    "occasion": "summer",
+    "edition": 0,
+    "turn": 10,
+    "category": "seasonal_behavior",
+    "prompt": "여름밤에 갑작스러운 모임 제안을 받으면 어떻게 답하나요?",
+    "samples": [
+      "내일 일정이 괜찮으면 바로 나가요.",
+      "누가 오는지 듣고 결정해요.",
+      "미리 잡은 약속이 편하다고 말해요."
+    ]
+  },
+  {
+    "id": 30062,
+    "occasion": "summer",
+    "edition": 0,
+    "turn": 11,
+    "category": "seasonal_behavior",
+    "prompt": "휴가를 마친 뒤 어떤 순간을 가장 오래 이야기하나요?",
+    "samples": [
+      "함께 웃었던 예상 밖의 일이요.",
+      "새롭게 해 보고 배운 일이요.",
+      "마음 편하게 쉬었던 시간이요."
+    ]
+  },
+  {
+    "id": 30101,
+    "occasion": "autumn",
+    "edition": 0,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "가을에 새 목표를 세운다면 어떤 방식으로 시작하나요?",
+    "samples": [
+      "작은 단계로 나눠 날짜를 정해요.",
+      "일단 해 보고 목표를 조정해요.",
+      "경험 있는 사람에게 먼저 물어봐요."
+    ]
+  },
+  {
+    "id": 30102,
+    "occasion": "autumn",
+    "edition": 0,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "친구와 가을 산책을 할 때 대화가 없어도 편한가요?",
+    "samples": [
+      "말없이 같이 걷는 시간도 편해요.",
+      "무슨 생각을 하는지 물어보고 싶어요.",
+      "잠깐 조용히 걷다가 제가 말을 꺼내요."
+    ]
+  },
+  {
+    "id": 30103,
+    "occasion": "autumn",
+    "edition": 0,
+    "turn": 2,
+    "category": "seasonal_behavior",
+    "prompt": "가을 여행에서 낯선 마을에 들를 기회가 생기면 어떻게 하나요?",
+    "samples": [
+      "시간을 확인한 뒤 들러 보고 싶어요.",
+      "원래 가려던 곳을 먼저 가고 싶어요.",
+      "함께 간 사람들의 의견을 들어요."
+    ]
+  },
+  {
+    "id": 30104,
+    "occasion": "autumn",
+    "edition": 0,
+    "turn": 3,
+    "category": "seasonal_behavior",
+    "prompt": "해가 짧아지면서 하루가 아쉽게 느껴지면 어떻게 하나요?",
+    "samples": [
+      "하고 싶은 일을 낮 시간에 배치해요.",
+      "저녁에도 할 수 있는 일을 찾아요.",
+      "계절에 맞게 느긋하게 지내요."
+    ]
+  },
+  {
+    "id": 30105,
+    "occasion": "autumn",
+    "edition": 0,
+    "turn": 4,
+    "category": "seasonal_behavior",
+    "prompt": "가을에 책을 한 권 읽기로 했다면 어떤 방식이 잘 맞나요?",
+    "samples": [
+      "매일 읽을 분량을 정해 둬요.",
+      "관심 가는 부분부터 읽어요.",
+      "같이 읽는 사람과 이야기를 나눠요."
+    ]
+  },
+  {
+    "id": 30106,
+    "occasion": "autumn",
+    "edition": 0,
+    "turn": 5,
+    "category": "seasonal_behavior",
+    "prompt": "단풍 구경 장소를 친구들과 정할 때 의견이 갈리면 어떻게 하나요?",
+    "samples": [
+      "각 장소의 장단점을 비교해요.",
+      "가장 가고 싶어 하는 사람에게 맞춰요.",
+      "이번과 다음 순서를 나눠 정해요."
+    ]
+  },
+  {
+    "id": 30107,
+    "occasion": "autumn",
+    "edition": 0,
+    "turn": 6,
+    "category": "seasonal_behavior",
+    "prompt": "선선한 날 혼자 외출할 때 계획은 어느 정도 세우나요?",
+    "samples": [
+      "가는 곳과 돌아올 시간을 정해요.",
+      "목적지 하나만 정하고 나가요.",
+      "그날 눈에 들어오는 곳에 들러요."
+    ]
+  },
+  {
+    "id": 30108,
+    "occasion": "autumn",
+    "edition": 0,
+    "turn": 7,
+    "category": "seasonal_behavior",
+    "prompt": "가을 축제에서 관심 있는 체험을 발견하면 어떻게 참여하나요?",
+    "samples": [
+      "혼자라도 바로 신청해 봐요.",
+      "친구가 함께하면 참여하고 싶어요.",
+      "다른 사람이 하는 것을 먼저 지켜봐요."
+    ]
+  },
+  {
+    "id": 30109,
+    "occasion": "autumn",
+    "edition": 0,
+    "turn": 8,
+    "category": "seasonal_behavior",
+    "prompt": "가을에 한 해의 계획을 점검하다 못한 일을 발견하면 어떻게 하나요?",
+    "samples": [
+      "남은 기간에 맞게 목표를 줄여요.",
+      "왜 미뤘는지부터 생각해 봐요.",
+      "지금도 필요한 일인지 다시 판단해요."
+    ]
+  },
+  {
+    "id": 30110,
+    "occasion": "autumn",
+    "edition": 0,
+    "turn": 9,
+    "category": "seasonal_behavior",
+    "prompt": "친구가 가을 풍경을 보며 옛일을 이야기하면 어떻게 듣나요?",
+    "samples": [
+      "그때의 마음이 어땠는지 물어봐요.",
+      "비슷한 제 경험도 함께 이야기해요.",
+      "말을 끊지 않고 끝까지 들어요."
+    ]
+  },
+  {
+    "id": 30111,
+    "occasion": "autumn",
+    "edition": 0,
+    "turn": 10,
+    "category": "seasonal_behavior",
+    "prompt": "날이 쌀쌀해져 집에 머무는 시간이 늘면 어떻게 지내나요?",
+    "samples": [
+      "밀린 일을 차분하게 정리해요.",
+      "취미를 즐길 시간을 더 늘려요.",
+      "친구와 통화하며 이야기를 나눠요."
+    ]
+  },
+  {
+    "id": 30112,
+    "occasion": "autumn",
+    "edition": 0,
+    "turn": 11,
+    "category": "seasonal_behavior",
+    "prompt": "올가을 나에게 맞았던 휴식 방식은 무엇인가요?",
+    "samples": [
+      "사람이 적은 곳에서 혼자 쉬는 거예요.",
+      "편한 사람과 이야기하는 거예요.",
+      "새로운 일을 하며 기분을 바꾸는 거예요."
+    ]
+  },
+  {
+    "id": 30151,
+    "occasion": "winter",
+    "edition": 0,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "추운 겨울 주말에 친구가 밖에서 만나자고 하면 어떻게 하나요?",
+    "samples": [
+      "따뜻한 실내에서 만나자고 제안해요.",
+      "보고 싶은 친구라면 준비해서 나가요.",
+      "집에서 쉬고 싶다고 솔직히 말해요."
+    ]
+  },
+  {
+    "id": 30152,
+    "occasion": "winter",
+    "edition": 0,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "눈 때문에 이동 계획이 늦어지면 무엇부터 챙기나요?",
+    "samples": [
+      "도착 시간을 확인해 상대에게 알려요.",
+      "안전하게 갈 다른 방법을 찾아요.",
+      "급한 일정이 있는지부터 정리해요."
+    ]
+  },
+  {
+    "id": 30153,
+    "occasion": "winter",
+    "edition": 0,
+    "turn": 2,
+    "category": "seasonal_behavior",
+    "prompt": "겨울에 기분이 가라앉는 날에는 어떤 도움이 편한가요?",
+    "samples": [
+      "이야기를 들어 주는 사람이 있으면 좋아요.",
+      "혼자 쉴 시간을 주면 편해요.",
+      "가볍게 산책하자고 해 주면 좋아요."
+    ]
+  },
+  {
+    "id": 30154,
+    "occasion": "winter",
+    "edition": 0,
+    "turn": 3,
+    "category": "seasonal_behavior",
+    "prompt": "겨울 여행에서 따뜻하게 쉬는 것과 밖을 둘러보는 것 중 무엇이 끌리나요?",
+    "samples": [
+      "숙소에서 충분히 쉬고 싶어요.",
+      "추워도 새로운 곳을 보고 싶어요.",
+      "낮에는 나가고 저녁에는 쉬고 싶어요."
+    ]
+  },
+  {
+    "id": 30155,
+    "occasion": "winter",
+    "edition": 0,
+    "turn": 4,
+    "category": "seasonal_behavior",
+    "prompt": "연말 모임이 겹치면 어떤 기준으로 참석을 정하나요?",
+    "samples": [
+      "먼저 잡은 약속을 우선해요.",
+      "오랜만에 만나는 사람을 우선해요.",
+      "제가 쉴 수 있는 시간도 고려해요."
+    ]
+  },
+  {
+    "id": 30156,
+    "occasion": "winter",
+    "edition": 0,
+    "turn": 5,
+    "category": "seasonal_behavior",
+    "prompt": "추위를 많이 타는 친구와 외출하면 일정을 어떻게 잡나요?",
+    "samples": [
+      "중간에 실내에서 쉬는 시간을 넣어요.",
+      "친구에게 편한 코스를 먼저 물어봐요.",
+      "짧게 만나고 다음 약속을 잡아요."
+    ]
+  },
+  {
+    "id": 30157,
+    "occasion": "winter",
+    "edition": 0,
+    "turn": 6,
+    "category": "seasonal_behavior",
+    "prompt": "겨울에 집에서 오래 쉬게 되면 생활 리듬을 어떻게 유지하나요?",
+    "samples": [
+      "일어나는 시간을 일정하게 지켜요.",
+      "그날 컨디션에 맞춰 쉬어요.",
+      "밖에 나갈 약속을 가끔 잡아 둬요."
+    ]
+  },
+  {
+    "id": 30158,
+    "occasion": "winter",
+    "edition": 0,
+    "turn": 7,
+    "category": "seasonal_behavior",
+    "prompt": "눈 오는 날 예정보다 일찍 일이 끝나면 어떻게 보내고 싶나요?",
+    "samples": [
+      "집에 가서 편하게 쉬고 싶어요.",
+      "잠깐 밖을 걸으며 눈을 보고 싶어요.",
+      "친구에게 시간이 되는지 물어봐요."
+    ]
+  },
+  {
+    "id": 30159,
+    "occasion": "winter",
+    "edition": 0,
+    "turn": 8,
+    "category": "seasonal_behavior",
+    "prompt": "친구들과 겨울 여행을 준비할 때 짐은 어떻게 챙기나요?",
+    "samples": [
+      "필요한 물건을 목록으로 적어요.",
+      "자주 쓰는 것부터 간단히 넣어요.",
+      "함께 쓸 물건을 나눠 챙겨요."
+    ]
+  },
+  {
+    "id": 30160,
+    "occasion": "winter",
+    "edition": 0,
+    "turn": 9,
+    "category": "seasonal_behavior",
+    "prompt": "겨울철 취미를 새로 배울 때 어떤 수업이 편한가요?",
+    "samples": [
+      "정해진 진도를 따라가는 수업이요.",
+      "제 속도에 맞춰 연습하는 수업이요.",
+      "사람들과 함께 결과물을 만드는 수업이요."
+    ]
+  },
+  {
+    "id": 30161,
+    "occasion": "winter",
+    "edition": 0,
+    "turn": 10,
+    "category": "seasonal_behavior",
+    "prompt": "겨울 내내 미뤄 둔 일이 있다면 어떻게 다시 시작하나요?",
+    "samples": [
+      "오늘 할 수 있는 작은 일부터 해요.",
+      "미루게 된 이유부터 정리해요.",
+      "누군가와 함께 할 시간을 정해요."
+    ]
+  },
+  {
+    "id": 30162,
+    "occasion": "winter",
+    "edition": 0,
+    "turn": 11,
+    "category": "seasonal_behavior",
+    "prompt": "추운 계절을 함께 보낸 사람에게 고마움을 어떻게 전하나요?",
+    "samples": [
+      "도움받은 일을 구체적으로 말해요.",
+      "같이 식사할 자리를 마련해요.",
+      "제 도움이 필요할 때 먼저 나서요."
+    ]
+  },
+  {
+    "id": 30201,
+    "occasion": "seollal",
+    "edition": 0,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "설 연휴 일정을 잡을 때 무엇부터 확인하나요?",
+    "samples": [
+      "함께 지낼 사람들의 일정을 먼저 물어요.",
+      "제가 쉬어야 할 날부터 정해요.",
+      "이미 잡힌 약속부터 확인해요."
+    ]
+  },
+  {
+    "id": 30202,
+    "occasion": "seollal",
+    "edition": 0,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "설 모임에 오랜만에 만나는 사람이 있으면 어떻게 인사하나요?",
+    "samples": [
+      "요즘 어떻게 지내는지 먼저 물어요.",
+      "반갑게 인사하고 대화를 기다려요.",
+      "함께 기억하는 이야기를 꺼내요."
+    ]
+  },
+  {
+    "id": 30203,
+    "occasion": "seollal",
+    "edition": 0,
+    "turn": 2,
+    "category": "seasonal_behavior",
+    "prompt": "설에 여러 사람이 한꺼번에 말을 걸면 어떻게 대화하나요?",
+    "samples": [
+      "한 사람의 이야기를 차례로 들어요.",
+      "여럿이 함께 이야기하도록 화제를 꺼내요.",
+      "잠깐 조용한 자리로 옮겨 대화해요."
+    ]
+  },
+  {
+    "id": 30204,
+    "occasion": "seollal",
+    "edition": 0,
+    "turn": 3,
+    "category": "seasonal_behavior",
+    "prompt": "설 준비를 함께 할 때 맡을 일을 어떻게 정하나요?",
+    "samples": [
+      "제가 잘하는 일을 먼저 제안해요.",
+      "필요한 일이 무엇인지 물어봐요.",
+      "각자 원하는 역할을 먼저 들어요."
+    ]
+  },
+  {
+    "id": 30205,
+    "occasion": "seollal",
+    "edition": 0,
+    "turn": 4,
+    "category": "seasonal_behavior",
+    "prompt": "설날 덕담을 받으면 어떻게 반응하나요?",
+    "samples": [
+      "고맙다고 바로 말하며 웃어요.",
+      "상대에게도 제 마음을 담아 답해요.",
+      "조금 쑥스럽지만 나중에 다시 연락해요."
+    ]
+  },
+  {
+    "id": 30206,
+    "occasion": "seollal",
+    "edition": 0,
+    "turn": 5,
+    "category": "seasonal_behavior",
+    "prompt": "설에 내 계획을 묻는 질문을 받으면 어디까지 이야기하나요?",
+    "samples": [
+      "확실하게 정한 일만 이야기해요.",
+      "고민 중인 부분도 편하게 말해요.",
+      "아직 말하고 싶지 않다고 전해요."
+    ]
+  },
+  {
+    "id": 30207,
+    "occasion": "seollal",
+    "edition": 0,
+    "turn": 6,
+    "category": "seasonal_behavior",
+    "prompt": "설 연휴에 혼자 보내는 시간이 생기면 어떻게 쓰고 싶나요?",
+    "samples": [
+      "사람들을 만난 뒤 조용히 쉬고 싶어요.",
+      "미뤄 둔 취미를 해 보고 싶어요.",
+      "앞으로의 일정을 정리하고 싶어요."
+    ]
+  },
+  {
+    "id": 30208,
+    "occasion": "seollal",
+    "edition": 0,
+    "turn": 7,
+    "category": "seasonal_behavior",
+    "prompt": "설 모임에서 모두 원하는 놀이가 다르면 어떻게 정하나요?",
+    "samples": [
+      "짧게 하나씩 돌아가며 해 보자고 해요.",
+      "원하는 사람끼리 나눠 놀자고 해요.",
+      "많이 원하는 놀이부터 골라요."
+    ]
+  },
+  {
+    "id": 30209,
+    "occasion": "seollal",
+    "edition": 0,
+    "turn": 8,
+    "category": "seasonal_behavior",
+    "prompt": "설 연휴가 끝나기 전 일상 복귀를 어떻게 준비하나요?",
+    "samples": [
+      "해야 할 일을 적고 짐을 챙겨요.",
+      "수면 시간을 평소대로 맞춰요.",
+      "마지막 날까지 쉬고 그다음 날 시작해요."
+    ]
+  },
+  {
+    "id": 30210,
+    "occasion": "seollal",
+    "edition": 0,
+    "turn": 9,
+    "category": "seasonal_behavior",
+    "prompt": "설에 들은 조언 중 내 생각과 다른 말은 어떻게 받아들이나요?",
+    "samples": [
+      "이유를 듣고 필요한 부분만 참고해요.",
+      "제 생각도 차분하게 이야기해요.",
+      "그 자리에서는 듣고 혼자 판단해요."
+    ]
+  },
+  {
+    "id": 30251,
+    "occasion": "chuseok",
+    "edition": 0,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "추석 연휴에 쉬는 날과 만나는 날은 어떻게 나누고 싶나요?",
+    "samples": [
+      "모임 없는 날을 먼저 남겨 둬요.",
+      "만날 사람과 약속을 잡은 뒤 정해요.",
+      "그날의 기분에 따라 정하고 싶어요."
+    ]
+  },
+  {
+    "id": 30252,
+    "occasion": "chuseok",
+    "edition": 0,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "추석에 여럿이 음식을 준비하면 어떤 방식으로 함께 하나요?",
+    "samples": [
+      "역할을 나눠 각자 맡은 일을 해요.",
+      "같은 일을 하면서 이야기를 나눠요.",
+      "필요한 곳을 보며 도와요."
+    ]
+  },
+  {
+    "id": 30253,
+    "occasion": "chuseok",
+    "edition": 0,
+    "turn": 2,
+    "category": "seasonal_behavior",
+    "prompt": "추석 모임에서 낯선 사람 옆에 앉으면 어떻게 대화를 시작하나요?",
+    "samples": [
+      "어떻게 오게 됐는지 가볍게 물어요.",
+      "주변에서 나누는 이야기에 참여해요.",
+      "상대가 먼저 말을 걸 때까지 기다려요."
+    ]
+  },
+  {
+    "id": 30254,
+    "occasion": "chuseok",
+    "edition": 0,
+    "turn": 3,
+    "category": "seasonal_behavior",
+    "prompt": "추석에 친한 사람이 못 온다고 하면 어떻게 마음을 전하나요?",
+    "samples": [
+      "짧게라도 통화할 시간을 잡아요.",
+      "편할 때 보라고 메시지를 남겨요.",
+      "연휴 뒤에 따로 만날 약속을 잡아요."
+    ]
+  },
+  {
+    "id": 30255,
+    "occasion": "chuseok",
+    "edition": 0,
+    "turn": 4,
+    "category": "seasonal_behavior",
+    "prompt": "추석 모임에서 의견이 다른 이야기가 나오면 어떻게 참여하나요?",
+    "samples": [
+      "제 경험을 중심으로 조심스럽게 말해요.",
+      "다른 생각의 이유를 먼저 물어봐요.",
+      "논쟁보다 다른 화제로 넘어가고 싶어요."
+    ]
+  },
+  {
+    "id": 30256,
+    "occasion": "chuseok",
+    "edition": 0,
+    "turn": 5,
+    "category": "seasonal_behavior",
+    "prompt": "추석에 혼자 산책할 시간이 생기면 어떤 생각을 많이 하나요?",
+    "samples": [
+      "요즘 제 마음이 어떤지 돌아봐요.",
+      "앞으로 하고 싶은 일을 떠올려요.",
+      "생각을 쉬고 주변 풍경에 집중해요."
+    ]
+  },
+  {
+    "id": 30257,
+    "occasion": "chuseok",
+    "edition": 0,
+    "turn": 6,
+    "category": "seasonal_behavior",
+    "prompt": "추석 연휴에 갑자기 모임 제안을 받으면 참석 여부를 어떻게 정하나요?",
+    "samples": [
+      "이미 정한 일정과 비교해 결정해요.",
+      "보고 싶은 사람이 있으면 참석해요.",
+      "예정대로 쉬겠다고 이야기해요."
+    ]
+  },
+  {
+    "id": 30258,
+    "occasion": "chuseok",
+    "edition": 0,
+    "turn": 7,
+    "category": "seasonal_behavior",
+    "prompt": "추석 선물을 고를 때 어떤 점에 가장 신경 쓰나요?",
+    "samples": [
+      "상대가 실제로 필요로 하는 것이요.",
+      "제 마음이 잘 전해지는 것이요.",
+      "부담 없이 받을 수 있는 가격이요."
+    ]
+  },
+  {
+    "id": 30259,
+    "occasion": "chuseok",
+    "edition": 0,
+    "turn": 8,
+    "category": "seasonal_behavior",
+    "prompt": "추석 모임을 마친 뒤에는 누구에게 먼저 연락하나요?",
+    "samples": [
+      "이야기를 많이 못 나눈 사람에게요.",
+      "모임을 준비한 사람에게요.",
+      "생각나는 사람에게 그때그때 연락해요."
+    ]
+  },
+  {
+    "id": 30260,
+    "occasion": "chuseok",
+    "edition": 0,
+    "turn": 9,
+    "category": "seasonal_behavior",
+    "prompt": "긴 연휴를 보내고 나면 어떤 시간이 가장 기억에 남나요?",
+    "samples": [
+      "서로 속마음을 나눴던 시간이요.",
+      "새로운 곳을 함께 가 본 시간이요.",
+      "아무 일정 없이 편히 쉰 시간이요."
+    ]
+  },
+  {
+    "id": 30301,
+    "occasion": "newyear",
+    "edition": 0,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "새해 목표를 주변 사람들에게 어떻게 알리는 편인가요?",
+    "samples": [
+      "가까운 사람에게 구체적으로 말해요.",
+      "목표를 이룬 뒤에 알려 주고 싶어요.",
+      "같이 도전할 사람을 찾아 공유해요."
+    ]
+  },
+  {
+    "id": 30302,
+    "occasion": "newyear",
+    "edition": 0,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "새해 첫날 계획과 다르게 하루를 보내면 어떻게 느끼나요?",
+    "samples": [
+      "시작이 아쉽지만 내일부터 다시 해요.",
+      "계획보다 즐거웠다면 만족해요.",
+      "왜 달라졌는지 정리해 보고 싶어요."
+    ]
+  },
+  {
+    "id": 30303,
+    "occasion": "newyear",
+    "edition": 0,
+    "turn": 2,
+    "category": "seasonal_behavior",
+    "prompt": "새해에 바꾸고 싶은 습관은 어떻게 시작하나요?",
+    "samples": [
+      "매일 할 수 있을 만큼 작게 정해요.",
+      "평소 일정 중 실천할 시간을 먼저 정해요.",
+      "친구와 함께 점검하기로 약속해요."
+    ]
+  },
+  {
+    "id": 30304,
+    "occasion": "newyear",
+    "edition": 0,
+    "turn": 3,
+    "category": "seasonal_behavior",
+    "prompt": "새해 계획을 세울 때 휴식 시간은 어떻게 넣나요?",
+    "samples": [
+      "쉬는 날도 일정에 미리 적어요.",
+      "일을 끝낸 다음 충분히 쉬어요.",
+      "컨디션을 보며 유동적으로 정해요."
+    ]
+  },
+  {
+    "id": 30351,
+    "occasion": "valentines",
+    "edition": 0,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "좋아하는 마음을 전할 때 어떤 방식이 가장 편한가요?",
+    "samples": [
+      "만나서 제 마음을 직접 말해요.",
+      "메시지로 생각을 정리해 전해요.",
+      "함께할 시간을 자주 만들어요."
+    ]
+  },
+  {
+    "id": 30352,
+    "occasion": "valentines",
+    "edition": 0,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "밸런타인데이에 마음을 전하려 할 때 가장 걱정되는 점은 무엇인가요?",
+    "samples": [
+      "상대가 부담스러워할지 걱정돼요.",
+      "제 마음을 말로 표현하기가 어려워요.",
+      "관계가 어떻게 바뀔지 고민돼요."
+    ]
+  },
+  {
+    "id": 30353,
+    "occasion": "valentines",
+    "edition": 0,
+    "turn": 2,
+    "category": "seasonal_behavior",
+    "prompt": "기념일을 챙기는 방식이 상대와 다르면 어떻게 맞추나요?",
+    "samples": [
+      "서로 기대하는 것을 미리 말해요.",
+      "둘 다 편한 방식 하나를 정해요.",
+      "각자가 잘하는 방식으로 표현해요."
+    ]
+  },
+  {
+    "id": 30354,
+    "occasion": "valentines",
+    "edition": 0,
+    "turn": 3,
+    "category": "seasonal_behavior",
+    "prompt": "예상하지 못한 호감 표현을 받으면 어떻게 반응하나요?",
+    "samples": [
+      "제 마음도 바로 이야기해요.",
+      "생각할 시간을 달라고 말해요.",
+      "우선 고마운 마음부터 전해요."
+    ]
+  },
+  {
+    "id": 30401,
+    "occasion": "whiteday",
+    "edition": 0,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "선물을 받은 뒤 고마운 마음을 어떤 방식으로 전하나요?",
+    "samples": [
+      "받은 자리에서 느낀 점을 말해요.",
+      "사용해 본 뒤 사진과 메시지를 보내요.",
+      "상대와 함께할 시간을 준비해요."
+    ]
+  },
+  {
+    "id": 30402,
+    "occasion": "whiteday",
+    "edition": 0,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "기념일 선물을 주고받을 때 금액 차이가 크면 어떻게 느끼나요?",
+    "samples": [
+      "마음을 생각하면 크게 신경 쓰이지 않아요.",
+      "다음에는 편한 예산을 정하고 싶어요.",
+      "비슷하게 돌려줘야 할지 고민돼요."
+    ]
+  },
+  {
+    "id": 30451,
+    "occasion": "childrens",
+    "edition": 0,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "어릴 때 친구들과 놀던 모습 중 지금도 남아 있는 것은 무엇인가요?",
+    "samples": [
+      "하고 싶은 놀이를 먼저 제안하는 모습이요.",
+      "옆에서 보다 천천히 참여하는 모습이요.",
+      "게임의 규칙을 꼼꼼히 확인하는 모습이요."
+    ]
+  },
+  {
+    "id": 30452,
+    "occasion": "childrens",
+    "edition": 0,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "어릴 때 잘하지 못하던 놀이에 다시 도전한다면 어떻게 하나요?",
+    "samples": [
+      "혼자 연습한 뒤 함께 해 보고 싶어요.",
+      "서툰 모습도 웃으며 바로 해 봐요.",
+      "잘하는 친구에게 방법을 물어봐요."
+    ]
+  },
+  {
+    "id": 30501,
+    "occasion": "hangul",
+    "edition": 0,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "내 생각을 설명할 때 말과 글 중 어떤 방식이 편한가요?",
+    "samples": [
+      "글로 정리한 뒤 이야기하면 편해요.",
+      "대화하면서 생각을 정리하는 편이에요.",
+      "중요한 말만 글로 남기는 편이에요."
+    ]
+  },
+  {
+    "id": 30502,
+    "occasion": "hangul",
+    "edition": 0,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "누군가 내 말을 다르게 이해했을 때 어떻게 설명하나요?",
+    "samples": [
+      "구체적인 예를 들어 다시 말해요.",
+      "상대가 어떻게 이해했는지 먼저 물어요.",
+      "잠깐 생각을 정리한 뒤 설명해요."
+    ]
+  },
+  {
+    "id": 30551,
+    "occasion": "christmas",
+    "edition": 0,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "크리스마스 약속을 잡을 때 어떤 분위기를 원하나요?",
+    "samples": [
+      "여럿이 모여 활기차게 보내고 싶어요.",
+      "가까운 한두 사람과 조용히 있고 싶어요.",
+      "특별한 계획 없이 편히 쉬고 싶어요."
+    ]
+  },
+  {
+    "id": 30552,
+    "occasion": "christmas",
+    "edition": 0,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "크리스마스에 준비한 일이 예상대로 안 되면 어떻게 하나요?",
+    "samples": [
+      "대신 할 수 있는 일을 바로 찾아요.",
+      "아쉬운 마음을 함께 이야기해요.",
+      "함께 있는 시간 자체를 즐기려 해요."
+    ]
+  },
+  {
+    "id": 30553,
+    "occasion": "christmas",
+    "edition": 0,
+    "turn": 2,
+    "category": "seasonal_behavior",
+    "prompt": "크리스마스에 선물을 주고받을 때 어떤 순간이 가장 즐거운가요?",
+    "samples": [
+      "상대를 생각하며 고르는 일이 더 즐거워요.",
+      "어떤 선물을 받을지 기대하는 편이에요.",
+      "함께 반응을 나누는 시간이 좋아요."
+    ]
+  },
+  {
+    "id": 30554,
+    "occasion": "christmas",
+    "edition": 0,
+    "turn": 3,
+    "category": "seasonal_behavior",
+    "prompt": "특별한 날 상대가 평소처럼 보내고 싶다고 하면 어떻게 하나요?",
+    "samples": [
+      "왜 그렇게 보내고 싶은지 물어봐요.",
+      "저도 편한 하루를 함께 보내요.",
+      "제가 기대한 것도 솔직히 이야기해요."
+    ]
+  },
+  {
+    "id": 30601,
+    "occasion": "yearend",
+    "edition": 0,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "한 해를 돌아볼 때 어떤 일을 먼저 떠올리나요?",
+    "samples": [
+      "제가 해낸 일부터 떠올려요.",
+      "함께한 사람들과의 시간을 떠올려요.",
+      "마음이 달라졌던 순간들을 떠올려요."
+    ]
+  },
+  {
+    "id": 30602,
+    "occasion": "yearend",
+    "edition": 0,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "올해 이루지 못한 목표는 어떻게 정리하나요?",
+    "samples": [
+      "내년에 이어 할 수 있게 나눠 둬요.",
+      "지금도 원하는 목표인지 다시 봐요.",
+      "못한 이유를 적고 마무리해요."
+    ]
+  },
+  {
+    "id": 30603,
+    "occasion": "yearend",
+    "edition": 0,
+    "turn": 2,
+    "category": "seasonal_behavior",
+    "prompt": "올해 고마웠던 사람에게 어떤 말을 전하고 싶나요?",
+    "samples": [
+      "도움받은 순간을 구체적으로 말하고 싶어요.",
+      "함께해서 편했다고 말하고 싶어요.",
+      "내년에도 자주 만나자고 말하고 싶어요."
+    ]
+  },
+  {
+    "id": 30604,
+    "occasion": "yearend",
+    "edition": 0,
+    "turn": 3,
+    "category": "seasonal_behavior",
+    "prompt": "새해를 앞두고 지난 실수를 떠올리면 어떻게 마음을 정리하나요?",
+    "samples": [
+      "다음에 다르게 할 방법을 적어요.",
+      "친한 사람과 이야기하며 털어내요.",
+      "그때의 저를 이해해 보려고 해요."
+    ]
+  },
+  {
+    "id": 30651,
+    "occasion": "pepero",
+    "edition": 0,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "작은 간식을 건네며 마음을 표현하는 일이 편한가요?",
+    "samples": [
+      "말보다 작은 선물로 표현하기가 편해요.",
+      "직접 고맙다고 말하는 것이 편해요.",
+      "상대에게 부담이 될지 먼저 생각해요."
+    ]
+  },
+  {
+    "id": 30652,
+    "occasion": "pepero",
+    "edition": 0,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "주변 사람들이 챙기는 기념일을 나는 별로 중요하게 여기지 않으면 어떻게 하나요?",
+    "samples": [
+      "제 생각을 말하고 평소처럼 지내요.",
+      "가까운 사람이 좋아하면 함께 챙겨요.",
+      "가볍게 참여하며 분위기를 즐겨요."
+    ]
+  },
+  {
+    "id": 30701,
+    "occasion": "marchfirst",
+    "edition": 0,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "기념일을 맞아 몰랐던 역사 이야기를 접하면 어떻게 알아보나요?",
+    "samples": [
+      "궁금한 부분을 따로 찾아 읽어요.",
+      "관련 장소나 전시를 가 보고 싶어요.",
+      "아는 사람과 이야기를 나눠요."
+    ]
+  },
+  {
+    "id": 30702,
+    "occasion": "marchfirst",
+    "edition": 0,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "사람마다 같은 사건을 다르게 설명하면 어떤 점부터 살펴보나요?",
+    "samples": [
+      "설명의 근거가 무엇인지 확인해요.",
+      "각자 어떤 경험에서 말하는지 들어요.",
+      "서로 겹치는 사실부터 정리해요."
+    ]
+  },
+  {
+    "id": 30751,
+    "occasion": "gratitude",
+    "edition": 0,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "평소 고마운 사람에게 감사 인사를 할 때 무엇을 말하나요?",
+    "samples": [
+      "어떤 도움이 힘이 됐는지 말해요.",
+      "그 사람의 어떤 점이 좋은지 말해요.",
+      "앞으로 제가 돕고 싶은 마음을 전해요."
+    ]
+  },
+  {
+    "id": 30752,
+    "occasion": "gratitude",
+    "edition": 0,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "감사 인사를 받으면 어떤 반응이 가장 자연스럽나요?",
+    "samples": [
+      "저도 도움이 돼서 좋았다고 말해요.",
+      "쑥스럽지만 고맙게 받아들여요.",
+      "함께 수고한 사람의 이야기도 꺼내요."
+    ]
+  },
+  {
+    "id": 30801,
+    "occasion": "liberation",
+    "edition": 0,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "공휴일에 혼자 시간을 보낼 수 있다면 하루를 어떻게 정하나요?",
+    "samples": [
+      "쉬고 싶은 만큼 쉬며 정해요.",
+      "평소 못한 일 하나를 정해 해요.",
+      "밖에 나가서 마음 가는 대로 움직여요."
+    ]
+  },
+  {
+    "id": 30802,
+    "occasion": "liberation",
+    "edition": 0,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "내가 중요하게 여기는 원칙과 주변의 의견이 다르면 어떻게 하나요?",
+    "samples": [
+      "제 원칙이 필요한 이유를 말해요.",
+      "다른 의견에서 받아들일 점을 찾아요.",
+      "당장 결론 내리지 않고 생각해 봐요."
+    ]
+  },
+  {
+    "id": 30851,
+    "occasion": "foundation",
+    "edition": 0,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "함께하는 모임에 새 규칙이 필요하다면 어떻게 정하고 싶나요?",
+    "samples": [
+      "각자의 불편을 듣고 기준을 만들어요.",
+      "간단한 규칙부터 시험해 보고 싶어요.",
+      "모두가 동의할 때까지 의논하고 싶어요."
+    ]
+  },
+  {
+    "id": 30852,
+    "occasion": "foundation",
+    "edition": 0,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "모임에서 오래 써 온 방식이 불편해지면 어떻게 바꾸자고 제안하나요?",
+    "samples": [
+      "바꿨을 때 좋은 점을 구체적으로 말해요.",
+      "다른 사람도 불편한지 먼저 물어요.",
+      "작은 부분부터 바꿔 보자고 해요."
+    ]
+  },
+  {
+    "id": 30901,
+    "occasion": "memorial",
+    "edition": 0,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "누군가 자신에게 소중한 기억을 이야기하면 어떻게 듣나요?",
+    "samples": [
+      "어떤 마음이었는지 조심스럽게 물어요.",
+      "말을 보태지 않고 차분히 들어요.",
+      "기억에 남는 부분을 다시 짚어 줘요."
+    ]
+  },
+  {
+    "id": 30902,
+    "occasion": "memorial",
+    "edition": 0,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "조용히 생각할 시간이 필요할 때 주변에 어떻게 알리나요?",
+    "samples": [
+      "혼자 있고 싶다고 직접 이야기해요.",
+      "잠깐 걸어오겠다고 말하고 나가요.",
+      "나중에 이야기할 시간을 따로 정해요."
+    ]
+  },
+  {
+    "id": 32001,
+    "occasion": "spring",
+    "edition": 1,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "봄에 새로 만난 사람과 친해질 때 먼저 하는 행동은 무엇인가요?",
+    "samples": [
+      "함께 할 수 있는 일을 제안해요.",
+      "이야기를 나누며 공통점을 찾아요.",
+      "자주 마주치면서 천천히 친해져요."
+    ]
+  },
+  {
+    "id": 32002,
+    "occasion": "spring",
+    "edition": 1,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "함께 꽃구경 갈 장소를 정할 때 어떻게 의견을 내나요?",
+    "samples": [
+      "후보 몇 곳을 찾아 보여 줘요.",
+      "원하는 분위기부터 이야기해요.",
+      "다른 사람의 제안을 듣고 보태요."
+    ]
+  },
+  {
+    "id": 32003,
+    "occasion": "spring",
+    "edition": 1,
+    "turn": 2,
+    "category": "seasonal_behavior",
+    "prompt": "봄맞이로 방을 새로 꾸민다면 무엇부터 시작하나요?",
+    "samples": [
+      "배치를 먼저 그린 뒤 움직여요.",
+      "가장 불편한 곳부터 바꿔 봐요.",
+      "물건을 정리하며 차츰 결정해요."
+    ]
+  },
+  {
+    "id": 32004,
+    "occasion": "spring",
+    "edition": 1,
+    "turn": 3,
+    "category": "seasonal_behavior",
+    "prompt": "새로운 모임의 분위기가 예상과 다르면 어떻게 하나요?",
+    "samples": [
+      "몇 번 더 참여하며 알아봐요.",
+      "어떤 점이 다른지 운영자에게 물어요.",
+      "제게 맞는 다른 모임도 찾아봐요."
+    ]
+  },
+  {
+    "id": 32005,
+    "occasion": "spring",
+    "edition": 1,
+    "turn": 4,
+    "category": "seasonal_behavior",
+    "prompt": "봄에 운동을 시작했다가 며칠 빠졌다면 어떻게 다시 하겠어요?",
+    "samples": [
+      "다음에 할 날짜부터 정해요.",
+      "부담 없는 양으로 줄여서 해요.",
+      "같이 할 사람에게 연락해요."
+    ]
+  },
+  {
+    "id": 32006,
+    "occasion": "spring",
+    "edition": 1,
+    "turn": 5,
+    "category": "seasonal_behavior",
+    "prompt": "친구가 갑자기 봄 여행을 제안하면 무엇을 확인하나요?",
+    "samples": [
+      "일정과 비용이 가능한지 확인해요.",
+      "어떤 여행을 생각하는지 물어봐요.",
+      "함께 가는 사람을 먼저 알아봐요."
+    ]
+  },
+  {
+    "id": 32007,
+    "occasion": "spring",
+    "edition": 1,
+    "turn": 6,
+    "category": "seasonal_behavior",
+    "prompt": "봄 소풍에서 준비한 음식이 부족하면 어떻게 대처하나요?",
+    "samples": [
+      "근처에서 더 구할 수 있는지 찾아요.",
+      "있는 음식을 조금씩 나눠 먹자고 해요.",
+      "사람들에게 원하는 대안을 물어봐요."
+    ]
+  },
+  {
+    "id": 32008,
+    "occasion": "spring",
+    "edition": 1,
+    "turn": 7,
+    "category": "seasonal_behavior",
+    "prompt": "봄날 야외 모임에서 혼자 있는 사람을 보면 어떻게 행동하나요?",
+    "samples": [
+      "옆에 앉아 가벼운 말을 걸어요.",
+      "함께 어울리고 싶은지 가볍게 물어봐요.",
+      "혼자 쉬고 싶어 보이면 잠시 기다려요."
+    ]
+  },
+  {
+    "id": 32009,
+    "occasion": "spring",
+    "edition": 1,
+    "turn": 8,
+    "category": "seasonal_behavior",
+    "prompt": "봄에 하고 싶은 일이 여러 개 생기면 어떻게 순서를 정하나요?",
+    "samples": [
+      "지금 가장 궁금한 일부터 해요.",
+      "오래 이어 갈 수 있는 일부터 해요.",
+      "시간과 비용이 적게 드는 일부터 해요."
+    ]
+  },
+  {
+    "id": 32010,
+    "occasion": "spring",
+    "edition": 1,
+    "turn": 9,
+    "category": "seasonal_behavior",
+    "prompt": "봄나들이에서 친구가 계속 사진을 찍고 싶어 하면 어떻게 하나요?",
+    "samples": [
+      "저도 함께 찍으며 즐겨요.",
+      "사진을 찍는 동안 주변을 둘러봐요.",
+      "쉬거나 걷고 싶은 시간도 이야기해요."
+    ]
+  },
+  {
+    "id": 32011,
+    "occasion": "spring",
+    "edition": 1,
+    "turn": 10,
+    "category": "seasonal_behavior",
+    "prompt": "새 계절을 맞아 연락이 뜸했던 사람을 떠올리면 어떻게 하나요?",
+    "samples": [
+      "잘 지내는지 짧게 연락해요.",
+      "함께 만날 계기가 생길 때 연락해요.",
+      "마지막 대화를 떠올리며 잠깐 고민해요."
+    ]
+  },
+  {
+    "id": 32012,
+    "occasion": "spring",
+    "edition": 1,
+    "turn": 11,
+    "category": "seasonal_behavior",
+    "prompt": "봄에 시작한 취미가 생각보다 어렵다면 어떻게 이어 가나요?",
+    "samples": [
+      "쉬운 단계로 돌아가 다시 해요.",
+      "도움을 받을 수 있는 사람을 찾아요.",
+      "계속 배우고 싶은지 먼저 생각해요."
+    ]
+  },
+  {
+    "id": 32051,
+    "occasion": "summer",
+    "edition": 1,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "휴가 일정을 빽빽하게 잡자는 친구에게 어떻게 답하나요?",
+    "samples": [
+      "꼭 하고 싶은 일정만 골라 보자고 해요.",
+      "저도 많이 보고 싶어서 함께 정해요.",
+      "따로 쉴 시간을 남겨 달라고 말해요."
+    ]
+  },
+  {
+    "id": 32052,
+    "occasion": "summer",
+    "edition": 1,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "여름 여행에서 방을 함께 쓸 때 무엇을 미리 맞추고 싶나요?",
+    "samples": [
+      "잠들고 일어나는 시간을 맞추고 싶어요.",
+      "혼자 쉴 시간이 필요한지 알고 싶어요.",
+      "함께 쓰는 물건의 관리 방법을 정하고 싶어요."
+    ]
+  },
+  {
+    "id": 32053,
+    "occasion": "summer",
+    "edition": 1,
+    "turn": 2,
+    "category": "seasonal_behavior",
+    "prompt": "휴가지에서 새로운 활동에 참여하자고 하면 무엇이 결정에 영향을 주나요?",
+    "samples": [
+      "직접 해 보고 싶은 호기심이 커요.",
+      "준비가 얼마나 필요한지 살펴봐요.",
+      "함께하는 사람이 편안한지가 중요해요."
+    ]
+  },
+  {
+    "id": 32054,
+    "occasion": "summer",
+    "edition": 1,
+    "turn": 3,
+    "category": "seasonal_behavior",
+    "prompt": "여름휴가 중 연락은 어느 정도가 편한가요?",
+    "samples": [
+      "가까운 사람에게 하루 한 번쯤 연락해요.",
+      "중요한 연락만 확인하고 쉬고 싶어요.",
+      "재미있는 일이 생길 때마다 전하고 싶어요."
+    ]
+  },
+  {
+    "id": 32055,
+    "occasion": "summer",
+    "edition": 1,
+    "turn": 4,
+    "category": "seasonal_behavior",
+    "prompt": "친구와 여행하다 체력이 떨어지면 어떻게 말하나요?",
+    "samples": [
+      "얼마나 쉬고 싶은지 바로 이야기해요.",
+      "잠깐 앉아도 되는지 가볍게 물어봐요.",
+      "다음 일정부터 줄이자고 제안해요."
+    ]
+  },
+  {
+    "id": 32056,
+    "occasion": "summer",
+    "edition": 1,
+    "turn": 5,
+    "category": "seasonal_behavior",
+    "prompt": "여름 모임에서 처음 해 보는 게임을 하면 어떻게 배우나요?",
+    "samples": [
+      "규칙을 충분히 들은 뒤 시작해요.",
+      "한 번 해 보면서 익혀요.",
+      "옆 사람이 하는 것을 보고 따라 해요."
+    ]
+  },
+  {
+    "id": 32057,
+    "occasion": "summer",
+    "edition": 1,
+    "turn": 6,
+    "category": "seasonal_behavior",
+    "prompt": "휴가 계획을 혼자 짠 뒤 다른 사람이 반대하면 어떻게 하나요?",
+    "samples": [
+      "반대하는 이유를 들어 보고 조정해요.",
+      "제가 중요하게 생각한 부분을 설명해요.",
+      "각자 원하는 일정을 나눠 짜 봐요."
+    ]
+  },
+  {
+    "id": 32058,
+    "occasion": "summer",
+    "edition": 1,
+    "turn": 7,
+    "category": "seasonal_behavior",
+    "prompt": "더운 날 친구가 말없이 조용해지면 어떻게 반응하나요?",
+    "samples": [
+      "괜찮은지 가볍게 물어봐요.",
+      "편히 쉴 수 있게 잠시 말을 줄여요.",
+      "시원한 곳에 가자고 제안해요."
+    ]
+  },
+  {
+    "id": 32059,
+    "occasion": "summer",
+    "edition": 1,
+    "turn": 8,
+    "category": "seasonal_behavior",
+    "prompt": "여름휴가의 예상 밖 지출을 마주하면 어떻게 조정하나요?",
+    "samples": [
+      "남은 예산을 다시 나눠 봐요.",
+      "덜 중요한 일정을 줄여요.",
+      "감당 가능한지 확인하고 즐기려 해요."
+    ]
+  },
+  {
+    "id": 32060,
+    "occasion": "summer",
+    "edition": 1,
+    "turn": 9,
+    "category": "seasonal_behavior",
+    "prompt": "오래 기다린 여름휴가가 짧아지면 무엇을 꼭 하고 싶나요?",
+    "samples": [
+      "일정을 줄이고 충분히 쉬고 싶어요.",
+      "가장 기대했던 활동만큼은 해 보고 싶어요.",
+      "함께 간 사람과 여유롭게 이야기하고 싶어요."
+    ]
+  },
+  {
+    "id": 32061,
+    "occasion": "summer",
+    "edition": 1,
+    "turn": 10,
+    "category": "seasonal_behavior",
+    "prompt": "여름에 함께 배운 운동에서 친구의 실력이 더 빨리 늘면 어떻게 하나요?",
+    "samples": [
+      "저도 방법을 바꿔 연습해 보고 싶어요.",
+      "제 속도대로 즐기면 된다고 생각해요.",
+      "어떻게 연습했는지 물어보고 싶어요."
+    ]
+  },
+  {
+    "id": 32062,
+    "occasion": "summer",
+    "edition": 1,
+    "turn": 11,
+    "category": "seasonal_behavior",
+    "prompt": "휴가를 다녀온 뒤 일상이 지루하게 느껴지면 어떻게 하나요?",
+    "samples": [
+      "가벼운 외출이나 새 취미로 변화를 줘요.",
+      "여행 중 좋았던 습관을 이어 봐요.",
+      "익숙한 생활에 돌아온 편안함을 찾아요."
+    ]
+  },
+  {
+    "id": 32101,
+    "occasion": "autumn",
+    "edition": 1,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "가을 여행에서 사진을 남길 때 어떤 순간에 카메라를 드나요?",
+    "samples": [
+      "함께한 사람의 표정이 좋을 때요.",
+      "처음 보는 풍경이 눈에 들어올 때요.",
+      "나중에 기억하고 싶은 일이 있을 때요."
+    ]
+  },
+  {
+    "id": 32102,
+    "occasion": "autumn",
+    "edition": 1,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "가을에 혼자 배우고 싶은 것이 생기면 공부 계획을 어떻게 잡나요?",
+    "samples": [
+      "매주 정해진 시간을 확보해요.",
+      "궁금한 주제부터 찾아보기 시작해요.",
+      "작은 결과물을 만들 날짜를 정해요."
+    ]
+  },
+  {
+    "id": 32103,
+    "occasion": "autumn",
+    "edition": 1,
+    "turn": 2,
+    "category": "seasonal_behavior",
+    "prompt": "가을 산책 중 친구가 고민을 털어놓으면 어떤 이야기를 먼저 듣고 싶나요?",
+    "samples": [
+      "어떤 일이 있었는지 차근차근 듣고 싶어요.",
+      "친구가 지금 어떤 마음인지 알고 싶어요.",
+      "친구가 바라는 도움이 무엇인지 듣고 싶어요."
+    ]
+  },
+  {
+    "id": 32104,
+    "occasion": "autumn",
+    "edition": 1,
+    "turn": 3,
+    "category": "seasonal_behavior",
+    "prompt": "단풍 여행에서 좋은 장소를 찾았는데 시간이 부족하면 어떻게 하나요?",
+    "samples": [
+      "기존 일정 하나를 줄여 머물러요.",
+      "다음에 다시 올 곳으로 남겨 둬요.",
+      "함께 간 사람에게 우선순위를 물어요."
+    ]
+  },
+  {
+    "id": 32105,
+    "occasion": "autumn",
+    "edition": 1,
+    "turn": 4,
+    "category": "seasonal_behavior",
+    "prompt": "가을 축제에 혼자 가면 어떤 식으로 둘러보나요?",
+    "samples": [
+      "관심 있는 행사 시간을 먼저 확인해요.",
+      "눈에 띄는 곳부터 자유롭게 가 봐요.",
+      "현장에서 추천하는 프로그램을 물어봐요."
+    ]
+  },
+  {
+    "id": 32106,
+    "occasion": "autumn",
+    "edition": 1,
+    "turn": 5,
+    "category": "seasonal_behavior",
+    "prompt": "한 해가 얼마 남지 않았다고 느낄 때 무엇을 정리하나요?",
+    "samples": [
+      "마무리할 일을 골라 정리해요.",
+      "지금까지 잘한 일을 적어 봐요.",
+      "앞으로도 이어 갈 관계를 생각해요."
+    ]
+  },
+  {
+    "id": 32107,
+    "occasion": "autumn",
+    "edition": 1,
+    "turn": 6,
+    "category": "seasonal_behavior",
+    "prompt": "가을에 친구와 함께 읽은 책의 감상이 다르면 어떻게 이야기하나요?",
+    "samples": [
+      "다르게 느낀 부분이 무엇인지 물어요.",
+      "제가 인상 깊었던 장면을 설명해요.",
+      "정답 없이 각자의 느낌을 나누고 싶어요."
+    ]
+  },
+  {
+    "id": 32108,
+    "occasion": "autumn",
+    "edition": 1,
+    "turn": 7,
+    "category": "seasonal_behavior",
+    "prompt": "선선한 가을날 갑자기 산책하고 싶어지면 누구와 가고 싶나요?",
+    "samples": [
+      "혼자 생각하며 걸을 수 있으면 좋아요.",
+      "편한 친구 한 명과 가고 싶어요.",
+      "함께 갈 수 있는 사람들을 모아 봐요."
+    ]
+  },
+  {
+    "id": 32109,
+    "occasion": "autumn",
+    "edition": 1,
+    "turn": 8,
+    "category": "seasonal_behavior",
+    "prompt": "가을맞이 정리를 할 때 가장 어려운 부분은 무엇인가요?",
+    "samples": [
+      "무엇부터 할지 정하는 일이 어려워요.",
+      "남길 것과 버릴 것을 고르기 어려워요.",
+      "정리를 시작하면 언제 멈출지 정하기 어려워요."
+    ]
+  },
+  {
+    "id": 32110,
+    "occasion": "autumn",
+    "edition": 1,
+    "turn": 9,
+    "category": "seasonal_behavior",
+    "prompt": "친구가 가을에 새로운 일을 시작한다고 하면 어떻게 응원하나요?",
+    "samples": [
+      "왜 시작했는지 관심을 갖고 물어봐요.",
+      "필요한 도움을 구체적으로 물어봐요.",
+      "부담 없이 힘내라고 짧게 전해요."
+    ]
+  },
+  {
+    "id": 32111,
+    "occasion": "autumn",
+    "edition": 1,
+    "turn": 10,
+    "category": "seasonal_behavior",
+    "prompt": "가을 여행 후 함께 쓴 비용을 정산할 때 어떤 방식이 편한가요?",
+    "samples": [
+      "쓴 내역을 바로 공유하며 나누는 방식이요.",
+      "여행이 끝난 뒤 한 번에 정리하는 방식이요.",
+      "큰 비용만 미리 기준을 정하는 방식이요."
+    ]
+  },
+  {
+    "id": 32112,
+    "occasion": "autumn",
+    "edition": 1,
+    "turn": 11,
+    "category": "seasonal_behavior",
+    "prompt": "계절이 바뀌면서 관심사가 달라지면 기존 취미는 어떻게 하나요?",
+    "samples": [
+      "쉬어 두었다가 생각나면 다시 해요.",
+      "새 취미와 시간을 나눠 이어 가요.",
+      "계속할 이유가 없으면 정리해요."
+    ]
+  },
+  {
+    "id": 32151,
+    "occasion": "winter",
+    "edition": 1,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "추운 날 약속을 앞두고 나가기 싫어지면 어떻게 마음을 정하나요?",
+    "samples": [
+      "만나서 즐거울 일을 떠올려요.",
+      "제 컨디션을 확인하고 솔직히 연락해요.",
+      "짧게 만나자고 일정을 조정해요."
+    ]
+  },
+  {
+    "id": 32152,
+    "occasion": "winter",
+    "edition": 1,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "겨울 여행지에서 계획에 없던 여유가 생기면 어떻게 하나요?",
+    "samples": [
+      "따뜻한 곳에서 쉬고 싶어요.",
+      "근처에 새로 가 볼 곳을 찾아요.",
+      "함께 온 사람과 긴 이야기를 나눠요."
+    ]
+  },
+  {
+    "id": 32153,
+    "occasion": "winter",
+    "edition": 1,
+    "turn": 2,
+    "category": "seasonal_behavior",
+    "prompt": "겨울에 함께 있는 사람과 실내 온도 선호가 다르면 어떻게 맞추나요?",
+    "samples": [
+      "둘 다 괜찮은 온도를 찾아봐요.",
+      "옷이나 담요로 각자 조절해요.",
+      "어떤 점이 불편한지 먼저 물어봐요."
+    ]
+  },
+  {
+    "id": 32154,
+    "occasion": "winter",
+    "edition": 1,
+    "turn": 3,
+    "category": "seasonal_behavior",
+    "prompt": "눈 때문에 친구가 약속에 늦으면 기다리는 동안 무엇을 하나요?",
+    "samples": [
+      "상대가 안전하게 오는지 연락해요.",
+      "근처에서 혼자 할 일을 찾아요.",
+      "남은 약속 시간을 다시 계산해 봐요."
+    ]
+  },
+  {
+    "id": 32155,
+    "occasion": "winter",
+    "edition": 1,
+    "turn": 4,
+    "category": "seasonal_behavior",
+    "prompt": "한동안 야외 활동을 못 하게 되면 어떤 방식으로 기분을 바꾸나요?",
+    "samples": [
+      "집에서 새로 해 볼 일을 찾아요.",
+      "친구와 통화하며 이야기를 나눠요.",
+      "생활 공간을 정리하거나 바꿔 봐요."
+    ]
+  },
+  {
+    "id": 32156,
+    "occasion": "winter",
+    "edition": 1,
+    "turn": 5,
+    "category": "seasonal_behavior",
+    "prompt": "친구가 겨울에 의욕이 줄었다고 말하면 어떤 도움을 제안하나요?",
+    "samples": [
+      "함께 가볍게 할 일을 제안해요.",
+      "충분히 쉬어도 된다고 말해요.",
+      "무엇이 가장 힘든지 먼저 물어봐요."
+    ]
+  },
+  {
+    "id": 32157,
+    "occasion": "winter",
+    "edition": 1,
+    "turn": 6,
+    "category": "seasonal_behavior",
+    "prompt": "겨울에 하고 싶은 일이 생겨도 준비가 오래 걸리면 어떻게 하나요?",
+    "samples": [
+      "필요한 준비를 하나씩 해 나가요.",
+      "준비가 덜 필요한 쉬운 방법부터 해 봐요.",
+      "지금 얼마나 원하는지 더 생각해요."
+    ]
+  },
+  {
+    "id": 32158,
+    "occasion": "winter",
+    "edition": 1,
+    "turn": 7,
+    "category": "seasonal_behavior",
+    "prompt": "연말 약속을 줄이고 싶을 때 어떻게 이야기하나요?",
+    "samples": [
+      "쉴 시간이 필요하다고 솔직히 말해요.",
+      "다음 달에 따로 만나자고 제안해요.",
+      "참석할 수 있는 날짜만 구체적으로 알려요."
+    ]
+  },
+  {
+    "id": 32159,
+    "occasion": "winter",
+    "edition": 1,
+    "turn": 8,
+    "category": "seasonal_behavior",
+    "prompt": "눈 오는 풍경을 보다가 즐거웠던 기억이 떠오르면 어떻게 하나요?",
+    "samples": [
+      "생각난 사람에게 바로 연락해요.",
+      "사진이나 짧은 글로 남겨 둬요.",
+      "혼자 조용히 그 기분을 즐겨요."
+    ]
+  },
+  {
+    "id": 32160,
+    "occasion": "winter",
+    "edition": 1,
+    "turn": 9,
+    "category": "seasonal_behavior",
+    "prompt": "겨울에 반복하던 습관을 바꾸려면 어떤 계기가 필요한가요?",
+    "samples": [
+      "불편한 점이 분명해져야 바꿔요.",
+      "함께 바꿔 볼 사람이 있으면 시작해요.",
+      "새 방법이 궁금해지면 시도해 봐요."
+    ]
+  },
+  {
+    "id": 32161,
+    "occasion": "winter",
+    "edition": 1,
+    "turn": 10,
+    "category": "seasonal_behavior",
+    "prompt": "긴 겨울밤에 생각이 많아지면 어떻게 정리하나요?",
+    "samples": [
+      "떠오르는 생각을 글로 적어요.",
+      "가까운 사람과 차분히 이야기해요.",
+      "다른 활동에 집중하며 잠시 쉬어요."
+    ]
+  },
+  {
+    "id": 32162,
+    "occasion": "winter",
+    "edition": 1,
+    "turn": 11,
+    "category": "seasonal_behavior",
+    "prompt": "겨울을 마무리하며 나에게 어떤 점을 칭찬하고 싶나요?",
+    "samples": [
+      "어려워도 꾸준히 해 온 점이요.",
+      "필요할 때 쉬는 선택을 한 점이요.",
+      "익숙하지 않은 일에 도전한 점이요."
+    ]
+  },
+  {
+    "id": 32201,
+    "occasion": "seollal",
+    "edition": 1,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "설에 만날 사람들에게 내 근황을 어떻게 전하는 편인가요?",
+    "samples": [
+      "최근 있었던 일을 편하게 이야기해요.",
+      "상대가 궁금해하는 것부터 답해요.",
+      "특별히 달라진 일만 간단히 말해요."
+    ]
+  },
+  {
+    "id": 32202,
+    "occasion": "seollal",
+    "edition": 1,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "설 연휴에 개인적인 질문을 받으면 어떻게 답하나요?",
+    "samples": [
+      "말할 수 있는 범위를 정해 답해요.",
+      "지금은 이야기하기 어렵다고 말해요.",
+      "다른 근황 이야기로 자연스럽게 옮겨요."
+    ]
+  },
+  {
+    "id": 32203,
+    "occasion": "seollal",
+    "edition": 1,
+    "turn": 2,
+    "category": "seasonal_behavior",
+    "prompt": "설 음식을 만드는 방법에 서로 의견이 다르면 어떻게 맞추나요?",
+    "samples": [
+      "각자의 방법을 듣고 역할을 나눠요.",
+      "중요한 기준만 먼저 정해 둬요.",
+      "작게 해 보고 더 편한 방법을 골라요."
+    ]
+  },
+  {
+    "id": 32204,
+    "occasion": "seollal",
+    "edition": 1,
+    "turn": 3,
+    "category": "seasonal_behavior",
+    "prompt": "설 모임에서 내 이야기를 할 기회가 잘 안 생기면 어떻게 하나요?",
+    "samples": [
+      "대화가 잠깐 멈출 때 말을 꺼내요.",
+      "편한 사람과 나중에 따로 이야기해요.",
+      "듣는 것만으로도 괜찮은 편이에요."
+    ]
+  },
+  {
+    "id": 32205,
+    "occasion": "seollal",
+    "edition": 1,
+    "turn": 4,
+    "category": "seasonal_behavior",
+    "prompt": "설날 새 목표를 이야기하는 사람에게 어떤 질문을 하고 싶나요?",
+    "samples": [
+      "왜 그 일을 하고 싶은지 궁금해요.",
+      "어떻게 시작할 생각인지 물어보고 싶어요.",
+      "어떤 도움이 필요한지 알고 싶어요."
+    ]
+  },
+  {
+    "id": 32206,
+    "occasion": "seollal",
+    "edition": 1,
+    "turn": 5,
+    "category": "seasonal_behavior",
+    "prompt": "명절 모임에서 예상보다 일찍 지치면 어떻게 쉬나요?",
+    "samples": [
+      "잠깐 혼자 쉬겠다고 이야기해요.",
+      "산책하거나 바깥 공기를 쐬어요.",
+      "조용한 자리에 앉아 이야기를 들으며 쉬어요."
+    ]
+  },
+  {
+    "id": 32207,
+    "occasion": "seollal",
+    "edition": 1,
+    "turn": 6,
+    "category": "seasonal_behavior",
+    "prompt": "설 연휴에 연락을 많이 받으면 어떻게 답하는 편인가요?",
+    "samples": [
+      "받을 때마다 짧게라도 답해요.",
+      "여유 있는 시간에 모아서 답해요.",
+      "가까운 사람에게는 따로 길게 답해요."
+    ]
+  },
+  {
+    "id": 32208,
+    "occasion": "seollal",
+    "edition": 1,
+    "turn": 7,
+    "category": "seasonal_behavior",
+    "prompt": "설 모임에서 게임에 연달아 지면 어떤 반응이 나오나요?",
+    "samples": [
+      "다음에는 다르게 해 보려고 해요.",
+      "결과보다 함께 웃는 시간이 좋아요.",
+      "잠깐 구경하며 방법을 살펴봐요."
+    ]
+  },
+  {
+    "id": 32209,
+    "occasion": "seollal",
+    "edition": 1,
+    "turn": 8,
+    "category": "seasonal_behavior",
+    "prompt": "설 모임이 끝난 뒤 아쉬운 마음을 어떻게 표현하나요?",
+    "samples": [
+      "집에 가는 길에 잘 만났다고 연락해요.",
+      "다음에 볼 날짜를 구체적으로 잡아요.",
+      "좋았던 순간을 사진이나 말로 남겨요."
+    ]
+  },
+  {
+    "id": 32210,
+    "occasion": "seollal",
+    "edition": 1,
+    "turn": 9,
+    "category": "seasonal_behavior",
+    "prompt": "설 연휴 계획 중 못한 일이 생기면 어떻게 받아들이나요?",
+    "samples": [
+      "다음에 할 수 있게 따로 적어 둬요.",
+      "충분히 쉬었다면 괜찮다고 생각해요.",
+      "왜 못했는지 확인해 다음 계획에 반영해요."
+    ]
+  },
+  {
+    "id": 32251,
+    "occasion": "chuseok",
+    "edition": 1,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "추석에 많은 사람을 만난 뒤에는 어떤 휴식이 필요한가요?",
+    "samples": [
+      "혼자 조용히 보내는 시간이 필요해요.",
+      "가장 편한 사람과 이야기하고 싶어요.",
+      "가볍게 몸을 움직이며 쉬고 싶어요."
+    ]
+  },
+  {
+    "id": 32252,
+    "occasion": "chuseok",
+    "edition": 1,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "추석 모임에서 역할이 한 사람에게 몰리면 어떻게 의논하나요?",
+    "samples": [
+      "제가 맡을 수 있는 일을 먼저 말해요.",
+      "전체 할 일을 함께 다시 나눠요.",
+      "당사자에게 필요한 도움부터 물어봐요."
+    ]
+  },
+  {
+    "id": 32253,
+    "occasion": "chuseok",
+    "edition": 1,
+    "turn": 2,
+    "category": "seasonal_behavior",
+    "prompt": "명절 음식 준비 중 실수가 생기면 어떻게 반응하나요?",
+    "samples": [
+      "바로 고칠 수 있는 방법부터 찾아요.",
+      "일단 괜찮다고 말해 분위기를 풀어요.",
+      "누가 도울 수 있는지 확인해요."
+    ]
+  },
+  {
+    "id": 32254,
+    "occasion": "chuseok",
+    "edition": 1,
+    "turn": 3,
+    "category": "seasonal_behavior",
+    "prompt": "추석에 오랜만에 본 사람이 많이 달라졌다면 무엇이 궁금한가요?",
+    "samples": [
+      "어떤 일을 겪었는지 궁금해요.",
+      "요즘 어떤 마음으로 지내는지 궁금해요.",
+      "앞으로 무엇을 하고 싶은지 궁금해요."
+    ]
+  },
+  {
+    "id": 32255,
+    "occasion": "chuseok",
+    "edition": 1,
+    "turn": 4,
+    "category": "seasonal_behavior",
+    "prompt": "추석 연휴에 만나려는데 서로 가능한 시간이 다르면 어떻게 맞추나요?",
+    "samples": [
+      "서로 꼭 해야 할 일을 먼저 확인해요.",
+      "가능한 시간을 새로 찾아 제안해요.",
+      "이번에는 각자 보내는 것도 괜찮아요."
+    ]
+  },
+  {
+    "id": 32256,
+    "occasion": "chuseok",
+    "edition": 1,
+    "turn": 5,
+    "category": "seasonal_behavior",
+    "prompt": "추석 모임에서 오래된 실수 이야기가 나오면 어떻게 반응하나요?",
+    "samples": [
+      "지금은 웃을 수 있다면 함께 웃어요.",
+      "불편하다면 그만 이야기해 달라고 해요.",
+      "그 뒤에 달라진 제 이야기를 들려줘요."
+    ]
+  },
+  {
+    "id": 32257,
+    "occasion": "chuseok",
+    "edition": 1,
+    "turn": 6,
+    "category": "seasonal_behavior",
+    "prompt": "명절 선물을 준비할 시간이 부족하면 어떤 기준으로 고르나요?",
+    "samples": [
+      "상대가 평소 필요하다고 한 것을 골라요.",
+      "상대가 직접 고를 수 있게 상품권을 준비해요.",
+      "먼저 마음을 전하고 나중에 골라 줘요."
+    ]
+  },
+  {
+    "id": 32258,
+    "occasion": "chuseok",
+    "edition": 1,
+    "turn": 7,
+    "category": "seasonal_behavior",
+    "prompt": "추석 연휴를 조용히 보내고 싶다면 주변에 어떻게 말하나요?",
+    "samples": [
+      "이번에는 충분히 쉬고 싶다고 말해요.",
+      "짧게 만날 수 있는 시간을 알려 줘요.",
+      "연휴 뒤에 따로 보자고 제안해요."
+    ]
+  },
+  {
+    "id": 32259,
+    "occasion": "chuseok",
+    "edition": 1,
+    "turn": 8,
+    "category": "seasonal_behavior",
+    "prompt": "함께 보낸 추석에서 서로 좋았던 시간이 다르면 어떻게 이야기하나요?",
+    "samples": [
+      "왜 그 시간이 좋았는지 물어봐요.",
+      "제가 좋았던 순간도 이야기해요.",
+      "다음에는 둘 다 좋아하는 시간을 늘려 봐요."
+    ]
+  },
+  {
+    "id": 32260,
+    "occasion": "chuseok",
+    "edition": 1,
+    "turn": 9,
+    "category": "seasonal_behavior",
+    "prompt": "연휴가 끝난 뒤 다시 일이 몰리면 어떤 순서로 시작하나요?",
+    "samples": [
+      "급한 일부터 골라 처리해요.",
+      "작은 일을 먼저 끝내며 감을 되찾아요.",
+      "함께할 사람들과 우선순위를 맞춰요."
+    ]
+  },
+  {
+    "id": 32301,
+    "occasion": "newyear",
+    "edition": 1,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "새해 계획에 없던 기회가 생기면 어떻게 결정하나요?",
+    "samples": [
+      "원래 목표와 비교한 뒤 조정해요.",
+      "우선 시도해 보고 계획을 다시 세워요.",
+      "믿는 사람의 의견을 듣고 결정해요."
+    ]
+  },
+  {
+    "id": 32302,
+    "occasion": "newyear",
+    "edition": 1,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "새해를 시작할 때 작년의 어떤 경험을 참고하나요?",
+    "samples": [
+      "계속하기 쉬웠던 방법을 참고해요.",
+      "그만두고 싶었던 순간을 돌아봐요.",
+      "사람들에게 도움받았던 일을 떠올려요."
+    ]
+  },
+  {
+    "id": 32303,
+    "occasion": "newyear",
+    "edition": 1,
+    "turn": 2,
+    "category": "seasonal_behavior",
+    "prompt": "새해 목표를 함께 세울 사람에게 어떤 역할을 기대하나요?",
+    "samples": [
+      "서로 진행 상황을 확인해 주면 좋아요.",
+      "힘들 때 이야기를 들어 주면 좋아요.",
+      "가끔 함께 실행할 수 있으면 좋아요."
+    ]
+  },
+  {
+    "id": 32304,
+    "occasion": "newyear",
+    "edition": 1,
+    "turn": 3,
+    "category": "seasonal_behavior",
+    "prompt": "새해 목표를 중간에 바꿔야 한다면 어떤 기준으로 판단하나요?",
+    "samples": [
+      "지금도 중요한 목표인지 살펴봐요.",
+      "들일 시간과 얻을 것을 비교해요.",
+      "해 보면서 느낀 제 마음을 참고해요."
+    ]
+  },
+  {
+    "id": 32351,
+    "occasion": "valentines",
+    "edition": 1,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "호감이 생겼을 때 상대를 알아가기 위해 어떤 행동을 하나요?",
+    "samples": [
+      "둘이 이야기할 기회를 만들어 봐요.",
+      "취향이나 생각을 조금씩 물어봐요.",
+      "친구처럼 편하게 지내며 알아봐요."
+    ]
+  },
+  {
+    "id": 32352,
+    "occasion": "valentines",
+    "edition": 1,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "좋아하는 사람과 연락 속도가 다르면 어떻게 맞추고 싶나요?",
+    "samples": [
+      "서로 편한 연락 방식을 말해 보고 싶어요.",
+      "상대의 생활 리듬을 보며 맞추고 싶어요.",
+      "제 일상을 유지하며 자연스럽게 연락해요."
+    ]
+  },
+  {
+    "id": 32353,
+    "occasion": "valentines",
+    "edition": 1,
+    "turn": 2,
+    "category": "seasonal_behavior",
+    "prompt": "밸런타인데이에 마음을 전했는데 상대의 반응이 조용하면 어떻게 하나요?",
+    "samples": [
+      "어떻게 느꼈는지 직접 물어봐요.",
+      "반응할 시간을 조금 더 기다려요.",
+      "평소 행동을 함께 보며 생각해요."
+    ]
+  },
+  {
+    "id": 32354,
+    "occasion": "valentines",
+    "edition": 1,
+    "turn": 3,
+    "category": "seasonal_behavior",
+    "prompt": "밸런타인데이를 함께 보낸 뒤 어떤 점에서 가까워졌다고 느끼나요?",
+    "samples": [
+      "서로의 솔직한 생각을 알게 됐을 때요.",
+      "말없이 있어도 편해졌을 때요.",
+      "다음에 함께할 계획이 생겼을 때요."
+    ]
+  },
+  {
+    "id": 32401,
+    "occasion": "whiteday",
+    "edition": 1,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "화이트데이 선물로 받고 싶은 것을 상대가 직접 물으면 어떻게 느끼나요?",
+    "samples": [
+      "원하는 것을 받을 수 있어서 편해요.",
+      "상대가 직접 골라 주면 더 기쁠 것 같아요.",
+      "종류만 물어본 뒤 골라 주는 방식이 좋아요."
+    ]
+  },
+  {
+    "id": 32402,
+    "occasion": "whiteday",
+    "edition": 1,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "기념일에 선물보다 함께 보내는 시간을 원하면 어떻게 말하나요?",
+    "samples": [
+      "제가 원하는 시간을 구체적으로 말해요.",
+      "함께할 활동을 먼저 제안해요.",
+      "선물 이야기가 나올 때 편하게 말해요."
+    ]
+  },
+  {
+    "id": 32451,
+    "occasion": "childrens",
+    "edition": 1,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "어릴 때와 달라진 내 모습을 느끼는 순간은 언제인가요?",
+    "samples": [
+      "낯선 사람에게 먼저 말을 걸 때요.",
+      "실수해도 오래 자책하지 않을 때요.",
+      "혼자서도 선택을 잘할 수 있을 때요."
+    ]
+  },
+  {
+    "id": 32452,
+    "occasion": "childrens",
+    "edition": 1,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "함께 놀던 친구가 게임 규칙을 바꾸자고 하면 어떻게 반응하나요?",
+    "samples": [
+      "더 재미있을지 한번 해 보고 싶어요.",
+      "모두 동의하는지 먼저 확인하고 싶어요.",
+      "원래 규칙으로 한 번 끝낸 뒤 바꾸고 싶어요."
+    ]
+  },
+  {
+    "id": 32501,
+    "occasion": "hangul",
+    "edition": 1,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "고마운 마음을 글로 남긴다면 어떤 방식으로 쓰나요?",
+    "samples": [
+      "도움받았던 장면을 구체적으로 써요.",
+      "짧아도 제 마음을 바로 표현해요.",
+      "천천히 다듬어서 차분히 전해요."
+    ]
+  },
+  {
+    "id": 32502,
+    "occasion": "hangul",
+    "edition": 1,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "단체 대화방에서 내 글의 뜻이 잘못 전해지면 어떻게 하나요?",
+    "samples": [
+      "그 자리에서 뜻을 다시 설명해요.",
+      "관련된 사람에게 따로 연락해요.",
+      "오해한 부분이 무엇인지 먼저 물어요."
+    ]
+  },
+  {
+    "id": 32551,
+    "occasion": "christmas",
+    "edition": 1,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "크리스마스에 친한 사람을 초대한다면 준비는 어떻게 하나요?",
+    "samples": [
+      "편하게 지낼 수 있게 간단히 준비해요.",
+      "각자 좋아하는 것을 미리 물어봐요.",
+      "함께할 활동과 시간을 정해 둬요."
+    ]
+  },
+  {
+    "id": 32552,
+    "occasion": "christmas",
+    "edition": 1,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "특별한 날 혼자 보내게 되면 어떤 마음이 드나요?",
+    "samples": [
+      "제 시간을 쓸 수 있어 편안해요.",
+      "가까운 사람과 잠깐이라도 연락하고 싶어요.",
+      "평소 못한 일을 해 보고 싶어져요."
+    ]
+  },
+  {
+    "id": 32553,
+    "occasion": "christmas",
+    "edition": 1,
+    "turn": 2,
+    "category": "seasonal_behavior",
+    "prompt": "크리스마스 약속을 상대가 잊었다면 어떻게 이야기하나요?",
+    "samples": [
+      "아쉬웠던 마음을 바로 말해요.",
+      "어떤 사정이 있었는지 먼저 물어요.",
+      "다시 만날 날을 정하며 이야기해요."
+    ]
+  },
+  {
+    "id": 32554,
+    "occasion": "christmas",
+    "edition": 1,
+    "turn": 3,
+    "category": "seasonal_behavior",
+    "prompt": "함께 보낸 특별한 날을 기억하려면 어떤 방식이 잘 맞나요?",
+    "samples": [
+      "사진과 짧은 글로 남기는 방식이요.",
+      "그날의 이야기를 자주 나누는 방식이요.",
+      "좋았던 활동을 다음에 다시 하는 방식이요."
+    ]
+  },
+  {
+    "id": 32601,
+    "occasion": "yearend",
+    "edition": 1,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "올해 경험을 통해 전보다 중요하게 생각하게 된 것은 무엇인가요?",
+    "samples": [
+      "혼자 애쓰기보다 도움을 구하는 일이에요.",
+      "바쁠수록 쉬는 시간을 챙기는 거예요.",
+      "새로운 기회가 오면 직접 해 보는 거예요."
+    ]
+  },
+  {
+    "id": 32602,
+    "occasion": "yearend",
+    "edition": 1,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "연말에 사람들과 한 해를 돌아보면 어떤 이야기를 하고 싶나요?",
+    "samples": [
+      "서로 잘해 낸 일을 이야기하고 싶어요.",
+      "힘들었지만 배운 일을 나누고 싶어요.",
+      "예상 밖으로 즐거웠던 일을 나누고 싶어요."
+    ]
+  },
+  {
+    "id": 32603,
+    "occasion": "yearend",
+    "edition": 1,
+    "turn": 2,
+    "category": "seasonal_behavior",
+    "prompt": "올해 나를 힘들게 한 일과 거리를 두려면 어떻게 하나요?",
+    "samples": [
+      "제가 조절할 수 있는 부분을 정해요.",
+      "가까운 사람에게 생각을 털어놔요.",
+      "당분간 다른 일에 집중할 시간을 가져요."
+    ]
+  },
+  {
+    "id": 32604,
+    "occasion": "yearend",
+    "edition": 1,
+    "turn": 3,
+    "category": "seasonal_behavior",
+    "prompt": "한 해를 마무리하며 내년의 나에게 어떤 부탁을 하고 싶나요?",
+    "samples": [
+      "하고 싶은 일을 너무 미루지 말라고요.",
+      "피곤할 때는 쉬어도 된다고요.",
+      "필요할 때 도움을 구하라고 말하고 싶어요."
+    ]
+  },
+  {
+    "id": 32651,
+    "occasion": "pepero",
+    "edition": 1,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "친구들이 모두 작은 선물을 준비했는데 나만 없으면 어떻게 하나요?",
+    "samples": [
+      "받은 마음에 솔직하게 고맙다고 해요.",
+      "다음에 제가 간식을 준비하고 싶어요.",
+      "그 자리에서 함께 나눌 것을 찾아봐요."
+    ]
+  },
+  {
+    "id": 32652,
+    "occasion": "pepero",
+    "edition": 1,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "작은 기념일을 함께 챙기자는 제안을 받으면 무엇을 생각하나요?",
+    "samples": [
+      "함께 즐길 수 있을지 생각해요.",
+      "서로에게 부담이 되지 않을지 봐요.",
+      "어떤 마음으로 제안했는지 궁금해요."
+    ]
+  },
+  {
+    "id": 32701,
+    "occasion": "marchfirst",
+    "edition": 1,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "의미 있는 날을 기념하는 방식이 사람마다 다르면 어떻게 받아들이나요?",
+    "samples": [
+      "각자 중요하게 여기는 이유를 들어요.",
+      "제가 할 수 있는 방식을 찾아요.",
+      "함께할 수 있는 작은 부분을 찾아요."
+    ]
+  },
+  {
+    "id": 32702,
+    "occasion": "marchfirst",
+    "edition": 1,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "누군가 소신을 지킨 경험을 들려주면 무엇이 가장 궁금한가요?",
+    "samples": [
+      "그 선택을 하게 된 기준이 궁금해요.",
+      "망설일 때 어떤 마음이었는지 궁금해요.",
+      "그 뒤 생각이 달라졌는지 궁금해요."
+    ]
+  },
+  {
+    "id": 32751,
+    "occasion": "gratitude",
+    "edition": 1,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "오래전에 도움받은 일이 생각나면 어떻게 마음을 전하나요?",
+    "samples": [
+      "시간이 지나도 연락해서 고맙다고 해요.",
+      "다음에 만났을 때 이야기해요.",
+      "상대에게 필요한 도움이 있는지 살펴요."
+    ]
+  },
+  {
+    "id": 32752,
+    "occasion": "gratitude",
+    "edition": 1,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "칭찬이나 감사의 말을 공개적으로 받으면 어떻게 느끼나요?",
+    "samples": [
+      "여러 사람과 기쁨을 나누고 싶어요.",
+      "기쁘지만 둘이 조용히 이야기하면 더 편해요.",
+      "어떤 점이 도움이 됐는지 더 듣고 싶어요."
+    ]
+  },
+  {
+    "id": 32801,
+    "occasion": "liberation",
+    "edition": 1,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "누군가 내 선택을 존중해 줬다고 느끼는 순간은 언제인가요?",
+    "samples": [
+      "다른 의견이어도 끝까지 들어 줄 때요.",
+      "결정을 재촉하지 않고 기다려 줄 때요.",
+      "제가 고른 일에 관심을 보여 줄 때요."
+    ]
+  },
+  {
+    "id": 32802,
+    "occasion": "liberation",
+    "edition": 1,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "친구들과 함께 세운 계획과 다르게 움직이고 싶어지면 어떻게 하나요?",
+    "samples": [
+      "약속을 지키면서 가능한 방법을 찾아요.",
+      "왜 하고 싶은지 이야기하고 조정해요.",
+      "이번에는 약속을 우선하고 다음에 해요."
+    ]
+  },
+  {
+    "id": 32851,
+    "occasion": "foundation",
+    "edition": 1,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "새 모임을 시작한다면 처음에 어떤 것을 함께 정하고 싶나요?",
+    "samples": [
+      "서로 기대하는 목적부터 맞추고 싶어요.",
+      "편하게 참여할 규칙을 정하고 싶어요.",
+      "일단 만나 보며 필요한 것을 정하고 싶어요."
+    ]
+  },
+  {
+    "id": 32852,
+    "occasion": "foundation",
+    "edition": 1,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "오랫동안 함께한 사람들과 새로운 방식을 시도할 때 무엇이 필요한가요?",
+    "samples": [
+      "바꾸려는 이유를 충분히 나누는 것이요.",
+      "작게 시험해 볼 기회를 만드는 것이요.",
+      "각자의 의견을 편하게 말할 수 있는 것이요."
+    ]
+  },
+  {
+    "id": 32901,
+    "occasion": "memorial",
+    "edition": 1,
+    "turn": 0,
+    "category": "seasonal_behavior",
+    "prompt": "누군가 소중한 사람을 떠올리며 조용해지면 어떻게 곁에 있나요?",
+    "samples": [
+      "말을 걸지 않고 옆에 있어 줘요.",
+      "이야기하고 싶은지 조심스럽게 물어봐요.",
+      "편하게 쉴 수 있는 시간을 마련해 줘요."
+    ]
+  },
+  {
+    "id": 32902,
+    "occasion": "memorial",
+    "edition": 1,
+    "turn": 1,
+    "category": "seasonal_behavior",
+    "prompt": "오래 기억하고 싶은 사람의 모습을 어떤 방식으로 남기나요?",
+    "samples": [
+      "함께한 일을 글로 적어 둬요.",
+      "사진이나 물건을 소중히 보관해요.",
+      "그 사람을 아는 이들과 이야기를 나눠요."
+    ]
+  }
+]

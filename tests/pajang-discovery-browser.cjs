@@ -4,7 +4,7 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const {chromium} = require('playwright');
 const {execFileSync} = require('node:child_process');
-const {calendarCases,selectCalendarDate,palette,distinctPalettes}=require('./theme-browser-helpers.cjs');
+const {calendarCases,palette,distinctPalettes}=require('./theme-browser-helpers.cjs');
 const themeOnly=process.env.PAJANG_THEME_ONLY==='1';
 const navigationOnly=process.env.PAJANG_NAVIGATION_ONLY==='1';
 const previousRelease='71785aabf407ca239a27b4811e252a962a725717';
@@ -25,6 +25,7 @@ const signalOffers=[[1,10,2],[3,28,2],[5,45,2],[10,85,1],[20,160,1],[30,225,1]]
   .map(([quantity,price,revision])=>({id:'signal_'+quantity,quantity,price,revision}));
 const toolbarAssets=[
   '/shared/brand/service-header.css','/note/notifications.js','/note/notifications.css',
+  '/shared/brand/service-banners.js','/shared/brand/service-banners.css',
   '/shared/share/page-share.js','/shared/share/page-share.css',
   '/shared/auth/invite-referral.js',
   '/features/wallet/ju-charge.js','/features/wallet/ju-charge.css','/ju-coins/ju-coins.css',
@@ -60,6 +61,37 @@ async function checkServiceHeader(page,width) {
     assert.equal(overlaps(result.nav,box),false,'station navigation clears the header controls at '+width+'px: '+JSON.stringify(result));
   for(const stylesheet of ['/shared/brand/service-header.css','/shared/share/page-share.css','/features/pajang/account-toolbar.css','/features/pajang/signal-purchase.css'])
     assert.ok(result.styles.includes(stylesheet),'fixture serves '+stylesheet);
+}
+
+async function checkControlGroups(page,width,selector,minimumGroups=1) {
+  const groups=await page.locator(selector).evaluateAll(nodes=>nodes.map(group=>
+    [...group.querySelectorAll('button')].filter(button=>button.getClientRects().length&&getComputedStyle(button).visibility!=='hidden').map(button=>{
+      const {left,right,top,bottom,width,height}=button.getBoundingClientRect();
+      return {name:button.getAttribute('aria-label')||button.textContent.trim(),left,right,top,bottom,width,height};
+    })));
+  assert.ok(groups.length>=minimumGroups&&groups.every(group=>group.length>0),'requested control groups are present: '+selector);
+  const overlaps=(a,b)=>a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1;
+  for(const controls of groups){
+    assert.ok(controls.every(box=>box.width>=44&&box.height>=44),
+      'compact controls keep full touch targets at '+width+'px: '+JSON.stringify(controls));
+    assert.ok(controls.every(box=>box.left>=-1&&box.right<=width+1),
+      'controls fit at '+width+'px: '+JSON.stringify(controls));
+    for(let i=0;i<controls.length;i++)for(let j=i+1;j<controls.length;j++)
+      assert.equal(overlaps(controls[i],controls[j]),false,
+        'adjacent controls do not overlap at '+width+'px: '+JSON.stringify(controls));
+  }
+}
+
+async function checkHomeControls(page,width) {
+  // The new answer DOM is mounted before its finite question-slide animation ends.
+  // Wait for the track, not for bounds to pass: real overflow must still fail below.
+  await page.waitForFunction(()=>{
+    const viewport=document.querySelector('#answers .question-viewport');
+    const track=viewport?.querySelector('.question-track');
+    return viewport?.dataset.moving==='false'&&viewport.dataset.dragging==='false'&&track
+      &&track.getAnimations().every(animation=>animation.playState!=='running'&&!animation.pending);
+  });
+  await checkControlGroups(page,width,'.letter-actions,.today-actions,#answers .answer-group .answer-foot',3);
 }
 
 async function checkSignalPurchaseLayout(page,dir) {
@@ -328,6 +360,27 @@ function clientFixture(hash) {
       state.people=[sameCell[0],{...nearDirection,bearing:270},privateDirection];
       document.dispatchEvent(new Event('visibilitychange'));
     };
+    let recentRadarSnapshot=null;
+    window.setRecentRadar=enabled=>{
+      if(!enabled){
+        Object.assign(state,recentRadarSnapshot);delete state.nearbyPeople;
+      }else{
+        recentRadarSnapshot={day:state.day,slot:state.slot,people:state.people};
+        state.day='2026-11-19';state.slot='am';
+        const answers=[
+          {day:'2026-11-19',slot:'am',question:'계획이 갑자기 바뀌면 어떻게 하나요?',body:'가능한 선택부터 차분히 찾아봐요.',at:3,likeCount:1,liked:false},
+          {day:'2026-11-18',slot:'pm',question:'친구에게 서운하면 어떻게 표현하나요?',body:'마음을 정리한 뒤 직접 이야기해요.',at:2,likeCount:2,liked:true},
+          {day:'2026-11-18',slot:'am',question:'쉬는 날에는 어떻게 기운을 되찾나요?',body:'혼자 산책하며 생각을 정리해요.',at:1,likeCount:0,liked:false},
+        ];
+        state.people=[friend,offered];
+        state.nearbyPeople=[
+          {...nearDirection,id:'recent-past',name:'지난별',body:answers[1].body,range:3,bearing:90,answers:answers.slice(1)},
+          {...nearDirection,id:'recent-all',name:'모아',body:answers[0].body,range:7,bearing:225,answers},
+        ];
+      }
+      document.dispatchEvent(new Event('visibilitychange'));
+    };
+    window.clearRecentRadar=()=>{state.nearbyPeople=[];document.dispatchEvent(new Event('visibilitychange'));};
     window.setNearbyCount(2);state.signals=[{src:'me',dst:'peer1'},{src:'peer1',dst:'me'},{src:'peer2',dst:'me'}];
     if(accepted)state.signals.push({src:'me',dst:'peer2'});
     const entry={...state,joined:mode!=='new',body:mode==='new'?'':state.me.body,nickname:'보리',
@@ -336,7 +389,7 @@ function clientFixture(hash) {
     if(mode==='new'||mode==='unanswered'){state.me.body='';entry.body='';}
     window.feedCalls=[];window.heldGender=null;window.releaseFeed=null;
     const messages=[{id:'1',src:'peer1',dst:'me',body:'안녕하세요!',at:1}];
-    window.authCalls=0;window.artCalls=[];window.memberCalls=[];window.sendIds=[];window.programCalls=0;
+    window.authCalls=0;window.artCalls=[];window.memberCalls=[];window.answerWrites=[];window.sendIds=[];window.programCalls=0;
     window.accountWrites=[];window.profileReads=[];window.adminChecks=0;
     let authSession=mode==='guest'?null:{user:{id:mode==='switched'?'next-member':'member'},access_token:'fixture-token'};
     const authListeners=new Set();
@@ -388,6 +441,8 @@ function clientFixture(hash) {
           state.locationEnabled=localStorage.locationEnabled!=='false';state.locationVersion=Number(localStorage.locationVersion||0);
           if(!state.locationEnabled)state.radarOn=false;
           window.memberCalls.push(p.p_action);
+          if(['join','participate','answer','edit-answer'].includes(p.p_action))
+            window.answerWrites.push({action:p.p_action,...structuredClone(p.p_data)});
           if(['entry','state'].includes(p.p_action) && mode==='denied')return Promise.resolve({error:{code:'42501'}});
           if(p.p_action==='state'&&!entry.joined)return Promise.resolve({error:{code:'42501',message:'먼저 파장에 참여해 주세요.'}});
           if(p.p_action==='entry')return Promise.resolve({data:entry});
@@ -482,7 +537,10 @@ function clientFixture(hash) {
         if(event.target.closest('[data-pajang-launch]'))sessionStorage.openStart=String(Date.now());
       },true);
       function paint(){
-        const target=document.querySelector(mode==='new'?'#welcome #write':'#answers article .quote');
+        const target=mode==='new'
+           ? [...document.querySelectorAll('#welcome #answer-form button[type=submit], #welcome #write')]
+             .find(node=>node.getClientRects().length)
+           : document.querySelector('#answers article .quote');
         if(target?.getClientRects().length && sessionStorage.openStart){
           sessionStorage.openMs=String(Date.now()-Number(sessionStorage.openStart));return;
         }
@@ -523,8 +581,8 @@ async function checkNavigation(page){
   await heading('내 파장').waitFor();
   await page.goBack();await heading('마음함').waitFor();
   await page.goForward();await heading('내 파장').waitFor();
-  await settings.getByRole('button',{name:'공개 프로필 수정',exact:true}).click();
-  const editor=page.getByRole('dialog',{name:'공개 프로필 수정'});
+  await settings.getByRole('button',{name:'내 프로필 수정',exact:true}).click();
+  const editor=page.getByRole('dialog',{name:'내 프로필 수정'});
   await editor.waitFor();
   await editor.getByRole('button',{name:'닫기',exact:true}).click();
   await editor.waitFor({state:'detached'});
@@ -589,9 +647,15 @@ async function checkNavigation(page){
       if(pathname==='/features/home/location-warmup.mjs')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../home/location-warmup.mjs'))});
       if(pathname==='/world.html')return route.fulfill({contentType:'text/html',body:`<!doctype html>
         <html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="/features/home/agit-hub.css"><title>아지트</title>
-        <script src="/config.js"></script><script src="/features/home/agit-hub.js"></script><script type="module" src="/features/home/location-warmup.mjs"></script>
-        <main></main><script>document.querySelector('main').innerHTML=OjjudaAgitHub.markup({},{});</script></html>`});
+        <link rel="stylesheet" href="/features/home/agit-hub.css"><link rel="stylesheet" href="/features/account/settings-list.css"><link rel="stylesheet" href="/shared/brand/service-banners.css"><title>아지트</title>
+        <script src="/config.js"></script><script src="/features/home/agit-hub.js"></script><script src="/shared/brand/service-banners.js"></script><script type="module" src="/features/home/location-warmup.mjs"></script>
+        <button type="button" id="open-settings">설정</button><main style="box-sizing:border-box;max-width:750px;margin:auto;padding:14px"></main><script>
+          const main=document.querySelector('main');
+          const showSettings=()=>{main.innerHTML='<section class="ojjuda-settings" aria-label="아지트 설정"><ojjuda-service-banners current="agit"></ojjuda-service-banners></section>';};
+          main.innerHTML=OjjudaAgitHub.markup({},{});
+          document.getElementById('open-settings').onclick=showSettings;
+          if(new URL(location.href).searchParams.get('tab')==='my')showSettings();
+        </script></html>`});
       if(pathname==='/shared/navigation/section-back.js')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../../shared/navigation/section-back.js'))});
       if(pathname==='/shared/location/location.js')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../../shared/location/location.js'))});
       if(pathname==='/shared/content/text-length.mjs')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../../shared/content/text-length.mjs'))});
@@ -607,7 +671,7 @@ async function checkNavigation(page){
     if(navigationOnly){assert.deepEqual(errors,[]);return;}
     // Reuse the real entry, protected member program and their exact stylesheet order.
     const views=[
-      {name:'entry',url:'index.html?flight-check=new',selectors:{action:'#write',feature:'.entry-intro'},changing:['nodes.action.background','nodes.feature.background']},
+      {name:'entry',url:'index.html?flight-check=new',selectors:{action:'#answer-form button[type=submit]',feature:'.entry-intro'},changing:['nodes.action.background','nodes.feature.background']},
       {name:'member',url:'station.html',selectors:{action:'.dialog .primary',feature:'.letter-hero',menu:'.station-nav a[aria-current=page]'},changing:['nodes.action.background','nodes.feature.background','nodes.menu.background']},
       {name:'radar',url:'station.html?tab=radar',selectors:{feature:{selector:'.radar-scope',pseudo:'::before'},menu:'.station-nav a[aria-current=page]'},changing:['nodes.feature.image','nodes.menu.background']},
       {name:'settings',url:'station.html?tab=profile',selectors:{feature:'.account-agit',list:'.account-settings .ojjuda-settings-list'},changing:['nodes.feature.background']}
@@ -617,7 +681,7 @@ async function checkNavigation(page){
       await page.goto(origin+project+view.url,{waitUntil:'domcontentloaded'});
       if(view.name==='entry'){
         await page.waitForFunction(()=>typeof window.finishFlight==='function');
-        await page.evaluate(()=>window.finishFlight());await page.locator('#write').click();
+        await page.evaluate(()=>window.finishFlight());await page.locator('#answer-form').waitFor({state:'visible'});
         await page.locator('#mine').fill('테마가 바뀌어도 남아야 하는 답변');
       }else{
         await page.locator('.station-nav').waitFor();
@@ -630,19 +694,19 @@ async function checkNavigation(page){
       for(const appearance of ['light','dark']){
         await page.emulateMedia({colorScheme:appearance});const samples=[];
         for(const [theme,date] of calendarCases){
-          await selectCalendarDate(page,date);const colors=await palette(page,view.selectors);
-          assert.equal(colors.theme,theme);assert.equal(colors.body,colors.bg,view.name+' uses the shared background');
+          const colors=await palette(page,view.selectors,{date});
+          assert.equal(colors.theme,theme,view.name+' '+appearance+' calendar '+date);assert.equal(colors.body,colors.bg,view.name+' uses the shared background');
           if(view.selectors.action)assert.equal(colors.nodes.action.background,colors.accent,view.name+' primary action follows '+theme);
           samples.push(colors);
         }
         distinctPalettes(samples,'Pajang '+view.name+' '+appearance,['bg','accent',...view.changing]);
         const weather=[];
         for(const kind of [null,'rain','snow']){
-          await selectCalendarDate(page,'2026-10-15',kind);const colors=await palette(page,view.selectors);
-          assert.equal(colors.weather,kind||'');weather.push(colors);
+          const colors=await palette(page,view.selectors,{date:'2026-10-15',weather:kind});
+          assert.equal(colors.weather,kind||'',view.name+' '+appearance+' weather '+(kind||'clear'));weather.push(colors);
         }
         assert.equal(new Set(weather.map(colors=>colors.bg)).size,3,view.name+' responds to clear, rain and snow');
-        await selectCalendarDate(page,'2026-12-25','snow');assert.equal((await palette(page)).weather,'','holiday palette takes priority');
+        assert.equal((await palette(page,{},{date:'2026-12-25',weather:'snow'})).weather,'','holiday palette takes priority');
       }
       if(view.name==='entry')assert.equal(await page.locator('#mine').inputValue(),'테마가 바뀌어도 남아야 하는 답변');
       if(view.name==='member')assert.equal(await page.locator('.dialog #editor').inputValue(),'테마가 바뀌어도 남아야 하는 답변');
@@ -655,7 +719,7 @@ async function checkNavigation(page){
       previousFiles.set(file,execFileSync('git',['show',previousRelease+':features/pajang/'+file],{cwd:path.join(feature,'../..'),maxBuffer:1e6}));
     const flightDir=path.join(__dirname,'artifacts/pajang-discovery');
     await fs.mkdir(flightDir,{recursive:true});
-    for(const [url,ready] of [['index.html?flight-check=new','#welcome #write'],['station.html?flight-check=member','#station #answers']]){
+    for(const [url,ready] of [['index.html?flight-check=new','#welcome #answer-form button[type=submit]'],['station.html?flight-check=member','#station #answers']]){
       const member=url.startsWith('station');
       // On the station page, hold the picture past startup: art must never gate real content.
       let releasePicture;
@@ -692,7 +756,7 @@ async function checkNavigation(page){
       await page.evaluate(()=>window.finishFlight());
       await page.locator(ready).waitFor();
       assert.equal(await scene.isVisible(),false);
-      if(!member)assert.match(await page.locator('#publication-note').textContent(),/1년\(365일\)/);
+      if(!member)assert.match(await page.locator('#publication-note').textContent(),/질문이 올라온 날부터 최대 365일간 파장 회원에게/);
       if(member){releasePicture?.();await page.unroute(picture);}
       await page.emulateMedia({reducedMotion:'no-preference'});
       if(!member){
@@ -703,16 +767,18 @@ async function checkNavigation(page){
     }
     console.log('PASS watercolor flight, upright static alternative, immediate handoff with art pending');
     await page.goto(origin+project+'station.html#answers');
-    const answers=page.locator('#answers'), cards=answers.locator('article'), group=answers.getByRole('radiogroup');
+    const answers=page.locator('#answers'), cards=answers.locator('.answer-group article'), group=answers.getByRole('radiogroup');
     const radio=value=>group.locator('input[value="'+value+'"]');
     const selected=async value=>assert.equal(await radio(value).isChecked(),true);
     await cards.nth(1).waitFor();
+    assert.equal(await answers.getByRole('heading',{name:'모두의 답변',exact:true}).count(),1,'answer heading stays visible');
+    assert.equal(await answers.locator('.history-heading .feednumber').count(),0,'remove distracting answer total from the heading');
     assert.equal(await page.evaluate(()=>window.feedCalls.length),1,'first feed read is shared with the UI');
     assert.equal(await answers.getByRole('heading',{name:rows[0].question}).count(),1);
     assert.equal(await page.evaluate(()=>window.artPending),true,'feed is usable with all artwork still pending');
     assert.equal(await page.evaluate(()=>window.authCalls),1);
     assert.deepEqual(await page.evaluate(()=>window.artCalls.slice().sort()),['book.webp','walk.webp']);
-    assert.deepEqual(await group.locator('label span').allTextContents(),['남','','여']);
+    assert.deepEqual(await group.locator('label span').allTextContents(),['전체','남성','여성']);
     const dir=path.join(__dirname,'artifacts/pajang-discovery');
     await fs.mkdir(dir,{recursive:true});
     for(const width of [320,390,750,1080]){
@@ -720,10 +786,13 @@ async function checkNavigation(page){
       await checkServiceHeader(page,width);
       await page.locator('.pajang-mast').screenshot({path:path.join(dir,'service-header-'+width+'.png'),animations:'disabled'});
       assert.ok(await answers.evaluate(el=>el.scrollWidth<=document.documentElement.clientWidth));
-      const bounds=await group.boundingBox();
-      assert.equal(bounds.width,74);assert.equal(bounds.height,26);
-      const title=await answers.getByRole('heading',{name:'모두의 답변'}).boundingBox();
-      assert.ok(bounds.x>=title.x+title.width-1 && Math.abs((bounds.y+bounds.height/2)-(title.y+title.height/2))<10);
+      const targets=await group.locator('label').evaluateAll(nodes=>nodes.map(node=>{
+        const box=node.getBoundingClientRect(),text=node.querySelector('span');
+        return {left:box.left,right:box.right,width:box.width,height:box.height,font:parseFloat(getComputedStyle(text).fontSize)};
+      }));
+      assert.ok(targets.every(box=>box.width>=44&&box.height>=44&&box.font>=14),
+        'gender choices have readable labels and full touch targets at '+width+'px: '+JSON.stringify(targets));
+      assert.ok(targets.every(box=>box.left>=0&&box.right<=width+1),'gender choices fit at '+width+'px');
       await answers.screenshot({path:path.join(dir,'answers-'+width+'.png'),animations:'disabled'});
     }
     await checkSignalPurchaseLayout(page,dir);
@@ -754,6 +823,7 @@ async function checkNavigation(page){
     await selected('female');await cards.filter({hasText:rows[1].body}).waitFor();
     assert.deepEqual(await page.evaluate(n=>window.feedCalls.slice(n),calls),['female'],'one request per swipe');
     await answers.screenshot({path:path.join(dir,'answers-female.png'),animations:'disabled'});
+    await page.keyboard.press('ArrowLeft');await selected('male');
     await page.keyboard.press('ArrowLeft');await selected('all');
     await page.evaluate(()=>{window.denied=true;});
     await radio('male').tap();await answers.getByRole('alert').waitFor();
@@ -782,6 +852,13 @@ async function checkNavigation(page){
     await editor.getByLabel('내 이야기').fill('같이 산책하고 따뜻한 차를 마셔요.');
     await editor.getByRole('button',{name:'수정 저장하기'}).click();
     await editor.waitFor({state:'detached'});
+    const editWrite=await page.evaluate(()=>window.answerWrites.at(-1));
+    assert.equal(editWrite.action,'edit-answer');
+    assert.equal(Object.hasOwn(editWrite,'archive'),false);
+    assert.equal(Object.hasOwn(editWrite,'publicationPolicy'),false);
+    await answers.locator('.cardgrid[aria-busy="false"]').waitFor();
+    assert.equal(await answers.locator('.answer-group h3').textContent(),rows[0].question,'saving another question keeps the selected question');
+    await answers.getByRole('button',{name:'이전 질문',exact:true}).click();
     await cards.filter({hasText:'같이 산책하고 따뜻한 차를 마셔요.'}).waitFor();
     await revise.click();
     assert.equal(await editor.getByLabel('내 이야기').inputValue(),'같이 산책하고 따뜻한 차를 마셔요.');
@@ -801,7 +878,13 @@ async function checkNavigation(page){
       scene.src=css.trim().slice(5,-2);
       await scene.decode();
     });
-    await capture('home-mobile');
+    await checkHomeControls(page,390);await capture('home-mobile');
+    for(const width of [320,750]){
+      await page.setViewportSize({width,height:width===750?750:844});
+      await checkHomeControls(page,width);
+      await capture('home-answered-'+width);
+    }
+    await page.setViewportSize({width:390,height:844});
     await radio('female').tap();await cards.filter({hasText:rows[1].body}).waitFor();
     await answers.locator('article').first().scrollIntoViewIfNeeded();await expectHeaderClean();
     const readingY=await page.evaluate(()=>scrollY);
@@ -950,6 +1033,41 @@ async function checkNavigation(page){
     await page.setViewportSize({width:390,height:844});
     console.log('PASS sparse initial circles, symmetric collision dots, five/six-person density transitions, generous dot touch targets, keyboard selection, same-cell 0/1/2/3, twelve-person dots, compass/privacy boundaries and half-speed waves');
     await capture('radar-mobile');
+    await page.evaluate(()=>window.setRecentRadar(true));
+    await markerByName('지난별').waitFor();
+    assert.equal(await page.locator('.scope-person').count(),2,'each nearby member has one marker across the latest three question slots');
+    assert.equal(await markerByName('라온').count(),0,'the current-only people feed is not mixed into an explicit nearby feed');
+    await markerByName('지난별').click();
+    const recentAnswers=page.locator('.radar-answer-list > .radar-answer');
+    assert.equal(await recentAnswers.count(),2,'a member with only previous answers appears on the radar');
+    assert.deepEqual(await recentAnswers.locator('time').allTextContents(),['2026.11.18 · 오후','2026.11.18 · 오전']);
+    assert.deepEqual(await recentAnswers.locator('.radar-quote').allTextContents(),['마음을 정리한 뒤 직접 이야기해요.','혼자 산책하며 생각을 정리해요.']);
+    await page.getByRole('button',{name:'공개 정보 보기',exact:true}).click();
+    const recentProfile=page.getByRole('dialog');
+    await recentProfile.getByRole('heading',{name:'지난별',exact:true}).waitFor();
+    assert.equal(await recentProfile.locator('.questionbox small').innerText(),'친구에게 서운하면 어떻게 표현하나요?',
+      'a past-only member opens the matching question rather than the current question');
+    assert.equal(await recentProfile.getByRole('button',{name:'좋아요 2개, 취소하기',exact:true}).count(),1,
+      'the nearby answer retains its existing like state in the public profile');
+    await recentProfile.getByRole('button',{name:'닫기',exact:true}).click();
+    await markerByName('모아').click();
+    assert.equal(await recentAnswers.count(),3);
+    assert.deepEqual(await recentAnswers.locator('time').allTextContents(),['2026.11.19 · 오전','2026.11.18 · 오후','2026.11.18 · 오전']);
+    assert.equal(await recentAnswers.getByText('현재 질문',{exact:true}).count(),1);
+    for(const width of [320,390,750]){
+      await page.setViewportSize({width,height:width===750?750:844});
+      assert.ok(await page.locator('.nearby-section').evaluate(el=>el.scrollWidth<=document.documentElement.clientWidth),
+        'three nearby answers fit at '+width+'px');
+      await checkPeopleLayout(page);
+      await page.locator('.nearby-section').screenshot({path:path.join(dir,'pajang-radar-recent-'+width+'.png'),animations:'disabled'});
+    }
+    await page.evaluate(()=>window.clearRecentRadar());
+    await page.getByRole('heading',{name:'표시할 회원이 없어요',exact:true}).waitFor();
+    assert.equal(await page.locator('.scope-person').count(),0,'an explicit empty nearby feed never falls back to current-only people');
+    await page.evaluate(()=>window.setRecentRadar(false));
+    await markerByName('라온').waitFor();
+    await page.setViewportSize({width:390,height:844});
+    console.log('PASS latest-three-question nearby markers, past-only members, dated answers, public profiles and empty-feed boundaries');
     await page.reload();await page.getByRole('heading',{name:'주변 레이더'}).waitFor();
     await sameCellPeople.first().waitFor();
     await checkCompass(page,'.radar-scope','.radar-bearings text',friendAnchor,fixedPeople);await expectHeaderClean();
@@ -1030,7 +1148,7 @@ async function checkNavigation(page){
       assert.ok(await settings.evaluate(el=>el.scrollWidth<=document.documentElement.clientWidth));
       assert.ok(await accountHome.evaluate(el=>el.getBoundingClientRect().height>=44));
       const rows=await topRows.evaluateAll(readRowBounds);
-      assert.equal(rows.length,16,'the 16 top-level settings rows include the Help summary and exclude its nested actions');
+      assert.equal(rows.length,15,'the 15 top-level settings rows include the Help summary and one unified profile editor');
       for(const [index,row] of rows.entries()){
         assert.ok(row.height>=44,`settings row ${index+1} has a full touch target at ${width}px`);
         assert.ok(row.left>=0&&row.right<=width+1,'settings rows stay within the viewport');
@@ -1049,7 +1167,7 @@ async function checkNavigation(page){
         assert.ok(row.left>=0&&row.right<=width+1,'expanded Help children stay within the viewport');
         if(index)assert.ok(row.top>=childRows[index-1].bottom-1,'Help children stack vertically without overlap');
       }
-      assert.equal(await topRows.count(),16,'expanding Help never counts nested actions as top-level settings');
+      assert.equal(await topRows.count(),15,'expanding Help never counts nested actions as top-level settings');
       await helpMenu.locator('summary').click();
       assert.equal(await helpMenu.evaluate(el=>el.open),false);
       for(const index of [0,1])assert.equal(await helpRows.nth(index).isVisible(),false,'closing Help hides both children again');
@@ -1109,7 +1227,7 @@ async function checkNavigation(page){
     await page.evaluate(()=>{sessionStorage.fixtureMode='member';});
     await page.goto(origin+project+'station.html?tab=profile');await settings.waitFor();
     console.log('PASS profile-only Agit button, integrated account menus, nickname/consent confirmation, safe cancellation and local logout');
-    await page.getByRole('button',{name:'공개 프로필 수정'}).click();
+    await page.getByRole('button',{name:'내 프로필 수정'}).click();
     const dialog=page.getByRole('dialog');await dialog.waitFor();await capture('profile-editor');
     assert.equal(await dialog.getByRole('link',{name:'아지트로',exact:true}).count(),0);
     await dialog.getByRole('button',{name:'닫기'}).click();
@@ -1135,7 +1253,8 @@ async function checkNavigation(page){
     await selectMenu('내 파장');await page.setViewportSize({width:1080,height:840});
     await page.screenshot({path:path.join(dir,'pajang-profile-desktop.png'),animations:'disabled'});
     await selectMenu('오늘');await answers.waitFor();await capture('home-desktop');await goHome();
-    const banner=page.getByRole('link',{name:/파장.*오늘의 질문 보기/});
+    await page.getByRole('button',{name:'설정',exact:true}).click();
+    const banner=page.locator('ojjuda-service-banners[current="agit"] .ojjuda-service-banner[data-service="pajang"]');
     for(const width of [320,390,1080]){
       await page.setViewportSize({width,height:844});
       await banner.scrollIntoViewIfNeeded();
@@ -1161,20 +1280,32 @@ async function checkNavigation(page){
     assert.equal(entryDocuments.length,1,'a returning member opens one document with no intermediate popup');
     assert.equal(await page.evaluate(()=>window.authCalls),1);
     await page.evaluate(()=>{sessionStorage.fixtureMode='new';sessionStorage.removeItem('pajang:answered-round');});
-    await page.goto(origin+'/world.html#pajang-radar');
+    await page.goto(origin+'/world.html?tab=my');
     const beforeEntry=entryDocuments.length;
     await banner.click();
     await page.getByRole('heading',{name:'처음 만난 날, 어떤 이야기를 나누고 싶나요?'}).waitFor();
     await page.evaluate(()=>{window.entryMarker=document.querySelector('.pajang-mast');});
     assert.equal(await page.locator('iframe,dialog.agit-pajang-dialog').count(),0);
-    await capture('entry-mobile');
+    for(const width of [390,320,750]){
+      await page.setViewportSize({width,height:width===750?750:844});
+      await checkControlGroups(page,width,'#welcome .actions');
+      await capture(width===390?'entry-mobile':'entry-'+width);
+    }
+    await page.setViewportSize({width:390,height:844});
     assert.equal(await page.locator('#marks button').count(),0,'sample radar does not block the question');
     await page.locator('.sample-radar summary').click();
     await page.locator('#marks button').first().waitFor();
     await checkCompass(page,'#scope','.rose b','#marks button:nth-child(2)');
-    await page.locator('#write').click();await page.locator('[name=consent]').check();
+    assert.equal(await page.locator('#answer-form').isVisible(),true,'verified members open the answer form directly');await page.locator('[name=consent]').check();
+    const entryAnswers=page.locator('#answer-fields');
+    assert.equal(await entryAnswers.getByRole('combobox').count(),0,'entry offers no date selector');
+    assert.equal(await entryAnswers.getByRole('checkbox').count(),0,'entry offers no publication opt-in');
+    assert.match(await entryAnswers.locator('#publication-note').textContent(),/질문이 올라온 날부터 최대 365일간 파장 회원에게/);
     await page.locator('#mine').fill('한 번 열린 화면에서 답변을 남겨요.');
-    await page.locator('#answer-form [type=submit]').click();await nav.waitFor();
+    await page.locator('#answer-form').getByRole('button',{name:'답변하기',exact:true}).click();await nav.waitFor();
+    const joinWrite=await page.evaluate(()=>window.answerWrites.find(w=>w.action==='join'));
+    assert.equal(joinWrite.archive,true);
+    assert.equal(joinWrite.publicationPolicy,'year-v1');
     assert.equal(await page.evaluate(()=>window.entryMarker===document.querySelector('.pajang-mast')),true,'answer submission stays in the same document');
     assert.equal(entryDocuments.length-beforeEntry,1,'a new member answers and enters without a second navigation');
     const focusedQuestion=questionCard.getByRole('heading',{level:1});
@@ -1192,6 +1323,7 @@ async function checkNavigation(page){
     }),'keyboard users still see the answer button focus');
     console.log('PASS automatic heading focus without a box, while keyboard controls retain visible focus');
     await goHome();
+    await page.evaluate(()=>{sessionStorage.fixtureMode='new';sessionStorage.removeItem('pajang:answered-round');});
     await page.evaluate(()=>{sessionStorage.fixtureMode='new';});
     await page.goto(origin+project+'station.html?tab=profile');
     await page.getByText('파장 첫 참여',{exact:true}).waitFor();
@@ -1199,6 +1331,10 @@ async function checkNavigation(page){
     await page.locator('[name=consent]').check();await page.getByRole('button',{name:'참여하고 내 파장 보기'}).click();
     await page.getByRole('heading',{name:'내 파장'}).waitFor();
     assert.equal(await page.evaluate(()=>window.beforeJoin===document.querySelector('.pajang-mast')),true,'member entry preserves the document');
+    assert.equal(await page.locator('#answer-fields').isVisible(),false,'participate-only never shows the answer disclosure');
+    const joinOnlyWrite=await page.evaluate(()=>window.answerWrites.find(w=>w.action==='participate'));
+    assert.equal(Object.hasOwn(joinOnlyWrite,'archive'),false);
+    assert.equal(Object.hasOwn(joinOnlyWrite,'publicationPolicy'),false);
     assert.ok(page.url().includes('station.html?tab=profile'));
     assert.equal(await page.evaluate(()=>window.memberCalls.filter(v=>v==='state').length),0,'join uses server response');
     await page.evaluate(()=>{delete sessionStorage.accepted;});
@@ -1221,8 +1357,25 @@ async function checkNavigation(page){
     assert.equal(await nav.count(),0,'a different auth session cannot mount the previous member state');
     await page.evaluate(()=>{sessionStorage.fixtureMode='unanswered';});
     await page.goto(origin+project+'station.html');
+    await questionCard.getByRole('button',{name:'내 답변 쓰기'}).waitFor();await cards.first().waitFor();
+    for(const width of [320,390,750]){
+      await page.setViewportSize({width,height:width===750?750:844});
+      await checkHomeControls(page,width);
+      await capture('home-unanswered-'+width);
+    }
+    await page.setViewportSize({width:390,height:844});
     await questionCard.getByRole('button',{name:'내 답변 쓰기'}).click();
-    await page.getByRole('dialog').waitFor();
+    const newAnswerDialog=page.getByRole('dialog');
+    await newAnswerDialog.waitFor();
+    assert.equal(await newAnswerDialog.getByRole('combobox').count(),0,'member composer offers no date selector');
+    assert.equal(await newAnswerDialog.getByRole('checkbox').count(),0,'member composer offers no publication opt-in');
+    assert.match(await newAnswerDialog.textContent(),/질문이 올라온 날부터 최대 365일간 파장 회원에게/);
+    await newAnswerDialog.getByLabel('내 이야기').fill('새로 작성한 답변');
+    await newAnswerDialog.getByRole('button',{name:'답변하기',exact:true}).click();
+    await newAnswerDialog.waitFor({state:'detached'});
+    const answerWrite=await page.evaluate(()=>window.answerWrites.find(w=>w.action==='answer'));
+    assert.equal(answerWrite.archive,true);
+    assert.equal(answerWrite.publicationPolicy,'year-v1');
     for(const mode of ['guest','denied']){
       await page.evaluate(m=>{sessionStorage.fixtureMode=m;},mode);
       await page.goto(origin+project+'station.html');
@@ -1237,6 +1390,7 @@ async function checkNavigation(page){
     // Leaving a pending member check must not later reopen Pajang.
     await page.evaluate(()=>{sessionStorage.fixtureMode='member';sessionStorage.openTiming='yes';sessionStorage.holdEntryIdentity='yes';sessionStorage.removeItem('pajang:answered-round');});
     await page.goto(origin+'/world.html?closing=1');
+    await page.getByRole('button',{name:'설정',exact:true}).click();
     await banner.click();
     await page.locator('#gate .flight-scene').waitFor();
     await page.goBack();await page.waitForURL('**/world.html?closing=1');
@@ -1255,6 +1409,7 @@ async function checkNavigation(page){
           if(mode!=='member')sessionStorage.removeItem('pajang:answered-round');
           delete sessionStorage.openMs;delete sessionStorage.openStart;},scenario);
         await page.goto(origin+'/world.html?timing='+attempt);
+        await page.getByRole('button',{name:'설정',exact:true}).click();
         const opened=entryDocuments.length;
         await banner.click();
         if(scenario!=='new')await page.waitForURL('**/station.html');
@@ -1363,6 +1518,7 @@ async function checkNavigation(page){
     await context.grantPermissions(['geolocation']);
     await page.evaluate(()=>{localStorage.locationEnabled='true';sessionStorage.removeItem('ojjuda:location-cell:member');});
     await page.goto(origin+'/world.html?warm-location=1');
+    await page.getByRole('button',{name:'설정',exact:true}).click();
     await page.waitForFunction(()=>sessionStorage.getItem('ojjuda:location-cell:member'));
     assert.equal(await page.evaluate(()=>window.geoReadCount),1,'Agit requests the position before opening Pajang');
     await banner.click();await page.waitForURL('**/station.html');await answers.waitFor();
@@ -1377,10 +1533,11 @@ async function checkNavigation(page){
         if(mode!=='member')sessionStorage.removeItem('pajang:answered-round');
       },scenario);
       await page.goto(origin+'/world.html?slow-location='+scenario);
+      await page.getByRole('button',{name:'설정',exact:true}).click();
       await banner.click();
       if(scenario==='new'){
-        await page.locator('#welcome #write').waitFor({timeout:5000});
-        await page.locator('#write').click();await page.locator('#mine').fill('위치를 기다리는 동안 답변을 써요.');
+        await page.locator('#welcome #answer-form').waitFor({timeout:5000});
+        await page.locator('#mine').fill('위치를 기다리는 동안 답변을 써요.');
         await page.goBack();await page.waitForURL('**/world.html?slow-location=new');
         assert.equal(await page.locator('dialog').count(),0);
         continue;
@@ -1427,4 +1584,3 @@ async function checkNavigation(page){
     console.log('PASS 320/390/1080px layout, artwork-independent startup, tap/swipe/keyboard, delayed results, cancellation, in-memory revisit, and denial');
   } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
-

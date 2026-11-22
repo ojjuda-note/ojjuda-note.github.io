@@ -747,6 +747,9 @@ body.onecard-page[data-mp-entry="true"] #setup {
 .onecard-page #setup .arcade-room-empty { padding: 14px 4px; font-size: 12px; }
 .onecard-page #lobby { display: flex; flex-direction: column; }
 .onecard-page #lobby :is(.lobby-heading, .room-code-row, .lobby-controls) { flex: none; }
+.onecard-page #lobby .lobby-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.onecard-page #lobby .lobby-controls > p { grid-column: 1 / -1; }
+.onecard-page #lobby .lobby-controls > button { min-width: 0; margin: 0; overflow-wrap: anywhere; }
 .onecard-page #lobby .ge-copy { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .onecard-page #lobby .room-code-row {
   padding: 0; margin: 12px 0; border: 0; border-radius: 0; min-width: 0; text-align: left;
@@ -818,3 +821,5 @@ dialog.sheet.game-result-dialog { width: min(430px, calc(100vw - 24px)); max-wid
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+@media(max-width:600px){.onecard-page #setup .arcade-room-card{grid-template-columns:36px minmax(0,1fr)}}

@@ -6,7 +6,7 @@
   const GAMES = new Set(['chacha_rush','solitaire','archery','sacheonseong','mines','saetbyeol',
     'mole','runner','stacker','breakout','spot','screw','bang','tank','tour','ttang',
     'janggi','chess','billiards','matgo','poker','roulette','photo_ttang']);
-  const FEATURES = new Set(['agit','arcade','park','settings','portal','group','fanpages',
+  const FEATURES = new Set(['agit','arcade','park','pajang','settings','portal','group','fanpages',
     'restaurants','festival','tarot','saju','biorhythm','game_other',...[...GAMES].map(game => 'game_' + game)]);
   const FORTUNE_PAGES = Object.freeze({
     '/games/moonlit-tarot':'tarot','/games/moonlit-tarot/':'tarot','/games/moonlit-tarot/index.html':'tarot',
@@ -17,12 +17,12 @@
     'agit_festival','agit_restaurants','agit_fanpages','arcade_game_other',
     ...[...GAMES].map(game => 'arcade_game_' + game)]);
   const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  let client, running = false, clockOffset = 0, retryAfter = 0, retryTimer;
+  let client, canRecord = () => true, running = false, clockOffset = 0, retryAfter = 0, retryTimer;
   const pending = new Map();
   const date = () => new Date(Date.now() + clockOffset + 9 * 3600000).toISOString().slice(0,10);
   const enabled = () => !!client && HOSTS.has(location.hostname) && !document.hidden
     && navigator.doNotTrack !== '1' && !navigator.globalPrivacyControl
-    && window.OjjudaAdminPreview?.isEnabled?.() !== true;
+    && window.OjjudaAdminPreview?.isEnabled?.() !== true && canRecord();
   function source() {
     const params = new URL(location.href).searchParams;
     if (['utm_source','utm_medium','utm_campaign'].some(key => params.has(key))) return 'campaign';
@@ -104,6 +104,7 @@
     void flush();
   }
   function initialFeature() {
+    if (/^\/features\/pajang(?:\/(?:index|station|feed)\.html|\/)?$/.test(location.pathname)) return 'pajang';
     if (Object.hasOwn(FORTUNE_PAGES,location.pathname)) return FORTUNE_PAGES[location.pathname];
     const params = new URL(location.href).searchParams;
     if (!location.pathname.endsWith('/world.html')) return 'portal';
@@ -144,6 +145,7 @@
   document.addEventListener('visibilitychange',() => void flush());
   window.OjjudaSiteUsage = Object.freeze({ configure(options = {}) {
     client = options.client;
+    canRecord = typeof options.canRecord === 'function' ? options.canRecord : () => true;
     if (!client) return;
     track('visit'); track('feature',initialFeature());
     const game = new URL(location.href).searchParams.get('game');

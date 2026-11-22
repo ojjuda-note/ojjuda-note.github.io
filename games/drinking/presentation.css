@@ -979,3 +979,11 @@ body.dp-playing[data-dp-kind="secretcount"] :is(#view,#app) .sc-setup button[typ
 
 .dp-guide-sound { display:inline-flex; align-items:center; gap:.4em; min-height:44px; cursor:pointer; }
 .dp-guide-sound input { width:1.15em; height:1.15em; margin:0; }
+
+/* Preserve the exit / replay positions even on narrow phones. */
+.actions.drinking-round-actions,
+body.dp-playing #view .actions.drinking-round-actions,
+body.dp-playing[data-dp-mode="local"] .play-body .actions.drinking-round-actions { display:flex;flex-wrap:nowrap;align-items:stretch;gap:8px; }
+.actions.drinking-round-actions > button,
+body.dp-playing #view .actions.drinking-round-actions > button { flex:1 1 0;min-width:0;margin:0;overflow-wrap:anywhere; }
+.actions.drinking-round-actions > p { flex:1 1 0;min-width:0;margin:0; }

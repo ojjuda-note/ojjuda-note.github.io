@@ -6,6 +6,41 @@ import {maskedTextLength,textInputMaxLength} from "../../../../shared/content/te
 type Account=Awaited<ReturnType<typeof openAccount>>;
 const changedAccount="계정이 바뀌었어요. 창을 닫고 다시 열어 주세요.";
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+type NextQuestion={day:string;slot:"am"|"pm";startsAt:string;prompt:string};
+
+function NextQuestionPreview({account,period}:{account:Account|null;period:string}){
+  const [next,setNext]=useState<NextQuestion|null>(null),[failed,setFailed]=useState(false),[attempt,setAttempt]=useState(0);
+  useEffect(()=>{
+    let active=true;
+    const controller=new AbortController();
+    setNext(null);setFailed(false);
+    if(!account)return()=>{active=false;};
+    const timeout=setTimeout(()=>{controller.abort();if(active&&account.isCurrent())setFailed(true);},15000);
+    void (async()=>{
+      const identity=await account.db.auth.getSession();
+      if(!active||!account.isCurrent()||controller.signal.aborted)return;
+      if(identity.error)throw identity.error;
+      const session=identity.data?.session;
+      if(session?.user?.id!==account.userId||session.user.is_anonymous||!session.access_token)throw Error("account_changed");
+      const {data,error}=await account.db.rpc("pajang_next_question",{})
+        .setHeader("Authorization",`Bearer ${session.access_token}`).abortSignal(controller.signal);
+      if(!active||!account.isCurrent())return;
+      if(error)throw error;
+      if(controller.signal.aborted)throw Error("preview_timed_out");
+      if(!data||!/^\d{4}-\d{2}-\d{2}$/.test(data.day)||!["am","pm"].includes(data.slot)
+        ||!Number.isFinite(Date.parse(data.startsAt))||typeof data.prompt!=="string"||!data.prompt.trim())throw Error("invalid_next_question");
+      setNext(data);
+    })().catch(()=>{if(active&&account.isCurrent())setFailed(true);}).finally(()=>clearTimeout(timeout));
+    return()=>{active=false;controller.abort();clearTimeout(timeout);};
+  },[account,period,attempt]);
+  if(!account)return null;
+  return <section className="next-question-preview" aria-label="다음 질문" aria-live="polite">
+    {next?<div className="questionbox"><small>다음 질문 · <time dateTime={next.startsAt}>{next.day.replaceAll("-",".")} · {next.slot==="am"?"오전":"오후"}</time></small><p>{next.prompt}</p></div>:
+      failed?<p className="next-question-status">다음 질문을 불러오지 못했어요.<button type="button" onClick={()=>setAttempt(value=>value+1)}>다시 보기</button></p>:
+        <p className="next-question-status">다음 질문을 불러오는 중…</p>}
+  </section>;
+}
+
 function submissionError(error:unknown){
   const value=error as {code?:string;message?:string};
   if(value?.message==="account_changed")return changedAccount;
@@ -14,7 +49,7 @@ function submissionError(error:unknown){
   return "보내지 못했어요. 작성한 내용은 그대로예요. 다시 시도해 주세요.";
 }
 
-export function QuestionSuggestionForm({onBusyChange,onSaved}:{onBusyChange:(busy:boolean)=>void;onSaved:()=>void}){
+export function QuestionSuggestionForm({period,onBusyChange,onSaved}:{period:string;onBusyChange:(busy:boolean)=>void;onSaved:()=>void}){
   const [account,setAccount]=useState<Account|null>(null);
   const [question,setQuestion]=useState(""),[error,setError]=useState("");
   const [busy,setBusy]=useState(false),[checking,setChecking]=useState(true),[blocked,setBlocked]=useState(false);
@@ -80,10 +115,10 @@ export function QuestionSuggestionForm({onBusyChange,onSaved}:{onBusyChange:(bus
 
   return <form className="question-suggestion-form" onSubmit={event=>void submit(event)} aria-busy={busy}>
     <h2>이 질문 어때요?</h2>
-    <p className="sub">함께 나누고 싶은 질문을 추천해 주세요.</p>
+    <NextQuestionPreview account={account} period={period}/>
     <label className="formlabel" htmlFor="question-suggestion-body">추천할 질문</label>
     <textarea id="question-suggestion-body" value={question} onChange={event=>{setQuestion(event.target.value);if(account)setError("");}}
-      placeholder="예: 나를 가장 웃게 만드는 순간은?" maxLength={textInputMaxLength(question,200)} rows={4} required autoFocus data-autofocus
+      placeholder="추천하고 싶은 질문을 적어 주세요." maxLength={textInputMaxLength(question,200)} rows={4} required autoFocus data-autofocus
       disabled={busy||blocked} aria-describedby="question-suggestion-help question-suggestion-count"/>
     <div className="counter" id="question-suggestion-count">{maskedTextLength(question)} / 200</div>
     <p className="question-suggestion-help" id="question-suggestion-help">운영자가 확인해 다음 질문에 참고해요.</p>

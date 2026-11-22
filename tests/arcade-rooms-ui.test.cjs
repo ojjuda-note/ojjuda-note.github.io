@@ -111,7 +111,16 @@ world=world.replace('</head>','<script src="/shared/games/game-entry.js" defer><
     await b.page.locator('[data-room-search]').fill(String(room.room_no));await refresh(b.page);
     assert.equal(await b.page.locator('[data-room-search]').inputValue(),String(room.room_no));
     if(kind==='chess'){
-      for(const width of [320,390,1280]){await b.page.setViewportSize({width,height:844});assert.equal(await b.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);}
+      for(const width of [320,390,1280]){
+        await b.page.setViewportSize({width,height:844});assert.equal(await b.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+        await a.page.setViewportSize({width,height:844});
+        const controls=await a.page.locator('.arcade-room-card.mine .arcade-room-buttons').evaluate(row=>[...row.children].map(button=>{
+          const r=button.getBoundingClientRect();return {action:button.dataset.arcadeAction,x:r.x,y:r.y,right:r.right,height:r.height};
+        }));
+        assert.deepEqual(controls.map(button=>button.action),['cancel','join']);
+        assert.ok(controls[0].right<=controls[1].x&&Math.abs(controls[0].y-controls[1].y)<1,JSON.stringify({width,controls}));
+        assert.ok(controls.every(button=>button.x>=0&&button.right<=width&&button.height>=44),JSON.stringify({width,controls}));
+      }
       await b.page.setViewportSize({width:390,height:844});await b.page.screenshot({path:path.join(process.env.WORLD_DESIGN_PROOF_DIR||'/tmp','arcade-rooms-mobile.png'),fullPage:true});
       await a.page.evaluate(()=>arcadeTest.actions.tab({tab:'friends'}));
     }

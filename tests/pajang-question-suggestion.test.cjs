@@ -10,6 +10,7 @@ const address = origin + '/features/pajang/station.html';
 const artifacts = path.join(root,'tests/artifacts/pajang-discovery');
 const prefix = '[파장 · 오늘의 질문 제안]\n';
 const question = '서로에게 소개하고 싶은 작은 행복은 무엇인가요?';
+const upcoming = {day:'2026-11-19',slot:'pm',startsAt:'2026-11-19T03:00:00Z',prompt:'계획이 갑자기 바뀌면 어떻게 하나요?'};
 
 function fixture() {
   const state = {
@@ -23,7 +24,7 @@ function fixture() {
     const state = ${JSON.stringify(state)};
     const listeners = new Set();
     let session = {user:{id:'auth-member',is_anonymous:false},access_token:'mock-member-token'};
-    const control = window.questionFixture = {attempts:[],feedbackWrites:[],responses:[],pending:null,unexpected:[],historyEvents:0};
+    const control = window.questionFixture = {attempts:[],feedbackWrites:[],responses:[],pending:null,unexpected:[],historyEvents:0,previewReads:[]};
     window.addEventListener('popstate',()=>control.historyEvents++,true);
     control.changeUser = id => {
       session = id ? {user:{id,is_anonymous:false},access_token:'mock-next-token'} : null;
@@ -61,11 +62,25 @@ function fixture() {
         };
         return query;
       }}),
-      rpc:async(name,args)=>{
-        if(name==='pajang_member'&&args.p_action==='state')return {data:structuredClone(state),error:null};
-        if(name==='pajang_discovery_feed')return {data:{items:[],total:0,nextCursor:null,remaining:3},error:null};
-        if(name==='is_admin')return {data:false,error:null};
-        control.unexpected.push(name);throw Error('Unexpected RPC '+name);
+      rpc:(name,args)=>{
+        if(name==='pajang_next_question'){
+          const headers={};let request;
+          const query={
+            setHeader(key,value){headers[key]=value;return query;},
+            abortSignal(){return query;},
+            then(resolve,reject){
+              if(!request){control.previewReads.push({name,args,headers:{...headers}});request=Promise.resolve({data:${JSON.stringify(upcoming)},error:null});}
+              return request.then(resolve,reject);
+            }
+          };
+          return query;
+        }
+        return (async()=>{
+          if(name==='pajang_member'&&args.p_action==='state')return {data:structuredClone(state),error:null};
+          if(name==='pajang_discovery_feed')return {data:{items:[],total:0,nextCursor:null,remaining:3},error:null};
+          if(name==='is_admin')return {data:false,error:null};
+          control.unexpected.push(name);throw Error('Unexpected RPC '+name);
+        })();
       }
     };
     window.OjjudaGetClient=async()=>db;
@@ -86,6 +101,11 @@ async function openForm(page) {
   const input = dialog.getByRole('textbox',{name:'추천할 질문'});
   await page.waitForFunction(()=>document.activeElement?.id==='question-suggestion-body');
   assert.equal(await input.getAttribute('maxlength'),'200','question length is bounded');
+  const preview=dialog.getByRole('region',{name:'다음 질문',exact:true});
+  await preview.getByText(upcoming.prompt,{exact:true}).waitFor();
+  assert.match(await preview.textContent(),/2026\.11\.19 · 오후/,'the preview identifies its actual next window');
+  assert.equal(await input.inputValue(),'','the upcoming question is a preview, not a submitted suggestion');
+  assert.equal(await input.getAttribute('placeholder'),'추천하고 싶은 질문을 적어 주세요.');
   return {dialog,input,send:dialog.getByRole('button',{name:'질문 보내기',exact:true})};
 }
 
@@ -152,15 +172,24 @@ async function pressBack(page) {
         assert.ok(Math.abs(ctaBox.y-nearBox.y)<2,'both actions share a row at '+width+'px');
       }
       if(width===390)await page.screenshot({path:path.join(artifacts,'question-suggestion-today.png'),fullPage:true});
-      const {dialog}=await openForm(page);
+      const {dialog,input}=await openForm(page);
       await assertNoOverflow(page,'question dialog at '+width+'px');
       const box=await dialog.boundingBox();
       assert.ok(box&&box.x>=-1&&box.x+box.width<=width+1,'dialog stays inside viewport at '+width+'px');
+      const headingBox=await dialog.getByRole('heading',{name:'이 질문 어때요?',exact:true}).boundingBox();
+      const previewBox=await dialog.getByRole('region',{name:'다음 질문',exact:true}).boundingBox();
+      const inputBox=await input.boundingBox();
+      assert.ok(headingBox&&previewBox&&inputBox&&previewBox.y>=headingBox.y+headingBox.height-1
+        &&previewBox.y+previewBox.height<=inputBox.y+1,'the upcoming question fits between the title and editable draft at '+width+'px');
       if(width===390)await page.screenshot({path:path.join(artifacts,'question-suggestion-form.png'),fullPage:true});
       await dialog.getByRole('button',{name:'닫기',exact:true}).click();
       await dialog.waitFor({state:'hidden'});
       await page.waitForFunction(()=>!history.state?.pajangNavigation?.modal);
     }
+    const previews=await page.evaluate(()=>window.questionFixture.previewReads);
+    assert.equal(previews.length,4,'one preview read when each form opens');
+    assert.ok(previews.every(read=>read.headers.Authorization==='Bearer mock-member-token'),'previews stay bound to the current member');
+    assert.ok(previews.every(read=>Object.keys(read.args).length===0),'the client cannot select arbitrary future questions');
 
     await page.setViewportSize({width:390,height:844});
     let form=await openForm(page);

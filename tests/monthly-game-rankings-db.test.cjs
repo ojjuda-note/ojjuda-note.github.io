@@ -143,6 +143,14 @@ const hash = token => createHash('sha256').update(token).digest('hex');
    for(let i=0;i<4;i++)await practice(a,game,'easy','win',`2026-10-15T00:0${i}:00Z`);
    await practice(b,game,'hard','win','2026-10-15T00:05:00Z');
   }
+  // Regression: a harder one-win streak outranks a lower difficulty's ten-win streak.
+  // Use the real production candidate calculator before the later online match is seeded.
+  for(let i=0;i<6;i++)await practice(a,'janggi','easy','win',`2026-10-15T00:${String(i+6).padStart(2,'0')}:00Z`);
+  const janggiPriority=await db.query(`select c.details->>'difficulty' difficulty,c.score,c.priority
+   from ojjuda_ranking_internal.candidates('janggi','2026-10-01T00:00:00Z','2026-10-15T23:59:59Z') c
+   order by c.priority desc,c.score desc,c.achieved_at,c.identity_key`);
+  assert.deepEqual(janggiPriority.rows.map(row=>[row.difficulty,Number(row.score)]),
+   [['hard',1],['easy',10]],'difficulty outranks wins: hard 1 win must beat easy 10 wins');
   await db.query("insert into board_games values($1,$2,$3,'chess','done','p1','2026-10-16Z',array['p1'])",[randomUUID(),a,b]);
   await db.query("insert into board_games values($1,$2,$3,'janggi','done','p2','2026-10-16Z',array['p1'])",[randomUUID(),a,b]);
   await db.query("insert into board_games values($1,$2,$3,'pool8','done','p2','2026-10-16Z',array['p1'])",[randomUUID(),a,b]);

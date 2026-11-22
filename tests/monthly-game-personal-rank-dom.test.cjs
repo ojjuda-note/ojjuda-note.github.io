@@ -211,3 +211,208 @@ test('standalone games and shared scripts point to the shipped monthly viewer',(
  assert.ok(sharedUiRevision,'shared results cache revision exists');
  assert.ok(read('world.html').includes('game-results.js?v='+sharedUiRevision));
 });
+
+test('arcade uses one compact ranking link instead of the embedded carousel',()=>{
+ const world=read('world.html');
+ assert.match(world,/<a class="arcade-ranking-entry" href="\/features\/arcade\/all-rankings\.html"/);
+ assert.doesNotMatch(world,/<section data-arcade-rank-root /);
+});
+
+test('full arcade ranking page lists every game including a recorded One Card win',async t=>{
+ const markup=read('features/arcade/all-rankings.html'),script=read('features/arcade/all-rankings.js');
+ const dom=new JSDOM(markup,{url:'https://ojjuda.kr/features/arcade/all-rankings.html',runScripts:'outside-only'});
+ t.after(()=>dom.window.close());
+ const w=dom.window,calls=[];
+ w.OJJUDA_CONFIG={supabaseUrl:'https://fixture.invalid',supabaseKey:'fixture'};
+ w.supabase={createClient:()=>({
+  auth:{getSession:async()=>({data:{session:{user:{id:'member-a',is_anonymous:false}}}}),
+   onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},
+  rpc(name,args){
+   calls.push({name,args});
+   return Promise.resolve({data:Object.fromEntries(args.p_games.map(id=>[id,id==='onecard'?{nick:'원카드회원',score:1}:null])),error:null});
+  }
+ })};
+ w.eval(script);await new Promise(resolve=>setImmediate(resolve));
+ const doc=w.document,entries=doc.querySelectorAll('.rank-entry'),one=doc.querySelector('[data-game="onecard"]');
+ assert.equal(entries.length,26,'all 26 games are present without swiping or paging');
+ assert.equal(doc.querySelectorAll('.rank-section').length,3,'three categories are visible');
+ assert.ok(one,'One Card cannot be hidden behind a carousel');
+ assert.equal(one.querySelector('.first-name').textContent,'1위 · 원카드회원');
+ assert.equal(one.querySelector('.first-score').textContent,'1연승');
+ assert.match(one.href,/monthly-ranking\.html\?game=onecard$/);
+ assert.equal(calls.length,1,'authenticated users share one ranking request');
+ assert.equal(calls[0].name,'community_game_monthly_leaders');
+ assert.equal(calls[0].args.p_games.length,26);
+});
+
+test('guest arcade overview keeps one-card details member-only but shows all game choices',async t=>{
+ const dom=new JSDOM(read('features/arcade/all-rankings.html'),{
+  url:'https://ojjuda.kr/features/arcade/all-rankings.html',runScripts:'outside-only'
+ });
+ t.after(()=>dom.window.close());
+ const w=dom.window,calls=[];
+ w.OJJUDA_CONFIG={supabaseUrl:'https://fixture.invalid',supabaseKey:'fixture'};
+ w.supabase={createClient:()=>({
+  auth:{getSession:async()=>({data:{session:null}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},
+  rpc(name,args){
+   calls.push({name,args});
+   return Promise.resolve({data:{leaders:[{nick:'손님',score:13}]},error:null});
+  }
+ })};
+ w.eval(read('features/arcade/all-rankings.js'));
+ await new Promise(resolve=>setImmediate(resolve));
+ const doc=w.document;
+ assert.equal(doc.querySelectorAll('.rank-entry').length,26);
+ assert.match(doc.querySelector('[data-game="onecard"] .first-name').textContent,/로그인/);
+ assert.equal(doc.querySelector('[data-game="onecard"] .first-score').textContent,'—');
+ assert.equal(doc.querySelector('[data-game="saetbyeol"] .first-score').textContent,'13점');
+ assert.equal(calls.length,13,'guest reads only public solo leaderboards');
+ assert.ok(calls.every(call=>call.name==='community_game_monthly_personal'&&call.args.p_game!=='onecard'));
+});
+
+test('full leaderboard recovers One Card when the shared monthly batch fails',async t=>{
+ const dom=new JSDOM(read('features/arcade/all-rankings.html'),{
+  url:'https://ojjuda.kr/features/arcade/all-rankings.html',runScripts:'outside-only'
+ });
+ t.after(()=>dom.window.close());
+ const w=dom.window,calls=[];
+ w.OJJUDA_CONFIG={supabaseUrl:'https://fixture.invalid',supabaseKey:'fixture'};
+ w.supabase={createClient:()=>({
+  auth:{getSession:async()=>({data:{session:{user:{id:'member-b',is_anonymous:false}}}}),
+   onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},
+  rpc(name,args){
+   calls.push({name,args});
+   if(name==='community_game_monthly_leaders')return Promise.resolve({error:{message:'batch unavailable'}});
+   return Promise.resolve({data:{leaders:args.p_game==='onecard'?[{nick:'원카드복구',score:2}]:[]},error:null});
+  }
+ })};
+ w.eval(read('features/arcade/all-rankings.js'));
+ await new Promise(resolve=>setImmediate(resolve));
+ const one= w.document.querySelector('[data-game="onecard"]');
+ assert.equal(one.querySelector('.first-name').textContent,'1위 · 원카드복구');
+ assert.equal(one.querySelector('.first-score').textContent,'2연승');
+ assert.equal(calls.filter(call=>call.name==='community_game_monthly_personal').length,26);
+});
+
+test('the arcade leaderboard shares the existing automatic calendar themes and artwork',t=>{
+ for(const base of ['all-rankings','monthly-ranking']){
+  const html=read('features/arcade/'+base+'.html');
+  const css=read('features/arcade/'+base+'.css');
+  assert.match(html,/\/app\/world\/world-themes\.css\?v=20261119-auto-theme1/);
+  assert.match(html,/\/app\/world\/world-themes\.js\?v=20261119-auto-theme1/);
+  assert.match(css,/background-image:var\(--hero-art\)/,
+   'the rank board uses the same seasonal or holiday artwork, not an unrelated illustration');
+  assert.match(css,/var\(--season-accent/,
+   'the rank board preserves the current calendar theme colors');
+ }
+ const dom=new JSDOM('<!doctype html><html><head><meta name="theme-color" content="#fff"></head><body></body></html>',{
+  url:'https://ojjuda.kr/features/arcade/all-rankings.html',runScripts:'outside-only'
+ });
+ t.after(()=>dom.window.close());
+ const w=dom.window;
+ w.eval(read('app/world/world-themes.js'));
+ assert.ok(w.OjjudaThemes,'the shared theme calendar loads without the world shell');
+ for(const [day,expected] of [
+  ['2026-04-15','spring'],['2026-07-15','summer'],['2026-11-22','autumn'],['2026-12-15','winter'],
+  ['2026-02-17','seollal'],['2026-09-25','chuseok'],['2026-11-11','pepero'],['2026-12-25','christmas']
+ ]){
+  assert.equal(w.OjjudaThemes.resolve(new Date(day+'T03:00:00Z')),expected,
+   day+' uses the same auto-selected Korean calendar theme as Agit');
+ }
+ assert.ok(w.document.documentElement.dataset.worldTheme,
+  'the shared theme writes data-world-theme for the rank-board artwork');
+});
+
+test('ranking match details use only actual difficulty and participant metadata',t=>{
+ const dom=new JSDOM('',{url:'https://ojjuda.kr/features/arcade/all-rankings.html',runScripts:'outside-only'});
+ t.after(()=>dom.window.close());
+ const w=dom.window;w.eval(read('games/solitaire/rules.js'));w.eval(read('games/mines/rules.js'));
+ w.eval(read('games/mole/ranking.js'));w.eval(read('shared/games/ranking-details.js'));
+ const describe=w.OjjudaRankingDetails.describe;
+ assert.equal(describe('janggi',{score:9,difficulty:'hard'}),'2인 대국 · 과거 고난도 · 어려움급');
+ assert.equal(describe('janggi',{score:2,difficulty:'normal'}),'2인 대국 · 보통');
+ assert.equal(describe('chess',{score:3,difficulty:'online'}),'2인 대국 · 온라인 대전');
+ assert.equal(describe('billiards',{score:1,difficulty:'easy',variant:'carom4'}),'4구 · 2인 대국 · 쉬움');
+ assert.equal(describe('tank',{score:16,opponents:11}),'12인 경기 · 상대 11명');
+ assert.equal(describe('tank',{score:2,opponents:3}),'4인 경기 · 상대 3명');
+ assert.equal(describe('onecard',{score:1}),'5인 경기 · 컴퓨터 포함');
+ assert.equal(describe('onecard',{score:1,mode:'solo'}),'5인 경기 · 컴퓨터 포함 · 컴퓨터 대전');
+ assert.equal(describe('yut',{score:6}),'참가 인원 미기록','never invent unrecorded Yut participants');
+ assert.equal(describe('yut',{score:6,players:4,mode:'island'}),'4팀 경기 · 보통 · 장애물 놀이');
+ assert.equal(describe('tour',{score:2,player_count:3}),'3인 경기');
+ assert.equal(describe('bang',{score:3,players:15}),'참가 인원 미기록','reject invalid participant counts');
+ assert.equal(describe('mines',{score:1}), '', 'do not invent a difficulty from invalid scoring');
+ assert.equal(describe('tank',{score:0,opponents:11}),'','zero scores are not wins');
+});
+
+test('all-game overview shows ranking conditions directly under the winning name',async t=>{
+ const markup=read('features/arcade/all-rankings.html'),script=read('features/arcade/all-rankings.js');
+ assert.match(markup,/shared\/games\/ranking-details\.js/);
+ const dom=new JSDOM(markup,{url:'https://ojjuda.kr/features/arcade/all-rankings.html',runScripts:'outside-only'});
+ t.after(()=>dom.window.close());
+ const w=dom.window;
+ w.OJJUDA_CONFIG={supabaseUrl:'https://fixture.invalid',supabaseKey:'fixture'};
+ w.supabase={createClient:()=>({
+  auth:{getSession:async()=>({data:{session:{user:{id:'member-a',is_anonymous:false}}}}),
+   onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},
+  rpc(_name,args){
+   return Promise.resolve({data:Object.fromEntries(args.p_games.map(id=>[id,
+    id==='onecard'?{nick:'카드 승자',score:1}:
+    id==='tank'?{nick:'탱크 승자',score:16,opponents:11}:
+    id==='janggi'?{nick:'장기 승자',score:9,difficulty:'hard'}:
+    id==='yut'?{nick:'윷 승자',score:6}:null])),error:null});
+  }
+ })};
+ w.eval(read('shared/games/ranking-details.js'));
+ w.eval(script);await new Promise(resolve=>setImmediate(resolve));
+ const d=w.document;
+ const detail=id=>d.querySelector('[data-game="'+id+'"] .first-detail').textContent;
+ assert.equal(detail('onecard'),'5인 경기 · 컴퓨터 포함');
+ assert.equal(detail('tank'),'12인 경기 · 상대 11명');
+ assert.equal(detail('janggi'),'2인 대국 · 과거 고난도 · 어려움급');
+ assert.equal(detail('yut'),'참가 인원 미기록');
+ assert.equal(d.querySelector('[data-game="onecard"] .first-name').textContent,'1위 · 카드 승자');
+ assert.equal(d.querySelector('[data-game="tank"] .first-score').textContent,'16연승');
+ assert.equal(d.querySelector('[data-game="chess"] .first-detail').textContent,'','empty leaders show no fake detail');
+ assert.equal(d.querySelectorAll('.rank-entry').length,26);
+});
+
+test('monthly top ten also shows real opponents and difficulty for each winner',async t=>{
+ const markup=read('features/arcade/monthly-ranking.html');
+ assert.match(markup,/shared\/games\/ranking-details\.js/);
+ const dom=new JSDOM(markup,{url:'https://ojjuda.kr/features/arcade/monthly-ranking.html?game=tank',runScripts:'outside-only'});
+ t.after(()=>dom.window.close());
+ const w=dom.window;w.AbortSignal=AbortSignal;
+ w.OJJUDA_CONFIG={supabaseUrl:'https://fixture.invalid',supabaseKey:'fixture'};
+ w.supabase={createClient:()=>({
+  auth:{getSession:async()=>({data:{session:{user:{id:'member-a',is_anonymous:false}}}}),onAuthStateChange(){}},
+  rpc(){return {abortSignal:async()=>({data:{month:'2026-11',startsAt:'2026-10-31T16:00:00Z',endsAt:'2026-11-30T16:00:00Z',
+   leaders:[{nick:'탱크 챔피언',score:16,opponents:11}],mine:null},error:null})};}
+ })};
+ w.eval(read('shared/games/ranking-details.js'));
+ w.eval(read('features/arcade/monthly-ranking.js'));
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(w.document.querySelector('#ranking-leaders .rank-person small').textContent,'12인 경기 · 상대 11명');
+ assert.equal(w.document.querySelector('#ranking-leaders .rank-points').textContent,'16연승');
+});
+
+test('Janggi ranking rules belong in the guide, not in the leaderboard UI',()=>{
+ const guide=read('guide.html');
+ const overview=read('features/arcade/all-rankings.html');
+ const detailCss=read('features/arcade/all-rankings.css');
+ const pageCss=read('features/arcade/monthly-ranking.css');
+ const content=new JSDOM(page).window.document;
+ assert.equal(content.querySelector('#ranking-criteria'),null);
+ assert.equal(content.querySelector('main > .note'),null,'no general ranking explanation below the board');
+ assert.equal(content.querySelector('.intro > p:not(.period)'),null,'no reset instructions above the ranking');
+ assert.equal(content.querySelector('#ranking-mine > p'),null,'my ranking contains data, not an explanatory paragraph');
+ assert.doesNotMatch(viewer,/updateCriteria|ranking-criteria/);
+ assert.doesNotMatch(overview,/rank-footnote/);
+ assert.doesNotMatch(detailCss,/data-game="janggi".*game-name::after|content:"난이도 우선"/);
+ assert.doesNotMatch(pageCss,/\.ranking-criteria/);
+ assert.match(guide,/회원 대결 → 그랜드마스터 → 마스터 → 프로 → 어려움 → 보통 → 쉬움/);
+ assert.match(guide,/난이도가 높은 1승이 낮은 난이도의 10승보다 우선/);
+ assert.match(guide,/같은 난이도에서는 이번 달 최고 연승/);
+ assert.match(read('shared/games/ranking-details.js'),/row\.difficulty==='hard'/,
+  'ranking metadata still shows actual historical difficulty without extra instructions');
+});
