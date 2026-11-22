@@ -382,7 +382,7 @@ test('monthly top ten also shows real opponents and difficulty for each winner',
  assert.match(markup,/shared\/games\/ranking-details\.js/);
  const dom=new JSDOM(markup,{url:'https://ojjuda.kr/features/arcade/monthly-ranking.html?game=tank',runScripts:'outside-only'});
  t.after(()=>dom.window.close());
- const w=dom.window;
+ const w=dom.window;w.AbortSignal=AbortSignal;
  w.OJJUDA_CONFIG={supabaseUrl:'https://fixture.invalid',supabaseKey:'fixture'};
  w.supabase={createClient:()=>({
   auth:{getSession:async()=>({data:{session:{user:{id:'member-a',is_anonymous:false}}}}),onAuthStateChange(){}},
