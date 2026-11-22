@@ -154,6 +154,10 @@ test('one profile editor saves public name, region, intentions, tastes and priva
   const tastes = headings.find(node => node.textContent === '나를 표현하는 취향');
   const artwork = f.form().querySelector('.profile-art-choice');
   assert.ok(tastes && artwork, 'all moved public choices belong to the detailed editor');
+  assert.ok(f.form().querySelector('.unified-public-profile')?.contains(tastes),
+    'self-expression tastes belong to the public profile fieldset');
+  assert.equal(f.form().querySelector('.unified-private-profile')?.open,true,
+    'exchange-only fields start expanded but remain private to approved peers');
   const follows = (before, after) => Boolean(before.compareDocumentPosition(after) & f.window.Node.DOCUMENT_POSITION_FOLLOWING);
   assert.ok(follows(f.control('닉네임'), tastes));
   assert.ok(follows(f.control('공개할 활동 지역 시·도'), tastes));
