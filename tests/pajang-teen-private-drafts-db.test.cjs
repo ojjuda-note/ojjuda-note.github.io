@@ -110,6 +110,7 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
   const comment=await interact('comment',saved.id,{body:'그렇게 생각할 수도 있겠네요.'});
   assert.equal(comment.status,'pending');
   assert.equal((await interact('comments',saved.id)).items[0].reviewStatus,'pending');
+  assert.equal((await interact('comments',saved.id)).items[0].mine,true,'own pending comments are deletable');
   await login('teenA');
   assert.equal((await interact('comments',saved.id)).items.length,0,'unapproved comments are not public');
   await login('adult');
