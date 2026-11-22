@@ -136,6 +136,8 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
   await login('admin');
   const reportQueue=await moderateComment('queue');
   assert.equal(reportQueue.reports.length,1);
+  assert.equal(reportQueue.reports[0].body,'그렇게 생각할 수도 있겠네요.');
+  assert.equal(reportQueue.reports[0].status,'approved');
   assert.deepEqual(await moderateComment('hide',comment.id),{updated:true,status:'hidden'});
   assert.deepEqual(await moderateComment('resolve-report',reportQueue.reports[0].id),{resolved:true});
   await login('teenB');
@@ -163,6 +165,8 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
   const queue=await moderation('queue');
   assert.equal(queue.reports.length,1);
   assert.equal(queue.reports[0].reason,'bullying');
+  assert.equal(queue.reports[0].body,'다르게 답해요');
+  assert.equal(queue.reports[0].status,'approved');
   const reportId=queue.reports[0].id;
   assert.deepEqual(await moderation('hide',saved.id),{updated:true,status:'hidden'});
   assert.deepEqual(await moderation('resolve',null,reportId),{resolved:true});
