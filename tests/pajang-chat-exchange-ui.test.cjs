@@ -91,6 +91,19 @@ test("compact buttons and profile fraud warning appear only after 5 + 5 messages
   await waitFor(()=>f.state.profile==="sent","profile request persisted");
   assert.equal(f.calls.filter(row=>row.p_action==="request"&&row.p_kind==="profile").length,1);
   await waitFor(()=>!!f.button("프로필 신청 취소"),"outgoing request has a cancel action");
+  await waitFor(()=>!!f.request(),"sender request appears within chat");
+  assert.match(f.request().textContent,/상대에게 프로필 교환을 신청하였습니다/);
+  assert.match(f.request().textContent,/상대의 승인을 기다리고 있어요/);
+  assert.ok(f.w.document.querySelector(".chatlog").contains(f.request()));
+  assert.ok(f.request().classList.contains("exchange-chat-sent"));
+  assert.equal(f.button("승인"),undefined,"the sender cannot approve their own request");
+  assert.equal(f.button("거부"),undefined,"the sender cannot refuse their own request");
+  f.refresh();
+  await waitFor(()=>f.calls.filter(row=>row.p_action==="state").length>=3,"status remains server-backed");
+  assert.match(f.request().textContent,/상대에게 프로필 교환을 신청하였습니다/);
+  f.button("프로필 신청 취소").click();
+  await waitFor(()=>f.state.profile==="none","sender can withdraw before approval");
+  await waitFor(()=>f.request()===null,"withdrawn request no longer appears in chat");
 });
 
 test("received profile request appears within chat and requires explicit approval",async t=>{
@@ -118,4 +131,18 @@ test("photo requests can be refused without granting access",async t=>{
   assert.equal(f.button("상대 사진 보기"),undefined);
   await waitFor(()=>!!f.button("사진 교환"),"photo exchange can be requested again");
   assert.equal(f.calls.filter(row=>row.p_action==="decline"&&row.p_kind==="photos").length,1);
+});
+test("sender sees photo exchange confirmation in chat and can cancel without approval",async t=>{
+  const f=await fixture(t,{myCount:5,peerCount:5,eligible:true});
+  await waitFor(()=>!!f.button("사진 교환"),"photo button appears");
+  f.button("사진 교환").click();
+  await waitFor(()=>f.state.photos==="sent","photo request saved");
+  await waitFor(()=>!!f.request(),"outgoing photo notice appears");
+  assert.match(f.request().textContent,/상대에게 사진 교환을 신청하였습니다/);
+  assert.ok(f.w.document.querySelector(".chatlog").contains(f.request()));
+  assert.equal(f.button("승인"),undefined);
+  assert.equal(f.button("거부"),undefined);
+  f.button("사진 신청 취소").click();
+  await waitFor(()=>f.state.photos==="none","photo request withdrawn");
+  await waitFor(()=>f.request()===null,"no sender notice after cancel");
 });
