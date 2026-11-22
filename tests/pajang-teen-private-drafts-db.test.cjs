@@ -43,7 +43,7 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
   const sample=questionData[0];
   await login('teenA');
   const state=await invoke('state');
-  assert.equal(state.mode,'private');
+  assert.equal(state.mode,'community');
   assert.equal(state.questions.length,20);
   assert.equal(state.answers.length,0);
   assert.deepEqual(state.questions.map(q=>[q.id,q.question]),questionData.map(q=>[q.id,q.question]));
@@ -97,7 +97,7 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
   await login('teenA');
   await invoke('save',{questionId:sample.id,body:'고친 뒤 다시 비공개'});
   await login('admin');
-  assert.equal((await moderation('queue')).drafts.find(x=>x.id===saved.id).status,'private');
+  assert.equal((await moderation('queue')).drafts.find(x=>x.id===saved.id).status,'pending');
   await login('teenA');
   assert.deepEqual(await invoke('delete',{questionId:sample.id}),{deleted:true});
   assert.deepEqual(await invoke('delete',{questionId:sample.id}),{deleted:false});
