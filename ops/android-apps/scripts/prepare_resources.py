@@ -8,6 +8,8 @@ import subprocess
 from pathlib import Path
 from xml.sax.saxutils import escape
 
+from launch_routes import direct_entry
+
 PROJECT = Path(__file__).resolve().parents[1]
 REPO = PROJECT.parent.parent
 OUTPUT = PROJECT / 'app/build/generated/seasonal'
@@ -146,20 +148,20 @@ def prepare():
         if baseline['package'] != f'kr.ojjuda.{app}':
             raise SystemExit(f'Unexpected original package for {app}')
         res = OUTPUT / app / 'res'
-        strings = dict(baseline['strings'])
-        statements = [{'relation': ['delegate_permission/common.handle_all_urls'], 'target': {'namespace': 'web', 'site': origin}} for origin in ('https://ojjuda.com', 'https://ojjuda.kr')]
+        strings, web_manifest = direct_entry(app, baseline)
+        statements = [{'relation': ['delegate_permission/common.handle_all_urls'], 'target': {'namespace': 'web', 'site': origin}} for origin in ('https://ojjuda.kr', 'https://ojjuda.com')]
         strings['assetStatements'] = json.dumps(statements, ensure_ascii=False)
         strings['generatorApp'] = 'ojjuda-seasonal-reconstruction'
         entries = [f'  <string name="{key}" translatable="false">{xml_string(value)}</string>' for key, value in strings.items()]
         entries += [f'  <color name="{key}">{value}</color>' for key, value in baseline['colors'].items()]
         entries += [f'  <bool name="{key}">{str(value).lower()}</bool>' for key, value in baseline['booleans'].items()]
         entries += [f'  <integer name="{key}">{value}</integer>' for key, value in baseline['integers'].items()]
-        entries.append('  <string-array name="additional_trusted_origins"><item>https://ojjuda.kr</item></string-array>')
+        entries.append('  <string-array name="additional_trusted_origins"><item>https://ojjuda.com</item></string-array>')
         write(res / 'values/twa.xml', '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n' + '\n'.join(entries) + '\n</resources>\n')
         write(res / 'xml/filepaths.xml', '<paths xmlns:android="http://schemas.android.com/apk/res/android"><files-path name="twa_splash" path="twa_splash/" /></paths>\n')
         write(res / 'xml/shortcuts.xml', '<shortcuts xmlns:android="http://schemas.android.com/apk/res/android" />\n')
         write(res / 'raw/seasonal_icon_calendar.json', calendar_path.read_text())
-        write(res / 'raw/web_app_manifest.json', json.dumps(baseline['webManifest'], ensure_ascii=False, indent=2) + '\n')
+        write(res / 'raw/web_app_manifest.json', json.dumps(web_manifest, ensure_ascii=False, indent=2) + '\n')
         for theme in THEMES:
             source = masters[(app, theme)]
             background_color = subprocess.check_output(
