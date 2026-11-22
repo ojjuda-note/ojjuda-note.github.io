@@ -274,7 +274,7 @@ async function openGroup(dialog,label) {
       await answers.locator('.cardgrid[aria-busy="false"]').waitFor();
       assert.equal(await filters.getByRole('button',{name:label,exact:true}).getAttribute('aria-pressed'),'true');
       assert.equal(await answers.locator('.answercard').count(),1,'one matching fixture answer for '+key);
-      assert.equal(await answers.locator('.feednumber').getAttribute('aria-label'),'답변 1개');
+      assert.equal(await answers.locator('.history-heading .feednumber').count(),0,'the answer heading has no count badge');
     }
     await page.evaluate(()=>{window.preferenceFixture.emptyFilter='marriage';});
     await filters.getByRole('button',{name:'전체',exact:true}).click();
@@ -282,7 +282,7 @@ async function openGroup(dialog,label) {
     await filters.getByRole('button',{name:'결혼',exact:true}).click();
     await answers.getByRole('heading',{name:'이 인연을 원하는 회원의 답변이 아직 없어요',exact:true}).waitFor();
     assert.equal(await answers.locator('.answercard').count(),0);
-    assert.equal(await answers.locator('.feednumber').getAttribute('aria-label'),'답변 0개');
+    assert.equal(await answers.locator('.history-heading .feednumber').count(),0,'the answer heading has no count badge');
     await answers.getByRole('button',{name:'전체 답변 보기',exact:true}).click();
     await answers.locator('.answercard').nth(3).waitFor();
     assert.equal(await filters.getByRole('button',{name:'전체',exact:true}).getAttribute('aria-pressed'),'true');
@@ -506,7 +506,7 @@ async function openGroup(dialog,label) {
     await filters.getByRole('button',{name:'대화',exact:true}).click();
     await answers.locator('.cardgrid[aria-busy="false"]').waitFor();
     assert.equal(await answers.locator('.answercard').count(),24,'only the server page is shown initially');
-    assert.equal(await answers.locator('.feednumber').getAttribute('aria-label'),'답변 26개','the server filtered total is shown');
+    assert.equal(await answers.locator('.history-heading .feednumber').count(),0,'the answer heading has no count badge');
     await answers.getByRole('button',{name:'답변 더 보기',exact:true}).click();
     await answers.locator('.answercard').nth(25).waitFor();
     const cursorCall=await page.evaluate(()=>window.preferenceFixture.feeds.find(call=>call.p_cursor));

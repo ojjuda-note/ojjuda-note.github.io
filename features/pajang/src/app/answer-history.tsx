@@ -227,7 +227,6 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
     <div className="sectiontitle history-head">
       <div className="history-heading">
         <h2 id="all-answers-title">모두의 답변</h2>
-        <span className="feednumber" aria-label={result.total===null?undefined:"답변 "+result.total+"개"}>{result.total}</span>
       </div>
       <div className="signal-budget"><span className="budget"><I n="signal" s={16}/>남은 신호 <b>{station.remaining}{station.paidRemaining?<em>개</em>:<em> / 3</em>}</b></span>
         {!!station.paidRemaining&&<small>무료 {station.freeRemaining??0} · 구매 {station.paidRemaining}</small>}
