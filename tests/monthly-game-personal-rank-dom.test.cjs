@@ -338,7 +338,7 @@ test('ranking match details use only actual difficulty and participant metadata'
  assert.equal(describe('onecard',{score:1}),'5인 경기 · 컴퓨터 포함');
  assert.equal(describe('onecard',{score:1,mode:'solo'}),'5인 경기 · 컴퓨터 포함 · 컴퓨터 대전');
  assert.equal(describe('yut',{score:6}),'참가 인원 미기록','never invent unrecorded Yut participants');
- assert.equal(describe('yut',{score:6,players:4,mode:'island'}),'4인 경기 · 보통 · 장애물 놀이');
+ assert.equal(describe('yut',{score:6,players:4,mode:'island'}),'4팀 경기 · 보통 · 장애물 놀이');
  assert.equal(describe('tour',{score:2,player_count:3}),'3인 경기');
  assert.equal(describe('bang',{score:3,players:15}),'참가 인원 미기록','reject invalid participant counts');
  assert.equal(describe('mines',{score:1}), '', 'do not invent a difficulty from invalid scoring');
