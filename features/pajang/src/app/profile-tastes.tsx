@@ -47,7 +47,7 @@ export function ProfileTastesFields({value,interest,onInterest,onChange,drafts,o
 }){
   return <div className="preference-editor">
     <div className="preference-section-heading"><h3>나를 표현하는 취향</h3><span>모두 선택 사항</span></div>
-    <p className="preference-help">선택한 취향과 프로필 그림은 공개 프로필에도 보여요.</p>
+    <p className="preference-help">선택한 취향과 프로필 그림은 파장 회원에게 공개돼요.</p>
     {profilePreferenceGroups.map(group=>{
       const key=group.key,selected=tasteLabels(value,key);
       return <details className="preference-group" key={key} name="profile-preference-group">
