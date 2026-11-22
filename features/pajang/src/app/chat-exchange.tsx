@@ -88,18 +88,26 @@ export function ChatExchange({peer,lastMessage,children}:{
       if(mounted.current){setBusy(false);if(request!==revision.current&&!document.hidden)void reload();}
     }
   }
-  const received=state?.eligible?categories.filter(({kind})=>state[kind]==="received"):[];
-  const notification=received.length?<div ref={notificationRef} className="exchange-chat-notices" aria-live="polite">
-    {received.map(({kind,label})=><div className="exchange-chat-request" key={kind} role="group" aria-label={label+" 교환 요청"}>
-      <span className="exchange-chat-symbol"><I n={kind==="profile"?"user":"document"} s={17}/></span>
-      <div className="exchange-chat-request-content">
-        <p>상대가 {label} 교환을 신청하였습니다.</p>
-        <div className="exchange-chat-response">
-          <button type="button" className="exchange-approve" disabled={busy} onClick={()=>void update("accept",kind)} aria-label={label+" 교환 승인"}>승인</button>
-          <button type="button" className="exchange-decline" disabled={busy} onClick={()=>void update("decline",kind)} aria-label={label+" 교환 거부"}>거부</button>
+  // Both sides see the request in their chat. These notices are derived from
+  // the persisted exchange state, so re-entering the chat keeps pending status.
+  // Only the recipient may approve or decline.
+  const pendingNotices=state?.eligible?categories.filter(({kind})=>
+    state[kind]==="sent"||state[kind]==="received"):[]; 
+  const notification=pendingNotices.length?<div ref={notificationRef} className="exchange-chat-notices" aria-live="polite">
+    {pendingNotices.map(({kind,label})=>{
+      const incoming=state?.[kind]==="received";
+      return <div className={"exchange-chat-request"+(incoming?"":" exchange-chat-sent")} key={kind} role="group"
+        aria-label={label+(incoming?" 교환 요청":" 교환 신청 상태")}>
+        <span className="exchange-chat-symbol"><I n={kind==="profile"?"user":"document"} s={17}/></span>
+        <div className="exchange-chat-request-content">
+          <p>{incoming?"상대가":"상대에게"} {label} 교환을 신청하였습니다.</p>
+          {incoming?<div className="exchange-chat-response">
+            <button type="button" className="exchange-approve" disabled={busy} onClick={()=>void update("accept",kind)} aria-label={label+" 교환 승인"}>승인</button>
+            <button type="button" className="exchange-decline" disabled={busy} onClick={()=>void update("decline",kind)} aria-label={label+" 교환 거부"}>거부</button>
+          </div>:<small className="exchange-chat-waiting">상대의 승인을 기다리고 있어요.</small>}
         </div>
-      </div>
-    </div>)}
+      </div>;
+    })}
   </div>:null;
   const current=state;
   const actions=current?.eligible?<section className="chat-exchange-actions" aria-label="프로필과 사진 교환">
