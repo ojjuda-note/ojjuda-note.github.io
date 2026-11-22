@@ -449,8 +449,11 @@ if (nctwishProfile) {
 // Official source rechecked 2026-11-12.
 const andteamProfile = window.OJJUDA_FAN_PROFILES.andteam;
 if (andteamProfile) {
-  andteamProfile.checkedAt = '2026.11.17';
+  andteamProfile.checkedAt = '2026.11.22';
   andteamProfile.expanded = true;
+  andteamProfile.awards = [
+    { year: '2026.11', title: '제68회 일본 레코드 대상 특별상', detail: '2026.11.21 YX LABELS 공식 수상 발표 · 시상식 날짜와 구분', href: 'https://www.andteam-official.jp/news/ffef3907e21b' }
+  ];
   andteamProfile.records = [
     { year: '2022.12', title: '일본 데뷔', detail: 'First Howling : ME · Under the skin', href: 'https://www.andteam-official.jp/news/owsyjh' },
     { year: '2026–2027', title: 'Mark on You 일본 투어', detail: '홀·아레나 공연 · 변경은 공식 일정 확인', href: 'https://www.andteam-official.jp/news/dd0f71998bc8' },
