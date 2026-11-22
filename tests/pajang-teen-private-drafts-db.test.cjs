@@ -17,6 +17,7 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
     'create table ojjuda_account_internal.member_identity(user_id uuid primary key,birth_date date);',
     'create schema ojjuda_restaurants_internal;',
     'create table public.app_admins(user_id uuid primary key);',
+    'create table public.profiles(id uuid primary key,nickname text);',
     "create function auth.jwt() returns jsonb language sql stable set search_path='' as $$ select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb $$;",
     "create function auth.uid() returns uuid language sql stable set search_path='' as $$ select nullif(auth.jwt()->>'sub','')::uuid $$;",
     'create function ojjuda_restaurants_internal.member_allowed() returns boolean language sql stable as $$ select exists(select from auth.users where id=auth.uid() and not suspended) $$;',
@@ -29,6 +30,7 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
   await db.exec(migration('20261122170500_pajang_teen_visible_feed.sql'));
   for(const [name,id] of Object.entries(actors)){
     await db.query('insert into auth.users values($1,false)',[id]);
+    await db.query('insert into public.profiles values($1,$2)',[id,name==='teenA'?'새싹':name==='teenB'?'바람':name==='adult'?'어른':'관리자']);
     await db.query('insert into ojjuda_account_internal.member_identity values($1,$2)',[
       id,name==='teenA'?'2010-01-01':name==='teenB'?'2011-01-01':'1988-01-01']);
   }
@@ -88,7 +90,7 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
   assert.equal(peerFeed.items.length,1);
   assert.equal(peerFeed.items[0].authorId,actors.teenA);
   assert.equal(peerFeed.items[0].body,'다르게 답해요');
-  assert.equal(peerFeed.items[0].authorName,'파장 회원');
+  assert.equal(peerFeed.items[0].authorName,'새싹');
   assert.equal((await feed(questionData[1].id)).items.length,0);
   await assert.rejects(()=>feed('bad-id'),e=>e.code==='22023');
   const likeResult=await interact('like',saved.id,{liked:true});
@@ -113,6 +115,7 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
   assert.equal(visibleComment.id,comment.id);
   assert.equal(visibleComment.body,'그렇게 생각할 수도 있겠네요.');
   assert.equal(visibleComment.authorId,actors.teenB);
+  assert.equal(visibleComment.authorName,'바람');
   assert.equal((await feed(sample.id)).items[0].commentCount,1);
   assert.deepEqual(await interact('report-comment',comment.id,{reason:'other'}),{reported:true});
   await login('admin');
