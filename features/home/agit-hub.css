@@ -109,6 +109,11 @@ body:has(.agit-hub) .bottomnav button.on{color:var(--accent-ink,#245a48)}
 .agit-life-tile--3{--banner-paper:#fcfdfe;--banner-tint:#edf3f8;--banner-stroke:#dce6ed;--banner-ink:#31475b;--banner-muted:#718292;--banner-accent:#7295af}
 .agit-life-tile--2{--banner-paper:#fefcf9;--banner-tint:#f8f1e9;--banner-stroke:#eee3d9;--banner-ink:#604a3b;--banner-muted:#8c7a6c;--banner-accent:#b69478}
 .agit-life-tile--4{--banner-paper:#fdfcfe;--banner-tint:#f5f0f7;--banner-stroke:#ebe2ec;--banner-ink:#5d4c64;--banner-muted:#89798d;--banner-accent:#aa8aaa}
+/* Wood · porcelain · bronze sign · amethyst: coordinated with each artwork. */
+.agit-life-tile--1{--letter-light:#6e8a6e;--letter-mid:#466c50;--letter-deep:#294732;--letter-relief:#bdd0bc;--letter-shadow:rgba(39,70,43,.17);--letter-stroke:rgba(45,71,47,.16)}
+.agit-life-tile--3{--letter-light:#7795a7;--letter-mid:#4b738d;--letter-deep:#304f65;--letter-relief:#cadbe6;--letter-shadow:rgba(39,74,96,.16);--letter-stroke:rgba(49,75,96,.15)}
+.agit-life-tile--2{--letter-light:#b18d68;--letter-mid:#927054;--letter-deep:#624a37;--letter-relief:#eed7bb;--letter-shadow:rgba(103,72,44,.17);--letter-stroke:rgba(109,76,48,.16)}
+.agit-life-tile--4{--letter-light:#ab89b5;--letter-mid:#866592;--letter-deep:#5c4767;--letter-relief:#e9d4ed;--letter-shadow:rgba(99,69,113,.16);--letter-stroke:rgba(91,65,98,.15)}
 .agit-life-tile:hover{transform:translateY(-2px);border-color:var(--banner-accent);box-shadow:0 9px 20px rgba(40,48,42,.09)}
 .agit-life-tile:active{transform:translateY(0)}
 .agit-life-top{position:absolute;z-index:2;top:50%;right:clamp(13px,2.1vw,22px);transform:translateY(-50%)}
@@ -119,7 +124,25 @@ body:has(.agit-hub) .bottomnav button.on{color:var(--accent-ink,#245a48)}
 .agit-life-art img{display:block;width:100%;height:100%;object-fit:contain;object-position:center;transition:transform .22s ease}
 .agit-life-tile:hover .agit-life-art img{transform:scale(1.025)}
 .agit-life-title{display:grid;align-content:center;gap:6px;min-width:0;padding:10px 49px 10px clamp(13px,2.3vw,23px)}
-.agit-life-title strong{color:var(--banner-ink);font-size:clamp(18px,2.35vw,23px);font-weight:800;letter-spacing:-.055em;line-height:1.28;word-break:keep-all}
+/* Illustrated typography: restrained material finish, real selectable text. */
+.agit-life-title strong{
+  display:inline-block;width:fit-content;max-width:100%;
+  color:var(--letter-deep,var(--banner-ink));font-size:clamp(18px,2.35vw,23px);
+  font-weight:900;letter-spacing:-.055em;line-height:1.28;word-break:keep-all;
+  -webkit-text-stroke:.2px var(--letter-stroke,transparent);
+  paint-order:stroke fill;
+  text-shadow:0 1px 0 var(--letter-glint,rgba(255,255,255,.68)),
+              0 2px 0 var(--letter-relief,rgba(30,50,35,.13)),
+              0 3px 5px var(--letter-shadow,rgba(25,40,29,.15))
+}
+/* Shaded glyphs resemble subtly embossed illustrated lettering. */
+@supports ((-webkit-background-clip:text) or (background-clip:text)){
+ .agit-life-title strong{
+   background-image:linear-gradient(170deg,var(--letter-light) 0%,var(--letter-mid) 46%,var(--letter-deep) 100%);
+   -webkit-background-clip:text;background-clip:text;
+   color:transparent;-webkit-text-fill-color:transparent
+ }
+}
 .agit-life-title small{color:var(--banner-muted);font-size:clamp(11px,1.5vw,13px);font-weight:550;line-height:1.38;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .agit-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:29px;padding:17px 3px 0;border-top:1px solid var(--line,#d8e7dd);color:var(--ink-2,#62756a);font-size:12px}
 .agit-footer button{display:inline-flex;align-items:center;gap:8px;padding:8px 0 8px 10px;border:0;background:transparent;color:var(--accent-ink,#245a48);font-size:12px;font-weight:700}
@@ -314,6 +337,12 @@ body:has(.agit-hub) .bottomnav button.on{color:var(--accent-ink,#245a48)}
 :root[data-theme=dark] .agit-life-tile--3{--banner-paper:#293946;--banner-tint:#344a5c;--banner-stroke:#4d6678;--banner-ink:#e8f2f9;--banner-muted:#bfd3e0;--banner-accent:#9cb7cb}
 :root[data-theme=dark] .agit-life-tile--2{--banner-paper:#42382f;--banner-tint:#574437;--banner-stroke:#75604d;--banner-ink:#f8ecdf;--banner-muted:#e4cdb8;--banner-accent:#d7b18d}
 :root[data-theme=dark] .agit-life-tile--4{--banner-paper:#3d3340;--banner-tint:#4f3e52;--banner-stroke:#6b5770;--banner-ink:#f7eef9;--banner-muted:#ddc9e0;--banner-accent:#c8a4ce}
+
+/* Illuminated relief rather than heavy shadow when the UI is dark. */
+:root[data-theme=dark] .agit-life-tile--1{--letter-light:#f1fff1;--letter-mid:#c4e4cb;--letter-deep:#92c2a1;--letter-glint:rgba(255,255,255,.12);--letter-relief:#294635;--letter-shadow:rgba(0,0,0,.35);--letter-stroke:rgba(5,30,12,.2)}
+:root[data-theme=dark] .agit-life-tile--3{--letter-light:#f1faff;--letter-mid:#c8e0f1;--letter-deep:#97bbd0;--letter-glint:rgba(255,255,255,.12);--letter-relief:#294557;--letter-shadow:rgba(0,0,0,.35);--letter-stroke:rgba(9,27,44,.2)}
+:root[data-theme=dark] .agit-life-tile--2{--letter-light:#fff6e8;--letter-mid:#ebd2ba;--letter-deep:#d4aa86;--letter-glint:rgba(255,255,255,.12);--letter-relief:#483529;--letter-shadow:rgba(0,0,0,.35);--letter-stroke:rgba(33,19,9,.2)}
+:root[data-theme=dark] .agit-life-tile--4{--letter-light:#fff3ff;--letter-mid:#e7cceb;--letter-deep:#c79dd0;--letter-glint:rgba(255,255,255,.12);--letter-relief:#41314c;--letter-shadow:rgba(0,0,0,.35);--letter-stroke:rgba(29,16,39,.2)}
 
 /* Green theme details follow the system dark palette without changing artwork. */
 :root[data-theme=dark] .agit-life-art{background:var(--banner-tint)}
