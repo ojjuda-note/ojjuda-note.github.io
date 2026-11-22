@@ -1,7 +1,6 @@
 /* Entry controls are presentation only; existing game start/invite handlers own actions. */
 (() => {
   'use strict';
-  const selected = new Map();
   const icons={
     '🔨':'<path d="m8 5 3-3 8 8-3 3-3-3-7 9-3-3 8-7z"/>',
     '🏃':'<circle cx="15" cy="4" r="2"/><path d="m7 10 4-3 4 3 4 1M11 7l-1 7-5 6m5-6 5 1 1 6"/>',
@@ -19,7 +18,6 @@
   };
   function select(card, mode) {
     if (!['computer', 'opponent'].includes(mode)) return;
-    selected.set(card.dataset.entryKey, mode);
     card.querySelectorAll('[data-entry-mode]').forEach(button => {
       const active = button.dataset.entryMode === mode;
       button.classList.toggle('on', active);
@@ -76,12 +74,16 @@
     });
     root.querySelectorAll('.game-entry[data-entry-key]:not([data-entry-ready])').forEach(card => {
       card.dataset.entryReady = 'true';
-      select(card, selected.get(card.dataset.entryKey) || 'computer');
+      // Opening any game starts on solo; changing tabs is never remembered as a difficulty choice.
+      select(card, 'computer');
     });
   }
   document.addEventListener('click', event => {
     const button = event.target.closest('[data-entry-mode]');
-    if (button) select(button.closest('.game-entry'), button.dataset.entryMode);
+    if (button) {
+      const card=button.closest('.game-entry');
+      if(card)select(card, button.dataset.entryMode);
+    }
   });
   document.addEventListener('input', event => {
     if (event.target.matches('[data-friend-search]')) filter(event.target.closest('[data-entry-friends]'));
