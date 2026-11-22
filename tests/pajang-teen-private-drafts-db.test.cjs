@@ -29,6 +29,7 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
   await db.exec(migration('20261122170234_pajang_teen_private_drafts.sql'));
   await db.exec(migration('20261122170500_pajang_teen_visible_feed.sql'));
   await db.exec(migration('20261122172528_pajang_teen_launch_gate.sql'));
+  await db.exec(migration('20261122174320_pajang_teen_comment_cleanup.sql'));
   for(const [name,id] of Object.entries(actors)){
     await db.query('insert into auth.users values($1,false)',[id]);
     await db.query('insert into public.profiles values($1,$2)',[id,name==='teenA'?'새싹':name==='teenB'?'바람':name==='adult'?'어른':'관리자']);
@@ -126,12 +127,21 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
   assert.equal(visibleComment.body,'그렇게 생각할 수도 있겠네요.');
   assert.equal(visibleComment.authorId,actors.teenB);
   assert.equal(visibleComment.authorName,'바람');
+  assert.equal(visibleComment.mine,false,'other members must not get author delete permission');
+  assert.deepEqual(await interact('delete-comment',comment.id),{deleted:false},
+    'the post owner cannot remove another member’s comment');
   assert.equal((await feed(sample.id)).items[0].commentCount,1);
   assert.deepEqual(await interact('report-comment',comment.id,{reason:'other'}),{reported:true});
   await login('admin');
   const reportQueue=await moderateComment('queue');
   assert.equal(reportQueue.reports.length,1);
   assert.deepEqual(await moderateComment('hide',comment.id),{updated:true,status:'hidden'});
+  await login('teenB');
+  assert.deepEqual(await interact('delete-comment',comment.id),{deleted:true},
+    'comment author can withdraw an approved or hidden comment');
+  assert.deepEqual(await interact('delete-comment',comment.id),{deleted:false},
+    'a repeated delete does not reveal anyone else’s data');
+  await login('admin');
   assert.deepEqual(await moderateComment('resolve-report',reportQueue.reports[0].id),{resolved:true});
   await login('teenA');
   assert.equal((await interact('comments',saved.id)).items.length,0);
