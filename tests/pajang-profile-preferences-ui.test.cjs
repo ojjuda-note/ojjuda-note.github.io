@@ -65,7 +65,7 @@ function fixture() {
     control.record = () => structuredClone(records.get(state.me.id));
     control.detail = () => {
       const record=records.get(state.me.id);
-      return structuredClone({...privateProfile,person:state.me.id,interest:state.me.interest,
+      return structuredClone({...privateProfile,person:state.me.id,name:state.me.name,region:state.me.region,interest:state.me.interest,
         preferences:record.preferences,preferencesVersion:record.version});
     };
     control.finishRead = () => control.pendingReads.shift()?.();
@@ -146,7 +146,8 @@ function fixture() {
           const record={person:state.me.id,preferences:{...current.preferences,...structuredClone(data.preferences)},version:current.version+1};
           records.set(state.me.id,record);
           privateProfile={...privateProfile,fields:structuredClone(data.fields),showAge:data.showAge,showGender:data.showGender};
-          Object.assign(state.me,{interest:data.interest,preferences:record.preferences,preferencesVersion:record.version});
+          Object.assign(state.me,{name:data.name.trim(),region:data.region,interest:data.interest,
+             preferences:record.preferences,preferencesVersion:record.version});
           return {data:control.detail(),error:null};
         }
         if(name==='pajang_discovery_feed'){
@@ -179,8 +180,8 @@ async function assertNoOverflow(page,label) {
 async function openProfile(page,{ready=true}={}) {
   await page.waitForFunction(()=>!history.state?.pajangNavigation?.modal);
   await page.getByRole('navigation',{name:'파장 메뉴'}).getByRole('link',{name:'내 파장',exact:true}).click();
-  await page.getByRole('button',{name:'공개 프로필 수정',exact:true}).click();
-  const dialog=page.getByRole('dialog',{name:'공개 프로필 수정',exact:true});
+  await page.getByRole('button',{name:'내 프로필 수정',exact:true}).click();
+  const dialog=page.getByRole('dialog',{name:'내 프로필 수정',exact:true});
   await dialog.waitFor();
   const save=dialog.getByRole('button',{name:'프로필 저장',exact:true});
   if(ready){
@@ -196,19 +197,8 @@ async function closeProfile(page,dialog) {
   await page.waitForFunction(()=>!history.state?.pajangNavigation?.modal);
 }
 
-async function openDetails(page,{ready=true}={}) {
-  await page.waitForFunction(()=>!history.state?.pajangNavigation?.modal);
-  await page.getByRole('navigation',{name:'파장 메뉴'}).getByRole('link',{name:'내 파장',exact:true}).click();
-  await page.getByRole('button',{name:'교환용 프로필·취향 수정',exact:true}).click();
-  const dialog=page.getByRole('dialog',{name:'교환용 프로필',exact:true});
-  await dialog.waitFor();
-  const save=dialog.getByRole('button',{name:'교환용 프로필 저장',exact:true});
-  if(ready){
-    await save.waitFor();
-    await page.waitForFunction(button=>!button.disabled,await save.elementHandle());
-  }
-  return {dialog,save};
-}
+// The public and exchange editors now share one entry point.
+async function openDetails(page,options) { return openProfile(page,options); }
 
 async function openGroup(dialog,label) {
   const group=dialog.locator('details').filter({hasText:label});
