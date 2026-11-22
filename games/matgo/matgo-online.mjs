@@ -184,10 +184,14 @@ async function enter(action,code){
 const lobbyTemplate=$('#content .game-entry').cloneNode(true);lobbyTemplate.removeAttribute('data-entry-ready');
 const lobbyHTML=lobbyTemplate.outerHTML;
 function showLobby(){
+  // A player may select online mode while wallet verification is in flight.
+  // Preserve that choice when the initial lobby template is re-rendered.
+  const selectedMode=$('#content .game-entry [data-entry-mode][aria-pressed="true"]')?.dataset.entryMode;
   cancelPresentation();
   arcadeRoom=null;roomLabel();
   $('#gukjin').hidden=true;viewKey='lobby';room=null;cursor=0;promptKey='';pendingMove=null;closeDialog();clearEvents();
   $('#content').innerHTML=lobbyHTML;
+  if(selectedMode==='opponent')$('#content .game-entry [data-entry-mode="opponent"]')?.click();
   if(retiringRoom){
     const progress=document.createElement('p');progress.id='fresh-entry-state';progress.className='ge-copy';progress.setAttribute('role','status');
     progress.textContent=retireLeave?'이전 대전의 나가기를 확인하고 있어요. 완료되면 새 판을 시작할 수 있어요.':'상대의 대전과 골드 정산이 끝나면 새 판을 시작할 수 있어요.';
