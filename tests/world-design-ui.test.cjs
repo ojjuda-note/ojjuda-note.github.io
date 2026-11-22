@@ -87,11 +87,11 @@ world=world.slice(0,boot)+`
  assert.equal(await page.locator('.bottomnav [aria-current=page]').getAttribute('data-tab'),'hub','the Agit click selects its own destination');
  assert.deepEqual(await page.locator('[data-act=agit-daily]').evaluateAll(buttons=>buttons.map(button=>({id:button.dataset.v,images:button.querySelectorAll('img').length}))),[{id:'group',images:1},{id:'restaurants',images:1},{id:'festival',images:1}],'Hub preserves the current daily card order and covers');
  assert.equal(await page.locator('#agit-daily h2').innerText(),'일상 둘러보기');
- assert.equal(await page.locator('#agit-daily a[href="/features/fanpages/index.html"]').count(),1,'Fanpage remains visible between Group and Restaurants');
+ assert.equal(await page.locator('#agit-daily a[href="/features/fanpages/index.html"]').count(),1,'Fanpage remains visible after Festival');
  assert.deepEqual(await page.locator('[data-act=agit-daily][aria-label*="회원 전용"]').evaluateAll(buttons=>buttons.map(button=>button.dataset.v)),['group'],'only Group requires membership in the current daily tools');
  const dailyCovers=page.locator('#agit-daily img, .agit-reading-grid img');
  assert.deepEqual(await dailyCovers.evaluateAll(images=>images.map(image=>image.getAttribute('src'))),
-  ['group','fanpages','restaurants','festival','biorhythm','tarot','saju'].map(id=>'/features/home/daily-'+id+'.webp'));
+  ['group','restaurants','festival','fanpages','biorhythm','tarot','saju'].map(id=>'/features/home/daily-'+id+'.webp'));
  const readings=page.locator('.agit-reading-grid > a');
  assert.deepEqual(await readings.locator('strong').allTextContents(),['바이오리듬','타로','사주']);
  for(const width of [320,768,390]){
