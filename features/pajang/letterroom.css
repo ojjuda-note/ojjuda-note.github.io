@@ -385,6 +385,8 @@ footer,.footerbrand {color:var(--ink-2)}
   background:var(--accent-soft);color:var(--accent-ink)}
 .exchange-chat-request-content{min-width:0;flex:1}
 .exchange-chat-request-content p{margin:1px 0 11px;color:var(--pajang-text);font-size:13px;line-height:1.55;font-weight:550}
+.exchange-chat-sent{margin-left:auto;background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 23%,var(--line))}
+.exchange-chat-waiting{display:block;margin-top:-4px;color:var(--ink-2);font-size:12px;line-height:1.5}
 .exchange-chat-response{display:flex;gap:8px}
 .exchange-chat-response button{display:flex;align-items:center;justify-content:center;min-width:80px;
   min-height:40px;padding:7px 13px;border-radius:9px;font-size:13px;font-weight:600}
