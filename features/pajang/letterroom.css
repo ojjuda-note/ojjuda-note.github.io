@@ -399,3 +399,30 @@ footer,.footerbrand {color:var(--ink-2)}
   .chat-exchange-button{gap:5px;padding-inline:5px;font-size:12px}
   .exchange-chat-request{padding:11px}
 }
+
+/* One editor, two distinct visibility scopes; compact on phones. */
+.unified-profile-editor .unified-public-profile{display:grid;gap:12px;margin:0;padding:0;border:0}
+.unified-profile-editor .unified-public-profile>legend{margin:0 0 3px;font-size:16px;font-weight:650;color:var(--pajang-heading)}
+.unified-profile-editor .unified-public-profile>.exchange-hint{margin:-4px 0 0;font-size:12px}
+.unified-profile-editor .unified-public-profile>label{min-width:0}
+.unified-profile-editor .unified-public-profile .exchange-region{min-width:0;grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+.unified-profile-editor .profile-intent-field{margin:2px 0 0;padding:0;border:0;min-width:0}
+.unified-profile-editor .profile-intent-field legend{font-size:14px;margin-bottom:6px}
+.unified-profile-editor .unified-public-tastes{margin:4px 0 5px}
+.unified-profile-editor .unified-private-profile{margin:5px 0 0;padding:0;border:1px solid var(--line);border-radius:12px;background:var(--surface-2)}
+.unified-profile-editor .unified-private-profile>summary{min-height:52px;display:flex;align-items:center;padding:12px 14px;cursor:pointer;list-style:inside;color:var(--pajang-heading)}
+.unified-profile-editor .unified-private-profile>summary>span{display:inline-grid;gap:2px;margin-left:8px}
+.unified-profile-editor .unified-private-profile>summary strong{font-size:14px;font-weight:600}
+.unified-profile-editor .unified-private-profile>summary small{font-size:12px;color:var(--ink-2);font-weight:400}
+.unified-profile-editor .unified-private-fields{display:grid;gap:16px;padding:5px 14px 16px}
+.unified-profile-editor .unified-private-fields fieldset{min-width:0}
+.unified-profile-editor .unified-private-fields fieldset>legend{font-size:13px;font-weight:600;color:var(--pajang-heading)}
+.unified-profile-editor .unified-private-fields .exchange-bio{display:grid;gap:4px}
+.unified-profile-editor .unified-private-fields .exchange-bio textarea{width:100%;min-width:0}
+@media(max-width:420px){.unified-profile-editor .unified-private-fields{padding:4px 11px 14px}
+  .unified-profile-editor .unified-public-profile .exchange-region{gap:9px}}
+.unified-peer-profile{display:grid;gap:7px}
+.unified-peer-profile>h3{font-size:17px;font-weight:650;color:var(--pajang-heading)}
+.unified-peer-profile>h4{margin:12px 0 0;padding-top:12px;border-top:1px solid var(--line);font-size:14px;font-weight:600;color:var(--pajang-heading)}
+.unified-peer-profile>.sub{margin:0;color:var(--ink-2)}
+.unified-peer-profile .public-preference-summary{margin:6px 0 0}

@@ -578,8 +578,8 @@ async function checkNavigation(page){
   await heading('내 파장').waitFor();
   await page.goBack();await heading('마음함').waitFor();
   await page.goForward();await heading('내 파장').waitFor();
-  await settings.getByRole('button',{name:'공개 프로필 수정',exact:true}).click();
-  const editor=page.getByRole('dialog',{name:'공개 프로필 수정'});
+  await settings.getByRole('button',{name:'내 프로필 수정',exact:true}).click();
+  const editor=page.getByRole('dialog',{name:'내 프로필 수정'});
   await editor.waitFor();
   await editor.getByRole('button',{name:'닫기',exact:true}).click();
   await editor.waitFor({state:'detached'});
@@ -1224,7 +1224,7 @@ async function checkNavigation(page){
     await page.evaluate(()=>{sessionStorage.fixtureMode='member';});
     await page.goto(origin+project+'station.html?tab=profile');await settings.waitFor();
     console.log('PASS profile-only Agit button, integrated account menus, nickname/consent confirmation, safe cancellation and local logout');
-    await page.getByRole('button',{name:'공개 프로필 수정'}).click();
+    await page.getByRole('button',{name:'내 프로필 수정'}).click();
     const dialog=page.getByRole('dialog');await dialog.waitFor();await capture('profile-editor');
     assert.equal(await dialog.getByRole('link',{name:'아지트로',exact:true}).count(),0);
     await dialog.getByRole('button',{name:'닫기'}).click();

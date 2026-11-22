@@ -113,15 +113,16 @@ async function fixture(t, {mode='station', body='기존 답변', chat=false, set
               else if (action === 'exchange') {
                 assert.equal(data.profilePerson,me.id);
                 assert.equal(data.preferencesVersion,state.preferencesVersion);
-                assert.equal(Object.hasOwn(data.preferences,'relationship_intents'),false);
+                assert.ok(Object.hasOwn(data.preferences,'relationship_intents'));
                 state.exchange = {...state.exchange,showAge:data.showAge,showGender:data.showGender,fields:maskValues(data.fields)};
                 if(state.exchange.fields.height)state.exchange.fields.height=Number(state.exchange.fields.height);
                 state.preferences={...state.preferences,...maskValues(data.preferences)};state.preferencesVersion++;
-                Object.assign(state.server.me,{interest:data.interest,preferences:copy(state.preferences),preferencesVersion:state.preferencesVersion});
+                Object.assign(state.server.me,{name:mask(data.name),region:data.region,
+                   interest:data.interest,preferences:copy(state.preferences),preferencesVersion:state.preferencesVersion});
                 const masking = Object.fromEntries(Object.entries(data.fields)
                   .filter(([key,value]) => key !== 'height' && value !== state.exchange.fields[key])
                   .map(([key,submitted]) => [key,{submitted,saved:state.exchange.fields[key]}]));
-                return respond({...state.exchange,masking,person:me.id,interest:state.server.me.interest,
+                return respond({...state.exchange,masking,person:me.id,name:state.server.me.name,region:state.server.me.region,interest:state.server.me.interest,
                   preferences:state.preferences,preferencesVersion:state.preferencesVersion});
               } else if (action === 'suggestion') {
                 state.inquiries.set(args.p_request_id,mask(args.p_body));
@@ -133,7 +134,8 @@ async function fixture(t, {mode='station', body='기존 답변', chat=false, set
             if (name === 'pajang_profile_preferences') return {data:{person:args.p_peer || me.id,preferences:copy(state.preferences),version:state.preferencesVersion},error:null};
             if (name === 'pajang_discovery_feed') return {data:{items:[{...peer,peer:peer.id,day:state.server.day,slot:'am',at:1,question:state.server.question.q[0],own:false,sent:false,received:false}],nextCursor:null,total:1,remaining:state.server.remaining},error:null};
             if (name === 'pajang_profile_details' && args.p_action === 'mine') return {data:{...copy(state.exchange),
-              person:me.id,interest:state.server.me.interest,preferences:copy(state.preferences),preferencesVersion:state.preferencesVersion},error:null};
+              person:me.id,name:state.server.me.name,region:state.server.me.region,
+               interest:state.server.me.interest,preferences:copy(state.preferences),preferencesVersion:state.preferencesVersion},error:null};
             if (name === 'pajang_exchange' && args.p_action === 'state') return {data:{myCount:state.messages.length,peerCount:0,eligible:false,profile:'none',photos:'none',peerProfile:null},error:null};
             if (name === 'is_admin') return {data:false,error:null};
             throw Error('Unexpected RPC '+name);
@@ -191,17 +193,12 @@ test('input limits count saved masks and Unicode code points without changing th
 });
 
 async function openPublicProfile(f) {
-  f.q('nav [aria-label="내 파장"]').click(); await wait(() => f.button('공개 프로필 수정'));
-  f.button('공개 프로필 수정').click();
-  await wait(() => f.q('.public-profile-form .profile-intent-field') && !f.q('.public-profile-form .primary').disabled);
+  f.q('nav [aria-label="내 파장"]').click(); await wait(() => f.button('내 프로필 수정'));
+  f.button('내 프로필 수정').click();
+  await wait(() => f.q('.unified-profile-editor .profile-intent-field') && !f.q('.exchange-editor .primary').disabled);
 }
 
-async function openDetailedProfile(f) {
-  f.q('nav [aria-label="내 파장"]').click(); await wait(() => f.button('교환용 프로필·취향 수정'));
-  f.button('교환용 프로필·취향 수정').click();
-  await wait(() => f.control('만남 스타일 직접 입력') && f.q('.exchange-editor [type="submit"]') &&
-    !f.q('.exchange-editor [type="submit"]').disabled);
-}
+async function openDetailedProfile(f) { return openPublicProfile(f); }
 
 for (const editing of [false,true]) test(`a ${editing ? 'changed' : 'new'} answer saves the server mask and can be edited near its length limit`, async t => {
   const f = await fixture(t,{body:editing ? '기존 답변' : ''});
@@ -224,50 +221,58 @@ for (const editing of [false,true]) test(`a ${editing ? 'changed' : 'new'} answe
   assert.equal(f.state.server.me.body,canonical+'나'); assert.equal(f.state.successes,2);
 });
 
-for (const setup of [false,true]) test(`public profile ${setup ? 'setup' : 'editing'} and detailed tastes preserve saved masks, choices and contact text`, async t => {
-  const f = await fixture(t,{setup});
-  if (setup) f.q('.letter-hero button').click();
-  else await openPublicProfile(f);
-  await wait(() => f.q('.public-profile-form .profile-intent-field') && !f.q('.public-profile-form fieldset').disabled);
-  assert.equal(f.control('만남 스타일 직접 입력'),undefined,'taste editing has moved out of the public form');
-  assert.equal(f.q('.public-profile-form .profile-art-choice'),null);
+test('first participation still uses the consented basic form, then the combined editor opens',async t=>{
+  const f=await fixture(t,{setup:true});
+  f.q('.letter-hero button').click();
+  await wait(()=>f.q('.public-profile-form .profile-intent-field'));
   await f.set(f.control('닉네임'),'새 금칙');
-  f.q('button[aria-label="친구"]').click(); await turn();
-  if (setup) await f.set(f.q('.checkrow input'),true);
-  f.q('.public-profile-form').requestSubmit(); await wait(() => !f.q('dialog') && !f.w.history.state?.pajangNavigation?.modal);
+  f.q('button[aria-label="친구"]').click();await turn();
+  await f.set(f.q('.checkrow input'),true);
+  f.q('.public-profile-form').requestSubmit();
+  await wait(()=>!f.q('dialog')&&!f.w.history.state?.pajangNavigation?.modal);
+  assert.equal(f.state.writes.length,1);
   assert.equal(f.state.writes[0].name,'pajang_profile_save');
-  assert.equal(f.state.writes[0].args.p_setup,setup);
-  assert.equal(f.state.writes[0].args.p_data.preferencesVersion,setup ? 0 : 3);
-  assert.deepEqual(f.state.writes[0].args.p_data.preferences,{relationship_intents:['friendship']});
-  assert.equal(Object.hasOwn(f.state.writes[0].args.p_data,'interest'),false,'public editing does not rewrite the representative artwork');
-  assert.equal(f.state.server.me.name,'새 ❤️❤️'); assert.equal(f.state.successes,1);
+  assert.equal(f.state.writes[0].args.p_setup,true);
+  assert.equal(f.state.server.me.name,'새 ❤️❤️');
   await openPublicProfile(f);
   assert.equal(f.control('닉네임').value,'새 ❤️❤️');
-  assert.equal(f.q('button[aria-label="친구"]').getAttribute('aria-pressed'),'true');
+  assert.equal(f.q('.unified-profile-editor .profile-intent-field')!==null,true);
   f.q('dialog [aria-label="닫기"]').click();
-  await wait(() => !f.q('dialog') && !f.w.history.state?.pajangNavigation?.modal);
+  await wait(()=>!f.q('dialog'));
+});
 
-  await openDetailedProfile(f);
-  f.q('button[aria-label="차분한 대화"]').click(); await turn();
+test('one Pajang profile editor preserves masked public fields, tastes and exchange-only details together',async t=>{
+  const f=await fixture(t);
+  await openPublicProfile(f);
+  await f.set(f.control('닉네임'),'새 금칙');
+  f.q('button[aria-label="친구"]').click();await turn();
+  f.q('button[aria-label="차분한 대화"]').click();await turn();
   const custom='가'.repeat(38)+'금칙';
   await f.set(f.control('만남 스타일 직접 입력'),custom);
   await f.set(f.control('관계에서 중요한 것 직접 입력'),'연락은 hello@example.com');
-  f.q('.exchange-editor').requestSubmit(); await wait(() => !f.q('dialog') && !f.w.history.state?.pajangNavigation?.modal);
-  assert.equal(f.state.writes[1].name,'pajang_profile_details');
-  assert.equal(f.state.writes[1].args.p_action,'save');
+  await f.set(f.control('자기소개'),'교환 후 금칙 소개');
+  f.q('.exchange-editor').requestSubmit();
+  await wait(()=>!f.q('dialog')&&!f.w.history.state?.pajangNavigation?.modal);
+  assert.equal(f.state.successes,1);
+  assert.equal(f.state.writes.length,1);
+  assert.equal(f.state.writes[0].name,'pajang_profile_details');
+  assert.equal(f.state.writes[0].args.p_action,'save');
+  assert.equal(f.state.writes[0].args.p_data.name,'새 금칙');
+  assert.deepEqual(f.state.writes[0].args.p_data.preferences.relationship_intents,['friendship']);
+  assert.deepEqual(f.state.preferences.relationship_intents,['friendship']);
+  assert.deepEqual(f.state.preferences.meeting_styles,['deep_talk']);
   assert.deepEqual(f.state.preferences.custom.meeting_styles,[mask(custom)]);
   assert.deepEqual(f.state.preferences.custom.relationship_values,['연락은 hello@example.com']);
-  assert.deepEqual(f.state.preferences.meeting_styles,['deep_talk']);
-  assert.deepEqual(f.state.preferences.relationship_intents,['friendship']);
-  assert.equal(f.state.server.me.interest,'book');
-  assert.equal(f.state.successes,2);
-  await openDetailedProfile(f);
+  assert.equal(f.state.server.me.name,'새 ❤️❤️');
+  assert.equal(f.state.exchange.fields.bio,'교환 후 ❤️❤️ 소개');
+  await openPublicProfile(f);
+  assert.equal(f.control('닉네임').value,'새 ❤️❤️');
+  assert.equal(f.q('button[aria-label="친구"]').getAttribute('aria-pressed'),'true');
   assert.equal(f.q('button[aria-label="차분한 대화"]').getAttribute('aria-pressed'),'true');
-  assert.equal(f.q('.custom-choices button').textContent,mask(custom));
   await f.set(f.control('만남 스타일 직접 입력'),mask(custom)+'나');
-  f.q('.exchange-editor').requestSubmit(); await wait(() => !f.q('dialog'));
+  f.q('.exchange-editor').requestSubmit();
+  await wait(()=>!f.q('dialog'));
   assert.deepEqual(f.state.preferences.custom.meeting_styles,[mask(custom),mask(custom)+'나']);
-  assert.deepEqual(f.state.preferences.custom.relationship_values,['연락은 hello@example.com']);
   assert.equal(f.state.exchange.fields.religion,'천주교');
 });
 
@@ -353,7 +358,7 @@ for (const kind of ['answer','signal','chat','public','exchange','suggestion']) 
   const f = await fixture(t,{mode:kind==='exchange'||kind==='suggestion'?kind:'station',chat:kind==='chat'});
   let input,form;
   if(kind==='public'){
-    await openPublicProfile(f);input=f.control('닉네임');form=f.q('.public-profile-form');
+    await openPublicProfile(f);input=f.control('닉네임');form=f.q('.unified-profile-editor');
   }else if(kind==='answer'||kind==='signal'){
     if(kind==='signal'){await wait(()=>f.q('#answers .sendlink'));f.q('#answers .sendlink').click();}
     else f.q('.letter-hero button').click();

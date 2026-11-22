@@ -155,8 +155,82 @@ test('public Pajang preferences save atomically and relationship discovery prese
   const store = (n,preferences) => db.query(`insert into pajang_private.public_profile_preferences(person,preferences,version)
     values($1,pajang_private.normalize_public_profile_preferences($2),1)
     on conflict(person) do update set preferences=excluded.preferences`,[person(n),preferences]);
+  // Install the existing protected profile RPC and the new unified editor
+  // migration on the same fixture used for public preferences and exchange.
+  await db.exec(`create or replace function public.mask_banned(t text) returns text
+    language sql immutable set search_path='' as $ select t $;`);
+  // Reproduce the already-installed original RPC without replaying its one-time
+  // dynamic public-save text migration, which this older PGlite fixture does not need.
+  const detailsSource=read('20261119062521_pajang_profile_details_editor.sql');
+  await db.exec(detailsSource.slice(detailsSource.indexOf('create function pajang_private.profile_details('),
+    detailsSource.indexOf('create function public.pajang_profile_details(')));
+  await db.exec(`create function public.pajang_profile_details(p_action text default 'mine',
+    p_data jsonb default '{}'::jsonb) returns jsonb language sql security invoker set search_path=''
+    as $ select pajang_private.profile_details(p_action,p_data) $;
+    revoke all on function pajang_private.profile_details(text,jsonb),public.pajang_profile_details(text,jsonb)
+      from public,anon,authenticated,service_role;
+    grant execute on function pajang_private.profile_details(text,jsonb),public.pajang_profile_details(text,jsonb)
+      to authenticated;`);
+  await db.exec(read('20261122150000_pajang_unified_profile_editor.sql'));
+
   t.beforeEach(()=>db.exec('begin'));
   t.afterEach(()=>db.exec('rollback'));
+
+  await t.test('one save updates public fields and private exchange data atomically',async()=>{
+    const current=await as(account(1),()=>rpc('pajang_profile_details',['mine',{}]));
+    assert.equal(current.person,person(1));
+    assert.equal(current.name,'회원1');
+    assert.equal(current.region,'서울특별시');
+    assert.deepEqual(current.preferences.relationship_intents,[]);
+    const submitted={profilePerson:person(1),name:'통합 회원',region:'경기도',
+      interest:'book',fields:{job:'서점 직원',bio:'교환 뒤 보여요.'},
+      showAge:true,showGender:false,preferences:{relationship_intents:['conversation'],meeting_styles:['deep_talk']},
+      preferencesVersion:0};
+    const saved=await as(account(1),()=>rpc('pajang_profile_details',['save',submitted]));
+    assert.equal(saved.name,'통합 회원');
+    assert.equal(saved.region,'경기도');
+    assert.equal(saved.interest,'book');
+    assert.equal(saved.fields.job,'서점 직원');
+    assert.equal(saved.fields.bio,'교환 뒤 보여요.');
+    assert.equal(saved.showAge,true);
+    assert.deepEqual(saved.preferences.relationship_intents,['conversation']);
+    assert.deepEqual(saved.preferences.meeting_styles,['deep_talk']);
+    assert.equal(saved.preferencesVersion,1);
+    const reopened=await as(account(1),()=>rpc('pajang_profile_details',['mine',{}]));
+    assert.equal(reopened.name,'통합 회원');
+    assert.equal(reopened.region,'경기도');
+    assert.equal(reopened.fields.job,'서점 직원');
+    assert.equal((await profile()).preferences.relationship_intents[0],'conversation');
+    assert.ok(!JSON.stringify(await profile()).includes('서점 직원'),
+      'unauthorized viewers cannot retrieve exchanged details in the public preferences read');
+
+    await assert.rejects(()=>as(account(1),()=>rpc('pajang_profile_details',['save',
+      {...submitted,name:'오래된 요청',fields:{job:'변경 실패'},preferencesVersion:0}])),{code:'PT412'});
+    assert.equal(await value('select name as value from pajang_private.people where id=$1',[person(1)]),'통합 회원');
+    assert.equal((await as(account(1),()=>rpc('pajang_profile_details',['mine',{}]))).fields.job,'서점 직원');
+
+    await assert.rejects(()=>as(account(1),()=>rpc('pajang_profile_details',['save',
+      {...submitted,name:'저장되면 안 됨',fields:{height:'301'},preferencesVersion:1}])),{code:'22023'});
+    assert.equal(await value('select name as value from pajang_private.people where id=$1',[person(1)]),'통합 회원');
+    assert.equal((await as(account(1),()=>rpc('pajang_profile_details',['mine',{}]))).fields.job,'서점 직원');
+    await assert.rejects(()=>as(account(2),()=>rpc('pajang_profile_details',['save',submitted])),{code:'42501'});
+    await assert.rejects(()=>as(account(1),()=>rpc('pajang_profile_details',['save',
+      {...submitted,preferencesVersion:1,secret:'not allowed'}])),{code:'22023'});
+
+    // Older versions that save only exchange details keep the public fields.
+    const legacy=await as(account(1),()=>rpc('pajang_profile_details',['save',{
+      profilePerson:person(1),fields:{job:'이전 앱에서 수정'},showAge:true,showGender:false,
+      interest:'book',preferences:{meeting_styles:['deep_talk']},preferencesVersion:1
+    }]));
+    assert.equal(legacy.name,'통합 회원');
+    assert.equal(legacy.region,'경기도');
+    assert.deepEqual(legacy.preferences.relationship_intents,['conversation']);
+    assert.equal(legacy.fields.job,'이전 앱에서 수정');
+    const def=await db.query(`select proconfig,prosecdef from pg_proc
+      where oid='pajang_private.profile_details(text,jsonb)'::regprocedure`);
+    assert.equal(def.rows[0].prosecdef,true);
+    assert.deepEqual(def.rows[0].proconfig,['search_path=""']);
+  });
 
   await t.test('patches only discovery filters and preserves member, payment, exchange and grants',async()=>{
     const feedName='pajang_discovery_feed(jsonb,text,text,text)';
