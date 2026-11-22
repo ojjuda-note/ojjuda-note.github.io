@@ -125,9 +125,18 @@ for (const member of [false, true]) {
         }
       };
       window.eval(read('note/preview.js'));
+      if (member) {
+        // Supabase can emit a provisional empty initial event while restoring
+        // the persisted session on an Android app cold start.
+        onAuth('INITIAL_SESSION', null);
+        assert.equal(window.document.getElementById('park-guest-entry').hidden, true,
+          'a not-yet-resolved member never sees the Park guest entrance');
+      }
       onAuth('INITIAL_SESSION', session);
       const settle = () => new Promise(resolve => window.setTimeout(resolve, 0));
-      await settle();
+      // Guest opening now waits for the actual initial Auth read rather than
+      // starting work from a provisional null event.
+      for (let attempt = 0; attempt < 20 && requested.length === 0; attempt++) await settle();
       assert.equal(requested.length, 1);
       const labels = [...window.document.querySelectorAll('#feed-list .card-meta small')];
       const expectedDate = new NativeDateTimeFormat('ko-KR', {

@@ -4145,7 +4145,10 @@ notificationController = window.OjjudaNoteNotifications?.install({
   onKeepCard: (id, cardKind) => confirmPermanent({ id, kind: cardKind })
 });
 if (client) {
-  client.auth.onAuthStateChange((_event, current) => {
+  client.auth.onAuthStateChange((event, current) => {
+    // On a cold app open, a provisional INITIAL_SESSION null must not paint
+    // the public Park entrance while getSession restores a persisted member.
+    if (event === 'INITIAL_SESSION' && !current?.user) return;
     authEventVersion++;
     receiveAuth(current);
   });

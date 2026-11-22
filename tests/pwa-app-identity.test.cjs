@@ -119,3 +119,38 @@ test('manifests preserve Agit identity and give Park and Pajang separate install
   assert.equal(agit.id, '/world.html');
   assert.equal(agit.start_url, './world.html');
 });
+
+test('installed Agit, Park and Pajang authenticate before displaying their entrances', () => {
+  const read = file => fs.readFileSync(path.join(root, file), 'utf8');
+  const world = read('world.html');
+  // Lightweight PWA checkouts can omit the large Park renderer; the full
+  // browser/unit suite verifies its callback while this suite checks entry assets.
+  const parkPath = path.join(root, 'note/preview.js');
+  const park = fs.existsSync(parkPath) ? read('note/preview.js') : null;
+  const pajangPath = path.join(root, 'features/pajang/entry.mjs');
+  const cssPath = path.join(root, 'features/pajang/entry-design.css');
+  const pajang = fs.existsSync(pajangPath) ? read('features/pajang/entry.mjs') : null;
+  const css = fs.existsSync(cssPath) ? read('features/pajang/entry-design.css') : null;
+  const pajangEntry = read('features/pajang/index.html');
+  const pajangMain = read('features/pajang/station.html');
+  assert.ok(world.includes('if(event==="INITIAL_SESSION"&&!session?.user)return;'),
+    'World waits for the stored session instead of painting the guest entrance');
+  if (park !== null) assert.ok(park.includes("if (event === 'INITIAL_SESSION' && !current?.user) return;"),
+    'Park waits for the stored session in its own iframe');
+  if (pajang !== null) assert.ok(pajang.includes("$('welcome').dataset.memberEntry = 'direct'"),
+    'Pajang only switches to a direct answer after member authorization');
+  if (css !== null) {
+    assert.match(css, /@media \(display-mode: standalone\), \(display-mode: minimal-ui\)/,
+      'the quick entry applies to installed app display modes');
+    assert.ok(css.includes('#gate .flight-scene { display:none!important; }'),
+      'the logged-in app cannot flash a public airplane scene while loading');
+    assert.ok(css.includes('#welcome[data-member-entry="direct"] .sample-radar'),
+      'the installed member answer keeps public invitation examples out of the way');
+  }
+  for (const html of [pajangEntry, pajangMain]) {
+    assert.match(html, /entry-design\.css\?v=20261122-app-skip-entry1/);
+  }
+  assert.match(pajangEntry, /entry\.mjs\?v=20261122-app-skip-entry1/);
+  assert.match(read('park/index.html'), /note\/preview\.js\?v=20261122-auth-first1/);
+  assert.match(world, /agit-welcome\.js\?v=20261122-member-app-start1/);
+});
