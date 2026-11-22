@@ -1340,10 +1340,10 @@ async function feedWithinDeadline(pending, controller = null) {
       Promise.resolve(pending),
       new Promise((_, reject) => {
         timer = setTimeout(() => {
-          controller?.abort();
           const error = new Error('Park feed timed out');
           error.name = 'TimeoutError';
           reject(error);
+          controller?.abort();
         }, FEED_REQUEST_TIMEOUT_MS);
       })
     ]);
