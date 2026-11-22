@@ -249,11 +249,11 @@
       ${missionMarkup(settings,date)}
       <section class="agit-life" id="agit-daily" aria-label="일상"><header class="agit-section-head"><div><span class="agit-section-kicker">쉬어 가는 곳</span><h2>일상 둘러보기</h2></div></header>
         <div class="agit-life-grid">${lifeItems.map(({id,item},i) => {
-           if(id==='fanpages')return `<a class="agit-life-tile agit-life-tile--4" href="/features/fanpages/index.html" data-act="agit-fan" aria-label="팬페이지"><span class="agit-life-top"><span class="agit-life-tile-arrow" aria-hidden="true">↗</span></span><span class="agit-life-art"><img src="/features/home/daily-fanpages.webp" alt="" width="600" height="400" loading="lazy"></span><span class="agit-life-title"><strong>팬페이지</strong><small>좋아하는 이야기</small></span></a>`;
+           if(id==='fanpages')return `<a class="agit-life-tile agit-life-tile--4" href="/features/fanpages/index.html" data-act="agit-fan" aria-label="팬페이지"><span class="agit-life-top"><span class="agit-life-tile-arrow" aria-hidden="true">→</span></span><span class="agit-life-art"><img src="/features/home/daily-fanpages.webp" alt="" width="600" height="400" loading="lazy"></span><span class="agit-life-title"><strong>팬페이지</strong><small>좋아하는 이야기</small></span></a>`;
           if(!/^[a-z0-9_]+$/.test(id))return '';
           const cover=['group','restaurants','festival'].includes(id) ? `/features/home/daily-${id}.webp` : `/assets/design/games/${id}.svg`;
           return `<button type="button" class="agit-life-tile agit-life-tile--${id==='festival'?2:id==='group'?1:id==='restaurants'?3:i%4+1}" data-act="agit-daily" data-v="${id}" aria-label="${escapeHtml(item.name)}${item.memberOnly?' · 회원 전용':''}">
-            <span class="agit-life-top"><span class="agit-life-tile-arrow" aria-hidden="true">↗</span></span>
+            <span class="agit-life-top"><span class="agit-life-tile-arrow" aria-hidden="true">→</span></span>
             <span class="agit-life-art"><img src="${cover}" alt="" width="600" height="400" loading="lazy"></span>
             <span class="agit-life-title"><strong>${escapeHtml(item.name)}</strong><small>${item.memberOnly?'회원 전용':escapeHtml(dailyHints[id]||'구경하기')}</small></span>
           </button>`;

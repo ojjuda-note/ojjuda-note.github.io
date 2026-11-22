@@ -91,37 +91,36 @@ body:has(.agit-hub) .bottomnav button.on{color:var(--accent-ink,#245a48)}
 .agit-quest-name{min-width:0;max-width:100%;color:var(--agit-muted);font-size:11px;font-weight:650;letter-spacing:-.035em;line-height:1.25;word-break:keep-all;overflow-wrap:anywhere}
 .agit-quest-check{position:absolute;right:-4px;bottom:-3px;display:grid;place-items:center;width:16px;height:16px;border:2px solid var(--surface,#fff);border-radius:50%;background:color-mix(in srgb,var(--quest-tone) 85%,#1b2430);color:#fff;font-size:9px;font-weight:850;line-height:1}
 
-/* Calm, editorial-style illustrated banners: one hierarchy, four subtle accents. */
-.agit-life-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+/* Gallery-quality illustrated destinations: clean image mats and clear typography. */
+.agit-life-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
 .agit-life-tile{
- --banner-paper:#f9fbf8;--banner-tint:#eaf2eb;--banner-stroke:#dce6dc;
- --banner-ink:#2e4334;--banner-muted:#65796a;--banner-accent:#628a6c;
+ --banner-paper:#fcfdfb;--banner-tint:#eef4ee;--banner-stroke:#dfe7df;
+ --banner-ink:#2b3830;--banner-muted:#6c796e;--banner-accent:#688876;
  position:relative;isolation:isolate;display:grid;
- grid-template-columns:clamp(138px,36%,250px) minmax(0,1fr);
- align-items:stretch;min-width:0;height:clamp(114px,15vw,146px);overflow:hidden;padding:0;
- border:1px solid var(--banner-stroke);border-radius:20px;
- background:linear-gradient(110deg,var(--banner-paper) 16%,var(--banner-tint) 145%);
- box-shadow:0 5px 18px rgba(45,51,45,.065),inset 0 1px 0 rgba(255,255,255,.88);
+ grid-template-columns:clamp(108px,37%,222px) minmax(0,1fr);
+ align-items:stretch;min-width:0;height:clamp(104px,11vw,126px);overflow:hidden;padding:0;
+ border:1px solid var(--banner-stroke);border-radius:18px;
+ background:linear-gradient(105deg,var(--banner-paper) 0%,var(--banner-paper) 60%,var(--banner-tint) 135%);
+ box-shadow:0 4px 12px rgba(40,48,42,.055),0 1px 2px rgba(40,48,42,.04);
  color:var(--banner-ink);text-align:left;text-decoration:none;cursor:pointer;
- transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease
+ transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease
 }
-.agit-life-tile--1{--banner-paper:#f9fbf8;--banner-tint:#e9f1ea;--banner-stroke:#d9e5dc;--banner-ink:#2e4537;--banner-muted:#687a6b;--banner-accent:#678e73}
-.agit-life-tile--3{--banner-paper:#f9fbfd;--banner-tint:#e6eff5;--banner-stroke:#d9e3eb;--banner-ink:#344e60;--banner-muted:#6a8090;--banner-accent:#688fa9}
-.agit-life-tile--2{--banner-paper:#fdfaf7;--banner-tint:#f5e9df;--banner-stroke:#eee0d5;--banner-ink:#684e3c;--banner-muted:#907665;--banner-accent:#b58b6b}
-.agit-life-tile--4{--banner-paper:#fbf9fc;--banner-tint:#f0e8f2;--banner-stroke:#e8dfe9;--banner-ink:#644f69;--banner-muted:#8a748e;--banner-accent:#a081a7}
-.agit-life-tile:hover{transform:translateY(-2px);border-color:var(--banner-accent);box-shadow:0 11px 26px rgba(45,51,45,.11),inset 0 1px 0 rgba(255,255,255,.93)}
+.agit-life-tile--1{--banner-paper:#fcfdfb;--banner-tint:#edf3ed;--banner-stroke:#dce7de;--banner-ink:#2e4335;--banner-muted:#708073;--banner-accent:#668e71}
+.agit-life-tile--3{--banner-paper:#fcfdfe;--banner-tint:#edf3f8;--banner-stroke:#dce6ed;--banner-ink:#31475b;--banner-muted:#718292;--banner-accent:#7295af}
+.agit-life-tile--2{--banner-paper:#fefcf9;--banner-tint:#f8f1e9;--banner-stroke:#eee3d9;--banner-ink:#604a3b;--banner-muted:#8c7a6c;--banner-accent:#b69478}
+.agit-life-tile--4{--banner-paper:#fdfcfe;--banner-tint:#f5f0f7;--banner-stroke:#ebe2ec;--banner-ink:#5d4c64;--banner-muted:#89798d;--banner-accent:#aa8aaa}
+.agit-life-tile:hover{transform:translateY(-2px);border-color:var(--banner-accent);box-shadow:0 9px 20px rgba(40,48,42,.09)}
 .agit-life-tile:active{transform:translateY(0)}
-.agit-life-top{position:absolute;z-index:3;top:50%;right:clamp(12px,2.5vw,24px);transform:translateY(-50%)}
-.agit-life-tile-arrow{display:grid;place-items:center;width:33px;height:33px;border:1px solid var(--banner-stroke);border-radius:50%;background:rgba(255,255,255,.74);color:var(--banner-accent);font-size:19px;font-weight:700;line-height:1;box-shadow:0 2px 6px rgba(40,44,41,.045);transition:transform .2s ease,background .2s ease}
-.agit-life-tile:hover .agit-life-tile-arrow{transform:translate(2px,-2px);background:var(--banner-paper)}
-.agit-life-art{position:relative;z-index:1;display:block;min-width:0;width:100%;height:100%;overflow:hidden;background:var(--banner-paper)}
-.agit-life-art::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 65%,var(--banner-paper) 100%);pointer-events:none}
-.agit-life-art img{display:block;width:100%;height:100%;object-fit:cover;object-position:center;transition:transform .28s ease}
-.agit-life-tile:hover .agit-life-art img{transform:scale(1.045)}
-.agit-life-title{position:relative;z-index:2;display:grid;align-content:center;gap:4px;min-width:0;padding:11px 52px 11px clamp(14px,2.6vw,26px)}
-.agit-life-title::before{content:"";display:block;width:24px;height:2px;margin-bottom:5px;border-radius:99px;background:var(--banner-accent)}
-.agit-life-title strong{color:var(--banner-ink);font-size:clamp(19px,2.45vw,24px);font-weight:850;letter-spacing:-.055em;line-height:1.27;word-break:keep-all}
-.agit-life-title small{color:var(--banner-muted);font-size:clamp(11px,1.5vw,13px);font-weight:550;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agit-life-top{position:absolute;z-index:2;top:50%;right:clamp(13px,2.1vw,22px);transform:translateY(-50%)}
+.agit-life-tile-arrow{display:grid;place-items:center;width:30px;height:30px;border:1px solid var(--banner-stroke);border-radius:50%;background:color-mix(in srgb,var(--banner-paper) 87%,transparent);color:var(--banner-accent);font-size:18px;font-weight:600;line-height:1;transition:transform .18s ease,border-color .18s ease}
+.agit-life-tile:hover .agit-life-tile-arrow{transform:translateX(3px);border-color:var(--banner-accent)}
+/* Keep the entire original 3D illustration visible: no crop, no faded cut edge. */
+.agit-life-art{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;overflow:hidden;margin:8px 0 8px 8px;border:1px solid color-mix(in srgb,var(--banner-stroke) 75%,transparent);border-radius:13px;background:var(--banner-tint)}
+.agit-life-art img{display:block;width:100%;height:100%;object-fit:contain;object-position:center;transition:transform .22s ease}
+.agit-life-tile:hover .agit-life-art img{transform:scale(1.025)}
+.agit-life-title{display:grid;align-content:center;gap:6px;min-width:0;padding:10px 49px 10px clamp(13px,2.3vw,23px)}
+.agit-life-title strong{color:var(--banner-ink);font-size:clamp(18px,2.35vw,23px);font-weight:800;letter-spacing:-.055em;line-height:1.28;word-break:keep-all}
+.agit-life-title small{color:var(--banner-muted);font-size:clamp(11px,1.5vw,13px);font-weight:550;line-height:1.38;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .agit-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:29px;padding:17px 3px 0;border-top:1px solid var(--line,#d8e7dd);color:var(--ink-2,#62756a);font-size:12px}
 .agit-footer button{display:inline-flex;align-items:center;gap:8px;padding:8px 0 8px 10px;border:0;background:transparent;color:var(--accent-ink,#245a48);font-size:12px;font-weight:700}
 .agit-footer button span{font-size:16px}
@@ -196,16 +195,16 @@ body:has(.agit-hub) .bottomnav button.on{color:var(--accent-ink,#245a48)}
  .agit-stamp-day strong{width:min(35px,100%);border-radius:10px}
  .agit-life{margin-top:20px}
  .agit-section-head h2{font-size:24px}
- .agit-life-grid{gap:10px}
- .agit-life-tile{height:114px;border-radius:18px}
- .agit-life-title{padding:9px 48px 9px 15px}
- .agit-life-title strong{font-size:19px;letter-spacing:-.05em}
+ .agit-life-grid{gap:9px}
+ .agit-life-tile{height:102px;border-radius:16px}
+ .agit-life-title{padding:9px 44px 9px 14px}
+ .agit-life-title strong{font-size:19px;letter-spacing:-.055em}
  .agit-life-title small{font-size:12px}
 }
 @media(max-width:390px){
- .agit-life-tile{grid-template-columns:minmax(112px,37%) minmax(0,1fr)}
- .agit-life-tile-arrow{width:32px;height:32px;font-size:18px}
- .agit-life-title{padding-right:42px}
+ .agit-life-tile{grid-template-columns:minmax(105px,37%) minmax(0,1fr)}
+ .agit-life-tile-arrow{width:27px;height:27px;font-size:16px}
+ .agit-life-title{padding-right:38px}
  .agit-hero{grid-template-columns:minmax(0,1fr) minmax(110px,.65fr)}
  .agit-hero-story{padding-left:16px}
  .agit-hero-story h1{font-size:28px}
@@ -317,7 +316,7 @@ body:has(.agit-hub) .bottomnav button.on{color:var(--accent-ink,#245a48)}
 :root[data-theme=dark] .agit-life-tile--4{--banner-paper:#3d3340;--banner-tint:#4f3e52;--banner-stroke:#6b5770;--banner-ink:#f7eef9;--banner-muted:#ddc9e0;--banner-accent:#c8a4ce}
 
 /* Green theme details follow the system dark palette without changing artwork. */
-:root[data-theme=dark] .agit-life-art{background:var(--surface-2,#293e32)}
+:root[data-theme=dark] .agit-life-art{background:var(--banner-tint)}
 
 .agit-pajang-dialog {position:fixed;box-sizing:border-box;padding:0;margin:auto;border:1px solid var(--line);border-radius:22px;width:min(570px,calc(100vw - 24px));max-width:none;height:min(760px,91dvh);max-height:94dvh;overflow:hidden;background:var(--bg);color:var(--ink);box-shadow:0 18px 72px color-mix(in srgb,var(--ink) 22%,transparent)}
 .agit-pajang-dialog::backdrop {background:color-mix(in srgb,var(--ink) 64%,transparent)}
