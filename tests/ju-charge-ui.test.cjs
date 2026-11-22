@@ -129,7 +129,7 @@ async function fixture(context, source, rpc) {
         assert.equal(await entry.evaluate(node => node === document.activeElement), true, 'closing returns focus to the menu');
       }
       const { page } = fixtures[0];
-      await page.locator('.ju-charge-entry').click();
+      await page.locator('.ojjuda-settings-row[data-ju-charge-open]').click();
       await page.waitForFunction(() => !document.querySelector('.ju-charge-checkout').disabled);
       assert.equal(await page.locator('[data-ju-remaining]').textContent(), '오늘 5회 중 3회 남았어요', 'World sees the allowance spent in Note');
       for (let i = 0; i < 3; i++) {
