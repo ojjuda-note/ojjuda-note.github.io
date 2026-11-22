@@ -136,7 +136,6 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "IVE EMPATHY", date: "2025.02.03", type: "미니 3집", songs: ["REBEL HEART", "ATTITUDE", "FLU"], href: "https://shop.ive-starship.com/products/ive-empathy-ep-cd" }
     ],
     appearances: [
-      { date: "2026-11-21", title: "2026 MAMA AWARDS", sub: "교세라 돔 오사카 · CHAPTER 2 · 15:00(JST)", href: "https://www.cj.net/jp/press-release/view/1133" },
       { date: "2026-12-13", title: "뮤직뱅크 글로벌 페스티벌", sub: "도쿄 MUFG 스타디움(국립경기장) · IVE 출연 확정", href: "https://music-bank.jp/" },
       { date: "2026-12-19", title: "Looks Can Kill · 일본 구매자 추첨 이벤트", sub: "도쿄 아리아케 센트럴타워 홀 B · 당첨자 대상 촬영·사인·포스트카드 행사 · 시간은 주최 공지 확인", href: "https://www.sonymusic.co.jp/artist/IVE/info/588141" },
       { date: "2027-01-16", title: "Looks Can Kill · 일본 구매자 추첨 이벤트", sub: "도쿄 포트시티 다케시바 포트홀 · 당첨자 대상 촬영·사인·포스트카드 행사 · 시간은 주최 공지 확인", href: "https://www.sonymusic.co.jp/artist/IVE/info/588141" },
@@ -155,6 +154,8 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "공식 커뮤니티", sub: "Berriz", href: "https://link.berriz.in/web/main/IVE" }
     ],
     news: [
+      { date: "11.21", tag: "수상", title: "2026 MAMA 〈BANG BANG〉 BEST SONG TOP 10 수상", href: "https://en.yna.co.kr/view/AEN20261121001851315" },
+      { date: "11.20", tag: "수상", title: "2026 MAMA BEST FEMALE GROUP 수상", href: "https://en.yna.co.kr/view/AEN20261121001851315" },
       { date: "11.16", tag: "후보", title: "〈BANG BANG〉 2027 그래미 ‘베스트 아시안 팝 퍼포먼스’ 후보", href: "https://www.grammy.com/songs/bang-bang-2/" },
       { date: "11.15", tag: "수상", title: "MMA2026 ‘올해의 베스트송’ 대상 등 총 5관왕", href: "https://www.melon.com/mma/result.htm?mmaYear=2026" },
       { date: "11.11", tag: "굿즈", title: "DICON D'FESTA THE ORIGIN · IVE 공식 화보집 일본 예약 시작(11/22 마감)", href: "https://prtimes.jp/main/html/rd/p/000000688.000022823.html" },
