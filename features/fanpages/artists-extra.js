@@ -1906,7 +1906,7 @@
       id: 'nctwish', name: 'NCT WISH', korean: '엔시티 위시', category: 'boy', fan: 'NCTzen', agency: 'SM Entertainment',
       members: ['시온', '리쿠', '유우시', '재희', '료', '사쿠야'],
       debut: '2024.02.21', debutWork: 'WISH', songs: ['WISH'],
-      checkedAt: '2026.11.19',
+      checkedAt: '2026.11.22',
       concept: '밝은 에너지로 소원을 전하는 NCT의 여섯 멤버 유닛.',
       official: 'https://www.nct-jp.net/', youtube: 'https://www.youtube.com/@NCTWISH',
       photo: '2026 NCT WISH promotion 01.jpg', photoLabel: '2026년 단체', photoYear: '2026', credit: 'numbuzin', license: 'CC BY 4.0',
@@ -2039,7 +2039,7 @@
         {
           "date": "2027-02-06",
           "title": "INTO THE WISH 방콕 공연",
-          "sub": "IMPACT ARENA · 17:00 (태국 현지 ICT) · 팬클럽 선예매 등록 11/18 20:00~11/20 19:59 KST · 선예매 12/12 11:00~15:59 ICT · ALL TICKET",
+          "sub": "IMPACT ARENA · 17:00 (태국 현지 ICT) · 팬클럽 선예매 등록 11/20 마감 · 선예매 12/12 11:00~15:59 ICT · 일반 예매 시작 시각은 공식 안내 재확인 · ALL TICKET",
           "href": "https://weverse.io/nctwish/notice/40881"
         },
         {
@@ -2150,6 +2150,12 @@
         { title: 'NCT WISH 공식 공지', sub: 'Weverse · 로그인·커뮤니티 가입 후 한국 공연·팬 행사 및 예매 확인', href: 'https://weverse.io/nctwish/notice' }
       ],
       news: [
+        {
+          "date": "2026.11.20",
+          "tag": "수상",
+          "title": "2026 MAMA AWARDS 2관왕 · 베스트 브레이크스루·Qoo10 페이보릿 메가 아티스트",
+          "href": "https://news.jtbc.co.kr/article/NB12329139"
+        },
         {
           "date": "2026.11.19",
           "tag": "방송",
