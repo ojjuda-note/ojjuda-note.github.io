@@ -199,6 +199,8 @@
     "tank"
   ],
   "generatedAssets": {
+    "features/pajang/assets/teen.js": "features/pajang/src/teen-main.tsx",
+    "features/pajang/assets/teen.css": "features/pajang/src/teen-main.tsx",
     "note/vendor/mediabunny-1.66.2.mjs": "note/vendor/build.mjs",
     "note/vendor/mediabunny-aac-encoder-1.66.2.mjs": "note/vendor/build.mjs",
     "note/vendor/tus-js-client-4.3.1.mjs": "note/vendor/build.mjs"

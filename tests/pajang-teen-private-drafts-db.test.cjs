@@ -28,6 +28,7 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
   await db.exec(migration('20261122163836_pajang_age_groups.sql'));
   await db.exec(migration('20261122170234_pajang_teen_private_drafts.sql'));
   await db.exec(migration('20261122170500_pajang_teen_visible_feed.sql'));
+  await db.exec(migration('20261122172528_pajang_teen_launch_gate.sql'));
   for(const [name,id] of Object.entries(actors)){
     await db.query('insert into auth.users values($1,false)',[id]);
     await db.query('insert into public.profiles values($1,$2)',[id,name==='teenA'?'새싹':name==='teenB'?'바람':name==='adult'?'어른':'관리자']);
@@ -38,7 +39,7 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
   const login=async name=>db.query('select set_config($1,$2,false)',[
     'request.jwt.claims',JSON.stringify(name?{sub:actors[name]}:{})]);
   const invoke=async(action='state',data={})=>(await db.query(
-    'select public.pajang_teen_draft($1,$2) as result',[action,data])).rows[0].result;
+    'select public.pajang_teen_draft($1,$2) as result',[action,action==='save'?{...data,shareWithTeens:true}:data])).rows[0].result;
   const moderation=async(action,answer=null,report=null)=>(await db.query(
     'select public.admin_pajang_teen_moderation($1,$2,$3) as result',[action,answer,report])).rows[0].result;
   const fail=async(action,data={},code='42501')=>assert.rejects(
@@ -48,6 +49,13 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
   const moderateComment=async(action,target=null)=>(await db.query('select public.admin_pajang_teen_comments($1,$2) as value',[action,target])).rows[0].value;
   const sample=questionData[0];
   await login('teenA');
+  assert.deepEqual((await db.query('select public.pajang_teen_entry() as result')).rows[0].result,
+    {ready:false,audience:'teen'});
+  await fail('state');
+  await assert.rejects(()=>db.query('select public.pajang_teen_feed($1,20)',[questionData[0].id]),error=>error.code==='42501');
+  await db.query('update pajang_teen_private.release_control set enabled=true where singleton');
+  assert.deepEqual((await db.query('select public.pajang_teen_entry() as result')).rows[0].result,
+    {ready:true,audience:'teen'});
   const state=await invoke('state');
   assert.equal(state.mode,'community');
   assert.equal(state.questions.length,20);
@@ -61,9 +69,11 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
   await fail('save',{questionId:sample.id,body:'  '},'22023');
   await fail('save',{questionId:sample.id,body:'a'.repeat(221)},'22023');
   await fail('save',{questionId:sample.id,body:42},'22023');
+  await assert.rejects(()=>db.query("select public.pajang_teen_draft('save',$1)",[{questionId:sample.id,body:'동의 없는 답변'}]),error=>error.code==='22023');
   const saved=await invoke('save',{questionId:sample.id,body:'내 답변과 검사용금칙어 이야기'});
   assert.equal(saved.body,'내 답변과 ❤️❤️ 이야기');
   assert.ok(saved.id);
+  assert.equal((await db.query('select share_consented_at is not null as agreed from pajang_teen_private.drafts where id=$1',[saved.id])).rows[0].agreed,true);
   assert.equal((await invoke('state')).answers[0].body,saved.body);
   await invoke('save',{questionId:sample.id,body:'다르게 답해요'});
   assert.equal((await invoke('state')).answers.length,1);
@@ -158,7 +168,10 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
   assert.deepEqual(await invoke('delete',{questionId:sample.id}),{deleted:true});
   assert.deepEqual(await invoke('delete',{questionId:sample.id}),{deleted:false});
   assert.equal((await invoke('state')).answers.length,0);
-  await login('adult');await fail('state');await fail('save',{questionId:sample.id,body:'무단 작성'});
+  await login('adult');
+  assert.deepEqual((await db.query('select public.pajang_teen_entry() as result')).rows[0].result,
+    {ready:false,audience:'restricted'});
+  await fail('state');await fail('save',{questionId:sample.id,body:'무단 작성'});
   await login(null);await fail('state');
   await login('teenB');
   await db.query('update auth.users set suspended=true where id=$1',[actors.teenB]);

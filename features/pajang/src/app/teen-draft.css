@@ -17,3 +17,6 @@
 .teen-draft-safety{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px}
 .teen-draft-safety select{min-height:44px;border:1px solid #b9b5b1;border-radius:10px;background:#fff;padding:8px}
 @media(max-width:390px){.pajang-teen-draft{padding:12px}.teen-draft-question{padding:14px}.teen-draft-question h3{font-size:17px}}
+
+.teen-draft-share{display:flex;align-items:center;gap:9px;margin:8px 0 14px;font-size:13px;line-height:1.5}
+.teen-draft-share input{width:18px;height:18px;flex:none;accent-color:#356f50}

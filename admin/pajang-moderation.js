@@ -76,7 +76,10 @@
     const heading = el('div','apm-heading'), headingCopy = el('div');
     headingCopy.append(el('h3','',title), el('p','apm-help','원문을 삭제하지 않고 숨김 상태만 바꿔요. 복구한 내용은 기존 공개 기간과 회원 설정을 따라 표시돼요.'));
     const reload = control('새로고침',() => {void refresh();});
-    heading.append(headingCopy,reload);
+    const teenReview=el('a','btn apm-button','청소년 답변 검토');
+    teenReview.href='/admin/pajang-teen.html';
+    teenReview.setAttribute('aria-label','청소년 파장 답변·댓글 검토 페이지');
+    heading.append(headingCopy,reload,teenReview);
     const form = el('form','apm-filters'); form.setAttribute('aria-label',title + ' 조회 조건');
     const queryLabel = el('label','apm-query'), queryInput = el('input');
     queryInput.type = 'search'; queryInput.name = 'query'; queryInput.maxLength = 100; queryInput.value = query; queryInput.autocomplete = 'off';
