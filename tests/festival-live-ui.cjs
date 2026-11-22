@@ -16,7 +16,7 @@ async function waitLoaded(page) {
   ), { timeout: 55000 });
 }
 
-async function verifyCard(page, id, name) {
+async function verifyCard(page, id, name, expectedDetail = null) {
   const card = page.locator('[data-event-card="' + id + '"]');
   await card.waitFor({ state: 'visible', timeout: 35000 });
   const visibleName = await card.locator('.card-title').innerText();
@@ -27,6 +27,7 @@ async function verifyCard(page, id, name) {
   const detail = await page.locator('#event-detail').innerText();
   assert(detail.includes(name), 'Missing name in actual detail: ' + id);
   assert(detail.includes('출처:'), 'Missing official source in actual detail: ' + id);
+  if (expectedDetail) assert(detail.includes(expectedDetail), 'Missing updated official detail in live UI: ' + id + ' / ' + expectedDetail);
   await page.locator('[data-action="close-event"]').click();
   console.log('PASS visible card and official-source detail: ' + id);
 }
@@ -131,6 +132,14 @@ async function verifyCard(page, id, name) {
     assert(payload.events.length >= 793, 'Deployed data missing November 22 Gyeonggi performances');
     n65Performance.forEach(id => assert(ids.has(id), 'Missing new Gyeonggi event in live JSON: ' + id));
     console.log('PASS November 22 live JSON: 13 Gyeonggi performances/exhibitions');
+    // November 23: source-verified visitor total and admission (unchanged event IDs).
+    const cheongwon2026 = payload.events.find(e => e.id === 'cheongwon-life-festival-2026');
+    assert.equal(cheongwon2026?.attendance?.count, 630000, '2026 Cheongwon actual count missing');
+    assert.equal(cheongwon2026?.attendance?.kind, 'actual', 'Cheongwon should show actual visitors');
+    assert.equal(cheongwon2026?.attendance?.year, 2026, 'Cheongwon visitor year incorrect');
+    assert(cheongwon2026?.priceNote?.includes('성인 5,000원'), 'Cheongwon adult admission missing');
+    assert(payload.events.find(e => e.id === 'daejeon-bread-festival-2026')?.priceNote?.includes('축제장 입장 무료'), 'Bread festival free admission missing');
+    console.log('PASS November 23 live JSON: official actual attendees and admission');
     console.log('PASS production JSON: at least 715 entries, November 14 updates and official attendance');
 
     await page.goto(origin + '/games/festival-schedule/index.html?period=all&category=festival&view=list&q=익산',
@@ -152,6 +161,10 @@ async function verifyCard(page, id, name) {
     await verifyCard(page, 'gangneung-dandan-festival-2026', '단단단페스티벌');
     await page.locator('#search').fill('제주권 로컬페스타');
     await verifyCard(page, 'jeju-local-issue-festa-2026', '로컬페스타');
+    await page.locator('#search').fill('청원생명축제');
+    await verifyCard(page, 'cheongwon-life-festival-2026', '청원생명축제', '2026년 실제 방문객 · 약 63만 명');
+    await page.locator('#search').fill('대전 빵축제');
+    await verifyCard(page, 'daejeon-bread-festival-2026', '대전 빵축제', '축제장 입장 무료');
     await page.screenshot({ path: path.join(snapshotDir, 'standalone.png'), fullPage: true });
     console.log('PASS standalone: three festival events actually displayed');
 
@@ -235,6 +248,10 @@ async function verifyCard(page, id, name) {
     await verifyCard(festivalFrame, 'seongnam-hip-festa-20261121', '성남 HIP:FESTA');
     await festivalFrame.locator('#search').fill('단단단페스티벌');
     await verifyCard(festivalFrame, 'gangneung-dandan-festival-2026', '단단단페스티벌');
+    await festivalFrame.locator('#search').fill('청원생명축제');
+    await verifyCard(festivalFrame, 'cheongwon-life-festival-2026', '청원생명축제', '2026년 실제 방문객 · 약 63만 명');
+    await festivalFrame.locator('#search').fill('대전 빵축제');
+    await verifyCard(festivalFrame, 'daejeon-bread-festival-2026', '대전 빵축제', '축제장 입장 무료');
     await festivalFrame.locator('#search').fill('');
     await festivalFrame.locator('[data-category="sports"]').click();
     await festivalFrame.locator('#search').fill('무주반딧불 평화마라톤대회');
