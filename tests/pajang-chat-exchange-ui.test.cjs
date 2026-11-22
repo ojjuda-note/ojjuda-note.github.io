@@ -21,7 +21,7 @@ async function bundle(){
     'let root,version=0;',
     'window.exchangeMount=()=>{root=createRoot(document.getElementById("root"));window.exchangeRefresh();};',
     'window.exchangeRefresh=()=>{',
-    'root.render(<ChatExchange peer={window.exchangePeer} name="상대" lastMessage={String(++version)}>',
+    'root.render(<ChatExchange peer={window.exchangePeer} owner="11111111-1111-4111-8111-111111111111" name="상대" region="서울특별시" lastMessage={String(++version)}>',
     '{({notification,actions})=><>',
     '<div className="chatbox"><div className="chatheader">대화 상대</div>',
     '<div className="chatlog"><p className="bubbleline">대화 내용</p>{notification}</div>',
@@ -43,11 +43,14 @@ async function fixture(t,options={}){
   const w=dom.window;
   const state={myCount:options.myCount??0,peerCount:options.peerCount??0,
     eligible:options.eligible??false,profile:options.profile??"none",
-    photos:options.photos??"none",peerProfile:null};
+    photos:options.photos??"none",peerProfile:options.peerProfile??null};
   const calls=[];
   w.exchangePeer="22222222-2222-4222-8222-222222222222";
   w.OjjudaGetClient=async()=>({
     rpc:async(name,args)=>{
+      if(name==="pajang_profile_preferences")return {data:{person:w.exchangePeer,version:0,
+        preferences:{relationship_intents:["friendship"],meeting_styles:["deep_talk"],relationship_values:[],affection_styles:[],life_priorities:[],
+          custom:{meeting_styles:[],relationship_values:[],affection_styles:[],life_priorities:[]}}},error:null};
       assert.equal(name,"pajang_exchange");
       calls.push(clone(args));
       assert.equal(args.p_peer,w.exchangePeer);
@@ -156,4 +159,24 @@ test("existing outgoing profile and photo requests reappear after opening a conv
   assert.ok(cards.every(card=>f.w.document.querySelector(".chatlog").contains(card)));
   assert.equal(f.button("승인"),undefined);
   assert.equal(f.button("거부"),undefined);
+});
+
+test("accepted profile opens public and exchange-only details in one view, never before consent",async t=>{
+  const f=await fixture(t,{myCount:5,peerCount:5,eligible:true,profile:"accepted",
+    peerProfile:{fields:{job:"서점 직원",bio:"상대가 승인한 정보"},age:35,gender:null}});
+  await waitFor(()=>!!f.button("상대 프로필 보기"),"accepted profile is available");
+  assert.equal(f.w.document.querySelector(".unified-peer-profile"),null,"no private details before opening");
+  f.button("상대 프로필 보기").click();
+  await waitFor(()=>!!f.w.document.querySelector(".unified-peer-profile .exchange-facts"),"approved details rendered");
+  const combined=f.w.document.querySelector(".unified-peer-profile");
+  assert.match(combined.textContent,/상대/);
+  assert.match(combined.textContent,/서울특별시/);
+  await waitFor(()=>combined.textContent.includes("친구"),"public preferences are included");
+  assert.match(combined.textContent,/서점 직원/);
+  assert.match(combined.textContent,/상대가 승인한 정보/);
+  assert.ok(combined.querySelector(".public-preference-summary"));
+  assert.ok(combined.querySelector(".exchange-facts"));
+  f.button("프로필 공유 종료").click();
+  await waitFor(()=>f.state.profile==="none","share revoked");
+  await waitFor(()=>f.w.document.querySelector(".unified-peer-profile")===null,"private view is hidden after revocation");
 });

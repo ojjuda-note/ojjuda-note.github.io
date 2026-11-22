@@ -578,8 +578,8 @@ async function checkNavigation(page){
   await heading('내 파장').waitFor();
   await page.goBack();await heading('마음함').waitFor();
   await page.goForward();await heading('내 파장').waitFor();
-  await settings.getByRole('button',{name:'공개 프로필 수정',exact:true}).click();
-  const editor=page.getByRole('dialog',{name:'공개 프로필 수정'});
+  await settings.getByRole('button',{name:'내 프로필 수정',exact:true}).click();
+  const editor=page.getByRole('dialog',{name:'내 프로필 수정'});
   await editor.waitFor();
   await editor.getByRole('button',{name:'닫기',exact:true}).click();
   await editor.waitFor({state:'detached'});
@@ -1145,7 +1145,7 @@ async function checkNavigation(page){
       assert.ok(await settings.evaluate(el=>el.scrollWidth<=document.documentElement.clientWidth));
       assert.ok(await accountHome.evaluate(el=>el.getBoundingClientRect().height>=44));
       const rows=await topRows.evaluateAll(readRowBounds);
-      assert.equal(rows.length,16,'the 16 top-level settings rows include the Help summary and exclude its nested actions');
+      assert.equal(rows.length,15,'the 15 top-level settings rows include the Help summary and one unified profile editor');
       for(const [index,row] of rows.entries()){
         assert.ok(row.height>=44,`settings row ${index+1} has a full touch target at ${width}px`);
         assert.ok(row.left>=0&&row.right<=width+1,'settings rows stay within the viewport');
@@ -1164,7 +1164,7 @@ async function checkNavigation(page){
         assert.ok(row.left>=0&&row.right<=width+1,'expanded Help children stay within the viewport');
         if(index)assert.ok(row.top>=childRows[index-1].bottom-1,'Help children stack vertically without overlap');
       }
-      assert.equal(await topRows.count(),16,'expanding Help never counts nested actions as top-level settings');
+      assert.equal(await topRows.count(),15,'expanding Help never counts nested actions as top-level settings');
       await helpMenu.locator('summary').click();
       assert.equal(await helpMenu.evaluate(el=>el.open),false);
       for(const index of [0,1])assert.equal(await helpRows.nth(index).isVisible(),false,'closing Help hides both children again');
@@ -1224,7 +1224,7 @@ async function checkNavigation(page){
     await page.evaluate(()=>{sessionStorage.fixtureMode='member';});
     await page.goto(origin+project+'station.html?tab=profile');await settings.waitFor();
     console.log('PASS profile-only Agit button, integrated account menus, nickname/consent confirmation, safe cancellation and local logout');
-    await page.getByRole('button',{name:'공개 프로필 수정'}).click();
+    await page.getByRole('button',{name:'내 프로필 수정'}).click();
     const dialog=page.getByRole('dialog');await dialog.waitFor();await capture('profile-editor');
     assert.equal(await dialog.getByRole('link',{name:'아지트로',exact:true}).count(),0);
     await dialog.getByRole('button',{name:'닫기'}).click();
