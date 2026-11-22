@@ -102,18 +102,6 @@ jobs:
           echo 'Public site size and file count:'
           du -sh "$site"
           find "$site" -type f | wc -l
-      - name: Stage gated teen community bundle separately from adult member program
-        shell: bash
-        run: |
-          set -euo pipefail
-          npm --prefix features/pajang ci --ignore-scripts --no-audit --no-fund
-          npm --prefix features/pajang run build:teen
-          site="$RUNNER_TEMP/ojjuda-public/features/pajang/assets"
-          test -s features/pajang/assets/teen.js
-          test -s features/pajang/assets/teen.css
-          mkdir -p "$site"
-          cp features/pajang/assets/teen.js "$site/teen.js"
-          cp features/pajang/assets/teen.css "$site/teen.css"
       - name: Restore aggregate Janggi opening counts
         id: openings
         uses: actions/cache@v4
