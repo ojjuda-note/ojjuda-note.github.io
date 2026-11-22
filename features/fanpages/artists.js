@@ -78,6 +78,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { date: "2026-12-13", title: "뮤직뱅크 글로벌 페스티벌", sub: "도쿄 국립경기장 · 17:00 예정", href: "https://music-bank.jp/" }
     ],
     campaigns: [
+      { kind: "콜라보", date: "2026.11.20", title: "이즐 × RESCENE 레미니 교통카드", sub: "3종 · 11.25 CU 단독 선출시 예정 · 가격·재고 미확인", href: "https://www.gosiweek.com/article/1065582102632325" },
       { kind: "콜라보", date: "2026.11.03", title: "PHOTOISM × RESCENE 프레임·스내피즘", sub: "12.31까지 · 포토이즘 박스·컬러드 일부 매장 · 팝업 매장 제외", href: "https://x.com/photoism_kr/status/2117195014904156231" },
       { kind: "콜라보", date: "2026.09", title: "CU × 리센느 빵 5종", sub: "BAKE405 · 멤버별 베이커리·포토카드", href: "https://www.bgfretail.com/press/view/?id=2040" },
       { kind: "광고", date: "2026.10", title: "도미노피자", sub: "전속 모델 · 신규 브랜드 캠페인", href: "https://www.mt.co.kr/living/2026/10/12/2026101208525329438" },
@@ -91,6 +92,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "공식 스케줄", sub: "Mnet Plus · 최신 일정", href: "https://artist.mnetplus.world/main/stg/rescene-official/schedule/2026/11" }
     ],
     news: [
+      { date: "11.20", tag: "굿즈", title: "레미니 공식 교통카드 3종 · 11.25 CU 선출시 예정", href: "https://www.gosiweek.com/article/1065582102632325" },
       { date: "11.20", tag: "수상", title: "2026 MAMA 베스트 오브 넥스트 수상", href: "https://www.yna.co.kr/amp/view/AKR20261120179200005" },
       { date: "11.20", tag: "무대", title: "2026 MAMA 〈With〉·〈LOVE ATTACK〉 공식 무대", href: "https://www.mnetplus.world/media/ko/videos/6b0024a49829ac99587bcd25" },
       { date: "11.18", tag: "음악", title: "미나미 첫 솔로 OST 〈사랑해볼래, 나〉 발매 · 메리 베리 러브", href: "https://sports.khan.co.kr/en/article/202611181539017" },
