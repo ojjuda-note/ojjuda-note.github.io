@@ -231,6 +231,7 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'KcW1_wI6rsc', title: 'EVERYTHING', kind: '뮤직비디오', source: 'TREASURE Official / YG' }
   ],
   nctwish: [
+    { id: 'Lnc1PonUkDw', title: 'Everglow + I SPY · 2026 MAMA Ver. Performance Practice', kind: '공식 안무 영상', source: 'NCT WISH Official · 2026.11.20' },
     { id: '1FyNOW1lc38', title: 'HAPPY SAKUYA DAY · 사쿠야 생일 기념', kind: '스페셜 비디오', source: 'NCT WISH Official · 2026.11.18' },
     { id: 'CVUFL02iRSE', title: '1000 · 데뷔 1000일 스페셜 영상', kind: '스페셜 비디오', source: 'NCT WISH Official · 2026.11.16' },
     { id: 'W5sgrj8bUv4', title: 'I SPY · 음악방송 대기실 비하인드 #3', kind: '메이킹', source: 'NCT WISH Official · 2026.11.13' },
