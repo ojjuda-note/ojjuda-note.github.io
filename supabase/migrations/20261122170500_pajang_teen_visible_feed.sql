@@ -66,7 +66,7 @@ begin
   end if;
   select coalesce(jsonb_agg(
     jsonb_build_object(
-      'id',d.id,'questionId',d.question_id,'authorId',d.owner_id,'authorName','파장 회원',
+      'id',d.id,'questionId',d.question_id,'authorId',d.owner_id,'authorName',d.author_name,
       'body',d.body,'updatedAt',d.updated_at,
       'liked',exists(select from pajang_teen_private.likes l
         where l.draft_id=d.id and l.owner_id=viewer),
@@ -80,9 +80,11 @@ begin
              or (b.owner_id=c.author_id and b.target_user_id=viewer)))
     ) order by d.updated_at desc,d.id),'[]'::jsonb) into published
   from (
-    select x.id,x.question_id,x.owner_id,x.body,x.updated_at
+    select x.id,x.question_id,x.owner_id,x.body,x.updated_at,
+      coalesce(nullif(left(btrim(p.nickname),12),''),'파장 회원') as author_name
     from pajang_teen_private.drafts x
     join ojjuda_account_internal.member_identity i on i.user_id=x.owner_id
+    left join public.profiles p on p.id=x.owner_id
     where x.question_id=p_question and x.review_status='approved'
       and extract(year from age((now() at time zone 'Asia/Seoul')::date,i.birth_date)) between 14 and 18
       and not exists(select from pajang_teen_private.blocks b
@@ -155,14 +157,16 @@ begin
   if p_action='comments' then
     if p_data<>'{}'::jsonb then raise exception '잘못된 요청입니다.' using errcode='22023'; end if;
     select coalesce(jsonb_agg(jsonb_build_object(
-      'id',c.id,'authorId',c.author_id,'authorName','파장 회원',
+      'id',c.id,'authorId',c.author_id,'authorName',c.author_name,
       'body',c.body,'createdAt',c.created_at,
       'reviewStatus',case when c.review_status='approved' then 'approved' else 'pending' end
     ) order by c.created_at,c.id),'[]'::jsonb) into reply
     from (
-      select c.id,c.author_id,c.body,c.created_at,c.review_status
+      select c.id,c.author_id,c.body,c.created_at,c.review_status,
+        coalesce(nullif(left(btrim(p.nickname),12),''),'파장 회원') as author_name
       from pajang_teen_private.comments c
       join ojjuda_account_internal.member_identity i on i.user_id=c.author_id
+      left join public.profiles p on p.id=c.author_id
       where c.draft_id=p_target and (c.review_status='approved'
         or (c.author_id=viewer and c.review_status='pending'))
         and extract(year from age((now() at time zone 'Asia/Seoul')::date,i.birth_date)) between 14 and 18
