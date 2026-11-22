@@ -97,6 +97,9 @@ body.saju-clean :is(.payment-status,.saju-price-note,.compatibility-price-note,.
 body.saju-clean .flow-actions { margin-top: 16px; }
 body.saju-clean .flow-actions > button[data-flow-next] { color: var(--page); }
 body.saju-clean :is(input,select),body.saju-clean #birth-form :is(input,select),body.saju-clean .compatibility-person :is(input[type=text],input[type=number],select) { color-scheme: dark; }
+/* readable-design.css also styles generic inputs; the clean dark reader wins
+   for native menus even when both theme classes are present. */
+body.saju-clean.saju-readable :is(input[type=text],input[type=number],select,textarea) { color-scheme: dark; }
 body.saju-clean .reader-scope-note.daeun-time-notice { color: var(--headwind); background: var(--headwind-soft); border-color: var(--border); }
 body.saju-clean .skip-link { color: var(--page); }
 body.saju-clean .reading-pager-step:hover:not(:disabled),body.saju-clean .month-jump.is-current { color: var(--page); background: var(--primary); }
