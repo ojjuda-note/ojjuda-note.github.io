@@ -24,8 +24,12 @@ my();D.online=true;D.user={id:sessionStorage.getItem('fixture-user')||'admin-a'}
 D.isAdmin=sessionStorage.getItem('fixture-role')!=='member';
 // A legacy saved route predates the browser history router; simulate that
 // historical reload only for the legacy migration exercise below.
-if(sessionStorage.getItem('fixture-legacy-restore')==='true'){
+const legacyView=sessionStorage.getItem('fixture-legacy-restore');
+if(legacyView){
+  // Pre-auth my() intentionally discards stale admin navigation. Re-insert
+  // the historical fixture only when this specific legacy migration runs.
   history.replaceState(null,'',location.href);
+  sessionStorage.setItem('ojjuda.world.admin-view',legacyView);
   sessionStorage.removeItem('fixture-legacy-restore');
 }
 restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
@@ -70,7 +74,7 @@ restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
    await page.evaluate(view=>{
      history.replaceState(null,'',location.href);
      sessionStorage.setItem('ojjuda.world.admin-view',JSON.stringify({...view,userId:'admin-a'}));
-     sessionStorage.setItem('fixture-legacy-restore','true');
+     sessionStorage.setItem('fixture-legacy-restore',JSON.stringify({...view,userId:'admin-a'}));
    },view);
    await reload();
    assert.equal((await current()).area,view.area==='note'?'trash':'operations');
