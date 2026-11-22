@@ -51,3 +51,37 @@ begin
   execute replace(definition,old_text,new_text);
 end;
 $patch$;
+
+-- Reports must expose the reported content to authorized moderators,
+-- not only an ID/reason that the admin UI cannot investigate.
+-- Both functions already enforce public.is_admin() before returning any rows.
+do $reports$
+declare
+  signature text;
+  definition text;
+  before_text text;
+  after_text text;
+begin
+  signature:='public.admin_pajang_teen_moderation(text,uuid,uuid)';
+  definition:=pg_get_functiondef(signature::regprocedure);
+  before_text:='''id'',r.id,''draftId'',r.draft_id,''reason'',r.reason,''createdAt'',r.created_at';
+  after_text:='''id'',r.id,''draftId'',r.draft_id,''reason'',r.reason,''createdAt'',r.created_at,'
+    || '''body'',(select d.body from pajang_teen_private.drafts d where d.id=r.draft_id),'
+    || '''status'',(select d.review_status from pajang_teen_private.drafts d where d.id=r.draft_id)';
+  if (length(definition)-length(replace(definition,before_text,'')))/length(before_text)<>1 then
+    raise exception 'Teen answer report projection changed';
+  end if;
+  execute replace(definition,before_text,after_text);
+
+  signature:='public.admin_pajang_teen_comments(text,uuid)';
+  definition:=pg_get_functiondef(signature::regprocedure);
+  before_text:='''id'',r.id,''commentId'',r.comment_id,''reason'',r.reason,''createdAt'',r.created_at';
+  after_text:='''id'',r.id,''commentId'',r.comment_id,''reason'',r.reason,''createdAt'',r.created_at,'
+    || '''body'',(select c.body from pajang_teen_private.comments c where c.id=r.comment_id),'
+    || '''status'',(select c.review_status from pajang_teen_private.comments c where c.id=r.comment_id)';
+  if (length(definition)-length(replace(definition,before_text,'')))/length(before_text)<>1 then
+    raise exception 'Teen comment report projection changed';
+  end if;
+  execute replace(definition,before_text,after_text);
+end;
+$reports$;
