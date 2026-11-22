@@ -537,7 +537,7 @@ function clientFixture(hash) {
         if(event.target.closest('[data-pajang-launch]'))sessionStorage.openStart=String(Date.now());
       },true);
       function paint(){
-        const target=document.querySelector(mode==='new'?'#welcome #write':'#answers article .quote');
+        const target=document.querySelector(mode==='new'?'#welcome #answer-form button[type=submit]':'#answers article .quote');
         if(target?.getClientRects().length && sessionStorage.openStart){
           sessionStorage.openMs=String(Date.now()-Number(sessionStorage.openStart));return;
         }
@@ -668,7 +668,7 @@ async function checkNavigation(page){
     if(navigationOnly){assert.deepEqual(errors,[]);return;}
     // Reuse the real entry, protected member program and their exact stylesheet order.
     const views=[
-      {name:'entry',url:'index.html?flight-check=new',selectors:{action:'#write',feature:'.entry-intro'},changing:['nodes.action.background','nodes.feature.background']},
+      {name:'entry',url:'index.html?flight-check=new',selectors:{action:'#answer-form button[type=submit]',feature:'.entry-intro'},changing:['nodes.action.background','nodes.feature.background']},
       {name:'member',url:'station.html',selectors:{action:'.dialog .primary',feature:'.letter-hero',menu:'.station-nav a[aria-current=page]'},changing:['nodes.action.background','nodes.feature.background','nodes.menu.background']},
       {name:'radar',url:'station.html?tab=radar',selectors:{feature:{selector:'.radar-scope',pseudo:'::before'},menu:'.station-nav a[aria-current=page]'},changing:['nodes.feature.image','nodes.menu.background']},
       {name:'settings',url:'station.html?tab=profile',selectors:{feature:'.account-agit',list:'.account-settings .ojjuda-settings-list'},changing:['nodes.feature.background']}
@@ -678,7 +678,7 @@ async function checkNavigation(page){
       await page.goto(origin+project+view.url,{waitUntil:'domcontentloaded'});
       if(view.name==='entry'){
         await page.waitForFunction(()=>typeof window.finishFlight==='function');
-        await page.evaluate(()=>window.finishFlight());await page.locator('#write').click();
+        await page.evaluate(()=>window.finishFlight());await page.locator('#answer-form').waitFor({state:'visible'});
         await page.locator('#mine').fill('테마가 바뀌어도 남아야 하는 답변');
       }else{
         await page.locator('.station-nav').waitFor();
@@ -716,7 +716,7 @@ async function checkNavigation(page){
       previousFiles.set(file,execFileSync('git',['show',previousRelease+':features/pajang/'+file],{cwd:path.join(feature,'../..'),maxBuffer:1e6}));
     const flightDir=path.join(__dirname,'artifacts/pajang-discovery');
     await fs.mkdir(flightDir,{recursive:true});
-    for(const [url,ready] of [['index.html?flight-check=new','#welcome #write'],['station.html?flight-check=member','#station #answers']]){
+    for(const [url,ready] of [['index.html?flight-check=new','#welcome #answer-form button[type=submit]'],['station.html?flight-check=member','#station #answers']]){
       const member=url.startsWith('station');
       // On the station page, hold the picture past startup: art must never gate real content.
       let releasePicture;
@@ -1293,7 +1293,7 @@ async function checkNavigation(page){
     await page.locator('.sample-radar summary').click();
     await page.locator('#marks button').first().waitFor();
     await checkCompass(page,'#scope','.rose b','#marks button:nth-child(2)');
-    await page.locator('#write').click();await page.locator('[name=consent]').check();
+    assert.equal(await page.locator('#answer-form').isVisible(),true,'verified members open the answer form directly');await page.locator('[name=consent]').check();
     const entryAnswers=page.locator('#answer-fields');
     assert.equal(await entryAnswers.getByRole('combobox').count(),0,'entry offers no date selector');
     assert.equal(await entryAnswers.getByRole('checkbox').count(),0,'entry offers no publication opt-in');
@@ -1533,8 +1533,8 @@ async function checkNavigation(page){
       await page.getByRole('button',{name:'설정',exact:true}).click();
       await banner.click();
       if(scenario==='new'){
-        await page.locator('#welcome #write').waitFor({timeout:5000});
-        await page.locator('#write').click();await page.locator('#mine').fill('위치를 기다리는 동안 답변을 써요.');
+        await page.locator('#welcome #answer-form').waitFor({timeout:5000});
+        await page.locator('#mine').fill('위치를 기다리는 동안 답변을 써요.');
         await page.goBack();await page.waitForURL('**/world.html?slow-location=new');
         assert.equal(await page.locator('dialog').count(),0);
         continue;
