@@ -147,6 +147,8 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'kxUA2wwYiME', title: 'The Chase', kind: '뮤직비디오', source: 'SMTOWN · 2025.02.24' }
   ],
   blackpink: [
+    { id: 'REUpBcmDbTE', title: '지수 · Sun Showers (The Angry Birds Movie 3)', kind: '뮤직비디오', source: 'JISOO Official / BLISSOO · 2026.11.20' },
+    { id: 'M8fO5lQpfrc', title: '리사 · Leave With Me (Always Lalisa)', kind: '뮤직비디오', source: 'LISAOfficialVEVO / LLOUD · 2026.11.18' },
     { id: '2GJfWMYCWY0', title: 'GO', kind: '뮤직비디오', source: 'BLACKPINK / YG Entertainment · 2026.02.27' },
     { id: 'CgCVZdcKcqY', title: '뛰어 (JUMP)', kind: '뮤직비디오', source: 'BLACKPINK / YG Entertainment · 2025.07.11' },
     { id: 'k--lCrP69hg', title: 'BLACKPINK 10TH ANNIVERSARY', kind: '기념 영상', source: 'BLACKPINK Official · 2026.08.07' },

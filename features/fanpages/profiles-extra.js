@@ -221,8 +221,9 @@ if (hearts2heartsProfile) {
 const blackpinkProfile = window.OJJUDA_FAN_PROFILES.blackpink;
 if (blackpinkProfile) {
   blackpinkProfile.expanded = true;
-  blackpinkProfile.checkedAt = '2026.11.16';
+  blackpinkProfile.checkedAt = '2026.11.18';
   blackpinkProfile.records = [
+    { year: '2026.11', title: 'YG, 그룹 활동 논의 중', detail: '11.16 분기보고서 전속계약 명단에서 제외됐으나 YG는 그룹 활동을 논의 중이라고 설명. 계약 종료·해체 발표는 확인되지 않음', href: 'https://www.yna.co.kr/amp/view/AKR20261116160000005' },
     { year: '2026.02', title: '유튜브 공식 아티스트 채널 최초 1억 구독자', detail: '2026.02.20 달성 · 유튜브 레드 다이아몬드 크리에이터 어워드', href: 'https://en.yna.co.kr/view/AEN20260221002851320' },
     { year: '2025–2026', title: '월드투어 DEADLINE', detail: '16개 도시·33회 공연 후 2026년 1월 종료', href: 'https://www.ygfamily.com/en/news/report/7378' }
   ];
