@@ -459,7 +459,7 @@ body.saju-clean .story-menu-title { margin: 0; font: 600 20px/1.5 var(--sans); }
 body.saju-clean :is([data-reader-tools-close],.story-menu-close) { min-width: 44px; min-height: 44px; padding: 8px; background: transparent; color: var(--ink); border: 0; font-size: 22px; }
 body.saju-clean .story-menu-close { font-size: 14px; }
 body.saju-clean .story-period-control { display: flex; align-items: center; gap: 14px; margin: 12px 0; color: var(--text-muted); font: 500 14px/1.5 var(--sans); }
-body.saju-clean .story-period-select { flex: 1; min-width: 0; min-height: 44px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--page); color: var(--ink); font: inherit; }
+body.saju-clean .story-period-select { flex: 1; min-width: 0; min-height: 44px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--page); color: var(--ink); color-scheme: dark; font: 500 16px/1.5 var(--sans); }
 body.saju-clean .reader-tools-dialog .reading-size-control { justify-content: flex-start; padding: 12px 0 20px; }
 body.saju-clean .reader-tools-dialog .reading-size-control button { min-width: 56px; min-height: 44px; }
 body.saju-clean .reader-tools-dialog :is(.reader-settings,.other-reading-options) { margin: 0; border-width: 1px 0 0; border-radius: 0; background: transparent; }
