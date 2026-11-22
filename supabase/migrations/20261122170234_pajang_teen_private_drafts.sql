@@ -1,5 +1,5 @@
--- 파장 청소년 질문/답변 4단계: 본인만 보는 임시 답변과 보호용 데이터 모델
--- 아직 공개 피드나 채팅 경로는 만들지 않는다. 기존 성인 파장 RPC에 연결하지 않는다.
+-- 파장 청소년 질문/답변 4단계: 미성년자 전용 게시 전 검토와 보호용 데이터 모델
+-- 승인된 답변은 별도 청소년 전용 공개 피드에서만 조회한다. 성인 RPC에 연결하지 않는다.
 create schema if not exists pajang_teen_private;
 revoke all on schema pajang_teen_private from public,anon,authenticated,service_role;
 
@@ -36,7 +36,7 @@ create table pajang_teen_private.drafts(
   owner_id uuid not null references auth.users(id) on delete cascade,
   question_id text not null references pajang_teen_private.questions(id),
   body text not null check(char_length(replace(body,'❤️❤️','♥')) between 1 and 220),
-  review_status text not null default 'private' check(review_status in ('private','approved','hidden')),
+  review_status text not null default 'pending' check(review_status in ('private','pending','approved','hidden')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   reviewed_by uuid references auth.users(id) on delete set null,
@@ -72,7 +72,7 @@ alter table pajang_teen_private.reports enable row level security;
 revoke all on all tables in schema pajang_teen_private from public,anon,authenticated,service_role;
 revoke all on all sequences in schema pajang_teen_private from public,anon,authenticated,service_role;
 
--- 안전한 본인 답변 API: 질문 카탈로그 + 자기 임시답변만 반환.
+-- 청소년 본인 응답 API: 작성 시 검토 대기로 전환하고 승인 후 별도 피드에 게시.
 create function public.pajang_teen_draft(p_action text default 'state',p_data jsonb default '{}'::jsonb)
 returns jsonb language plpgsql security definer set search_path='' as $teen$
 declare
@@ -95,9 +95,9 @@ begin
       raise exception '요청을 확인해 주세요.' using errcode='22023';
     end if;
     return jsonb_build_object(
-      'mode','private',
+      'mode','community',
       'questions',coalesce((select jsonb_agg(jsonb_build_object('id',q.id,'category',q.category,'question',q.prompt) order by q.position) from pajang_teen_private.questions q),'[]'::jsonb),
-      'answers',coalesce((select jsonb_agg(jsonb_build_object('questionId',d.question_id,'body',d.body,'updatedAt',d.updated_at) order by d.updated_at desc) from pajang_teen_private.drafts d where d.owner_id=actor),'[]'::jsonb)
+      'answers',coalesce((select jsonb_agg(jsonb_build_object('questionId',d.question_id,'body',d.body,'updatedAt',d.updated_at,'reviewStatus',d.review_status) order by d.updated_at desc) from pajang_teen_private.drafts d where d.owner_id=actor),'[]'::jsonb)
     );
   elsif p_action='save' then
     if p_data - array['questionId','body'] <> '{}'::jsonb
@@ -117,9 +117,9 @@ begin
     insert into pajang_teen_private.drafts(owner_id,question_id,body)
       values(actor,question_id,draft_body)
       on conflict(owner_id,question_id)
-      do update set body=excluded.body,updated_at=now(),review_status='private',reviewed_at=null,reviewed_by=null
+      do update set body=excluded.body,updated_at=now(),review_status='pending',reviewed_at=null,reviewed_by=null
       returning id into answer_id;
-    return jsonb_build_object('saved',true,'questionId',question_id,'body',draft_body,'id',answer_id);
+    return jsonb_build_object('saved',true,'questionId',question_id,'body',draft_body,'id',answer_id,'reviewStatus','pending');
   elsif p_action='delete' then
     if p_data - array['questionId'] <> '{}'::jsonb
        or jsonb_typeof(p_data->'questionId') is distinct from 'string' then
@@ -162,7 +162,7 @@ begin
     if reason not in ('bullying','privacy','inappropriate','other') then
       raise exception '신고 사유를 선택해 주세요.' using errcode='22023';
     end if;
-    -- 승인된 청소년 답변만 신고. 현재 공개 피드는 없으며, 응답 본문은 신고자에게 전달하지 않는다.
+    -- 승인된 청소년 답변만 신고. 신고자는 원본 개인정보와 비공개 답변을 읽지 않는다.
     if not exists(
       select from pajang_teen_private.drafts d
       join ojjuda_account_internal.member_identity i on i.user_id=d.owner_id
@@ -183,7 +183,7 @@ $teen$;
 revoke all on function public.pajang_teen_draft(text,jsonb) from public,anon,authenticated,service_role;
 grant execute on function public.pajang_teen_draft(text,jsonb) to authenticated;
 
--- 관리자 전용 검토/신고 접수 API. 승인 처리해도 게시 API는 아직 존재하지 않는다.
+-- 관리자 전용 검토/신고 접수 API. 승인된 답변만 청소년 전용 피드에 표시한다.
 create function public.admin_pajang_teen_moderation(p_action text,p_answer uuid default null,p_report uuid default null)
 returns jsonb language plpgsql security definer set search_path='' as $admin$
 declare
@@ -227,6 +227,6 @@ $admin$;
 revoke all on function public.admin_pajang_teen_moderation(text,uuid,uuid) from public,anon,authenticated,service_role;
 grant execute on function public.admin_pajang_teen_moderation(text,uuid,uuid) to authenticated;
 
--- 설계상 승인된 초안조차 공개/검색/채팅으로 읽을 수 없다.
+-- 청소년 답변은 승인 이후에만 청소년끼리 볼 수 있다. 성인 서비스에는 연동하지 않는다.
 comment on function public.pajang_teen_draft(text,jsonb) is
-  '청소년 본인만 사용할 수 있는 비공개 임시답변·신고·차단 API. 대외 공개 피드 없음.';
+  '청소년 전용 본인 답변 작성·수정·삭제 및 신고·차단 API. 답변은 승인 후 연령 제한 피드로 공개.';
