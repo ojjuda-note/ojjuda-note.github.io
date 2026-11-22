@@ -465,6 +465,12 @@ var worldAdminService="agit";
 function adminScopeAllows(tab){return window.OjjudaAdminScope?.allows(worldAdminService,tab)!==false;}
 function adminServiceLabel(){return window.OjjudaAdminScope?.services[worldAdminService]?.label||"아지트";}
 var worldAdminViewKey="ojjuda.world.admin-view",worldAdminViewReady=false;
+// Capture owners before the provisional guest/hub bootstrap can rewrite the
+// browser route or clear an earlier administrator session. Navigation is never
+// authority: a new account must enter administration explicitly.
+var worldAdminBootOwners=[];
+try{const route=history.state?.ojjudaWorldHistory?.route;if(route?.tab==='admin')worldAdminBootOwners.push(route.owner||'unbound');}catch{}
+try{const saved=JSON.parse(sessionStorage.getItem(worldAdminViewKey)||'null');if(saved?.userId)worldAdminBootOwners.push(saved.userId);}catch{}
 function clearWorldAdminView(){worldAdminService="agit";try{sessionStorage.removeItem(worldAdminViewKey)}catch{}adminMenuSummary={owner:null,data:null,pending:false};window.OjjudaAdminNavigation?.resetQuery()}
 function saveWorldAdminView(){
  if(!worldAdminViewReady)return;
@@ -495,11 +501,11 @@ function normalizeAdminView(view){
 function restoreWorldAdminView(requestedTab){
  worldAdminViewReady=true;
  requestedTab=adminRetiredTabs[requestedTab]||requestedTab;
- if(!D.online||!D.isAdmin||!D.user?.id){clearWorldAdminView();return false}
+ if(!D.online||!D.isAdmin||!D.user?.id||worldAdminBootOwners.some(owner=>owner!==D.user.id)){clearWorldAdminView();return false}
  let view;
  const noteAliases={note:"cards","note-cards":"cards","note-risk":"risk","note-map":"map","note-archive":"archive","note-settings":"settings","note-spam":"spam"};
  const visited=history.state?.ojjudaWorldHistory?.route;
- if(visited?.tab==='admin'&&(!visited.owner||visited.owner===D.user.id)&&adminTabsByArea[visited.area]?.some(([id])=>id===visited.section))view=normalizeAdminView({service:visited.service,area:visited.area,tab:visited.section});
+ if(visited?.tab==='admin'&&visited.owner===D.user.id&&adminTabsByArea[visited.area]?.some(([id])=>id===visited.section))view=normalizeAdminView({service:visited.service,area:visited.area,tab:visited.section});
  else if(noteAliases[requestedTab])view=normalizeAdminView({area:"note",noteTab:noteAliases[requestedTab]});
  else if(["note-actions","note-inquiries","note-reports"].includes(requestedTab)||Object.values(adminTabsByArea).some(tabs=>tabs.some(([id])=>id===requestedTab)))view=normalizeAdminView({area:adminAreaForTab(requestedTab),tab:requestedTab});
  else {
