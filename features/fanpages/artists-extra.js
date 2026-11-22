@@ -297,7 +297,7 @@
       id: 'hearts2hearts', name: 'Hearts2Hearts', korean: '하츠투하츠', category: 'girl', fan: 'S2U', agency: 'SM Entertainment',
       members: ['지우', '카르멘', '유하', '스텔라', '주은', '에이나', '이안', '예온'],
       debut: '2025.02.24', debutWork: 'The Chase', songs: ['The Chase', 'Butterflies'],
-      checkedAt: '2026.11.16',
+      checkedAt: '2026.11.18',
       concept: '서로 다른 마음을 이어 하나의 하모니를 만드는 여덟 멤버.',
       official: 'https://hearts2heartsofficial.jp/', youtube: 'https://www.youtube.com/@hearts2hearts.official',
       photo: '260221 HEARTS2HEARTS @ 2026 Fanmeeting HEARTS2HOUSE.jpg', photoLabel: 'HEARTS2HOUSE 팬미팅', photoYear: '2026', credit: 'sublimitas viii', license: 'CC BY-SA 4.0',
@@ -322,10 +322,13 @@
         { date: '2026-11-21', title: 'ANIMAX MUSIX 2026 DAY2 출연', sub: '일본 요코하마 아레나 · 13:00 입장 / 14:30 공연 · 주최 NTT도코모·ANIMAX, 협찬 도부철도', href: 'https://hearts2heartsofficial.jp/news/2026090802/' },
         { date: '2026-11-22', title: '일본 첫 팬 이벤트 READY! S2U', sub: '도쿄 아리아케 아레나 · 18:00 시작 (17:00 입장)', href: 'https://hearts2heartsofficial.jp/news/2026081203/' },
         { date: '2026-11-23', title: '일본 첫 팬 이벤트 READY! S2U', sub: '도쿄 아리아케 아레나 · 16:00 시작 (15:00 입장)', href: 'https://hearts2heartsofficial.jp/news/2026081203/' },
-        { date: '2026-11-28', title: 'Winter Special Live at UNIVERSAL STUDIOS JAPAN', sub: '오사카 USJ 그래머시 파크 · 11:00 시작 (09:45 입장) · 주최 USJ', href: 'https://hearts2heartsofficial.jp/news/20260925/' }
+        { date: '2026-11-25', title: 'ABEMA 일본 데뷔 기념 특집 방송', sub: '21:00 JST · K WORLD 채널 · 일본 데뷔 행사와 도쿄 하트버스 특별편 · ABEMA', href: 'https://hearts2heartsofficial.jp/news/20261117/' },
+        { date: '2026-11-28', title: 'Winter Special Live at UNIVERSAL STUDIOS JAPAN', sub: '오사카 USJ 그래머시 파크 · 11:00 시작 (09:45 입장) · 주최 USJ', href: 'https://hearts2heartsofficial.jp/news/20260925/' },
+        { date: '2026-12-12', title: '2026 MUSIC BANK GLOBAL FESTIVAL IN JAPAN 출연', sub: '도쿄 MUFG 스타디움(국립경기장) · 15:00 입장 / 17:00 공연 예정 · 주최 KBS·에니', href: 'https://music-bank.jp/' },
       ],
       schedules: [{ title: '일본 공식 일정·공지', sub: '팬 이벤트·공연·발매·변경 확인', href: 'https://hearts2heartsofficial.jp/news/' }],
       news: [
+        { date: '2026.11.17', tag: '방송', title: 'ABEMA 11.25 일본 데뷔 기념 특집 21:00 방송 발표', href: 'https://hearts2heartsofficial.jp/news/20261117/' },
         { date: '2026.11.14', tag: '수상', title: 'MMA2026 TOP10·글로벌 TOP10·글로벌 임팩트 아티스트 3관왕', href: 'https://www.sportsworldi.com/newsView/20261114506970' },
         { date: '2026.11.08', tag: '수상', title: 'KGMA2026 베스트 뮤직·글로벌 핫스타상 2관왕', href: 'https://isplus.com/article/view/isp202611080248' },
         { date: '2026.10.26', tag: '굿즈', title: 'ICONIC HEART 한국어판 공식 MD 예약 판매 안내 · 11.01 접수 종료', href: 'https://hearts2heartsofficial.jp/news/20261026/' },
