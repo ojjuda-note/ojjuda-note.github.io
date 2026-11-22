@@ -183,15 +183,36 @@ async function enter(action,code){
 }
 const lobbyTemplate=$('#content .game-entry').cloneNode(true);lobbyTemplate.removeAttribute('data-entry-ready');
 const lobbyHTML=lobbyTemplate.outerHTML;
+// The shared entrance script can reinitialize a replaced card. Keep the
+// selected mode in this game's session, including while wallet checks finish.
+let lobbyMode='computer';
+function setLobbyMode(card,mode){
+  if(!card||!['computer','opponent'].includes(mode))return;
+  card.dataset.entryReady='true';
+  card.querySelectorAll('[data-entry-mode]').forEach(button=>{
+    const active=button.dataset.entryMode===mode;
+    button.classList.toggle('on',active);
+    button.setAttribute('aria-pressed',String(active));
+  });
+  card.querySelectorAll('[data-entry-panel]').forEach(panel=>{panel.hidden=panel.dataset.entryPanel!==mode;});
+}
+document.addEventListener('click',event=>{
+  const button=event.target.closest('[data-entry-mode]');
+  const card=button?.closest('#content .game-entry');
+  if(!card)return;
+  lobbyMode=button.dataset.entryMode;
+  setLobbyMode(card,lobbyMode);
+},true);
 function showLobby(){
   // A player may select online mode while wallet verification is in flight.
   // Preserve that choice when the initial lobby template is re-rendered.
   const selectedMode=$('#content .game-entry [data-entry-mode][aria-pressed="true"]')?.dataset.entryMode;
+  if(selectedMode==='opponent')lobbyMode=selectedMode;
   cancelPresentation();
   arcadeRoom=null;roomLabel();
   $('#gukjin').hidden=true;viewKey='lobby';room=null;cursor=0;promptKey='';pendingMove=null;closeDialog();clearEvents();
   $('#content').innerHTML=lobbyHTML;
-  if(selectedMode==='opponent')$('#content .game-entry [data-entry-mode="opponent"]')?.click();
+  setLobbyMode($('#content .game-entry'),lobbyMode);
   if(retiringRoom){
     const progress=document.createElement('p');progress.id='fresh-entry-state';progress.className='ge-copy';progress.setAttribute('role','status');
     progress.textContent=retireLeave?'이전 대전의 나가기를 확인하고 있어요. 완료되면 새 판을 시작할 수 있어요.':'상대의 대전과 골드 정산이 끝나면 새 판을 시작할 수 있어요.';
