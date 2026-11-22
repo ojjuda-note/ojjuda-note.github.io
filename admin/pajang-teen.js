@@ -87,14 +87,22 @@
       ]));
     if(!comments.comments.length)commentSection.append(item('p','검토할 댓글이 없어요.','muted'));
     const reportSection=section('신고 접수','신고 내용을 확인하고 필요하면 원문을 숨겨 주세요.');
-    for(const r of answers.reports.filter(x=>id(x?.id)))
-      reportSection.append(card('답변 신고',String(r.reason||''),'접수된 신고',[
-        ['처리 완료','answer_report','resolve',r.id,'primary']
-      ]));
-    for(const r of comments.reports.filter(x=>id(x?.id)))
-      reportSection.append(card('댓글 신고',String(r.reason||''),'접수된 신고',[
-        ['처리 완료','comment_report','resolve-report',r.id,'primary']
-      ]));
+    for(const r of answers.reports.filter(x=>id(x?.id))){
+      const controls=[];
+      if(id(r.draftId)&&r.status!=='hidden')controls.push(['원문 숨김','answer','hide',r.draftId,'danger']);
+      controls.push(['처리 완료','answer_report','resolve',r.id,'primary']);
+      reportSection.append(card('답변 신고',
+        '신고 사유: '+String(r.reason||'')+'\\n원문: '+(typeof r.body==='string'?r.body:'삭제된 답변'),
+        '숨김 등 보호 조치를 먼저 검토해 주세요.',controls));
+    }
+    for(const r of comments.reports.filter(x=>id(x?.id))){
+      const controls=[];
+      if(id(r.commentId)&&r.status!=='hidden')controls.push(['원문 숨김','comment','hide',r.commentId,'danger']);
+      controls.push(['처리 완료','comment_report','resolve-report',r.id,'primary']);
+      reportSection.append(card('댓글 신고',
+        '신고 사유: '+String(r.reason||'')+'\\n원문: '+(typeof r.body==='string'?r.body:'삭제된 댓글'),
+        '숨김 등 보호 조치를 먼저 검토해 주세요.',controls));
+    }
     if(!answers.reports.length&&!comments.reports.length)reportSection.append(item('p','새 신고가 없어요.','muted'));
     const actions=item('div');actions.id='teen-admin-actions';
     const refresh=item('button','새로고침');
