@@ -91,3 +91,7 @@ body{
 .rank-entry .first-name{display:block}
 .rank-entry:has(.first-detail:not(:empty)){min-height:47px}
 @media(max-width:370px){.rank-entry .first-detail{font-size:10px}}
+
+/* Janggi uses one leaderboard with difficulty before streak length. */
+.rank-entry[data-game="janggi"] .game-name{white-space:normal;line-height:1.25}
+.rank-entry[data-game="janggi"] .game-name::after{content:"난이도 우선";display:block;margin-top:2px;font-size:10px;font-weight:600;color:var(--season-accent,#72829b)}
