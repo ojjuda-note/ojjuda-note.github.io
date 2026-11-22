@@ -4150,7 +4150,7 @@ if (client) {
     receiveAuth(current);
   });
   const initialAuthVersion = authEventVersion;
-  client.auth.getSession().then(({ data, error }) => {
+  feedWithinDeadline(client.auth.getSession()).then(({ data, error }) => {
     if (authEventVersion !== initialAuthVersion) return;
     if (error) console.warn('Note Auth:', error);
     receiveAuth(error ? null : data?.session || null);
