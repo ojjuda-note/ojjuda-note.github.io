@@ -613,7 +613,7 @@ const server = http.createServer((request, response) => {
       assert.deepEqual(view.smallProse,[],label+': reading text follows the normal/large size');
       assert.deepEqual(view.smallTargets,[],label+': actionable controls retain their intended touch target');
       assert.equal(view.horizontalOverflow,false,label+': the redesigned page stays inside the viewport');
-      assert.ok(view.inputs.every(input=>input.font>=minimumInput&&input.scheme==='dark'),label+': readable input text and native menus use the dark surface');
+      assert.ok(view.inputs.every(input=>input.font>=minimumInput&&input.scheme==='dark'),label+': readable input text and native menus use the dark surface: '+JSON.stringify(view.inputs.filter(input=>input.font<minimumInput||input.scheme!=='dark')));
       sajuReadableViews[label]={samples:view.samples,minimumContrast:view.minimumContrast,minimumBodyFont:view.prose.length?Math.min(...view.prose.map(item=>item.font)):null,minimumTargetHeight:view.minimumTargetHeight};
       return view;
     }
