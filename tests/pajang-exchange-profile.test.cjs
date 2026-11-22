@@ -67,7 +67,7 @@ async function fixture(t, {fields = {}, save, read, ready = true} = {}) {
     calls: [],
     successes: 0,
     profile: {fields: copy(fields), age: 35, gender: '남성', showAge: false, showGender: false,
-      person: profileId, interest: 'book', preferences: emptyPreferences(), preferencesVersion: 3},
+      person: profileId, name:'보리', region:'서울특별시', interest: 'book', preferences: emptyPreferences(), preferencesVersion: 3},
   };
   window.profileId = profileId;
   window.pajangArt = {};
@@ -84,10 +84,11 @@ async function fixture(t, {fields = {}, save, read, ready = true} = {}) {
       const attempt = state.calls.filter(call => call.p_action === 'save').length;
       assert.equal(args.p_data.profilePerson, profileId);
       assert.equal(args.p_data.preferencesVersion, state.profile.preferencesVersion);
-      assert.equal(Object.hasOwn(args.p_data.preferences, 'relationship_intents'), false);
+      assert.ok(Object.hasOwn(args.p_data.preferences, 'relationship_intents'));
       const nextFields = copy(args.p_data.fields);
       if (Object.hasOwn(nextFields, 'height')) nextFields.height = Number(nextFields.height);
-      const next = {...state.profile, fields:nextFields, showAge:args.p_data.showAge, showGender:args.p_data.showGender,
+      const next = {...state.profile, fields:nextFields, name:args.p_data.name.trim(), region:args.p_data.region,
+        showAge:args.p_data.showAge, showGender:args.p_data.showGender,
         interest:args.p_data.interest, preferencesVersion:state.profile.preferencesVersion + 1,
         preferences:{...state.profile.preferences,...copy(args.p_data.preferences)}};
       const override = await save?.(copy(args.p_data), attempt, copy(next));
@@ -147,22 +148,26 @@ async function fixture(t, {fields = {}, save, read, ready = true} = {}) {
   };
 }
 
-test('public tastes and artwork sit after drinking and smoking, before the introduction, and save with private fields once', async t => {
+test('one profile editor saves public name, region, intentions, tastes and private details together', async t => {
   const f = await fixture(t, {fields:{drinking:'가끔 마셔요', smoking:'피우지 않아요', bio:'기존 소개'}});
   const headings = [...f.form().querySelectorAll('h3')];
   const tastes = headings.find(node => node.textContent === '나를 표현하는 취향');
   const artwork = f.form().querySelector('.profile-art-choice');
   assert.ok(tastes && artwork, 'all moved public choices belong to the detailed editor');
   const follows = (before, after) => Boolean(before.compareDocumentPosition(after) & f.window.Node.DOCUMENT_POSITION_FOLLOWING);
-  assert.ok(follows(f.control('음주 여부'), tastes));
-  assert.ok(follows(f.control('흡연 여부'), tastes));
+  assert.ok(follows(f.control('닉네임'), tastes));
+  assert.ok(follows(f.control('공개할 활동 지역 시·도'), tastes));
   assert.ok(follows(tastes, artwork));
-  assert.ok(follows(artwork, f.control('자기소개')));
-  assert.equal([...f.form().querySelectorAll('legend')].some(node => node.textContent === '원하는 인연'), false,
-    'relationship intentions remain in the public editor');
+  assert.ok(follows(artwork, f.control('음주 여부')));
+  assert.ok(follows(f.control('음주 여부'), f.control('자기소개')));
+  assert.ok([...f.form().querySelectorAll('legend')].some(node => node.textContent === '원하는 인연'),
+    'relationship intentions are in the same editor');
   assert.match(tastes.parentElement.parentElement.textContent, /파장 회원|공개 프로필/,
     'the relocated choices still explain that they are public');
   assert.equal(f.button('독서').getAttribute('aria-pressed'), 'true', 'saved artwork is hydrated before saving is enabled');
+  await f.set('닉네임','새 보리');
+  await f.set('공개할 활동 지역 시·도','경기도');
+  f.button('대화 상대').click();
   f.button('차분한 대화').click();
   await f.set('만남 스타일 직접 입력', '  별 보며 걷기  ');
   f.button('카페').click();
@@ -174,18 +179,23 @@ test('public tastes and artwork sit after drinking and smoking, before the intro
   assert.equal(saved.p_data.profilePerson, profileId);
   assert.equal(saved.p_data.preferencesVersion, 3);
   assert.deepEqual(Object.keys(saved.p_data.preferences).sort(),
-    ['meeting_styles','relationship_values','affection_styles','life_priorities','custom'].sort());
+    ['relationship_intents','meeting_styles','relationship_values','affection_styles','life_priorities','custom'].sort());
+  assert.equal(saved.p_data.name,'새 보리');
+  assert.equal(saved.p_data.region,'경기도');
+  assert.deepEqual(saved.p_data.preferences.relationship_intents,['friendship','conversation']);
   assert.deepEqual(saved.p_data.preferences.meeting_styles, ['deep_talk']);
   assert.deepEqual(saved.p_data.preferences.custom.meeting_styles, ['별 보며 걷기']);
   assert.equal(saved.p_data.interest, 'coffee');
   assert.equal(saved.p_data.fields.bio, '취향과 함께 바꿀 소개');
-  assert.deepEqual(f.state.profile.preferences.relationship_intents, ['friendship'], 'the existing relationship intention is preserved');
+  assert.deepEqual(f.state.profile.preferences.relationship_intents, ['friendship','conversation'], 'relationship intentions are saved with the other fields');
   assert.equal(f.state.saved.preferencesVersion, 4, 'the caller receives the canonical saved public version');
   await f.reopen();
   assert.equal(f.button('차분한 대화').getAttribute('aria-pressed'), 'true');
   assert.ok(f.button('별 보며 걷기 삭제'));
   assert.equal(f.button('카페').getAttribute('aria-pressed'), 'true');
   assert.equal(f.control('자기소개').value, '취향과 함께 바꿀 소개');
+  assert.equal(f.control('닉네임').value,'새 보리');
+  assert.equal(f.control('공개할 활동 지역 시·도').value,'경기도');
 });
 
 test('a delayed complete-profile read cannot expose an empty editable taste draft', async t => {
