@@ -1884,12 +1884,6 @@
       ],
       campaigns: [
         {
-          kind: '공식 프로모션', date: '2026.11.19',
-          title: 'SHOCK × Spotify Canvas 공유 캠페인',
-          sub: '11/20~11/28 Spotify Canvas를 X·인스타그램에 #TREASURE_SHOCK로 공유 · 11/30 23:59 JST 응모 마감 · 참가 조건·디지털 특전은 공식 공지 확인',
-          href: 'https://ygex.jp/treasure/news/detail.php?id=1137199'
-        },
-        {
           "kind": "콜라보",
           "date": "2026.09.07",
           "title": "Reebok × AZUL BY MOUSSY × TREASURE",
