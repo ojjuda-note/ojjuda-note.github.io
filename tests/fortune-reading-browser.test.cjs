@@ -224,6 +224,9 @@ const server = http.createServer((request, response) => {
       await inspectReaderPage(expected, prefix);
     }
     async function inspectReaderLayout(label, prefix = 'result') {
+      // Chromium applies a new viewport size before all dialog centering
+      // calculations settle. Verify after two frames, never skip hit tests.
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
       const geometry = await page.evaluate(prefix => {
         const dialog = document.getElementById(prefix + '-dialog');
         const body = document.getElementById(prefix + '-reader-body');
