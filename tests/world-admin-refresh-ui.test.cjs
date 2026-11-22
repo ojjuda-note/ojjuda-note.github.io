@@ -22,16 +22,6 @@ gm(()=>worldTest.actions.tab({tab:'hub'}));
 // Match boot order: initial rendering happens before the server role check.
 my();D.online=true;D.user={id:sessionStorage.getItem('fixture-user')||'admin-a'};
 D.isAdmin=sessionStorage.getItem('fixture-role')!=='member';
-// A legacy saved route predates the browser history router; simulate that
-// historical reload only for the legacy migration exercise below.
-const legacyView=sessionStorage.getItem('fixture-legacy-restore');
-if(legacyView){
-  // Pre-auth my() intentionally discards stale admin navigation. Re-insert
-  // the historical fixture only when this specific legacy migration runs.
-  history.replaceState(null,'',location.href);
-  sessionStorage.setItem('ojjuda.world.admin-view',legacyView);
-  sessionStorage.removeItem('fixture-legacy-restore');
-}
 restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
 `+world.slice(world.indexOf('</script>',boot));
 (async()=>{
@@ -69,16 +59,25 @@ restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
   await page.evaluate(()=>{worldTest.actions['adm-area']({v:'content'});worldTest.actions['adm-tab']({v:'risk'})});
   await reload();assert.equal((await current()).area,'content');assert.equal((await current()).subtab,'risk');
   for(const view of [{area:'note',tab:'cards',noteTab:'archive'},{area:'world',tab:'settings'}]){
-   // A synthetic legacy-storage fixture must not be superseded by the
-   // unrelated current history route left by the preceding navigation test.
-   await page.evaluate(view=>{
+   // The ordinary pre-auth bootstrap clears navigation. Reproduce a legacy
+   // saved view only after an actual reload, and exercise the production
+   // migration function without a competing modern history route.
+   await reload();
+   const state=await page.evaluate(view=>{
      history.replaceState(null,'',location.href);
      sessionStorage.setItem('ojjuda.world.admin-view',JSON.stringify({...view,userId:'admin-a'}));
-     sessionStorage.setItem('fixture-legacy-restore',JSON.stringify({...view,userId:'admin-a'}));
+     const navigation=performance.getEntriesByType('navigation')[0]?.type;
+     const restored=restoreWorldAdminView(null);
+     const before={area:L.area,tab:L.tab,restored};
+     H();
+     return {navigation,before,after:{area:L.area,tab:L.tab}};
    },view);
-   await reload();
-   assert.equal((await current()).area,view.area==='note'?'trash':'operations');
-   assert.equal((await current()).subtab,view.area==='note'?'trash-cards':'spam');
+   const area=view.area==='note'?'trash':'operations',tab=view.area==='note'?'trash-cards':'spam';
+   assert.equal(state.navigation,'reload','legacy state is tested on an actual page refresh');
+   assert.equal(state.before.restored,true,'authorized legacy navigation is converted: '+JSON.stringify(state));
+   assert.deepEqual(state.before,{area,tab,restored:true},'legacy saved route maps to its active management tab');
+   assert.equal(state.after.area,area,'re-render retains the migrated area: '+JSON.stringify(state));
+   assert.equal(state.after.tab,tab,'re-render retains the migrated tab');
   }
   for(let index=0;index<noteLinks.length;index++){
    await page.evaluate(()=>worldTest.actions.tab({tab:'admin'}));
