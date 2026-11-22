@@ -375,3 +375,55 @@ test('returning from a reply restores the original feed button and reading posit
     dom.window.close();
   }
 });
+
+test('a stalled Park feed is aborted and a single automatic retry restores cards', async () => {
+  const dom = new JSDOM(read('park/index.html'), {
+    url: 'https://fixture.test/park/', runScripts: 'outside-only', pretendToBeVisual: true
+  });
+  const w = dom.window, doc = w.document;
+  const nativeSetTimeout = w.setTimeout.bind(w);
+  try {
+    w.scrollTo = () => {};
+    w.matchMedia = () => ({ matches: false });
+    w.setTimeout = (fn, delay, ...args) => nativeSetTimeout(fn,
+      delay === 8500 ? 15 : delay === 1400 ? 15 : delay, ...args);
+    let reads = 0, aborted = 0;
+    const card = {
+      id: '12345678-1234-4123-8123-000000000001', kind: 'memo',
+      body: '다시 연결된 카드', background_key: '10', tags: [],
+      created_at: '2026-11-22T06:00:00Z'
+    };
+    const client = {
+      auth: {
+        onAuthStateChange() {},
+        getSession: async () => ({ data: { session: null } })
+      },
+      schema: () => ({
+        rpc(name) {
+          if (name !== 'list_cards') return Promise.resolve({ data: [] });
+          reads++;
+          if (reads === 1) {
+            return { abortSignal(signal) {
+              return new Promise((resolve, reject) => signal.addEventListener('abort', () => {
+                aborted++; reject(new Error('aborted'));
+              }, { once: true }));
+            } };
+          }
+          return { abortSignal: () => Promise.resolve({ data: [card] }) };
+        }
+      })
+    };
+    w.OJJUDA_CONFIG = { supabaseUrl: 'https://fixture.test', supabaseKey: 'test' };
+    w.supabase = { createClient: () => client };
+    w.eval(read('note/preview.js'));
+    await new Promise(resolve => nativeSetTimeout(resolve, 120));
+    assert.equal(aborted, 1, 'stalled network work is aborted at the deadline');
+    assert.equal(reads, 2, 'one automatic recovery attempt runs after a timeout');
+    assert.ok(doc.querySelector('#feed-list [data-card-id="' + card.id + '"]'),
+      'the recovered response replaces the loading cards');
+    assert.equal(doc.querySelector('#connection-status').hidden, true);
+    assert.equal(doc.querySelector('[data-retry-feed]'), null);
+  } finally {
+    dom.window.close();
+  }
+});
