@@ -1,0 +1,16 @@
+*{box-sizing:border-box}
+:root{font-family:system-ui,"Noto Sans KR",sans-serif;color:#32423c;background:#f8f6f1;font-size:15px}
+body{margin:0;min-width:0;min-height:100dvh}
+.pajang-teen-mast{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px max(16px,calc((100% - 750px)/2));border-bottom:1px solid #e5e2d9;background:#fff}
+.pajang-teen-mast a{text-decoration:none;font-size:17px;font-weight:500;color:inherit}
+.pajang-teen-mast strong{color:#59715d}
+.pajang-teen-mast span{font-size:12px;color:#6d786d}
+main{width:min(100%,750px);margin:0 auto}
+.pajang-teen-gate{padding:36px 20px;line-height:1.7;text-align:center}
+.pajang-teen-gate h1{font-size:22px;margin:0 0 15px}
+.pajang-teen-gate p{min-height:1.5em;color:#4f6257}
+.pajang-teen-gate a{display:inline-block;margin-top:12px;padding:10px 18px;border:1px solid #9eaea0;border-radius:12px;color:#3b5846;text-decoration:none}
+.pajang-teen-foot{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin:20px auto;padding:12px;font-size:12px}
+.pajang-teen-foot a{color:#5d705f}
+[hidden]{display:none!important}
+:focus-visible{outline:3px solid #3d8063;outline-offset:3px}
