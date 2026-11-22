@@ -81,6 +81,7 @@ on:
       - 'tests/pajang-profile-preferences-ui.test.cjs'
       - 'tests/pajang-profile-preferences-db.test.cjs'
       - 'tests/pajang-age-groups-db.test.cjs'
+      - 'tests/pajang-adult-endpoint-guards-db.test.cjs'
       - 'tests/pajang-exchange-profile.test.cjs'
       - 'tests/pajang-exchange-height.test.mjs'
       - 'tests/test_pajang_program_publish.py'
@@ -167,6 +168,7 @@ on:
       - 'tests/pajang-profile-preferences-ui.test.cjs'
       - 'tests/pajang-profile-preferences-db.test.cjs'
       - 'tests/pajang-age-groups-db.test.cjs'
+      - 'tests/pajang-adult-endpoint-guards-db.test.cjs'
       - 'tests/pajang-exchange-profile.test.cjs'
       - 'tests/pajang-exchange-height.test.mjs'
       - 'ops/publish-pajang-program.py'
@@ -218,6 +220,8 @@ jobs:
       - run: node --test tests/pajang-profile-preferences-db.test.cjs
       - name: Verify age tiers without opening adult features to minors
         run: node --test tests/pajang-age-groups-db.test.cjs
+      - name: Check server-side adult API isolation across profile, exchange, and media
+        run: node --test tests/pajang-adult-endpoint-guards-db.test.cjs
       - name: Check chat exchange consent, responses, and profile safety notice
         run: node --test tests/pajang-chat-exchange-ui.test.cjs
       - name: Check past answer edit permissions and form state
