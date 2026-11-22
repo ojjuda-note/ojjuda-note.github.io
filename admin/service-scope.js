@@ -14,7 +14,7 @@
   const common = Object.freeze(['overview','visitors','users','suspended','referrals','settings','reports','feedback',
     'errors','connections','activity','notice','words','assets','rewards','trash-all','trash-accounts','trash-other']);
   // Standalone administrator pages are shared links, not World workspace tabs.
-  const external = Object.freeze([]);
+  const external = Object.freeze(['organization']);
   const valid = value => typeof value === 'string' && Object.hasOwn(services,value);
   const normalize = value => valid(value) ? value : 'agit';
   const owner = tab => Object.keys(dedicated).find(service => dedicated[service].includes(tab)) || null;

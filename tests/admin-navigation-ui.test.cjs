@@ -165,7 +165,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
       }
       for(const target of ['users','settings','reports','feedback','notice','activity'])assert.ok(await page.locator('.adm-menu-group .adm-menu-link[data-v="'+target+'"]').count()>0,'shared operation '+target+' remains in '+id);
       assert.equal(await page.locator('.adm-menu-group[data-group="headquarters"]').count(),0,
-        'retired departments are not included in the menu');
+        'organization is available through public service help');
       if(id==='pajang'){
         await mounted('pajang-answers');assert.equal(await page.evaluate(()=>fixture.options['pajang-answers'].view),'answers');
         await tab('pajang-chats');await mounted('pajang-chats');assert.equal(await page.evaluate(()=>fixture.options['pajang-chats'].view),'chats');

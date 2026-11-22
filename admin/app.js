@@ -16,7 +16,7 @@
 
   function destination() {
     const allowed = new Set([
-      'overview', 'visitors', 'connections', 'users', 'suspended', 'reports', 'feedback', 'errors', 'note-inquiries', 'note-users', 'words', 'note-actions',
+      'overview', 'visitors', 'connections', 'organization', 'users', 'suspended', 'reports', 'feedback', 'errors', 'note-inquiries', 'note-users', 'words', 'note-actions',
       'settings', 'fortune-purchases', 'trash-all', 'trash-accounts', 'trash-cards', 'trash-messages', 'trash-other', 'note', 'referrals', 'activity', 'note-reports', 'photo-stages', 'drinking-prompts', 'messages', 'groups',
       'cards', 'risk', 'map', 'notice', 'spam', 'assets', 'pajang-answers', 'pajang-questions', 'pajang-chats', 'note-cards', 'note-risk', 'note-map', 'note-settings', 'note-spam'
     ]);
@@ -26,8 +26,8 @@
     let hash = location.hash.slice(1);
     try { hash = decodeURIComponent(hash); } catch { hash = ''; }
     const tab = resolve(new URLSearchParams(location.search).get('admin')) || resolve(hash) || 'overview';
-    const url = new URL('/world.html', location.href);
-    url.searchParams.set('admin', tab);
+    const url = new URL(tab === 'organization' ? '/admin/operations.html' : '/world.html', location.href);
+    if (tab !== 'organization') url.searchParams.set('admin', tab);
     const from = new URLSearchParams(location.search).get('from');
     const service = window.OjjudaAdminScope?.resolve(from || (tab === 'note' || tab.startsWith('note-') ? 'park' : null), tab);
     if (service) url.searchParams.set('from', service);

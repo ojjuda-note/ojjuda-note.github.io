@@ -53,10 +53,14 @@ export function enhanceGuestGate(){
     const body=make('div','ojjuda-settings-body');menu.append(summary,body);
     return {menu,body};
   };
-  const settingsMenu=detail('설정');
+  const settingsMenu=detail('설정'),helpMenu=detail('도움말');
+  const organization=make('a','ojjuda-settings-row');
+  organization.href='/features/organization/?from=pajang';organization.target='_top';
+  const arrow=make('span','ojjuda-settings-arrow','›');arrow.setAttribute('aria-hidden','true');
+  organization.append(make('span','ojjuda-settings-label','조직도'),arrow);
   const serviceBanners=make('ojjuda-service-banners','');
   serviceBanners.setAttribute('current','pajang');
-  settingsMenu.body.append(serviceBanners);
+  helpMenu.body.append(organization);settingsMenu.body.append(helpMenu.menu,serviceBanners);
   if(new URLSearchParams(location.search).get('tab')==='profile')settingsMenu.menu.open=true;
   list.append(settingsMenu.menu);settings.append(list);
   footer.append(account,message,settings);invitation.append(opening,footer);
