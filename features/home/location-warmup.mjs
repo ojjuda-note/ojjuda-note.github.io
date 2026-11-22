@@ -4,8 +4,12 @@ import '../../shared/location/location.js?v=20261119-kma-current1';
 export function warmLocationOnAgit(db,{surface=window,service=globalThis.OjjudaLocation}={}){
   let account='',read=null,unsubscribe=()=>{},closed=false,lastAttempt=0,authRevision=0;
   const cancel=()=>{read?.abort();read=null;};
+  // Park loads its cards independently, then requests GPS only when useful.
+  // Avoid launching a second, competing Agit GPS read during a direct Park entry.
+  const parkEntry=()=>surface.document?.documentElement?.classList?.contains?.('world-park-active')
+    || /(?:^|[?&])(?:place|tab)=park(?:&|$)/.test(surface.location?.search||'');
   function warm(force=false){
-    if(closed||!account||surface.document.hidden||read||(!force&&Date.now()-lastAttempt<120000))return;
+    if(closed||!account||surface.document.hidden||read||parkEntry()||(!force&&Date.now()-lastAttempt<120000))return;
     lastAttempt=Date.now();
     const controller=new AbortController();read=controller;
     void service.readPosition({db,accountId:account,coarseCache:true,signal:controller.signal,preciseTimeout:12000})
