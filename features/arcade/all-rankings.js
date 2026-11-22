@@ -40,7 +40,7 @@
    for(const [id,name] of group.games){
     const link=make('a',null,'rank-entry');link.dataset.game=id;
     link.href='./monthly-ranking.html?game='+encodeURIComponent(id);
-    link.setAttribute('aria-label',id==='janggi'?'장기 월간 순위 · 난이도 우선, 같은 난이도에서 연승순 · 자세히 보기':name+' 월간 순위 자세히 보기');
+    link.setAttribute('aria-label',name+' 월간 순위 자세히 보기');
     const title=make('span',name,'game-name'),nickname=make('span','불러오는 중…','first-name'),
      detail=make('small',null,'first-detail'),person=make('span',null,'first-person'),
      score=make('strong','—','first-score'),arrow=make('span','›','arrow');
