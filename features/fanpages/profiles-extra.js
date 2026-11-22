@@ -57,6 +57,7 @@ if (strayKidsProfile) {
 const enhypenProfile = window.OJJUDA_FAN_PROFILES.enhypen;
 if (enhypenProfile) {
   enhypenProfile.expanded = true;
+  enhypenProfile.checkedAt = '2026.11.19';
   const birthdays = {
     '정원': '2004.02.09', '제이': '2002.04.20', '제이크': '2002.11.15',
     '성훈': '2002.12.08', '선우': '2003.06.24', '니키': '2005.12.09'

@@ -1031,13 +1031,14 @@
       members: ['정원', '제이', '제이크', '성훈', '선우', '니키'],
       debut: '2020.11.30', debutWork: 'BORDER : DAY ONE', songs: ['Given-Taken', 'Let Me In (20 CUBE)'],
       concept: '서로 다른 세계를 음악으로 잇는 여섯 멤버.',
-      checkedAt: '2026.11.12',
+      checkedAt: '2026.11.19',
       official: 'https://beliftlab.com/artist/profile/ENHYPEN?lang=ko', youtube: 'https://www.youtube.com/@ENHYPENOFFICIAL',
       photo: 'Enhypen, June 2026.jpg', photoLabel: '2026년 단체', photoYear: '2026', credit: 'K-POPIT', license: 'CC BY 4.0',
       morePhotos: [
         commonsPhoto('Enhypen at Golden disc awards.png', '2026 골든디스크 · 당시 7인 단체', '2026', '티비텐 TV10', 'CC BY 3.0')
       ],
       music: [
+        { title: 'THE SIN : PARALLEL WORLD', date: '2026.11.20', type: '스핀오프 싱글 · 디지털 11.20 / 실물 11.23 발매 예정 · 타이틀 I Want You', songs: ['I Want You', 'Don\'t Stop', 'ILY Season'], href: 'https://beliftlab.com/artist/discography/ENHYPEN/23' },
         { title: 'THE SIN : BLISS', date: '2026.08.21', type: '미니 8집 · 타이틀 Bloody Paradise', songs: ['Two Fools', 'Breaking News', 'Stuck', 'Bad For You', 'Remnants of Love', 'Bloody Paradise', 'The Final Moment', 'Checkmate', 'Highlight', 'The Veiled Truth'], href: 'https://beliftlab.com/artist/discography/ENHYPEN/20' },
         { title: 'THE SIN : VANISH', date: '2026.01.16', type: '미니 7집 · 타이틀 Knife', songs: ['The Beginning', 'No Way Back (feat. So!YoON!)', 'The Fugitives', 'Knife', 'Stealer', 'The Voice', 'Witnesses', 'Big Girls Don\'t Cry', 'Lost Island', 'Sleep Tight', 'The Beyond'], href: 'https://beliftlab.com/artist/discography/ENHYPEN/17' },
         { title: 'BORDER : DAY ONE', date: '2020.11.30', type: '데뷔 미니앨범 · 타이틀 Given-Taken', songs: ['Given-Taken', 'Let Me In (20 CUBE)'], href: 'https://beliftlab.com/artist/discography/ENHYPEN/1' }
@@ -1047,12 +1048,16 @@
         { date: '2026-11-20', endDate: '2026-12-02', title: 'BLOOD SAGA 도쿄 팝업스토어 개막', sub: '11.20~12.02 · 도쿄 시부야구 제9SY 빌딩 1층 · 11:00~19:00 (JST) · 입장 예약·판매 상태는 공식 공지 확인', href: 'https://enhypen-jp.weverse.io/news/dd0bec9156a4' },
         { date: '2026-11-20', title: 'THE SIN : PARALLEL WORLD 디지털 싱글 발매 예정', sub: '14:00 한국시간 · 디지털 음원·미국 싱글 CD · 실물 발매일과 구분', href: 'https://weverse.io/enhypen/notice/40374' },
         { date: '2026-11-23', title: 'THE SIN : PARALLEL WORLD 실물 싱글 앨범 발매 예정', sub: '12:00 한국시간 · 스핀오프 싱글 실물 발매 · 변경은 공식 공지 확인', href: 'https://weverse.io/enhypen/notice/40374' },
+        { date: '2026-11-25', title: 'MBC ENHYPEN SPECIAL SHOW : MIDNIGHT LOVE SONG', sub: '19:30~21:30 (KST) · 상암 MBC 녹화 · 사전 추첨 당첨자 450명만 참여 · 응모 마감', href: 'https://weverse.io/enhypen/notice/40900' },
         { date: '2026-12-01', title: 'BLOOD SAGA 일본 투어 · 도쿄 1일차', sub: '도쿄돔 · 18:30 공연 시작 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/cb268ca1962b' },
+        { date: '2026-12-02', title: 'BLOOD SAGA 도쿄돔 공연 전 사운드체크 이벤트', sub: '도쿄돔 · 앨범 구매 초대 대상 · 시작 시각 추후 공지 · 12.01 도쿄 공연은 대상 아님', href: 'https://enhypen-jp.weverse.io/news/7b5ace174677' },
         { date: '2026-12-02', title: 'BLOOD SAGA 일본 투어 · 도쿄 2일차', sub: '도쿄돔 · 16:00 공연 시작 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/911292cae943' },
+        { date: '2026-12-04', title: 'THE SIN : PARALLEL WORLD 알라딘 팬사인회', sub: '20:00 (KST) · 당첨자 50명만 참여 · 장소 개별 안내 · 응모 11.17~23, 결과 11.24', href: 'https://weverse.io/enhypen/notice/41041' },
         { date: '2026-12-13', title: '일본 도쿄 미트앤그리트 · 개별 사인회', sub: '도쿄 빅사이트 남3홀 · 응모 당첨자 대상 · 상세 시간 추후 공지', href: 'https://www.universal-music.co.jp/enhypen/news/2026-10-29/' },
         { date: '2026-12-17', title: 'PARALLEL WORLD 발매 기념 온라인 2샷 행사', sub: '20:30경 일본 현지시간 · 당첨자 대상 · WithLIVE · 시간 변경 가능', href: 'https://enhypen-jp.weverse.io/news/cdaa6da839b4' },
         { date: '2026-12-18', endDate: '2026-12-27', title: 'BLOOD SAGA 나고야 팝업스토어 개막', sub: '12.18~12.27 · 나고야 PARCO 남관 10층 · 10:00~20:00 (JST)', href: 'https://enhypen-jp.weverse.io/news/dd0bec9156a4' },
         { date: '2026-12-21', title: 'PARALLEL WORLD 발매 기념 온라인 2샷·토크 행사', sub: '20:30경 일본 현지시간 · 당첨자 대상 · WithLIVE · 시간 변경 가능', href: 'https://enhypen-jp.weverse.io/news/cdaa6da839b4' },
+        { date: '2026-12-26', endDate: '2026-12-27', title: 'BLOOD SAGA 나고야돔 공연 전 사운드체크 이벤트', sub: '반테린돔 나고야 · 12.26~27 공연 당일 · 앨범 구매 초대 대상 · 시작 시간 추후 공지', href: 'https://enhypen-jp.weverse.io/news/7b5ace174677' },
         { date: '2026-12-26', title: 'BLOOD SAGA 일본 투어 · 나고야 1일차', sub: '반테린돔 나고야 · 17:00 공연 시작 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/44ef1a8867ab' },
         { date: '2026-12-27', title: 'BLOOD SAGA 일본 투어 · 나고야 2일차', sub: '반테린돔 나고야 · 16:00 공연 시작 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/ca435a996f7d' },
         { date: '2027-01-29', endDate: '2027-02-07', title: 'BLOOD SAGA 후쿠오카 팝업스토어 개막', sub: '01.29~02.07 · 후쿠오카 솔라리아플라자 1층 · 평일 11:00~20:00 / 주말 10:00~20:00 (JST)', href: 'https://enhypen-jp.weverse.io/news/dd0bec9156a4' },
@@ -1068,6 +1073,9 @@
         { title: 'ENHYPEN Weverse 공식 공지', sub: '팬사인회·앨범 공지 · 로그인 필요할 수 있음', href: 'https://weverse.io/enhypen/notice' }
       ],
       news: [
+        { date: '2026.11.19', tag: '굿즈', title: 'Weverse Shop 일본 블랙프라이데이 · 11.20~12.04 한정 할인 판매 발표', href: 'https://enhypen-jp.weverse.io/news/455338f612e7' },
+        { date: '2026.11.17', tag: '팬 행사', title: '12.02 도쿄·12.26~27 나고야 공연 전 사운드체크 초대 안내', href: 'https://enhypen-jp.weverse.io/news/7b5ace174677' },
+        { date: '2026.11.13', tag: '영상', title: '신곡 I Want You 공식 뮤직비디오 선공개 · 음원 11.20 / 실물 11.23', href: 'https://www.youtube.com/watch?v=dE_Ro8Sac2M' },
         { date: '2026.11.08', tag: '팬 행사', title: '12월 17·21일 일본 온라인 팬 이벤트 공지', href: 'https://enhypen-jp.weverse.io/news/cdaa6da839b4' },
         { date: '2026.11.06', tag: '공연', title: '11월 13~26일 BLOOD SAGA 일본 극장 상영·입장 선물 안내', href: 'https://enhypen-jp.weverse.io/news/78707bf51814' },
         { date: '2026.11.04', tag: '공연', title: 'BLOOD SAGA 일본 4도시 투어 팝업스토어 일정·장소 발표', href: 'https://enhypen-jp.weverse.io/news/dd0bec9156a4' },
@@ -1076,6 +1084,7 @@
 
       ],
       merch: [
+        { title: 'ENHYPEN 2026 Black Friday · 일본 공식 할인', sub: 'Weverse Shop 일본 배송 · 2026.11.20 12:00~12.04 23:59 (JST) · 상품별 수량 한정 · 가격·재고는 판매처 확인', href: 'https://enhypen-jp.weverse.io/news/455338f612e7' },
         { title: 'Official Light Stick Ver.2 (Renewal Edition)', sub: 'Weverse 공식 응원봉 · 10.19 18:00(KST) 판매 시작 · 수량 소진 시 종료 · 재고·가격 확인', href: 'https://shop.weverse.io/ko/shop/USD/artists/10/notices/14588' },
         { title: 'BLOOD SAGA 일본 월드투어 공식 MD', sub: '공식 투어 상품 · 포토·피켓·아크릴 스탠드 · 재고는 판매처 확인', href: 'https://enhypen-jp.weverse.io/news/f1516fcdee64' },
         { title: 'THE SIN : PARALLEL WORLD 공식 예약 앨범', sub: '10.26 예약 시작 · 국내 실물 11.23 발매 예정 · 재고·특전은 공식 판매처 확인', href: 'https://www.universal-music.co.jp/enhypen/news/2026-10-26/' },

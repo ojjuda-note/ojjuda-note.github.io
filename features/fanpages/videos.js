@@ -193,6 +193,7 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: '80SH8Z_DOnY', title: 'Over The Moon', kind: '뮤직비디오', source: 'HYBE LABELS / BIGHIT MUSIC · 2024.11.04' }
   ],
   enhypen: [
+    { id: 'dE_Ro8Sac2M', title: 'I Want You', kind: '뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.11.13' },
     { id: 'h_EaeC1hTqo', title: 'Bloody Paradise', kind: '뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.08.21' },
     { id: 'bDvtb6Pywes', title: 'Checkmate', kind: '뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.09.11' },
     { id: 'W-D8GSXg1W8', title: 'Bloody Paradise', kind: '퍼포먼스 뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.08.31' },
