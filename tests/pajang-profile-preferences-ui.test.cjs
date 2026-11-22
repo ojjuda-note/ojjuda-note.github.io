@@ -295,6 +295,10 @@ async function openGroup(dialog,label) {
     assert.equal(await settings.getByRole('button',{name:'교환용 프로필·취향 수정'}).count(),0);
     assert.equal(await form.dialog.locator('.unified-public-profile').count(),1);
     assert.equal(await form.dialog.locator('.unified-private-profile').count(),1);
+    assert.equal(await form.dialog.locator('.unified-public-profile .unified-public-tastes').count(),1,
+      'tastes appear inside the public profile');
+    assert.equal(await form.dialog.locator('.unified-private-profile').evaluate(node=>node.open),true,
+      'exchange-only fields are expanded when the editor opens');
     for(const width of [320,390]){
       await page.setViewportSize({width,height:844});
       await assertNoOverflow(page,'unified profile at '+width+'px');
@@ -316,8 +320,7 @@ async function openGroup(dialog,label) {
     await art.getByRole('button',{name:'카페',exact:true}).click();
 
     const privateSection=form.dialog.locator('.unified-private-profile');
-    assert.equal(await privateSection.evaluate(node=>node.open),false,'exchange details start collapsed');
-    await privateSection.locator('summary').click();
+    assert.equal(await privateSection.evaluate(node=>node.open),true,'exchange details start expanded');
     await form.dialog.getByLabel('직업',{exact:true}).fill('책방지기');
     await form.dialog.getByLabel('자기소개',{exact:false}).fill('서로 이야기를 나누고 싶어요.');
     await form.dialog.locator('.unified-private-fields .exchange-check').filter({hasText:'나이'}).locator('input[type="checkbox"]').check();
@@ -351,7 +354,7 @@ async function openGroup(dialog,label) {
     assert.equal(await form.dialog.getByRole('group',{name:'원하는 인연',exact:true})
       .getByRole('button',{pressed:true}).count(),2);
     const privateAgain=form.dialog.locator('.unified-private-profile');
-    await privateAgain.locator('summary').click();
+    assert.equal(await privateAgain.evaluate(node=>node.open),true,'exchange details reopen expanded');
     assert.equal(await form.dialog.getByLabel('직업',{exact:true}).inputValue(),'책방지기');
     await form.dialog.getByLabel('닉네임',{exact:true}).fill('고친 보리');
     await form.dialog.getByLabel('직업',{exact:true}).fill('새 직업');
