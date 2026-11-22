@@ -475,3 +475,28 @@ test('a stalled initial auth session still opens the public Park feed', async ()
     dom.window.close();
   }
 });
+
+
+test('Park paints its public cards before optional GPS and defers feature-only styles',()=>{
+  const source=read('note/preview.js'), html=read('park/index.html');
+  const start=source.indexOf('async function loadFeed('),end=source.indexOf('function locationErrorText(',start);
+  assert.ok(start>=0&&end>start);
+  const feedSource=source.slice(start,end);
+  assert.ok(feedSource.indexOf('for (const card of data || []) {')>=0);
+  assert.ok(feedSource.indexOf('for (const card of data || []) {')<feedSource.indexOf('const locateAfterPaint ='),
+    'the card DOM is built before location acquisition starts');
+  assert.match(feedSource,/requestAnimationFrame\(\(\) => requestAnimationFrame\(locateAfterPaint\)\)/,
+    'allow the first cards to paint before checking GPS');
+  assert.ok(feedSource.indexOf('positionIfAlreadyGranted()')>feedSource.indexOf('const locateAfterPaint ='));
+  for(const path of ['/note/map.css','/note/composer-tools.css','/note/notifications.css',
+    '/features/wallet/ju-charge.css','/features/account/settings-list.css']){
+    const tag=html.split('\n').find(line=>line.includes('href="'+path+'?'));
+    assert.ok(tag,'expected stylesheet '+path);
+    assert.match(tag,/media="print" onload="this\.media='all'"/);
+  }
+  for(const path of ['/note/style.css','/note/features.css','/park/design.css']){
+    const tag=html.split('\n').find(line=>line.includes('href="'+path+'?'));
+    assert.ok(tag,'expected essential feed style '+path);
+    assert.doesNotMatch(tag,/media="print"/,'feed styles must remain immediately available');
+  }
+});
