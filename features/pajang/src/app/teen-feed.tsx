@@ -6,7 +6,7 @@ type PublicAnswer={
   id:string;questionId:string;authorId:string;authorName:string;body:string;
   updatedAt:string;liked:boolean;likeCount:number;commentCount:number
 };
-type PublicComment={id:string;authorId:string;authorName:string;body:string;createdAt:string;reviewStatus:"approved"|"pending"};
+type PublicComment={id:string;authorId:string;authorName:string;body:string;createdAt:string;reviewStatus:"approved"|"pending";mine:boolean};
 type FeedResult={questionId:string;items:PublicAnswer[];visibility:"teen-only"};
 type FeedApi=(questionId:string)=>Promise<FeedResult>;
 type InteractionApi=(action:string,id:string,data?:Record<string,unknown>)=>Promise<unknown>;
@@ -61,6 +61,13 @@ function PeerAnswer({answer,api,interact,onBlocked}:{answer:PublicAnswer;api:Tee
       setValue(prev=>({...prev,liked:result.liked,likeCount:result.likeCount}));
     },"");
   }
+  async function deleteMyComment(commentId:string){
+    await action(async()=>{
+      const result=await interact("delete-comment",commentId) as {deleted:boolean};
+      if(result.deleted!==true)throw new Error("내 댓글을 삭제하지 못했어요.");
+      await commentsLoad();
+    },"댓글을 삭제했어요.");
+  }
   async function comment(){
     if(!newComment.trim()||newComment.length>200)return;
     await action(async()=>{
@@ -94,7 +101,8 @@ function PeerAnswer({answer,api,interact,onBlocked}:{answer:PublicAnswer;api:Tee
       <ul>{comments.map(item=><li key={item.id}>
         <p><strong>{item.authorName}</strong> {item.reviewStatus==="pending"&&<small>검토 중 · 나에게만 표시</small>}</p>
         <p>{item.body}</p>
-        {item.reviewStatus==="approved"&&<div className="teen-comment-report">
+        {item.mine&&<button type="button" disabled={busy} onClick={()=>void deleteMyComment(item.id)}>내 댓글 삭제</button>}
+        {item.reviewStatus==="approved"&&!item.mine&&<div className="teen-comment-report">
           <select value={commentReason} aria-label="댓글 신고 사유" disabled={busy} onChange={e=>setCommentReason(e.target.value)}>
             {reasons.map(reason=><option key={reason.value} value={reason.value}>{reason.label}</option>)}
           </select>

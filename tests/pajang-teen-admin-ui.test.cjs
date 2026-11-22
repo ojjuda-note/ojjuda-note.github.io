@@ -18,6 +18,10 @@ test('teen content moderation screen requires administrator confirmation and use
   assert.match(code,/approved|approve/);
   assert.match(code,/hide/);
   assert.match(code,/resolve-report/);
+  assert.match(code,/원문 숨김/);
+  assert.match(code,/r\.draftId/);
+  assert.match(code,/r\.commentId/);
+  assert.match(code,/r\.body/);
   assert.match(code,/\.textContent/);
   assert.ok(!code.includes('.innerHTML'),'untrusted answers must never be HTML');
   assert.match(page,/\/admin\/pajang-teen\.js/);

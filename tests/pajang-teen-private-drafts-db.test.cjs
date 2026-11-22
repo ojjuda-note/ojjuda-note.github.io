@@ -29,6 +29,7 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
   await db.exec(migration('20261122170234_pajang_teen_private_drafts.sql'));
   await db.exec(migration('20261122170500_pajang_teen_visible_feed.sql'));
   await db.exec(migration('20261122172528_pajang_teen_launch_gate.sql'));
+  await db.exec(migration('20261122174320_pajang_teen_comment_cleanup.sql'));
   for(const [name,id] of Object.entries(actors)){
     await db.query('insert into auth.users values($1,false)',[id]);
     await db.query('insert into public.profiles values($1,$2)',[id,name==='teenA'?'새싹':name==='teenB'?'바람':name==='adult'?'어른':'관리자']);
@@ -109,6 +110,7 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
   const comment=await interact('comment',saved.id,{body:'그렇게 생각할 수도 있겠네요.'});
   assert.equal(comment.status,'pending');
   assert.equal((await interact('comments',saved.id)).items[0].reviewStatus,'pending');
+  assert.equal((await interact('comments',saved.id)).items[0].mine,true,'own pending comments are deletable');
   await login('teenA');
   assert.equal((await interact('comments',saved.id)).items.length,0,'unapproved comments are not public');
   await login('adult');
@@ -126,13 +128,25 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
   assert.equal(visibleComment.body,'그렇게 생각할 수도 있겠네요.');
   assert.equal(visibleComment.authorId,actors.teenB);
   assert.equal(visibleComment.authorName,'바람');
+  assert.equal(visibleComment.mine,false,'other members must not get author delete permission');
+  assert.deepEqual(await interact('delete-comment',comment.id),{deleted:false},
+    'the post owner cannot remove another member’s comment');
   assert.equal((await feed(sample.id)).items[0].commentCount,1);
   assert.deepEqual(await interact('report-comment',comment.id,{reason:'other'}),{reported:true});
   await login('admin');
   const reportQueue=await moderateComment('queue');
   assert.equal(reportQueue.reports.length,1);
+  assert.equal(reportQueue.reports[0].body,'그렇게 생각할 수도 있겠네요.');
+  assert.equal(reportQueue.reports[0].status,'approved');
   assert.deepEqual(await moderateComment('hide',comment.id),{updated:true,status:'hidden'});
   assert.deepEqual(await moderateComment('resolve-report',reportQueue.reports[0].id),{resolved:true});
+  await login('teenB');
+  assert.deepEqual(await interact('delete-comment',comment.id),{deleted:true},
+    'comment author can withdraw an approved or hidden comment');
+  assert.deepEqual(await interact('delete-comment',comment.id),{deleted:false},
+    'a repeated delete does not reveal anyone else’s data');
+  await login('admin');
+
   await login('teenA');
   assert.equal((await interact('comments',saved.id)).items.length,0);
   await login('teenB');
@@ -151,6 +165,8 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
   const queue=await moderation('queue');
   assert.equal(queue.reports.length,1);
   assert.equal(queue.reports[0].reason,'bullying');
+  assert.equal(queue.reports[0].body,'다르게 답해요');
+  assert.equal(queue.reports[0].status,'approved');
   const reportId=queue.reports[0].id;
   assert.deepEqual(await moderation('hide',saved.id),{updated:true,status:'hidden'});
   assert.deepEqual(await moderation('resolve',null,reportId),{resolved:true});
@@ -182,4 +198,11 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
     const row=(await db.query('select relrowsecurity from pg_class where oid=$1::regclass',['pajang_teen_private.'+table])).rows[0];
     assert.equal(row.relrowsecurity,true);
   }
+  await db.query("insert into auth.users(id) select ('10000000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid from generate_series(5,7) n");
+  await db.query("insert into pajang_teen_private.drafts(owner_id,question_id,body,review_status,share_consented_at) select u.id,q.id,'Previously approved content','approved',now() from auth.users u cross join pajang_teen_private.questions q where u.id in ('10000000-0000-4000-8000-000000000005','10000000-0000-4000-8000-000000000006','10000000-0000-4000-8000-000000000007')");
+  await login('admin');
+  const pendingQueue=await moderation('queue');
+  assert.equal(pendingQueue.drafts.length,1,'60 approved posts must not bury pending content');
+  assert.equal(pendingQueue.drafts[0].id,b.id);
+
 });
