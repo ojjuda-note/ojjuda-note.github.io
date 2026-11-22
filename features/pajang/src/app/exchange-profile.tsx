@@ -110,7 +110,7 @@ export function ExchangeProfileEditor({profileId,focusTastes=false,onSaved}:{pro
   function add(key:PreferenceGroupKey){
     if(!profileReady||!profile||busy)return;
     const result=addTaste(profile.preferences,key,drafts[key]);setError(result.error);
-    if(!result.error){setProfile({...profile,preferences:result.preferences});setDrafts(previous=>({...previous,[key]:""}));}
+    if(!result.error){setProfile(current=>current?{...current,preferences:{...result.preferences,relationship_intents:current.preferences.relationship_intents}}:current);setDrafts(previous=>({...previous,[key]:""}));}
   }
   async function save(event:React.FormEvent) {
     event.preventDefault();
@@ -163,33 +163,34 @@ export function ExchangeProfileEditor({profileId,focusTastes=false,onSaved}:{pro
         <p className="exchange-hint">파장 회원에게 보이는 정보</p>
         <label>닉네임<input name="nickname" required value={profile.name}
           maxLength={textInputMaxLength(profile.name,12)}
-          onChange={e=>{setError("");setProfile({...profile,name:e.target.value});}}/></label>
+          onChange={e=>{setError("");setProfile(current=>current?{...current,name:e.target.value}:current);}}/></label>
         <RegionField label="공개할 활동 지역" value={profile.region}
-          onChange={v=>{setError("");setProfile({...profile,region:v});}}/>
+          onChange={v=>{setError("");setProfile(current=>current?{...current,region:v}:current);}}/>
         <fieldset className="profile-intent-field" disabled={busy}>
           <legend>원하는 인연</legend>
           <div className="preference-chips intent-choices">{relationshipIntents.map(intent=>{
             const chosen=profile.preferences.relationship_intents.includes(intent.key);
             return <button type="button" key={intent.key} aria-label={intent.label}
               aria-pressed={chosen} title={intent.description}
-              onClick={()=>{setError("");setProfile({...profile,preferences:{...profile.preferences,
-                relationship_intents:chosen?profile.preferences.relationship_intents.filter(key=>key!==intent.key):
-                  [...profile.preferences.relationship_intents,intent.key]}});}}>{intent.label}</button>;
+              onClick={()=>{setError("");setProfile(current=>current?{...current,preferences:{...current.preferences,
+                relationship_intents:current.preferences.relationship_intents.includes(intent.key)
+                  ? current.preferences.relationship_intents.filter(key=>key!==intent.key)
+                  : [...current.preferences.relationship_intents,intent.key]}}:current);}}>{intent.label}</button>;
           })}</div>
         </fieldset>
       </fieldset>
       <section ref={tastes} className="exchange-tastes unified-public-tastes" aria-label="나를 표현하는 취향" tabIndex={-1}>
         <ProfileTastesFields value={profile.preferences} interest={profile.interest} disabled={busy}
-          onInterest={interest=>{setError("");setProfile({...profile,interest});}}
-          onChange={preferences=>{setError("");setProfile({...profile,preferences});}}
+          onInterest={interest=>{setError("");setProfile(current=>current?{...current,interest}:current);}}
+          onChange={preferences=>{setError("");setProfile(current=>current?{...current,preferences:{...preferences,relationship_intents:current.preferences.relationship_intents}}:current);}}
           drafts={drafts} onDraft={(key,value)=>{setError("");setDrafts(previous=>({...previous,[key]:value}));}} onAdd={add}/>
       </section>
       <details ref={privateDetails} className="unified-private-profile">
         <summary><span><strong>교환 후 공개 정보</strong><small>상대가 승인한 뒤에만 공개</small></span></summary>
         <div className="unified-private-fields">
           <fieldset disabled={busy}><legend>나이·성별 공개 선택</legend>
-            <label className="exchange-check"><input type="checkbox" disabled={profile.age==null} checked={profile.age!=null&&profile.showAge} onChange={e=>setProfile({...profile,showAge:e.target.checked})}/><span>나이</span><b>{profile.age==null?"연동 정보 없음":`만 ${profile.age}세`}</b></label>
-            <label className="exchange-check"><input type="checkbox" disabled={!profile.gender} checked={!!profile.gender&&profile.showGender} onChange={e=>setProfile({...profile,showGender:e.target.checked})}/><span>성별</span><b>{profile.gender||"연동 정보 없음"}</b></label>
+            <label className="exchange-check"><input type="checkbox" disabled={profile.age==null} checked={profile.age!=null&&profile.showAge} onChange={e=>setProfile(current=>current?{...current,showAge:e.target.checked}:current)}/><span>나이</span><b>{profile.age==null?"연동 정보 없음":`만 ${profile.age}세`}</b></label>
+            <label className="exchange-check"><input type="checkbox" disabled={!profile.gender} checked={!!profile.gender&&profile.showGender} onChange={e=>setProfile(current=>current?{...current,showGender:e.target.checked}:current)}/><span>성별</span><b>{profile.gender||"연동 정보 없음"}</b></label>
           </fieldset>
           <fieldset className="exchange-grid" disabled={busy}><legend>상세 정보 (선택)</legend>
             {labels.filter(field=>field.key!=="bio").map(({key,label,options,limit})=>{
