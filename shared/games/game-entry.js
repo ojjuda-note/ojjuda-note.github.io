@@ -1,6 +1,10 @@
 /* Entry controls are presentation only; existing game start/invite handlers own actions. */
 (() => {
   'use strict';
+  // A weakly held preference lasts only while one game-entry menu is open.
+  // A new menu always starts on computer play, including after using multiplayer.
+  const chosenModes=new WeakMap();
+  const menuScope=card=>card.closest('#bd-menu,[data-entry-session]')||card;
   const icons={
     '🔨':'<path d="m8 5 3-3 8 8-3 3-3-3-7 9-3-3 8-7z"/>',
     '🏃':'<circle cx="15" cy="4" r="2"/><path d="m7 10 4-3 4 3 4 1M11 7l-1 7-5 6m5-6 5 1 1 6"/>',
@@ -17,7 +21,8 @@
     '👥':'<circle cx="9" cy="7" r="3"/><path d="M3 20v-3a6 6 0 0 1 12 0v3M16 4a3 3 0 0 1 0 6m2 3a5 5 0 0 1 3 4v3"/>'
   };
   function select(card, mode) {
-    if (!['computer', 'opponent'].includes(mode)) return;
+    if (!card || !['computer', 'opponent'].includes(mode)) return;
+    chosenModes.set(menuScope(card),mode);
     card.querySelectorAll('[data-entry-mode]').forEach(button => {
       const active = button.dataset.entryMode === mode;
       button.classList.toggle('on', active);
@@ -74,8 +79,8 @@
     });
     root.querySelectorAll('.game-entry[data-entry-key]:not([data-entry-ready])').forEach(card => {
       card.dataset.entryReady = 'true';
-      // Opening any game starts on solo; changing tabs is never remembered as a difficulty choice.
-      select(card, 'computer');
+      // Preserve the chosen tab only during the current menu's redraws.
+      select(card, chosenModes.get(menuScope(card)) || 'computer');
     });
   }
   document.addEventListener('click', event => {
