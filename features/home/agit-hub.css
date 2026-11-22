@@ -99,7 +99,7 @@ body:has(.agit-hub) .bottomnav button.on{color:var(--accent-ink,#245a48)}
  --banner-ink:#2b3830;--banner-muted:#6c796e;--banner-accent:#688876;
  position:relative;isolation:isolate;display:grid;
  grid-template-columns:clamp(108px,37%,222px) minmax(0,1fr);
- align-items:stretch;min-width:0;height:clamp(104px,11vw,126px);overflow:hidden;padding:0;
+ align-items:stretch;min-width:0;height:clamp(96px,10vw,116px);overflow:hidden;padding:0;
  border:1px solid var(--banner-stroke);border-radius:18px;
  background:linear-gradient(105deg,var(--banner-paper) 0%,var(--banner-paper) 60%,var(--banner-tint) 135%);
  box-shadow:0 4px 12px rgba(40,48,42,.055),0 1px 2px rgba(40,48,42,.04);
@@ -197,8 +197,8 @@ body:has(.agit-hub) .bottomnav button.on{color:var(--accent-ink,#245a48)}
  .agit-life{margin-top:20px}
  .agit-section-head h2{font-size:24px}
  .agit-life-grid{gap:5px}
- .agit-life-tile{height:102px;border-radius:16px;grid-template-columns:41% minmax(0,1fr)}
- .agit-life-title{padding:9px 44px 9px 14px}
+ .agit-life-tile{height:90px;border-radius:16px;grid-template-columns:41% minmax(0,1fr)}
+ .agit-life-title{gap:4px;padding:7px 44px 7px 14px}
  .agit-life-title strong{font-size:19px;letter-spacing:-.055em}
  .agit-life-title small{font-size:12px}
 }
