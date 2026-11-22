@@ -44,6 +44,15 @@ assert.ok(mountStart>0);
     });
     await page.addScriptTag({content:read('admin/connections.js')});
     await page.addScriptTag({content:`var ${nav} var ${segment};
+      // The World test extracts only the rendering function. Supply its
+      // navigation/scope dependencies instead of relying on source adjacency.
+      var worldAdminService='agit',adminMenuSummary={data:null};
+      function w(value){return String(value??'');}
+      function adminScopeAllows(){return true;}
+      function adminAreaForTab(tab){return ['notice','spam','words','connections','errors','activity'].includes(tab)?'operations':'account';}
+      function adminServiceLabel(){return '아지트';}
+      function noteAdminActive(){return false;}
+      function adminNoteTab(){return null;}
       function adminIsHome(){return g.tab==='admin'&&L.area==='account'&&L.tab==='overview'}
       function ensureAdminMenuSummary(){}
       ${render} ${mount}
