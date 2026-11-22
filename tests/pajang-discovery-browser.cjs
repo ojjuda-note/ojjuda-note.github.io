@@ -768,6 +768,8 @@ async function checkNavigation(page){
     const radio=value=>group.locator('input[value="'+value+'"]');
     const selected=async value=>assert.equal(await radio(value).isChecked(),true);
     await cards.nth(1).waitFor();
+    assert.equal(await answers.getByRole('heading',{name:'모두의 답변',exact:true}).count(),1,'answer heading stays visible');
+    assert.equal(await answers.locator('.history-heading .feednumber').count(),0,'remove distracting answer total from the heading');
     assert.equal(await page.evaluate(()=>window.feedCalls.length),1,'first feed read is shared with the UI');
     assert.equal(await answers.getByRole('heading',{name:rows[0].question}).count(),1);
     assert.equal(await page.evaluate(()=>window.artPending),true,'feed is usable with all artwork still pending');
