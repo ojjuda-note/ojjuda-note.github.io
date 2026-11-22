@@ -44,6 +44,7 @@ assert.ok(mountStart>0);
       window.D={online:true,isAdmin:true,user:{id:adminId}};window.g={tab:'admin'};
       window.U={cleanupMedia(){throw new Error('Read-only inventory triggered media deletion')}};
       window.noteAdminActive=()=>false;window.z=s=>document.querySelector(s);
+      window.w=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
     });
     await page.addScriptTag({content:read('admin/connections.js')});
     await page.addScriptTag({content:`var ${nav} var ${segment};
@@ -54,7 +55,15 @@ assert.ok(mountStart>0);
       ${render} ${mount}
       function showConnections(){L.tab='connections';L.area=adminAreaForTab(L.tab);document.querySelector('#admin-root').innerHTML=y0();mountConnections();}
       showConnections();`});
-    await page.getByText('백업 성공 확인',{exact:true}).waitFor();
+    await page.getByText('백업 성공 확인',{exact:true}).waitFor({timeout:10000}).catch(async error=>{
+      console.error('Admin connections fixture:',JSON.stringify(await page.evaluate(()=>({
+        status:document.querySelector('#admin-root')?.innerText?.slice(0,750),
+        backup:document.querySelector('.oc-backup-status')?.innerText,
+        host:!!document.querySelector('#world-connections'),calls:window.calls,
+        state:typeof L==='undefined'?null:{area:L.area,tab:L.tab},
+        controller:typeof connectionsController,api:typeof window.OjjudaConnections?.mount
+      }))));console.error('Browser errors:',errors);throw error;
+    });
     assert.ok(await page.locator('.oc-row').count()>=24);
     assert.equal(await page.getByRole('link',{name:'미리보기',exact:true}).count(),0);
     assert.match(await page.locator('.oc-directory').innerText(),/매주 일요일 오전 3시/);
