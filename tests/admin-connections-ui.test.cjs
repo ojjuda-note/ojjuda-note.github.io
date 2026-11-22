@@ -9,6 +9,9 @@ const renderStart=world.indexOf('function y0()');
 const render=world.slice(renderStart,world.indexOf('function ',renderStart+10));
 const nav=world.slice(world.indexOf('adminAreas='),world.indexOf('function h0('));
 const segment=world.slice(world.indexOf('wr='),world.indexOf(';function noteAdminActive()',world.indexOf('wr=')));
+// The production admin menu also depends on scope helpers introduced after h0.
+const adminHelpers=world.slice(world.indexOf('var worldAdminService='),world.indexOf('var worldAdminViewKey='));
+assert.ok(adminHelpers.includes('function adminScopeAllows('));
 const mountStart=world.indexOf('var connectionsController=');
 const mount=world.slice(mountStart,world.indexOf('document.addEventListener("DOMContentLoaded",mountConnections',mountStart));
 assert.ok(mountStart>0);
@@ -44,6 +47,8 @@ assert.ok(mountStart>0);
     });
     await page.addScriptTag({content:read('admin/connections.js')});
     await page.addScriptTag({content:`var ${nav} var ${segment};
+      ${adminHelpers}
+      var adminMenuSummary={data:null};
       function adminIsHome(){return g.tab==='admin'&&L.area==='account'&&L.tab==='overview'}
       function ensureAdminMenuSummary(){}
       ${render} ${mount}
