@@ -13,12 +13,16 @@ async function openTeen(){
     const session=sessionData?.session;
     if(sessionError||!signedIn(session)){show('오쭈다 회원 로그인 후 이용할 수 있어요.');return;}
     const expected=session.user.id;
-    const {data:{subscription}}=db.auth.onAuthStateChange((_event,current)=>{
+    let subscription;
+    const authListener=db.auth.onAuthStateChange((event,current)=>{
+      if(event==='INITIAL_SESSION')return;
       if(!signedIn(current)||current.user.id!==expected){
-        generation++;subscription.unsubscribe();show('계정이 변경되었어요. 다시 로그인해 주세요.');
+        generation++;subscription?.unsubscribe();
+        location.replace('./teen.html');
       }
     });
-    window.addEventListener('pagehide',()=>subscription.unsubscribe(),{once:true});
+    subscription=authListener.data?.subscription;
+    window.addEventListener('pagehide',()=>subscription?.unsubscribe(),{once:true});
     const [identity,entry]=await Promise.all([db.auth.getUser(),db.rpc('pajang_teen_entry')]);
     if(run!==generation)return;
     if(identity.error||identity.data?.user?.id!==expected||identity.data.user.is_anonymous) {

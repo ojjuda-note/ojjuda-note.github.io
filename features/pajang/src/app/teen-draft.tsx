@@ -20,6 +20,7 @@ export function TeenDraftStudio({api=teenDraftRpc,onQuestionChange}:{api?:TeenAp
   const [draft,setDraft]=useState("");
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState("");
+  const [shareConsent,setShareConsent]=useState(false);
   const touchX=useRef<number|null>(null);
   useEffect(()=>{
     let active=true;
@@ -39,6 +40,7 @@ export function TeenDraftStudio({api=teenDraftRpc,onQuestionChange}:{api?:TeenAp
     if(!questions.length)return;
     const next=(index+direction+questions.length)%questions.length;
     setIndex(next);
+    setShareConsent(false);
     setDraft(state?.answers.find(a=>a.questionId===questions[next].id)?.body??"");
     setNotice("");
   };
@@ -46,17 +48,17 @@ export function TeenDraftStudio({api=teenDraftRpc,onQuestionChange}:{api?:TeenAp
     setDraft(saved?.body??"");
   },[question?.id,saved?.updatedAt]);
   async function save(){
-    if(!question||busy||!draft.trim()||draft.length>220)return;
+    if(!question||busy||!shareConsent||!draft.trim()||draft.length>220)return;
     setBusy(true);setNotice("");
     try{
-      const result=await api("save",{questionId:question.id,body:draft.trim()}) as {saved:boolean;body:string;questionId:string;reviewStatus:"pending"};
+      const result=await api("save",{questionId:question.id,body:draft.trim(),shareWithTeens:true}) as {saved:boolean;body:string;questionId:string;reviewStatus:"pending"};
       if(!result.saved)throw new Error("답변을 저장하지 못했어요.");
       const now=new Date().toISOString();
       setState(prev=>prev?{...prev,answers:[
         ...prev.answers.filter(a=>a.questionId!==question.id),
         {questionId:question.id,body:result.body,updatedAt:now,reviewStatus:result.reviewStatus}
       ]}:prev);
-      setDraft(result.body);setNotice("답변이 접수됐어요. 검토 후 청소년 회원에게 공개됩니다.");
+      setDraft(result.body);setShareConsent(false);setNotice("답변이 접수됐어요. 검토 후 청소년 회원에게 공개됩니다.");
     }catch(error){setNotice(error instanceof Error?error.message:"저장하지 못했어요.");}
     finally{setBusy(false);}
   }
@@ -93,9 +95,10 @@ export function TeenDraftStudio({api=teenDraftRpc,onQuestionChange}:{api?:TeenAp
         onChange={e=>setDraft(e.target.value)} placeholder="내 생각을 자유롭게 적어 주세요."
         disabled={busy}/>
       <div className="teen-draft-counter">{draft.length} / 220</div>
+      <label className="teen-draft-share"><input type="checkbox" checked={shareConsent} onChange={e=>setShareConsent(e.target.checked)} disabled={busy}/> 검토 후 청소년 회원에게 내 답변 공개 동의</label>
       {saved&&<p className="teen-draft-review" role="status">{saved.reviewStatus==="approved"?"공개 중":saved.reviewStatus==="hidden"?"관리자에 의해 숨김":"검토 중"}</p>}
       <div className="teen-draft-actions">
-        <button type="button" onClick={save} disabled={busy||!draft.trim()||draft.length>220}>답변 올리기</button>
+        <button type="button" onClick={save} disabled={busy||!shareConsent||!draft.trim()||draft.length>220}>답변 올리기</button>
         {saved&&<button type="button" className="quiet" disabled={busy} onClick={remove}>삭제</button>}
       </div>
       {notice&&<p role="status" className="teen-draft-feedback">{notice}</p>}
