@@ -320,7 +320,7 @@ async function openGroup(dialog,label) {
     await privateSection.locator('summary').click();
     await form.dialog.getByLabel('직업',{exact:true}).fill('책방지기');
     await form.dialog.getByLabel('자기소개',{exact:false}).fill('서로 이야기를 나누고 싶어요.');
-    await form.dialog.getByLabel('나이',{exact:true}).check();
+    await form.dialog.locator('.unified-private-fields .exchange-check').filter({hasText:'나이'}).locator('input[type="checkbox"]').check();
     await form.save.click();
     await form.dialog.waitFor({state:'hidden'});
     let detailSaves=await page.evaluate(()=>window.preferenceFixture.detailSaves);
