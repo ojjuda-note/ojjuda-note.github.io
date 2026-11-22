@@ -70,13 +70,11 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "SCENEDROME", date: "2024.08.27", type: "미니 1집", songs: ["LOVE ATTACK", "Pinball"], href: "https://en.themuze.kr/scenedrome" }
     ],
     appearances: [
-      { date: "2026-11-27", title: "PULSE 위드뮤 팬사인회", sub: "대면·개인 영상통화 · 18:30(KST) · 응모 종료", href: "https://artist.mnetplus.world/main/stg/rescene-official/contents/6adf1b994366f257199e78ae" },
-      { date: "2026-12-10", title: "PULSE 위드뮤 개인 영상통화", sub: "20:00(KST) · 응모 11.19 23:59 마감 · 참여자 개별 안내", href: "https://withmuu.com/goods/event_sale.php?sno=1676&type=" },
       { date: "2026-11-24", title: "멜론 STAGE 99 팬밋업", sub: "서울 마포구 무신사 개러지 · 추첨 초청 560명 · 응모 종료", href: "https://www.asiae.co.kr/article/2026110409590132572" },
+      { date: "2026-11-27", title: "PULSE 위드뮤 팬사인회", sub: "영상통화 18:30 · 대면 20:00(KST) · 당첨자 개별 안내 · 응모 종료", href: "https://artist.mnetplus.world/main/stg/rescene-official/contents/6adf1b994366f257199e78ae" },
       { date: "2026-11-29", title: "후즈팬 PULSE 대면·영상통화 팬사인회", sub: "대면 14:00 · 장소 및 영상통화 참여 개별 안내 · 응모 종료", href: "https://whosfanstore.zendesk.com/hc/ko/articles/63913860664217--%EB%8B%B9%EC%B2%A8%EC%9E%90-%EB%B0%9C%ED%91%9C-RESCENE-%EB%A6%AC%EC%84%BC%EB%8A%90-4th-Mini-Album-PULSE-%EB%8C%80%EB%A9%B4-%EA%B0%9C%EC%9D%B8-%EC%98%81%EC%83%81%ED%86%B5%ED%99%94-%ED%8C%AC%EC%82%AC%EC%9D%B8%ED%9A%8C-11-29-%EC%9D%B4%EB%B2%A4%ED%8A%B8" },
-      { date: "2026-11-20", title: "2026 MAMA AWARDS", sub: "일본 오사카 · CHAPTER 1", href: "https://www.cj.net/jp/press-release/view/1132" },
-      { date: "2026-11-22", title: "[PULSE] 메이크스타 팬사인회", sub: "대면 13:00 · 영상통화 별도 · 응모 마감", href: "https://www.makestar.com/product/21557" },
       { date: "2026-12-05", endDate: "2026-12-06", title: "AAA 2026", sub: "대만 가오슝 · 12.05~12.06", href: "https://asiaartistawards.com/news/detail/184791/all" },
+      { date: "2026-12-10", title: "PULSE 위드뮤 개인 영상통화", sub: "20:00(KST) · 응모 11.19 23:59 마감 · 참여자 개별 안내", href: "https://withmuu.com/goods/event_sale.php?sno=1676&type=" },
       { date: "2026-12-13", title: "뮤직뱅크 글로벌 페스티벌", sub: "도쿄 국립경기장 · 17:00 예정", href: "https://music-bank.jp/" }
     ],
     campaigns: [
@@ -93,6 +91,8 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "공식 스케줄", sub: "Mnet Plus · 최신 일정", href: "https://artist.mnetplus.world/main/stg/rescene-official/schedule/2026/11" }
     ],
     news: [
+      { date: "11.20", tag: "수상", title: "2026 MAMA 베스트 오브 넥스트 수상", href: "https://www.yna.co.kr/amp/view/AKR20261120179200005" },
+      { date: "11.20", tag: "무대", title: "2026 MAMA 〈With〉·〈LOVE ATTACK〉 공식 무대", href: "https://www.mnetplus.world/media/ko/videos/6b0024a49829ac99587bcd25" },
       { date: "11.18", tag: "음악", title: "미나미 첫 솔로 OST 〈사랑해볼래, 나〉 발매 · 메리 베리 러브", href: "https://sports.khan.co.kr/en/article/202611181539017" },
       { date: "11.16", tag: "영상", title: "〈With〉 공식 MV 유튜브 3천만 조회 돌파", href: "https://artist.mnetplus.world/main/stg/rescene-official/contents/6afae2e08f3fbb2353c1ca5d" },
       { date: "11.16", tag: "음악", title: "제나 참여 〈Love Again〉 11.23 발매 예정 · 한해·문세윤", href: "https://x.com/Hanhae90/status/2122343942007963748" },
