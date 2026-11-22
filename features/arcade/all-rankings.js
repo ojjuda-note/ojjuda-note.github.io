@@ -69,7 +69,7 @@
  }
  function paint(id,value,issue){
   const row=rows.get(id),game=gameById.get(id);if(!row||!game)return;
-  const nick=row.nickname,score=row.score;row.detail.textContent='';
+  const nick=row.nickname,score=row.score;row.detail.textContent='';row.link.removeAttribute('title');
   nick.classList.remove('is-error','is-login','is-record');
   if(issue){
    nick.textContent=issue==='member'?'로그인 후 확인':issue==='adult'?'성인 인증 후 확인':'조회 실패 · 새로고침';
