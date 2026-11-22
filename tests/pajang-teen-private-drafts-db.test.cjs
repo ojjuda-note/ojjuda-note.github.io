@@ -30,6 +30,7 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
   await db.exec(migration('20261122170500_pajang_teen_visible_feed.sql'));
   await db.exec(migration('20261122172528_pajang_teen_launch_gate.sql'));
   await db.exec(migration('20261122174320_pajang_teen_comment_cleanup.sql'));
+  await db.exec(migration('20261122175134_pajang_teen_self_erasure.sql'));
   for(const [name,id] of Object.entries(actors)){
     await db.query('insert into auth.users values($1,false)',[id]);
     await db.query('insert into public.profiles values($1,$2)',[id,name==='teenA'?'새싹':name==='teenB'?'바람':name==='adult'?'어른':'관리자']);
@@ -204,5 +205,28 @@ test('teen-only drafts, moderation and reporting remain separate from adult serv
   const pendingQueue=await moderation('queue');
   assert.equal(pendingQueue.drafts.length,1,'60 approved posts must not bury pending content');
   assert.equal(pendingQueue.drafts[0].id,b.id);
+  // A member who becomes 19 is denied the teen feed but can still withdraw
+  // their own past posts. A reported item is first hidden and held for review.
+  await db.query('update auth.users set suspended=false where id=$1',[actors.teenB]);
+  await db.query("update ojjuda_account_internal.member_identity set birth_date='1990-01-01' where user_id=$1",[actors.teenB]);
+  await db.query('insert into pajang_teen_private.reports(reporter_id,draft_id,reason) values($1,$2,$3)',[actors.teenA,b.id,'other']);
+  await login('teenB');
+  await fail('state');
+  const hold=(await db.query('select public.pajang_teen_erase_own() as value')).rows[0].value;
+  assert.deepEqual(hold,{deleted:false,reviewHold:true});
+  assert.equal((await db.query('select review_status from pajang_teen_private.drafts where id=$1',[b.id])).rows[0].review_status,'hidden');
+  assert.equal((await db.query('select count(*)::int as n from pajang_teen_private.reports where draft_id=$1',[b.id])).rows[0].n,1);
+  await db.query('delete from pajang_teen_private.reports where draft_id=$1',[b.id]); // synthetic moderator completion
+  const removed=(await db.query('select public.pajang_teen_erase_own() as value')).rows[0].value;
+  assert.equal(removed.deleted,true);
+  assert.equal(removed.reviewHold,false);
+  assert.equal(removed.deletedAnswers,1);
+  assert.equal((await db.query('select count(*)::int as n from pajang_teen_private.drafts where id=$1',[b.id])).rows[0].n,0);
+  await login('adult');
+  assert.equal((await db.query('select public.pajang_teen_erase_own() as value')).rows[0].value.deleted,true);
+  assert.equal((await db.query("select has_function_privilege('anon','public.pajang_teen_erase_own()','execute') as value")).rows[0].value,false);
+  await login(null);
+  await assert.rejects(()=>db.query('select public.pajang_teen_erase_own()'),error=>error.code==='42501');
+
 
 });

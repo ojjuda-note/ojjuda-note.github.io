@@ -87,6 +87,7 @@ on:
       - 'tests/pajang-teen-draft-ui.test.cjs'
       - 'tests/pajang-teen-admin-ui.test.cjs'
       - 'tests/pajang-teen-entry.test.cjs'
+      - 'tests/pajang-teen-self-erasure-ui.test.cjs'
       - 'admin/pajang-teen*'
       - 'tests/pajang-exchange-profile.test.cjs'
       - 'tests/pajang-exchange-height.test.mjs'
@@ -180,6 +181,7 @@ on:
       - 'tests/pajang-teen-draft-ui.test.cjs'
       - 'tests/pajang-teen-admin-ui.test.cjs'
       - 'tests/pajang-teen-entry.test.cjs'
+      - 'tests/pajang-teen-self-erasure-ui.test.cjs'
       - 'admin/pajang-teen*'
       - 'tests/pajang-exchange-profile.test.cjs'
       - 'tests/pajang-exchange-height.test.mjs'
@@ -237,7 +239,7 @@ jobs:
       - name: Check draft teen questions without publishing them
         run: node --test tests/pajang-teen-questions.test.cjs
       - name: Check approved teen-to-teen answers, comments, blocks and moderation UI
-        run: node --test tests/pajang-teen-private-drafts-db.test.cjs tests/pajang-teen-draft-ui.test.cjs tests/pajang-teen-admin-ui.test.cjs tests/pajang-teen-entry.test.cjs
+        run: node --test tests/pajang-teen-private-drafts-db.test.cjs tests/pajang-teen-draft-ui.test.cjs tests/pajang-teen-admin-ui.test.cjs tests/pajang-teen-entry.test.cjs tests/pajang-teen-self-erasure-ui.test.cjs
       - name: Check chat exchange consent, responses, and profile safety notice
         run: node --test tests/pajang-chat-exchange-ui.test.cjs
       - name: Check past answer edit permissions and form state

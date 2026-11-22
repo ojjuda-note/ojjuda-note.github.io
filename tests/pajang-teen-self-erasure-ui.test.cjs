@@ -1,0 +1,30 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const {execFileSync}=require('node:child_process');
+const {test}=require('node:test');
+const root=path.resolve(__dirname,'..');
+const read=file=>fs.readFileSync(path.join(root,file),'utf8');
+
+test('former teen can request own data erasure even when teen community is closed',()=>{
+  const client=read('features/pajang/teen-data.mjs');
+  const page=read('features/pajang/teen-data.html');
+  const index=read('features/pajang/teen.html');
+  const safe=read('features/pajang/teen-safety.html');
+  const migration=read('supabase/migrations/20261122175134_pajang_teen_self_erasure.sql');
+  execFileSync(process.execPath,['--check',path.join(root,'features/pajang/teen-data.mjs')]);
+  assert.ok(page.includes('noindex,nofollow'));
+  assert.match(page,/teen-data-erase/);
+  assert.ok(index.includes('teen-data.html'));
+  assert.ok(safe.includes('teen-data.html'));
+  assert.match(client,/auth\.getUser/);
+  assert.match(client,/window\.confirm/);
+  assert.match(client,/pajang_teen_erase_own/);
+  assert.match(client,/reviewHold/);
+  assert.ok(!client.includes('.innerHTML'),'untrusted text must not be HTML');
+  assert.ok(!client.includes('service_role'));
+  assert.match(migration,/ojjuda_restaurants_internal\.require_member/);
+  assert.match(migration,/review_status='hidden'/);
+  assert.match(migration,/revoke all on function public\.pajang_teen_erase_own/);
+  assert.ok(!migration.includes('release_control.enabled'),'erasure must remain available while launch switch is off');
+});
