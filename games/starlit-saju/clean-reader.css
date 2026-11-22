@@ -479,7 +479,7 @@ body.saju-clean .story-menu-list :is(h3,h4) { margin: 24px 0 8px; font: 600 14px
 @media(max-width: 359px) {
   body.saju-clean .story-stage { padding-inline: 36px; }
   body.saju-clean .story-scene .saju-wind-items { gap: 10px; }
-  body.saju-clean .story-scene :is(.saju-wind-label,.saju-wind-value) { font-size: 12px; }
+  body.saju-clean .story-scene :is(.saju-wind-label,.saju-wind-value) { font-size: 14px; }
   body.saju-clean .story-title { font-size: 23px; }
   body.saju-clean .detailed-reading:not([data-reading-size=large]) .story-body { font-size: 18px; }
 }
