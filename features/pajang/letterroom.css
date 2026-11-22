@@ -421,3 +421,8 @@ footer,.footerbrand {color:var(--ink-2)}
 .unified-profile-editor .unified-private-fields .exchange-bio textarea{width:100%;min-width:0}
 @media(max-width:420px){.unified-profile-editor .unified-private-fields{padding:4px 11px 14px}
   .unified-profile-editor .unified-public-profile .exchange-region{gap:9px}}
+.unified-peer-profile{display:grid;gap:7px}
+.unified-peer-profile>h3{font-size:17px;font-weight:650;color:var(--pajang-heading)}
+.unified-peer-profile>h4{margin:12px 0 0;padding-top:12px;border-top:1px solid var(--line);font-size:14px;font-weight:600;color:var(--pajang-heading)}
+.unified-peer-profile>.sub{margin:0;color:var(--ink-2)}
+.unified-peer-profile .public-preference-summary{margin:6px 0 0}
