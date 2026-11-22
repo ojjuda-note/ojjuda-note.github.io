@@ -142,7 +142,7 @@ async function checkSixLineCard(page, width) {
    assert.ok(faces.every(face=>Math.abs(face.height-face.width)<1),width+'px: original and reply are both square');
    if(width>=800)assert.ok(Math.abs(faces[0].width-600)<1,'the detail card reaches 600×600');
    assert.ok(Math.abs(faces[1].width-faces[0].width*2/3)<1,`${width}px: replies are two thirds of the parent card width`);
-   assert.ok(faces.every(face=>Math.abs(face.footer)<1&&face.buttonsFit&&face.textFits),`${width}px: photo, text and controls fit without a footer`);
+   assert.ok(faces.every(face=>Math.abs(face.footer)<1&&face.buttonsFit&&face.textFits),`${width}px: photo, text and controls fit without a footer ${JSON.stringify(faces)}`);
    if(width===390)await checkReplyBrowsing(page);
    const full=page.locator('#detail-card-slot .note-full-body');
    await full.evaluate(el=>{el.hidden=false;el.open=true;});
