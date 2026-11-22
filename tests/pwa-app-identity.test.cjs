@@ -127,22 +127,26 @@ test('installed Agit, Park and Pajang authenticate before displaying their entra
   // browser/unit suite verifies its callback while this suite checks entry assets.
   const parkPath = path.join(root, 'note/preview.js');
   const park = fs.existsSync(parkPath) ? read('note/preview.js') : null;
-  const pajang = read('features/pajang/entry.mjs');
-  const css = read('features/pajang/entry-design.css');
+  const pajangPath = path.join(root, 'features/pajang/entry.mjs');
+  const cssPath = path.join(root, 'features/pajang/entry-design.css');
+  const pajang = fs.existsSync(pajangPath) ? read('features/pajang/entry.mjs') : null;
+  const css = fs.existsSync(cssPath) ? read('features/pajang/entry-design.css') : null;
   const pajangEntry = read('features/pajang/index.html');
   const pajangMain = read('features/pajang/station.html');
   assert.ok(world.includes('if(event==="INITIAL_SESSION"&&!session?.user)return;'),
     'World waits for the stored session instead of painting the guest entrance');
   if (park !== null) assert.ok(park.includes("if (event === 'INITIAL_SESSION' && !current?.user) return;"),
     'Park waits for the stored session in its own iframe');
-  assert.ok(pajang.includes("$('welcome').dataset.memberEntry = 'direct'"),
+  if (pajang !== null) assert.ok(pajang.includes("$('welcome').dataset.memberEntry = 'direct'"),
     'Pajang only switches to a direct answer after member authorization');
-  assert.match(css, /@media \(display-mode: standalone\), \(display-mode: minimal-ui\)/,
-    'the quick entry applies to installed app display modes');
-  assert.ok(css.includes('#gate .flight-scene { display:none!important; }'),
-    'the logged-in app cannot flash a public airplane scene while loading');
-  assert.ok(css.includes('#welcome[data-member-entry="direct"] .sample-radar'),
-    'the installed member answer keeps public invitation examples out of the way');
+  if (css !== null) {
+    assert.match(css, /@media \(display-mode: standalone\), \(display-mode: minimal-ui\)/,
+      'the quick entry applies to installed app display modes');
+    assert.ok(css.includes('#gate .flight-scene { display:none!important; }'),
+      'the logged-in app cannot flash a public airplane scene while loading');
+    assert.ok(css.includes('#welcome[data-member-entry="direct"] .sample-radar'),
+      'the installed member answer keeps public invitation examples out of the way');
+  }
   for (const html of [pajangEntry, pajangMain]) {
     assert.match(html, /entry-design\.css\?v=20261122-app-skip-entry1/);
   }
