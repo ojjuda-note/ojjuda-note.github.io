@@ -1847,6 +1847,7 @@
         { date: "2026.11.20", tag: "방송", title: "11/28 일본 NTV 베스트 아티스트 2026 출연 확정 · 개별 무대 시각 미발표", href: "https://www.ygex.jp/treasure/news/detail.php?id=1137381" },
         { date: "2026.11.20", tag: "굿즈 정정", title: "NEXT STAGE 일본 팝업 최현석 랜덤 특전 이미지 중복 · 현장 교환 및 12/4 우편 접수 안내", href: "https://ygex.jp/treasure/news/detail.php?id=1137379" },
         { date: "2026.11.20", tag: "수상", title: "2026 MAMA FANS’ CHOICE MALE TOP 10·VISA SUPER STAGE ARTIST 2관왕", href: "https://www.chosun.com/english/kpop-culture-en/2026/11/21/ZAJM47AIXBA75ATVFC4QG7X5EM/" },
+        { date: "2026.11.19", tag: "프로모션", title: "SHOCK Spotify Canvas 공식 공유 이벤트 공개 · 공유 11/20~11/28, 응모 11/30 마감", href: "https://ygex.jp/treasure/news/detail.php?id=1137199" },
         { date: "2026.11.19", tag: "팬행사", title: "NEW WAV 일본 온라인 사인회·Meet & Greet 추가 응모 · 11/20~11/30", href: "https://shop.ygex.jp/blogs/notice/20261119" },
         { date: "2026.11.18", tag: "매체", title: "요시·아사히·하루토, 일본 smart 2027년 2월호 표지 발표 · 12/24 발매 예정", href: "https://ygex.jp/treasure/news/detail.php?id=1137348" },
         { date: "2026.11.14", tag: "무대", title: "MBC 쇼! 음악중심 SHOCK 무대 영상 공개 · YG 공식 소개", href: "https://yg-life.com/archives/198207?lang=ko" },
@@ -1882,6 +1883,12 @@
         }
       ],
       campaigns: [
+        {
+          kind: '공식 프로모션', date: '2026.11.19',
+          title: 'SHOCK × Spotify Canvas 공유 캠페인',
+          sub: '11/20~11/28 Spotify Canvas를 X·인스타그램에 #TREASURE_SHOCK로 공유 · 11/30 23:59 JST 응모 마감 · 참가 조건·디지털 특전은 공식 공지 확인',
+          href: 'https://ygex.jp/treasure/news/detail.php?id=1137199'
+        },
         {
           "kind": "콜라보",
           "date": "2026.09.07",
