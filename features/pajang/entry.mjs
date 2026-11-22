@@ -163,7 +163,7 @@ async function start(firstEntry) {
   const write = $('write');
   const browse = $('browse');
   const answerFields = $('answer-fields');
-  function openForm(destination) {
+  function openForm(destination, focus = true) {
     mode = destination;
     if (destination === 'feed' && entry.joined) return enterMain(feed);
     const joiningOnly = destination === 'feed';
@@ -174,7 +174,7 @@ async function start(firstEntry) {
     answerFields.disabled = joiningOnly;
     submit.textContent = joiningOnly ? '참여하고 '+nextName+' 보기' : '답변하기';
     write.setAttribute('aria-expanded', String(!joiningOnly));
-    (!entry.joined ? form.elements.consent : mine).focus();
+    if (focus) (!entry.joined ? form.elements.consent : mine).focus();
   }
   write.onclick = () => openForm('answer');
   browse.onclick = () => openForm('feed');
@@ -189,7 +189,11 @@ async function start(firstEntry) {
     status.textContent = '';
     trigger.focus();
   };
+  // This screen is only reached after a verified member session. Skip its
+  // second welcome action and show the answer immediately, without opening the
+  // mobile keyboard. A first-time member still completes consent in this form.
   if (view === 'feed' || view === 'write') openForm(view === 'feed' ? 'feed' : 'answer');
+  else openForm('answer', false);
   mine.oninput = () => { mine.setCustomValidity(''); mine.maxLength = textInputMaxLength(mine.value,220); };
   form.onsubmit = async event => {
     event.preventDefault();
