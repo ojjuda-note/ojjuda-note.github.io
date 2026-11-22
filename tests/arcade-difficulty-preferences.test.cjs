@@ -84,7 +84,7 @@ test('each new arcade entrance starts with single-player, even if opponent mode 
 test('Solitaire defaults to normal, saves a selected difficulty before play and preserves active progress',()=>{
   const source=fs.readFileSync(path.join(root,'games/solitaire/app.js'),'utf8');
   const entry=fs.readFileSync(path.join(root,'games/solitaire/index.html'),'utf8');
-  const start=source.indexOf("const KEY='ojjuda-solitaire-v1':");
+  const start=source.indexOf("const KEY='ojjuda-solitaire-v1:'");
   const end=source.indexOf('const records=window.OjjudaPuzzleRecords.open');
   assert.ok(start>0&&end>start);
   const dom=new JSDOM('',{url:'https://ojjuda.kr/games/solitaire/',runScripts:'outside-only'});
