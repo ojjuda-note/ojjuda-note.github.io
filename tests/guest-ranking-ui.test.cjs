@@ -12,7 +12,7 @@ world=world.slice(0,boot)+`window.guestFixture={submit:tf,ranking:ef,open:Al,log
    const url=new URL(route.request().url());if(url.origin!==origin)return route.abort();
    if(url.pathname==='/world.html')return route.fulfill({body:world,contentType:'text/html'});
    // The former Park guest URL now redirects to the independent Park entry.
-   if(url.pathname==='/park/')return route.fulfill({body:'<!doctype html><html lang="ko"><title>오쭈다 공원</title><body><main>공원</main></body></html>',contentType:'text/html'});
+   if(url.pathname==='/park/')return route.fulfill({body:'<!doctype html><html lang="ko"><title>오쭈다 공원</title><body><main>공원</main></body></html>',contentType:'text/html; charset=utf-8'});
    if(url.pathname==='/games/ttang.html'||url.pathname==='/games/spot-difference/index.html')return route.fulfill({body:'<!doctype html><body>game frame</body>',contentType:'text/html'});
    const file=path.join(root,url.pathname);return file.startsWith(root+path.sep)&&fs.existsSync(file)&&fs.statSync(file).isFile()?route.fulfill({path:file}):route.abort();
   });
