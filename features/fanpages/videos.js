@@ -136,6 +136,8 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
   ],
 
   hearts2hearts: [
+    { id: 'yRwImzwPuuA', title: 'Next Chapter MV 촬영 비하인드', kind: '메이킹', source: 'Hearts2Hearts Official · 2026.11.19' },
+    { id: 'NIVIoNmurJs', title: 'ICONIC HEART 일본 프로모션 BH2ND #4', kind: '비하인드', source: 'Hearts2Hearts Official · 2026.11.16' },
     { id: 'DK_dr_n2rM4', title: 'ICONIC HEART (Korean Ver.)', kind: '뮤직비디오', source: "SMTOWN · 공식 채널" },
     { id: 'lu9GinsuyUQ', title: 'Next Chapter', kind: '뮤직비디오', source: 'Hearts2Hearts Official · 2026.10.16' },
     { id: 'gNUMxMuxH20', title: 'Moonride', kind: '뮤직비디오', source: "Hearts2Hearts · 공식 채널" },
