@@ -55,6 +55,12 @@ test('direct Park removes secret callback parameters without redirecting to Worl
   assert.equal(replaced,'/park/?card=abc#reply');
 });
 
+test('independent Park pages block object injection and foreign base URLs',()=>{
+  const csp = `content="object-src 'none'; base-uri 'self'"`;
+  assert.ok(park.includes(csp),'standalone Park has a restricted base/object policy');
+  assert.ok(read('park/glasses.html').includes(csp),'glasses screen shares the policy');
+});
+
 test('standalone keeps its navigation, old embedded iframe still hides duplicate chrome',()=>{
   const css=read('park/embedded.css');
   assert.match(park,/dataset\.parkEmbedded = 'true'/);

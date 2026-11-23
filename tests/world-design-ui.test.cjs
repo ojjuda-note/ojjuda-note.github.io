@@ -192,36 +192,40 @@ world=world.slice(0,boot)+`
  for(const key of keys){await page.evaluate(k=>document.documentElement.dataset.worldTheme=k,key);await fits(key);assert.equal(await page.locator('.side .ojjuda-theme-logo').evaluate(n=>getComputedStyle(n).color===getComputedStyle(n.querySelector('path')).fill),true,'logo fill follows the theme');assert.equal(await page.locator('.arcade-ranking-entry').isVisible(),true,'ranking link stays visible in '+key);}
  await page.evaluate(()=>document.documentElement.dataset.worldTheme='christmas');await page.screenshot({path:path.join(proof,'christmas-desktop.png'),fullPage:true});
  await page.emulateMedia({colorScheme:'dark'});await page.waitForFunction(()=>document.documentElement.dataset.theme==='dark');await fits('dark theme');await page.screenshot({path:path.join(proof,'dark-desktop.png'),fullPage:true});
- // The live host and the real Park stylesheet order must resolve the same palette.
+
+ // Independent Park now owns the theme and navigation; it must not load World
+ // or inherit a second header/iframe. Keep season/weather checks in the real page.
  await page.emulateMedia({colorScheme:'light'});
  await page.locator('.sidenav [data-tab=my]').click();
  await page.locator('.ojjuda-service-banner[data-service="park"]').click();
- await page.waitForFunction(()=>document.documentElement.classList.contains('world-park-active'));
- await page.waitForFunction(()=>document.querySelector('.park-app iframe')?.contentWindow?.OjjudaThemes);
- const park=page.frames().find(frame=>new URL(frame.url()).pathname==='/park/');
- assert.ok(park,'Park is mounted in the actual host iframe');
- await park.waitForFunction(()=>window.OjjudaThemes);
+ await page.waitForURL(url=>url.pathname==='/park/');
+ assert.equal(await page.locator('iframe').count(),0,'Park does not embed another World');
+ assert.equal(await page.locator('.park-desktop-actions [data-share-page="park"]').isVisible(),true);
+ await page.waitForFunction(()=>window.OjjudaThemes?.sync);
  for(const appearance of ['light','dark']){
   await page.emulateMedia({colorScheme:appearance});const samples=[];
   for(const [theme,date] of calendarCases){
-   await selectCalendarDate(page,date);await selectCalendarDate(park,date);
-   const host=await palette(page),inside=await palette(park,{primary:'#publish-card',reply:'.reply-heading [data-compose=reply]'});
-   assert.equal(inside.theme,theme);assert.equal(inside.body,inside.bg);
-   assert.deepEqual([inside.bg,inside.accent,inside.surface],[host.bg,host.accent,host.surface],theme+' Park host/frame match');
-   assert.equal(inside.nodes.primary.background,inside.accent,'Park primary button follows '+theme);
-   assert.equal(inside.nodes.reply.color,inside.accentInk,'Park reply button text follows '+theme);
+   await selectCalendarDate(page,date);
+   const inside=await palette(page,{primary:'#publish-card',reply:'.reply-heading [data-compose=reply]'});
+   assert.equal(inside.theme,theme);
+   assert.equal(inside.body,inside.bg,'Park background follows '+theme);
+   assert.equal(inside.nodes.primary.background,inside.accent,'Park primary follows '+theme);
+   assert.equal(inside.nodes.reply.color,inside.accentInk,'Park reply follows '+theme);
    samples.push(inside);
   }
-  distinctPalettes(samples,'Park '+appearance,['bg','accent','nodes.primary.background','nodes.reply.color']);
+  distinctPalettes(samples,'Independent Park '+appearance,['bg','accent','nodes.primary.background','nodes.reply.color']);
   const weather=[];
   for(const kind of [null,'rain','snow']){
-   await selectCalendarDate(page,'2026-10-15',kind);await selectCalendarDate(park,'2026-10-15',kind);
-   const host=await palette(page),inside=await palette(park);
-   assert.equal(inside.weather,kind||'');assert.deepEqual([inside.bg,inside.accent],[host.bg,host.accent]);weather.push(inside);
+   await selectCalendarDate(page,'2026-10-15',kind);
+   const inside=await palette(page);
+   assert.equal(inside.weather,kind||'');
+   weather.push(inside);
   }
-  assert.equal(new Set(weather.map(colors=>colors.bg)).size,3,'clear, rain and snow have distinct backgrounds');
-  await selectCalendarDate(park,'2026-12-25','snow');assert.equal((await palette(park)).weather,'','Christmas keeps its holiday palette');
+  assert.equal(new Set(weather.map(colors=>colors.bg)).size,3,
+    'clear, rain and snow have distinct Park backgrounds');
+  await selectCalendarDate(page,'2026-12-25','snow');
+  assert.equal((await palette(page)).weather,'','Christmas keeps its holiday palette');
  }
- assert.deepEqual(errors,[]);await context.close();console.log('PASS: real redesigned renderer, responsive menus, artwork, all theme palettes, keyboard-safe monthly rankings, browser/native history back, automatic-only themes, draft preservation and ranking pagination');
+ assert.deepEqual(errors,[]);await context.close();console.log('PASS: independent Park themes and seasons, responsive Agit/Arcade, navigation, drafts and rankings');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});
