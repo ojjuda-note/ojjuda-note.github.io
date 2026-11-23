@@ -185,3 +185,17 @@ test('member-only CSS does not block the entry gate and is ready before the stat
   assert.match(load,/link\.dataset\.pajangStyleError/);
   assert.match(handoff,/style\.dataset\.pajangStationStyle='main'/);
 });
+
+test('Pajang standalone entry defers shared inbox and charging code until first paint or first tap',()=>{
+  const shell=fs.readFileSync(path.join(root,'features/pajang/shell.mjs'),'utf8');
+  assert.doesNotMatch(shell,/^import\s*\{installPajangToolbar\}/m,
+    'entry must not eagerly download wallet and inbox scripts');
+  assert.match(shell,/requestAnimationFrame\(\(\)=>setTimeout\(\(\)=>void prepareToolbar\(\),0\)\)/);
+  assert.match(shell,/event\.target\.closest\?\.\('\[data-ju-charge-open\],\[data-notifications-open\]'\)/);
+  assert.match(shell,/earlyControl=control;/);
+  assert.match(shell,/if\(target\?\.isConnected\)target\.click\(\)/);
+  for(const file of ['index.html','station.html']){
+    const html=fs.readFileSync(path.join(root,'features/pajang',file),'utf8');
+    assert.match(html,/shell\.mjs\?v=20261123-independent-toolbar1/);
+  }
+});
