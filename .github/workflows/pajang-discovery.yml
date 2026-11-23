@@ -188,6 +188,23 @@ on:
 permissions:
   contents: read
 jobs:
+  # Print the release digest before slow browser provisioning. The manifest
+  # still has to match the exact built bytes in the full gated browser job.
+  bundle-digest:
+    name: Build private Pajang program and print SHA-256
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm --prefix features/pajang ci --ignore-scripts --no-audit --no-fund
+      - run: npm --prefix features/pajang run build
+      - name: Print immutable program digest
+        run: sha256sum features/pajang/assets/station.js
   browser:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
