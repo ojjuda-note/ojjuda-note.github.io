@@ -36,6 +36,9 @@ html body .back-button { margin-top: 4px; }
 /* Standalone Park has its own share, notification and wallet controls. */
 .park-desktop-actions {display:none!important}
 @media(min-width:900px){
+  /* Desktop Park uses the sidebar; the mobile header must not duplicate actions. */
+  html:not([data-park-embedded]) body .mobile-top,
+  html:not([data-park-embedded]) body .bottomnav{display:none!important}
   html:not([data-park-embedded]) body .park-desktop-actions{
     display:flex!important;justify-content:space-between;gap:4px;
     margin:0 0 18px;max-width:100%;min-height:44px
