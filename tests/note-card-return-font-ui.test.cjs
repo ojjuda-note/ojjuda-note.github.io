@@ -74,7 +74,7 @@ async function checkSixLineCard(page, width) {
   await page.evaluate(()=>{
    document.documentElement.classList.add('park-embedded');
    window.OJJUDA_CONFIG={supabaseUrl:'https://fixture.invalid',supabaseKey:'synthetic'};
-   window.supabase={createClient:()=>({schema:()=>({from:()=>{
+   window.supabase={createClient:()=>({schema:()=>({rpc:async(name,args)=>({data:await window.noteRpc(name,args),error:null}),from:()=>{
     const orders=[];let after;
     const q={select:()=>q,eq:()=>q,not:()=>q,contains:()=>q,lte:()=>q,gte:()=>q,
      order:(key,options)=>{orders.push([key,options.ascending]);return q;},or:value=>{after=value;return q;},

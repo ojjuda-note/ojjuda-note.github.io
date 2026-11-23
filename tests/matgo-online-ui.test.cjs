@@ -31,7 +31,16 @@ const root=path.join(__dirname,'..');
    if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
    return route.fulfill({path:file,contentType:/\.(mjs|js)$/.test(file)?'text/javascript':url.pathname.endsWith('.css')?'text/css':undefined});
   });
-  const page=await context.newPage();await page.goto('https://fixture.test/games/matgo-online.html');if(age>=19){await page.locator('[data-entry-mode=opponent]').click();await page.locator('details:has(#join-form)>summary').click();}return{page,context};
+  const page=await context.newPage();await page.goto('https://fixture.test/games/matgo-online.html');
+  // The module replaces the lobby after its async auth/stake checks. Choose
+  // online play only after that replacement so the test does not click a stale lobby.
+  if(age>=19){
+    await page.locator('#content:not([inert])').waitFor();
+    await page.locator('#entry-loading').waitFor({state:'hidden'});
+    await page.locator('[data-entry-mode=opponent]').click();
+    await page.locator('details:has(#join-form)>summary').click();
+  }
+  return{page,context};
  }
  async function clickTurn(page){
   return page.evaluate(()=>{
@@ -48,7 +57,10 @@ const root=path.join(__dirname,'..');
   assert.doesNotMatch(await solo.page.locator('.waiting').innerText(),/두 사람 모두 입장/,'quick waiting explains its computer fallback without contradictory invitation instructions');
   assert.equal(await solo.page.locator('#cancel-wait').isVisible(),true);
   if(process.env.MATGO_WAIT_PROOF)await solo.page.screenshot({path:process.env.MATGO_WAIT_PROOF});
-  await solo.page.locator('#cancel-wait').click();await solo.page.locator('#quick').waitFor();
+  await solo.page.locator('#cancel-wait').click();
+  // Returning to a new entry menu deliberately resets to computer play.
+  await solo.page.locator('[data-entry-mode=opponent]').click();
+  await solo.page.locator('#quick').waitFor();
   assert.equal((await f.call(C,{action:'status'})).online_room,null,'cancelling clears the waiting room');
   await solo.page.locator('#quick').click();await solo.page.locator('#quick-seconds').waitFor();
   await solo.page.waitForTimeout(2000);assert.ok(solo.page.url().includes('matgo-online.html'),'quick search waits before switching');
