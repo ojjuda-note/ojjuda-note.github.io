@@ -175,7 +175,7 @@ test('a valid zero Pajang count stays visible, but absent or invalid data never 
 test('both published Pajang pages load the updated optional measurement module and config', () => {
   for (const file of ['index.html', 'station.html']) {
     const html = read('features/pajang/' + file);
-    assert.match(html, /shell\.mjs\?v=20261121-pajang-visits1/);
+    assert.match(html, /shell\.mjs\?v=20261123-independent-toolbar1/);
     assert.match(html, /\/config\.js\?v=20261121-pajang-visits1/);
   }
   assert.match(read('features/pajang/shell.mjs'), /import\('\.\/usage\.mjs\?v=20261121-pajang-visits1'\)/);
