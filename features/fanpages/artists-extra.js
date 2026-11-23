@@ -512,12 +512,13 @@
       id: 'stayc', name: 'STAYC', korean: '스테이씨', category: 'girl', fan: 'SWITH', agency: 'High Up Entertainment',
       members: ['수민', '시은', '아이사', '세은', '윤', '재이'],
       debut: '2020.11.12', debutWork: 'Star To A Young Culture', songs: ['SO BAD', 'LIKE THIS'],
-      checkedAt: '2026.11.16',
+      checkedAt: '2026.11.23',
       concept: '선명한 개성과 상큼한 멜로디를 담는 여섯 멤버.',
       official: 'https://www.highup-ent.com/', youtube: 'https://www.youtube.com/@STAYC',
       photo: 'STAYC Metamorphic Showcase 240701.jpg', photoLabel: 'Metamorphic 쇼케이스', photoYear: '2024', credit: 'K-POPIT 케이팝잇 · 원저작 티비텐 TV10', license: 'CC BY 3.0',
       morePhotos: [
-        commonsPhoto('STAYC in Seattle.jpg', '시애틀 공연 · 단체', '2025', 'David Lee', 'CC BY 4.0')
+        commonsPhoto('STAYC in Seattle.jpg', '시애틀 공연 · 단체', '2025', 'David Lee', 'CC BY 4.0'),
+        commonsPhoto('STAYC Ending Pose.jpg', '샌안토니오 공연 · 엔딩', '2023', 'Pjdlr', 'CC BY 4.0')
       ],
       music: [
         { title: '2:LOVE', date: '2026.06.16', type: '싱글 6집 · 타이틀 2 L0VE', songs: ['2 L0VE', 'WHERE YOU AT?', 'SORRY', 'BEAT MY LOVE'], href: 'https://www.highup-ent.com/stayc/2love/' },
@@ -527,14 +528,14 @@
         { title: 'Metamorphic', date: '2024.07.01', type: '정규 1집 · 타이틀 Cheeky Icy Thang', songs: ['Twenty', 'Cheeky Icy Thang', '1 Thing', 'Give It 2 Me', 'Find (Sieun & Seeun & J)', 'Let Me Know', 'Nada', 'Fakin’ (Sumin & Yoon)', 'Roses (ISA)', 'Beauty Bomb', 'Gummy Bear', 'Stay WITH me', 'Flexing On My Ex', 'Trouble Maker'], href: 'https://www.highup-ent.com/stayc/metamorphic/' },
         { title: 'Star To A Young Culture', date: '2020.11.12', type: '데뷔 싱글 · 타이틀 SO BAD', songs: ['SO BAD', 'LIKE THIS'], href: 'https://www.highup-ent.com/stayc/star-to-a-young-culture/' }
       ],
-      appearances: [
-        { date: '2026-11-22', title: 'AUBL 2026–27 시즌 개막전 참석', sub: '안산 상록수 김연경체육관 · 17:00 경기 시작 · 연세대 vs 상하이교통대 · AUBL 주최 · 일반석 무료 입장', href: 'https://x.com/STAYC_official/status/2121931980795458012' }
-      ],
+      appearances: [],
       schedules: [
         { title: 'STAYC Weverse 공식 일정·공지', sub: '공연·방송·팬행사 안내 및 일정 변경 확인 · 일부 공지 열람은 로그인 필요', href: 'https://weverse.io/stayc/notice' }
       ],
       news: [
+        { date: '2026.11.23', tag: '굿즈', title: '2027 시즌그리팅 Angelic Dream · 11/23 17시 예약 시작, 11/29 23:59 마감 · Weverse 일부 열람 로그인 필요', href: 'https://weverse.io/stayc/media/3-244021918' },
         { date: '2026.11.15', tag: '행사', title: 'STAYC, 11월 22일 안산 AUBL 개막전 참석 발표', href: 'https://x.com/STAYC_official/status/2121931980795458012' },
+        { date: '2026.11.12', tag: '방송', title: '11월 18일 MBC 아이돌라디오4 · 수민·아이사 스페셜 DJ 출연 발표', href: 'https://x.com/idolradiokorea/status/2120715809664471156' },
         { date: '2026.11.12', tag: '기념', title: '데뷔 6주년 기념 인사·Special Present 공개 · 열람 시 로그인 필요', href: 'https://weverse.io/stayc/media/2-181504379' },
         { date: '2026.07.03', tag: '공연', title: 'STAY CLOSER 팬콘 투어 7개 도시 일정 발표 · 10월 종료', href: 'https://www.highup-ent.com/en/stayc-announces-stay-closer-fan-con-tour-kicking-off-in-seoul-before-heading-to-global-cities/' },
         { date: '2026.06.16', tag: '음악', title: '싱글 6집 2:LOVE 발매 · 타이틀 2 L0VE', href: 'https://www.highup-ent.com/stayc/2love/' },
@@ -542,6 +543,7 @@
         { date: '공식', tag: '로그인', title: 'STAYC Weverse 공식 공지', href: 'https://weverse.io/stayc/notice' }
       ],
       merch: [
+        { title: '2027 시즌그리팅 Angelic Dream', sub: '공식 콘셉트·예약 안내 · 2026.11.23 17:00~11.29 23:59 KST · 판매처·가격·재고는 공식 페이지 확인 · Weverse 일부 열람 로그인 필요', href: 'https://weverse.io/stayc/media/3-244021918' },
         { title: '2:LOVE 공식 앨범', sub: 'Weverse Global · COURT ZINE·PLAYER PROFILE·PLVE 버전 · 6/1~15 예약 특전 종료 · 재고는 판매처 확인', href: 'https://shop.weverse.io/en/shop/JPY/artists/34/notices/13295' },
         { title: 'STAYC 공식 상품', sub: 'Weverse Shop · 앨범·굿즈 목록', href: 'https://shop.weverse.io/ko/shop/KRW/artists/34' },
         { title: 'STAY ALIVE 일본 정규 1집 CD', sub: 'UNIVERSAL MUSIC STORE · 통상반 · 스토어 한정 구매 특전 종료 · 재고는 판매처 확인', href: 'https://store-annex.universal-music.co.jp/product/upch29482/' }
