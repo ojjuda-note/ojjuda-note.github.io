@@ -162,3 +162,26 @@ test('only the genuine same-origin Agit dialog supplies the embedded client',asy
   const rejected=await fixture(t,{embedPath:'/another-host.html'});
   assert.deepEqual(rejected.counts(),{hostCalls:0,localCalls:1});assert.equal(rejected.amount(),'70');
 });
+
+
+test('member-only CSS does not block the entry gate and is ready before the station is shown',()=>{
+  const entry=fs.readFileSync(path.join(root,'features/pajang/index.html'),'utf8');
+  const direct=fs.readFileSync(path.join(root,'features/pajang/station.html'),'utf8');
+  const load=fs.readFileSync(path.join(root,'features/pajang/load-station.mjs'),'utf8');
+  const handoff=fs.readFileSync(path.join(root,'features/pajang/entry.mjs'),'utf8');
+  const entryDom=new JSDOM(entry).window.document;
+  const directDom=new JSDOM(direct).window.document;
+  assert.equal(entryDom.querySelector('link[rel="preload"][href^="./station.css"]'),null,
+    'public gate must not download the private member sheet early');
+  for(const [document,name] of [[entryDom,'entry'],[directDom,'direct']]){
+    const letter=document.querySelector('link[data-pajang-station-style="letterroom"]');
+    assert.ok(letter,name+' must load letterroom styles without blocking the gate');
+    assert.equal(letter.media,'print');
+    assert.match(letter.getAttribute('onload'),/media='all'/);
+  }
+  const main=directDom.querySelector('link[data-pajang-station-style="main"]');
+  assert.ok(main);assert.equal(main.media,'print');
+  assert.match(load,/await import\(script\);\s*await waitForStationStyles\(\);/);
+  assert.match(load,/link\.dataset\.pajangStyleError/);
+  assert.match(handoff,/style\.dataset\.pajangStationStyle='main'/);
+});
