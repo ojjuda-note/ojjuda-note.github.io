@@ -255,7 +255,7 @@
     return {routes,width,height,x,y};
   }
 
-  function ladder(activity, savedRungs, selected, esc, reverse = false) {
+  function ladder(activity, savedRungs, selected, esc, reverse = false, revealAll = false, revealedFinish = null) {
     // Two adjacent crossings cancel each other, preserving the saved draw.
     // Distribute these pairs throughout the board, including for old posts.
     const laneCount = activity.names.length;
@@ -282,7 +282,11 @@
     return `<div class="ladder-scroll"><div class="ladder-board" style="min-width:${width}px;--lanes:${activity.names.length}">
       <div class="ladder-labels">${activity.names.map((name,i)=>`<button type="button" data-lane="${i}" aria-pressed="${!reverse && i===origin}">${esc(name)}</button>`).join('')}</div>
       <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true"><g>${rails}${steps}</g>${path ? `<polyline points="${reverse ? path.points.split(' ').reverse().join(' ') : path.points}"/><ellipse/>` : ''}</svg>
-      <div class="ladder-labels ladder-finish">${activity.options.map((value,i)=>`<button type="button" data-finish="${i}" aria-pressed="${reverse && i===selected}" aria-label="${esc(value)}에서 거꾸로 사다리 타기" title="${esc(value)}"><span>${i+1}</span><small>${esc(value)}</small></button>`).join('')}</div></div></div>`;
+      <div class="ladder-labels ladder-finish">${activity.options.map((value,i)=>{
+         const visible = revealAll || (revealedFinish === i);
+         const label = visible ? esc(value) : `결과 ${i+1}`;
+         return `<button type="button" data-finish="${i}" aria-pressed="${reverse && i===selected}" aria-label="${visible ? label : `결과 ${i+1}`}에서 거꾸로 사다리 타기" title="${label}"><span>${i+1}</span><small>${visible ? label : '확인하기'}</small></button>`;
+       }).join('')}</div></div></div>`;
   }
 
   function drawStage(kind, board, action) {
@@ -330,7 +334,7 @@
     const d = dialog(labels[a.kind], `<h3 class="activity-subject">${esc(post.title)}</h3><div data-panel aria-busy="true"><p class="muted">불러오는 중…</p></div><p class="error" role="alert"></p>`);
     d.dataset.activityKind=a.kind;
     const panel = d.querySelector('[data-panel]'), error = d.querySelector('.error');
-    let state, busy = false, lane = null, finish = null, reverse = false, showAll = false, changingVote = false;
+    let state, busy = false, lane = null, finish = null, reverse = false, showAll = false, revealed = false, changingVote = false;
 
     function copyText() {
       let lines;
@@ -349,10 +353,10 @@
       panel.insertAdjacentHTML('beforeend','<div class="result-tools"><button type="button" data-copy-result>결과 복사</button><span role="status" data-copy-status></span></div>');
     }
 
-    function ladderResults(opened = false) {
+    function ladderResults() {
       const {routes} = ladderRoutes(a, state.result.rungs);
-      return `<details class="draw-all" ${opened?'open':''}><summary>참가자별 결과</summary><dl class="ladder-results">${routes.map((route,i)=>
-        `<div><dt>${esc(a.names[i])}</dt><dd>${esc(options[route.col])}</dd></div>`).join('')}</dl></details>`;
+      return `<section class="draw-all" aria-label="전체 결과"><h4>전체 결과</h4><dl class="ladder-results">${routes.map((route,i)=>
+        `<div><dt>${esc(a.names[i])}</dt><dd>${esc(options[route.col])}</dd></div>`).join('')}</dl></section>`;
     }
     function render() {
       if (a.kind === 'poll') {
@@ -367,9 +371,9 @@
           state.result ? '저장된 추첨 보기' : '돌림판 돌리기') +
           `<ol class="activity-legend wheel-options">${options.map((value,i)=>`<li><span aria-hidden="true" style="--option-color:${colors[i]}">${i+1}</span><div>${esc(value)}</div></li>`).join('')}</ol>`;
       } else if (state.result) {
-        panel.innerHTML = drawStage('ladder',`<div class="ladder-toolbar"><button type="button" data-show-all aria-pressed="${showAll}">전체확인</button></div>`+ladder(a,state.result.rungs,reverse ? finish : lane,esc,reverse));
+        panel.innerHTML = drawStage('ladder',`<div class="ladder-toolbar"><button type="button" data-show-all aria-pressed="${showAll}">${showAll?'결과 숨기기':'전체확인'}</button></div>`+ladder(a,state.result.rungs,reverse ? finish : lane,esc,reverse,showAll,revealed ? finish : null));
         panel.querySelector('[data-draw-status]').textContent = showAll ? '전체 결과를 확인하세요.' : '참가자 또는 아래 결과를 선택하세요.';
-        if (showAll) { panel.insertAdjacentHTML('beforeend',ladderResults(true)); resultTools(); }
+        if (showAll) { panel.insertAdjacentHTML('beforeend',ladderResults()); resultTools(); }
       } else {
         panel.innerHTML = drawStage('ladder','<h4>참가자</h4>'+list(a.names)+'<h4>도착할 결과</h4>'+list(options),'사다리 타기');
       }
@@ -384,8 +388,8 @@
       lane = reverse ? routes.findIndex(route=>route.col===selected) : selected;
       finish = isWheel ? null : routes[lane]?.col;
       const previousScroll = panel.querySelector('.ladder-scroll')?.scrollLeft || 0;
-      const expanded = panel.querySelector('.draw-all')?.open || false;
       showAll = false;
+      revealed = false;
       render();
       const stage = panel.querySelector('[data-stage]'), status = stage.querySelector('[data-draw-status]');
       const button = stage.querySelector('[data-draw]');
@@ -394,7 +398,7 @@
       if (scroll) scroll.scrollLeft = previousScroll;
       controls.forEach(control=>{ control.disabled = true; });
       stage.dataset.phase = 'running';
-      status.textContent = isWheel ? '돌림판이 돌아가는 중…' : reverse ? options[finish]+' · 거꾸로 올라가는 중…' : a.names[lane]+' · 내려가는 중…';
+      status.textContent = isWheel ? '돌림판이 돌아가는 중…' : reverse ? '결과 '+(finish+1)+' · 거꾸로 올라가는 중…' : a.names[lane]+' · 내려가는 중…';
       const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
       if (!reduceMotion) {
         if (isWheel) {
@@ -427,14 +431,18 @@
         button.textContent = '다시 보기';
         status.innerHTML = `<span>당첨</span><strong>${esc(options[winner])}</strong>`;
       } else {
+        revealed = true;
         if (reverse) stage.querySelector(`[data-lane="${lane}"]`).classList.add('chosen');
-        else stage.querySelector(`[data-finish="${finish}"]`).classList.add('chosen');
+        const resultButton = stage.querySelector(`[data-finish="${finish}"]`);
+        resultButton.classList.add('chosen');
+        resultButton.querySelector('small').textContent = options[finish];
+        resultButton.title = options[finish];
+        resultButton.setAttribute('aria-label',options[finish]+'에서 거꾸로 사다리 타기');
         status.innerHTML = reverse
           ? `<span>${esc(options[finish])} 결과의 참가자</span><strong>${esc(a.names[lane])}</strong>`
           : `<span>${esc(a.names[lane])} 도착</span><strong>${esc(options[finish])}</strong>`;
-        panel.insertAdjacentHTML('beforeend',ladderResults(expanded));
       }
-      resultTools();
+      if (isWheel) resultTools();
       // Keep focus in the dialog after replacing the clicked control.
       const focus = isWheel ? button : stage.querySelector(reverse ? `[data-finish="${finish}"]` : `[data-lane="${lane}"]`);
       if (document.activeElement === document.body || document.activeElement === d) {
@@ -454,8 +462,8 @@
         if (!d.isConnected) return;
         state = next;
         changingVote = false;
-        if (action==='activity_draw') await reveal(0);
-        else render();
+        if (action==='activity_draw') { lane=null; finish=null; reverse=false; showAll=false; revealed=false; }
+        render();
         if (action==='activity_vote') panel.querySelector('[data-results-heading]')?.focus();
       } catch (err) {
         if (!d.isConnected) return;
@@ -501,7 +509,7 @@
       else if (b.hasAttribute('data-reload')) void request('activity_state');
       else if (b.hasAttribute('data-show-all')) {
         showAll = !showAll;
-        lane = null; finish = null; reverse = false;
+        lane = null; finish = null; reverse = false; revealed = false;
         render();
         panel.querySelector('[data-show-all]')?.focus({preventScroll:true});
         if (showAll) panel.querySelector('.draw-all')?.scrollIntoView?.({block:'nearest'});
