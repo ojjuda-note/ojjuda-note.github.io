@@ -391,7 +391,7 @@ if (ateezProfile) {
 // Official source rechecked 2026-11-12.
 const treasureProfile = window.OJJUDA_FAN_PROFILES.treasure;
 if (treasureProfile) {
-  treasureProfile.checkedAt = '2026.11.15';
+  treasureProfile.checkedAt = '2026.11.22';
   treasureProfile.expanded = true;
   const birthdays = {
     '최현석': '1999.04.21', '지훈': '2000.03.14', '요시': '2000.05.15',
@@ -404,6 +404,12 @@ if (treasureProfile) {
     member.source = 'https://ygfamily.com/ko/artists/treasure/profile';
   }
   treasureProfile.awards = [
+    { year: "2026.11.20", title: "2026 MAMA FANS’ CHOICE MALE TOP 10", detail: "일본 오사카 · Mnet", href: "https://www.chosun.com/english/kpop-culture-en/2026/11/21/ZAJM47AIXBA75ATVFC4QG7X5EM/" },
+    { year: "2026.11.20", title: "2026 MAMA VISA SUPER STAGE ARTIST", detail: "일본 오사카 · Mnet", href: "https://www.chosun.com/english/kpop-culture-en/2026/11/21/ZAJM47AIXBA75ATVFC4QG7X5EM/" },
+    { year: "2026.11.07", title: "KGMA2026 그랜드 송 대상", detail: "2026.11.07 2026 Grand Song", href: "https://en.edaily.co.kr/news/eda202611075538/" },
+    { year: "2026.11.07", title: "KGMA2026 베스트 아티스트", detail: "제3회 KGMA 수상", href: "https://en.edaily.co.kr/news/eda202611075538/" },
+    { year: "2026.11.07", title: "KGMA2026 베스트 힙합", detail: "제3회 KGMA 수상", href: "https://en.edaily.co.kr/news/eda202611075538/" },
+    { year: "2026.11.07", title: "KGMA2026 올해의 트렌드(그룹)", detail: "제3회 KGMA 수상", href: "https://en.edaily.co.kr/news/eda202611075538/" },
     { year: '2023.01', title: '골든디스크 어워즈 베스트 그룹', detail: 'YG 공식 수상 이력', href: 'https://ygfamily.com/ko/artists/treasure/profile' },
     { year: '2022.12', title: 'Asia Artist Awards 베스트 뮤지션', detail: 'YG 공식 수상 이력', href: 'https://ygfamily.com/ko/artists/treasure/profile' },
     { year: '2022.10', title: '더팩트 뮤직 어워즈 올해의 아티스트 본상', detail: 'YG 공식 수상 이력', href: 'https://ygfamily.com/ko/artists/treasure/profile' },
