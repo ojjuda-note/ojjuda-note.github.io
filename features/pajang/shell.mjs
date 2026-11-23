@@ -8,8 +8,13 @@ function prepareToolbar(){
       installPajangToolbar();
       toolbarReady=true;
       document.removeEventListener('click',onEarlyToolbarClick,true);
-      const target=earlyControl;earlyControl=null;
-      if(target?.isConnected)target.click();
+      const pending=earlyControl;earlyControl=null;
+      // The visitor may have switched tabs, accounts or left while loading.
+      // Only replay a tap for the same visible route and an unlocked form.
+      if(pending?.node.isConnected && pending.href===location.href &&
+         !document.hidden && window.OjjudaPajangHistory?.canLeave?.()!==false){
+        pending.node.click();
+      }
     }).catch(()=>{toolbarLoad=null;earlyControl=null;});
   return toolbarLoad;
 }
@@ -19,10 +24,13 @@ function onEarlyToolbarClick(event){
   if(!control)return;
   event.preventDefault();
   event.stopImmediatePropagation();
-  earlyControl=control;
+  if(window.OjjudaPajangHistory?.canLeave?.()===false)return;
+  earlyControl={node:control,href:location.href};
   void prepareToolbar();
 }
 document.addEventListener('click',onEarlyToolbarClick,true);
+window.addEventListener('pagehide',()=>{earlyControl=null;});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)earlyControl=null;});
 // The first entry frame is paintable before the shared wallet/inbox scripts run.
 if(typeof requestAnimationFrame==='function'){
   requestAnimationFrame(()=>setTimeout(()=>void prepareToolbar(),0));
