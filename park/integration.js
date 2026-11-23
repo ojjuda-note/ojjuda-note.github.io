@@ -555,6 +555,8 @@
   window.OjjudaParkFull = Object.freeze({ embedded: hosted, navigate, navigationAction, returnHome, setAdminAccess, compose: () => navigate('compose'), back, canLeave, overlayOpen, composerOpen, cardOpen:()=>!detail.hidden,
     refresh, navigationSnapshot:historyRoute, restoreNavigation,
     refreshBalance: () => loadWorldBalance(session?.user?.id) });
+  // Legacy bookmark into Park settings also works without the World host.
+  if (!hosted && new URL(location.href).searchParams.get('view') === 'settings') pendingAction = 'settings';
   reportState();
   send({ type: 'ojjuda:park-ready' });
 })();
