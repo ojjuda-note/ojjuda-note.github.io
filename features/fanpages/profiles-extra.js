@@ -187,7 +187,7 @@ if (babymonsterProfile) {
 const hearts2heartsProfile = window.OJJUDA_FAN_PROFILES.hearts2hearts;
 if (hearts2heartsProfile) {
   hearts2heartsProfile.expanded = true;
-  hearts2heartsProfile.checkedAt = '2026.11.16';
+  hearts2heartsProfile.checkedAt = '2026.11.23';
   const officialBirthdays = {
     '지우': '2006.09.07',
     '카르멘': '2006.03.28',
@@ -203,6 +203,8 @@ if (hearts2heartsProfile) {
     member.source = 'https://hearts2heartsofficial.jp/profile/';
   }
   hearts2heartsProfile.awards = [
+    { year: '2026.11', title: '2026 MAMA 베스트 송 TOP10', detail: '11.21 RUDE! 수상 · 시상식 2일 차', href: 'https://en.yna.co.kr/view/AEN20261121001851315' },
+    { year: '2026.11', title: '2026 MAMA 팬스 초이스 여성 TOP10', detail: '11.20 팬스 초이스 여성 부문 · 시상식 1일 차', href: 'https://www.soompi.com/article/1889291wpp/winners-of-2026-mama-awards-chapter-1' },
     { year: '2026.11', title: '2026 멜론뮤직어워드 3관왕', detail: '11.14 고척스카이돔 · TOP10·글로벌 TOP10·글로벌 임팩트 아티스트', href: 'https://www.sportsworldi.com/newsView/20261114506970' },
     { year: '2026.11', title: '2026 코리아 그랜드 뮤직 어워즈 2관왕', detail: '11.08 고척스카이돔 · 베스트 뮤직·글로벌 핫스타상', href: 'https://isplus.com/article/view/isp202611080248' },
     { year: '2025', title: '신인상 9관왕', detail: '2025년 데뷔 K-pop 아티스트 중 최다 신인상 · 일본 공식 프로필', href: 'https://hearts2heartsofficial.jp/profile/' }
