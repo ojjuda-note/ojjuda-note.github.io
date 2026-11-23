@@ -32,15 +32,13 @@ const fs=require('fs'),path=require('path'),assert=require('node:assert/strict')
    return route.fulfill({path:f,contentType:({'.html':'text/html','.js':'application/javascript','.css':'text/css'})[path.extname(f)]});
  });
  const root='https://fan.test/features/fanpages/',btn=t=>page.getByRole('button',{name:t,exact:true}), label=t=>page.getByLabel(t,{exact:true});
- // A manager save navigates by reloading the current artist page. Await the
- // actual reload rather than racing a follow-up navigation to another group.
+ // Wait for the save-triggered full document load. A same-document history
+ // update also emits framenavigated and must not be mistaken for a reload.
  async function saveSectionAndWaitForReload() {
-   const reloading = page.waitForEvent('framenavigated', {
-     predicate: frame => frame === page.mainFrame() && new URL(frame.url()).pathname.endsWith('/artist.html')
-   });
+   const reloaded = page.waitForEvent('load');
    await btn('변경 사항 저장').click();
-   await reloading;
-   await page.waitForLoadState('load');
+   await reloaded;
+   await page.locator('#profile').waitFor();
  }
  await page.goto(root+'index.html');await btn('아이돌 추가').click();
  await label('아이돌 이름').fill('새 팀 <테스트>');await label('페이지 주소 이름 (선택)').fill('qa-artist');
