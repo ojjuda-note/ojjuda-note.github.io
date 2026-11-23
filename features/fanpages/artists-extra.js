@@ -556,7 +556,7 @@
     {
       id: 'idle', name: 'i-dle', korean: '아이들', category: 'girl', fan: 'NEVERLAND', agency: 'CUBE Entertainment',
       members: ['미연', '민니', '소연', '우기', '슈화'],
-      checkedAt: '2026.11.18',
+      checkedAt: '2026.11.23',
       debut: '2018.05.02', debutWork: 'I am', songs: ['LATATA', '달라($$$)', 'MAZE', "DON'T TEXT ME", '알고 싶어 (What’s in your house?)', '들어줘요 (Hear me)'],
       concept: '2018년 LATATA로 데뷔한 다섯 멤버의 셀프 프로듀싱 그룹. 2025년부터 i-dle이라는 이름으로 활동.',
       official: 'https://i-dle.cubeent.co.jp/profile/', youtube: 'https://www.youtube.com/@official_i_dle',
@@ -573,9 +573,7 @@
         { title: 'We are', date: '2025.05.19', type: '미니 8집 · 타이틀 Good Thing', songs: ['Good Thing', 'Girlfriend', 'Love Tease', 'Chain', 'Unstoppable', 'If You Want'], href: 'https://i-dle.cubeent.co.jp/discography/2324/' },
         { title: 'I am', date: '2018.05.02', type: '데뷔 미니 1집 · 타이틀 LATATA', songs: ['LATATA', '달라($$$)', 'MAZE', "DON'T TEXT ME", '알고 싶어 (What’s in your house?)', '들어줘요 (Hear me)'], href: 'https://i-dle.cubeent.co.jp/discography/329/' }
       ],
-      appearances: [
-        { date: '2026-11-21', title: '소연 · TOKYO FM 라디오 川島明 そもそもの話', sub: 'TOKYO FM · 17:00~17:55 JST/KST · 공식 11.14 발표 · 방송 변경은 주최사 확인', href: 'https://i-dle.cubeent.co.jp/news/' }
-      ],
+      appearances: [],
       schedules: [
         { title: '일본 공식 일정', sub: '발매·방송·행사 및 변경 확인', href: 'https://i-dle.cubeent.co.jp/schedule/' },
         { title: '큐브 일본 공식 소식', sub: '일정·방송 공지 원문', href: 'https://i-dle.cubeent.co.jp/news/' }
