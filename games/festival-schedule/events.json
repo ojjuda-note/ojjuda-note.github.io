@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-23",
+  "updatedAt": "2026-11-24",
   "events": [
     {
       "id": "gongju-gunbam-2026",
@@ -4766,7 +4766,7 @@
     },
     {
       "id": "paju-jangdankong-2026",
-      "title": "2026 파주장단콩축제",
+      "title": "제30회 파주장단콩축제",
       "category": "local",
       "section": "festival",
       "start": "2026-11-27",
@@ -4780,18 +4780,21 @@
       "geoApprox": false,
       "locationStatus": "unmapped",
       "summary": "파주 장단콩과 농특산물을 만나는 먹거리·체험 축제.",
-      "scheduleNote": "11월 27일 14:00 개막식. 개별 프로그램은 공식 시간표 확인.",
+      "scheduleNote": "11월 27일 14:00 개막식. 평화누리 놀이마당 11월 27일 상시 체험, 28일 10:00~16:00, 29일 10:00~15:30. 세부 시간표 공식 안내 확인.",
       "priceNote": "축제 입장·체험별 요금은 공식 확인. 현장 장단콩 판매가: 백태 1kg 9,000원, 서리태 등 유색콩 1kg 12,000원(입장료가 아닌 상품 가격).",
       "sourceUrl": "https://tour.paju.go.kr/tour/festival/festival02/festival02_2/festival02_2_01/festival02_2_01_01.jsp",
       "sourceName": "파주시 관광포털",
-      "sourceCheckedAt": "2026-11-14",
+      "sourceCheckedAt": "2026-11-24",
       "status": "scheduled",
       "tags": [
         "장단콩",
         "농특산물",
         "먹거리"
       ],
-      "accessNote": "무료 셔틀버스 문산역 1번 출구↔임진각 09:00~17:00 상시 운행, 문산읍행정복지센터↔임진각은 토·일만 운행(금요일 제외). 체험은 별도 참가·예약 조건 확인."
+      "accessNote": "무료 셔틀버스 문산역 1번 출구↔임진각 09:00~17:00 상시 운행, 문산읍행정복지센터↔임진각은 토·일만 운행(금요일 제외). 체험은 별도 참가·예약 조건 확인.",
+      "verificationSources": [
+        "https://lll.paju.go.kr/news/index.do"
+      ]
     },
     {
       "id": "paju-unjeong-lake-firelights-2026",
@@ -18189,23 +18192,23 @@
       "title": "제13회 해운대빛축제(2026~2027)",
       "category": "local",
       "section": "festival",
-      "start": "2026-11-29",
-      "end": "2027-01-18",
+      "start": "2026-11-28",
+      "end": "2027-01-10",
       "region": "부산",
       "city": "해운대구",
       "venue": "구남로 및 해운대해수욕장 일원",
-      "address": "부산 해운대구 구남로 및 해운대해수욕장 일원",
+      "address": "부산광역시 해운대구 중동 1411-14 구남로 및 해운대해수욕장 일원",
       "locationStatus": "unmapped",
       "lat": null,
       "lng": null,
       "geoApprox": false,
-      "summary": "부산 해운대구가 연간 행사계획에 발표한 제13회 해운대빛축제입니다. 구남로와 해운대해수욕장 일원에서 열리는 겨울 야간 빛 축제입니다.",
-      "scheduleNote": "해운대구청 2026년 연간계획: 2026.11.29~2027.1.18. 점등 시간·세부 프로그램·최종 일정은 후속 공지 확인",
-      "priceNote": "2026년 회차 요금 공식 안내 확인(지난해 무료 여부를 그대로 적용하지 않음)",
-      "accessNote": "연간 개최계획 기준이며 세부 운영·통제 사항은 해운대구청 최신 공지 확인",
-      "sourceUrl": "https://www.haeundae.go.kr/index.do?menuCd=DOM_000000104002004000",
-      "sourceName": "부산광역시 해운대구청(2026년 연간행사안내)",
-      "sourceCheckedAt": "2026-11-09",
+      "summary": "제13회 해운대빛축제는 딥 다이브 해운대를 주제로 바다와 심해를 표현한 빛 조형물과 미디어아트를 선보인다.",
+      "scheduleNote": "11월 28일 점등식, 축제 운영 18:00~23:00. 세부 프로그램은 공식 안내 확인.",
+      "priceNote": "무료",
+      "accessNote": "구간별 운영 및 교통 통제는 방문 전 공식 안내 확인.",
+      "sourceUrl": "https://www.mcst.go.kr/site/s_culture/festival/festivalView.jsp?pRo=12&pSeq=12038",
+      "sourceName": "문화체육관광부 지역축제",
+      "sourceCheckedAt": "2026-11-24",
       "tags": [
         "빛축제",
         "겨울축제",
@@ -18213,7 +18216,10 @@
         "조명",
         "바다"
       ],
-      "status": "scheduled"
+      "status": "scheduled",
+      "verificationSources": [
+        "https://traveli.visitkorea.or.kr/kfes/detail/fstvlDetail.do?cntntsNm=%ED%95%B4%EC%9A%B4%EB%8C%80%EB%B9%9B%EC%B6%95%EC%A0%9C&fstvlCntntsId=b3b7a23c-c7f6-45db-930a-b139e4d8cd9f"
+      ]
     },
     {
       "id": "waterpolo-national-candidates-selection-2027",
@@ -19336,14 +19342,17 @@
       "accessNote": "사전등록 기간 10월 8일~11월 15일, 1인 1등록 원칙(보호자 동반 어린이 제외). 현장 출입증 수령 안내와 단체 관람 문의는 공식 참관 안내 확인.",
       "sourceUrl": "https://www.uce.or.kr/visitor",
       "sourceName": "2026 울산문화박람회 공식 참관 안내",
-      "sourceCheckedAt": "2026-11-10",
+      "sourceCheckedAt": "2026-11-24",
       "tags": [
         "문화",
         "전시",
         "박람회",
         "무료"
       ],
-      "status": "scheduled"
+      "status": "scheduled",
+      "verificationSources": [
+        "https://tour.ulsan.go.kr/tour/kor/unit/attrctn/view.do?mId=001002007000000000&unqId=107"
+      ]
     },
     {
       "id": "changwon-kim-janghun-one-man-show-20261121",
@@ -23941,6 +23950,198 @@
         "경기"
       ],
       "accessNote": "만 16세 이상, 2026-11-26 11:00 예매 오픈 예정"
+    },
+    {
+      "category": "local",
+      "section": "festival",
+      "locationStatus": "unmapped",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "sourceCheckedAt": "2026-11-24",
+      "status": "scheduled",
+      "id": "pocheon-petstar-artvalley-2026",
+      "title": "2026 포천 펫스타 in 아트밸리",
+      "start": "2026-11-29",
+      "end": "2026-11-29",
+      "region": "경기",
+      "city": "포천시",
+      "venue": "포천아트밸리",
+      "address": "경기도 포천시 신북면 아트밸리로 234",
+      "summary": "반려동물과 함께 산책, 운동, 체험 프로그램과 반려문화 공연을 즐기는 행사.",
+      "scheduleNote": "기상악화 예보로 11월 14일에서 11월 29일로 변경. 10:00~17:00(포천시 변경 공지 기준). 11:00 개막.",
+      "priceNote": "유료(아트밸리 입장료 기준), 체험별 조건 공식 안내 확인.",
+      "accessNote": "반려동물 동반 및 프로그램별 참가 조건은 주최 측 확인.",
+      "sourceUrl": "https://korean.visitkorea.or.kr/kfes/detail/fstvlDetail.do?cntntsNm=%ED%8F%AC%EC%B2%9C%ED%8E%AB%EC%8A%A4%ED%83%80&fstvlCntntsId=06c85b3f-b302-4025-9cc5-27ec77b3a5ff",
+      "sourceName": "한국관광공사 대한민국 구석구석",
+      "verificationSources": [
+        "https://gnews.gg.go.kr/briefing/brief_gongbo_view.do?BS_CODE=s003&bm_name=&keyword=&number=115307&page=1&period_1=&period_2=&search=0&subject_Code="
+      ],
+      "tags": [
+        "반려동물",
+        "체험",
+        "포천"
+      ]
+    },
+    {
+      "category": "local",
+      "section": "festival",
+      "locationStatus": "unmapped",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "sourceCheckedAt": "2026-11-24",
+      "status": "scheduled",
+      "id": "ulsan-christmas-market-2026-w1",
+      "title": "2026 울산 크리스마스 마켓 (1주차)",
+      "start": "2026-11-27",
+      "end": "2026-11-28",
+      "region": "울산",
+      "city": "남구",
+      "venue": "울산대공원 정문 풍차 일원",
+      "address": "울산광역시 남구 대공원로 94",
+      "summary": "울산문화관광재단의 겨울 야간 장터로 판매·체험 부스, 먹거리, 회전목마와 버스킹 등을 운영한다.",
+      "scheduleNote": "운영일 18:00~22:00. 11월 27일부터 12월 26일까지 금·토 운영, 성탄 주간은 12월 23~26일 운영.",
+      "priceNote": "입장 무료 여부 및 체험별 요금은 공식 안내 확인.",
+      "accessNote": "개별 체험 신청 및 운영 조건은 공식 안내 확인.",
+      "sourceUrl": "https://tour.ulsan.go.kr/tour/kor/unit/attrctn/view.do?mId=001002007000000000&unqId=107",
+      "sourceName": "울산광역시 관광 공식 공지(2026.11.16)",
+      "verificationSources": [
+        "https://ulsan.go.kr/y/yes/"
+      ],
+      "tags": [
+        "크리스마스",
+        "야시장",
+        "겨울"
+      ]
+    },
+    {
+      "category": "local",
+      "section": "festival",
+      "locationStatus": "unmapped",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "sourceCheckedAt": "2026-11-24",
+      "status": "scheduled",
+      "id": "ulsan-christmas-market-2026-w2",
+      "title": "2026 울산 크리스마스 마켓 (2주차)",
+      "start": "2026-12-04",
+      "end": "2026-12-05",
+      "region": "울산",
+      "city": "남구",
+      "venue": "울산대공원 정문 풍차 일원",
+      "address": "울산광역시 남구 대공원로 94",
+      "summary": "울산문화관광재단의 겨울 야간 장터로 판매·체험 부스, 먹거리, 회전목마와 버스킹 등을 운영한다.",
+      "scheduleNote": "운영일 18:00~22:00. 11월 27일부터 12월 26일까지 금·토 운영, 성탄 주간은 12월 23~26일 운영.",
+      "priceNote": "입장 무료 여부 및 체험별 요금은 공식 안내 확인.",
+      "accessNote": "개별 체험 신청 및 운영 조건은 공식 안내 확인.",
+      "sourceUrl": "https://tour.ulsan.go.kr/tour/kor/unit/attrctn/view.do?mId=001002007000000000&unqId=107",
+      "sourceName": "울산광역시 관광 공식 공지(2026.11.16)",
+      "verificationSources": [
+        "https://ulsan.go.kr/y/yes/"
+      ],
+      "tags": [
+        "크리스마스",
+        "야시장",
+        "겨울"
+      ]
+    },
+    {
+      "category": "local",
+      "section": "festival",
+      "locationStatus": "unmapped",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "sourceCheckedAt": "2026-11-24",
+      "status": "scheduled",
+      "id": "ulsan-christmas-market-2026-w3",
+      "title": "2026 울산 크리스마스 마켓 (3주차)",
+      "start": "2026-12-11",
+      "end": "2026-12-12",
+      "region": "울산",
+      "city": "남구",
+      "venue": "울산대공원 정문 풍차 일원",
+      "address": "울산광역시 남구 대공원로 94",
+      "summary": "울산문화관광재단의 겨울 야간 장터로 판매·체험 부스, 먹거리, 회전목마와 버스킹 등을 운영한다.",
+      "scheduleNote": "운영일 18:00~22:00. 11월 27일부터 12월 26일까지 금·토 운영, 성탄 주간은 12월 23~26일 운영.",
+      "priceNote": "입장 무료 여부 및 체험별 요금은 공식 안내 확인.",
+      "accessNote": "개별 체험 신청 및 운영 조건은 공식 안내 확인.",
+      "sourceUrl": "https://tour.ulsan.go.kr/tour/kor/unit/attrctn/view.do?mId=001002007000000000&unqId=107",
+      "sourceName": "울산광역시 관광 공식 공지(2026.11.16)",
+      "verificationSources": [
+        "https://ulsan.go.kr/y/yes/"
+      ],
+      "tags": [
+        "크리스마스",
+        "야시장",
+        "겨울"
+      ]
+    },
+    {
+      "category": "local",
+      "section": "festival",
+      "locationStatus": "unmapped",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "sourceCheckedAt": "2026-11-24",
+      "status": "scheduled",
+      "id": "ulsan-christmas-market-2026-w4",
+      "title": "2026 울산 크리스마스 마켓 (4주차)",
+      "start": "2026-12-18",
+      "end": "2026-12-19",
+      "region": "울산",
+      "city": "남구",
+      "venue": "울산대공원 정문 풍차 일원",
+      "address": "울산광역시 남구 대공원로 94",
+      "summary": "울산문화관광재단의 겨울 야간 장터로 판매·체험 부스, 먹거리, 회전목마와 버스킹 등을 운영한다.",
+      "scheduleNote": "운영일 18:00~22:00. 11월 27일부터 12월 26일까지 금·토 운영, 성탄 주간은 12월 23~26일 운영.",
+      "priceNote": "입장 무료 여부 및 체험별 요금은 공식 안내 확인.",
+      "accessNote": "개별 체험 신청 및 운영 조건은 공식 안내 확인.",
+      "sourceUrl": "https://tour.ulsan.go.kr/tour/kor/unit/attrctn/view.do?mId=001002007000000000&unqId=107",
+      "sourceName": "울산광역시 관광 공식 공지(2026.11.16)",
+      "verificationSources": [
+        "https://ulsan.go.kr/y/yes/"
+      ],
+      "tags": [
+        "크리스마스",
+        "야시장",
+        "겨울"
+      ]
+    },
+    {
+      "category": "local",
+      "section": "festival",
+      "locationStatus": "unmapped",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "sourceCheckedAt": "2026-11-24",
+      "status": "scheduled",
+      "id": "ulsan-christmas-market-2026-w5",
+      "title": "2026 울산 크리스마스 마켓 (성탄 주간)",
+      "start": "2026-12-23",
+      "end": "2026-12-26",
+      "region": "울산",
+      "city": "남구",
+      "venue": "울산대공원 정문 풍차 일원",
+      "address": "울산광역시 남구 대공원로 94",
+      "summary": "울산문화관광재단의 겨울 야간 장터로 판매·체험 부스, 먹거리, 회전목마와 버스킹 등을 운영한다.",
+      "scheduleNote": "운영일 18:00~22:00. 11월 27일부터 12월 26일까지 금·토 운영, 성탄 주간은 12월 23~26일 운영.",
+      "priceNote": "입장 무료 여부 및 체험별 요금은 공식 안내 확인.",
+      "accessNote": "개별 체험 신청 및 운영 조건은 공식 안내 확인.",
+      "sourceUrl": "https://tour.ulsan.go.kr/tour/kor/unit/attrctn/view.do?mId=001002007000000000&unqId=107",
+      "sourceName": "울산광역시 관광 공식 공지(2026.11.16)",
+      "verificationSources": [
+        "https://ulsan.go.kr/y/yes/"
+      ],
+      "tags": [
+        "크리스마스",
+        "야시장",
+        "겨울"
+      ]
     }
   ]
 }
