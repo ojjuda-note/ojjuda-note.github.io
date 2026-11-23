@@ -179,8 +179,9 @@ async function checkCompactColors(page, viewport, area, keyboard = false) {
           await page.addStyleTag({content:`@font-face{font-family:ViewportQA;src:url(data:font/ttf;base64,${font})}:root{--font-b:ViewportQA,sans-serif;--font-d:ViewportQA,sans-serif}body{font-family:ViewportQA,sans-serif}`});
           await page.evaluate(() => document.fonts.ready);
         }
-        // Park is embedded content: World supplies its only visible navigation.
-        if(source==='note')assert.equal(await page.locator('.bottomnav').isVisible(),true,'standalone Park owns its visible navigation');
+        // Standalone Park uses its own bottom navigation on mobile and the side menu on desktop.
+        if(source==='note')assert.equal(await page.locator('.bottomnav').isVisible(),viewport.width<900,
+          'independent Park navigation follows the responsive breakpoint');
         // Simulate a 48px system navigation area and a top notch.
         await page.addStyleTag({content:':root{--app-safe-bottom:48px;--app-safe-top:24px}html{scroll-behavior:auto}'});
         await settle(page);

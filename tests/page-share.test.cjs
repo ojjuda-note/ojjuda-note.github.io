@@ -197,7 +197,7 @@ test('an account read failure blocks native sharing and clipboard until a succes
   failing = false;
   await f.window.OjjudaInvite.ready();
   f.button.click(); await tick();
-  assert.deepEqual(f.copies, ['https://ojjuda.kr/park/&ref=' + sender]);
+  assert.deepEqual(f.copies, ['https://ojjuda.kr/park/?ref=' + sender]);
 });
 
 test('switching the sender account updates the next invitation without forwarding an incoming referral', async t => {
