@@ -620,6 +620,8 @@ window.OJJUDA_FAN_ARTISTS = [
       { label: "Mnet Plus", icon: "✦", url: "https://artist.mnetplus.world/main/stg/a2osoul" }
     ],
     merch: [
+      { title: "SUPERSTAR · 올리브영 홍대 팝업 포토카드", sub: "11.24 10:00~11.30 23:00 · 홍대놀이터점 2층 K-POP ZONE · 현장 구매 시 랜덤 특전, 자세한 조건은 매장 공지 확인", href: "https://x.com/mnetplusmerch/status/2123249922237739012" },
+      { title: "SUPERSTAR · 뮤직플랜트 럭키드로우", sub: "11.19~11.22 · 온라인 22일 23:59 마감 · 홍대점 매일 11:00~22:00 · 미공개 포토카드 15종 중 랜덤 1매", href: "https://x.com/musicplant_kr/status/2123234813255819708" },
       { title: "SUPERSTAR", sub: "데뷔 EP · 사전예약 10/21~11/08 종료", href: "https://mnetplusmerch.com/product/a2o-soul-album-pre-order-event-ep-superstar-soul-ver-constellation-ver/1693/category/195/display/1/" },
       { title: "SUPERSTAR · CARABINER Ver.", sub: "공식 유통 실물 음반 · 뮤직아트 · 11/10 출시", href: "https://musicart.kr/shop/shopdetail.html?GfDT=bmp5W11M&branduid=3531929&current_category=014&mcode=000&scode=&search=&sort=regdate&type=P&xcode=014" },
       { title: "SUPERSTAR · 무신사 특전", sub: "뮤직플랜트 공식 유통 음반 · 특전 11/15 23:59 종료 · 판매 상태는 링크 확인", href: "https://www.musinsa.com/products/7641862" },
@@ -632,14 +634,16 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "SUPERSTAR", date: "2026.11.09", type: "데뷔 EP · 더블 타이틀 · 실물 발매 11.10", songs: ["SUPERSTAR", "Dancing in the Dark", "While We’re Young", "Very First Love (첫사랑)", "Moonlight Shadow"], href: "https://www.melon.com/album/detail.htm?albumId=14644792" }
     ],
     appearances: [
-      { date: "2026-11-18", title: "ENA 케이팝업 차트쇼 사전녹화", sub: "14:30 KST · 일산 빛마루 방송지원센터 · 공식 팬클럽 신청 11/13 종료 · 방송일 별도 공지", href: "https://artist.mnetplus.world/main/stg/a2osoul/surveys/6af6dbb227f0386b83f4ba18" },
-      { date: "2026-11-18", title: "단체 영상통화 팬사인회", sub: "MAKESTAR · 19:00", href: "https://www.makestar.com/product/21876" },
       { date: "2026-11-20", title: "단체 대면 팬사인회", sub: "MAKESTAR · 20:00", href: "https://www.makestar.com/product/21876" },
+      { date: "2026-11-21", title: "MBC 쇼! 음악중심 사전녹화", sub: "상암 MBC 미디어센터 · 08:10 KST · 공식 팬 참여 신청 종료(11.19)", href: "https://artist.mnetplus.world/main/stg/a2osoul/surveys/6afea2e6c93ff66e7d7c013d" },
       { date: "2026-11-21", title: "SUPERSTAR 팬사인회", sub: "WITHMUU · 18:30", href: "https://withmuu.com/goods/event_sale.php?sno=1650" },
+      { date: "2026-11-22", title: "SBS 인기가요 사전녹화", sub: "등촌동 SBS · 07:45 KST · 팬 참여 신청 종료(11.20 12:10)", href: "https://artist.mnetplus.world/main/stg/a2osoul/surveys/6afed89a2c277427f8aa2c08" },
       { date: "2026-11-22", title: "SUPERSTAR 그룹 영상통화 팬사인회", sub: "애플뮤직 · 18:00 KST · 응모 종료(11.14)", href: "https://en.applemusic.co.kr/Product/Detail/view/pid/123700/cid/1632" },
       { date: "2026-11-22", title: "SUPERSTAR 대면 팬사인회", sub: "애플뮤직 · 19:00 KST · 응모 종료(11.14)", href: "https://jp.applemusic.co.kr/Product/Detail/view/pid/123698/cid/568" },
+      { date: "2026-11-24", endDate: "2026-11-30", title: "SUPERSTAR · 올리브영 홍대 팝업", sub: "홍대놀이터점 2층 K-POP ZONE · 11.24 10:00~11.30 23:00 · 현장 포토카드·럭키드로우", href: "https://x.com/mnetplusmerch/status/2123249922237739012" },
       { date: "2026-11-25", title: "SUPERSTAR 단체 영상통화 팬사인회", sub: "WITHMUU · 19:00 KST · 응모 11.14~11.16 23:59", href: "https://link.withmuu.com/s9e3EU" },
       { date: "2026-11-27", title: "SUPERSTAR 대면 팬사인회", sub: "WITHMUU · 20:00 KST · 응모 11.14~11.16 23:59", href: "https://link.withmuu.com/s9e3EU" },
+      { date: "2026-11-29", title: "SUPERSTAR · 점프업 단체 팬사인회", sub: "18:00 KST · 그룹 영상통화 20명·대면 30명 · 응모 11.20 23:59 마감", href: "https://x.com/JumpUp_ent/status/2122932820913860808" },
       { date: "2026-11-30", title: "SUPERSTAR 패널 전시 마지막 날", sub: "일본 타워레코드 시부야점 5F · 입고일부터 11/30까지", href: "https://towershibuya.jp/news/2026/11/03/236821" }
     ],
     schedules: [
@@ -647,6 +651,10 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "A2O SOUL 공식 X", sub: "행사·활동 안내", href: "https://x.com/A2O_SOUL" }
     ],
     news: [
+      { date: "11.19", tag: "방송", title: "11.21 쇼! 음악중심·11.22 인기가요 사전녹화 공식 참여 안내", href: "https://artist.mnetplus.world/main/stg/a2osoul/surveys/6afed89a2c277427f8aa2c08" },
+      { date: "11.19", tag: "굿즈", title: "11.24~11.30 올리브영 홍대 팝업 · 포토카드·럭키드로우", href: "https://x.com/mnetplusmerch/status/2123249922237739012" },
+      { date: "11.19", tag: "굿즈", title: "뮤직플랜트 SUPERSTAR 럭키드로우 · 온라인·홍대 매장 11.22까지", href: "https://x.com/musicplant_kr/status/2123234813255819708" },
+      { date: "11.19", tag: "영상", title: "M2 릴레이댄스 · Dancing in the Dark 4K 공개", href: "https://www.youtube.com/watch?v=qxaN2rw20U4" },
       { date: "11.17", tag: "첫 1위", title: "Dancing in the Dark · SBS Life 더쇼 첫 음악방송 1위(11,660점)", href: "https://www.soompi.com/article/1888114wpp/watch-a2o-soul-takes-1st-ever-win-on-the-show-for-dancing-in-the-dark" },
       { date: "11.16", tag: "공식 영상", title: "Dancing in the Dark · 공식 퍼포먼스 영상 공개", href: "https://www.youtube.com/watch?v=gQqCY_BXLfc" },
       { date: "11.15", tag: "방송", title: "SBS 인기가요 · Dancing in the Dark 무대 공개", href: "https://www.youtube.com/watch?v=so6VpcUmQGk" },
