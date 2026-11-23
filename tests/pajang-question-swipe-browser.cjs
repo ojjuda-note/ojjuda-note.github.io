@@ -268,11 +268,11 @@ async function swipe(page,direction,{short=false,vertical=false,target='heading'
     const longAnswer=active().locator('.answercard').filter({hasText:aOwn.body}).locator('.quote');
     await longAnswer.evaluate(element=>window.scrollTo({top:scrollY+element.getBoundingClientRect().bottom-innerHeight*.4,behavior:'instant'}));
     assert.ok((await header().boundingBox()).y<0,'the previous heading is above the visible viewport');
-    await swipe(page,'left',{target:longAnswer,scroll:false});await shown([b1],2,2);
+    await swipe(page,'left',{target:longAnswer,scroll:false});await shown([b1,b2],2,3);
     const nextHeading=await header().boundingBox();
     assert.ok(nextHeading.y>=-1&&nextHeading.y+nextHeading.height<=page.viewportSize().height,
       'the next question is visible after swiping from deep in a long answer: '+JSON.stringify(nextHeading));
-    await previous().click();await shown([a1,aOwn],1,2);
+    await previous().click();await shown([a1,aOwn,a2],1,3);
 
     checkpoint='page boundary swipe loads more answers and then advances';
     await reset();await shown([a1,aOwn],1,2);
