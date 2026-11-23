@@ -36,17 +36,20 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   ive: {
-    checkedAt: '2026.11.17',
+    checkedAt: '2026.11.22',
     debut: '2021.12.01', debutWork: 'ELEVEN',
     agency: 'STARSHIP Entertainment',
     concept: 'I HAVE, 그리고 당당한 IVE의 순간.',
     heightSource: 'https://www.youtube.com/watch?v=sqe55UwRU2o',
     awards: [
+      { year: '2026.11', title: 'MAMA2026 BEST FEMALE GROUP', detail: '11.20 제1일차 · 여자 그룹상', href: 'https://en.yna.co.kr/view/AEN20261121001851315' },
+      { year: '2026.11', title: 'MAMA2026 BEST SONG TOP 10', detail: '11.21 제2일차 · BANG BANG', href: 'https://www.soompi.com/article/1889392wpp/winners-of-2026-mama-awards-chapter-2' },
       { year: '2026.11', title: 'MMA2026 올해의 베스트송 대상 등 5관왕', detail: '11.15 BANG BANG · 베스트송·뮤직비디오, 베스트 그룹 여자, TOP10·글로벌 TOP10', href: 'https://www.melon.com/mma/result.htm?mmaYear=2026' },
       { year: '2022', title: 'MAMA 올해의 노래', detail: 'LOVE DIVE', href: 'https://mama.mnetplus.world/history/2022/winners' },
       { year: '2026.09', title: '장원영 · 올해의 브랜드 대상', detail: '여자 광고모델 부문 · 2년 연속', href: 'https://www.etnews.com/20260901000136' }
     ],
     records: [
+      { year: '2026.06', title: 'LUCID DREAM 오리콘 주간 앨범 1위', detail: '일본 4번째 EP · 2026/6/8자 주간 앨범 차트 · 소니뮤직 공식 프로필', href: 'https://www.sonymusic.co.jp/artist/IVE/profile/' },
       { year: '2026.11', title: '제69회 그래미 어워즈 후보 지명', detail: '11.16 발표 · BANG BANG, Best Asian Pop Music Performance 부문 · 2027.02.07 시상 예정', href: 'https://www.grammy.com/songs/bang-bang-2/' },
       { year: '2023.02', title: '음악방송 누적 37관왕', detail: 'ELEVEN · LOVE DIVE · After LIKE', href: 'https://enews.imbc.com/News/RetrieveNewsInfo/373075' }
     ],
@@ -59,6 +62,7 @@ window.OJJUDA_FAN_PROFILES = {
       { name: '이서', birthday: '2007.02.21', height: '165', hometown: '서울', school: '한림연예예고 · 졸업', note: '막내', source: 'https://www.namu.moe/w/%EC%9D%B4%EC%84%9C' }
     ],
     sources: [
+      { label: '2026 MAMA 수상 결과 (연합뉴스)', href: 'https://en.yna.co.kr/view/AEN20261121001851315' },
       { label: '2026 MMA 공식 수상자', href: 'https://www.melon.com/mma/result.htm?mmaYear=2026' },
       { label: '2027 그래미 공식 후보', href: 'https://www.grammy.com/songs/bang-bang-2/' },
       { label: 'IVE 공식 프로필', href: 'https://ive-official.jp/mob/pageShw.php?cd=profile&site=DIVE' },

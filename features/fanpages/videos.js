@@ -13,6 +13,8 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: '9XttLI0oH0I', title: 'LOVE ATTACK', kind: '뮤직비디오', source: 'RESCENE / THE MUZE' }
   ],
   ive: [
+    { id: 'oRA3eTWh5Jk', title: '2026 MAMA · SNAKESKIN + BLACKHOLE + BANG BANG', kind: '공식 시상식 무대', source: 'Mnet K-POP · 2026.11.21' },
+    { id: 'vk7MUOlMk78', title: 'IVE ON · 2026 INKIGAYO LIVE in TOKYO BEHIND', kind: '공식 공연 비하인드', source: 'IVE 공식 YouTube · 2026.11.18' },
     { id: '1M1XyP6_aXU', title: 'MMA2026 PERFORMANCE REHEARSAL', kind: '공식 리허설', source: 'IVE 공식 YouTube · 2026.11.16' },
     { id: 'tVzFbxTKaDI', title: 'MMA2026 · DEAR. CUPID + BANG BANG + Looks Can Kill', kind: '공식 시상식 무대', source: '멜론 Melon · 2026.11.15' },
     { id: 'CVdfJvBdk60', title: 'IVE · 2027 수능 응원 영상', kind: '스페셜 영상', source: 'IVE 공식 YouTube · 2026.11.16' },
