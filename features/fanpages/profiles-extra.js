@@ -279,7 +279,7 @@ if (btsProfile) {
    Other personal data are unpublished or unverified and remain blank. */
 const seventeenProfile = window.OJJUDA_FAN_PROFILES.seventeen;
 if (seventeenProfile) {
-  seventeenProfile.checkedAt = '2026.11.14';
+  seventeenProfile.checkedAt = '2026.11.19';
   seventeenProfile.expanded = true;
   seventeenProfile.records = [
     { year: '2015.05', title: '17 CARAT로 데뷔', detail: '13명 · 보컬/힙합/퍼포먼스 3유닛 · 직접 제작에 참여', href: 'https://www.pledis.co.kr/artist/detail/seventeen/profile/' },
@@ -623,7 +623,7 @@ for (const id of ["hearts2hearts", "kissoflife", "kiiikiii", "stayc", "seventeen
 // STAYC was reviewed again against official sources for the current slot.
 window.OJJUDA_FAN_PROFILES.stayc.checkedAt = '2026.11.14';
 // SEVENTEEN reviewed in n=48 without modifying other groups.
-window.OJJUDA_FAN_PROFILES.seventeen.checkedAt = '2026.11.14';
+window.OJJUDA_FAN_PROFILES.seventeen.checkedAt = '2026.11.19';
 // RIIZE: awards and official member details rechecked for this slot.
 window.OJJUDA_FAN_PROFILES.riize.checkedAt = '2026.11.17';
 

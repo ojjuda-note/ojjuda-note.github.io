@@ -170,6 +170,11 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'diBO0gMuTXo', title: 'Hooligan', kind: '뮤직비디오', source: 'BTS / HYBE LABELS · 2026.04.08' }
   ],
   seventeen: [
+    { id: 'FZyqm4uJa0c', title: 'GOING SEVENTEEN EP.167 · 도둑 #2', kind: '공식 예능', source: 'SEVENTEEN 공식 YouTube · 2026.11.18' },
+    { id: 'ljD_HBhKXtU', title: 'DK TIME · 오늘도겸 #2 LA 여행', kind: '공식 브이로그', source: 'SEVENTEEN 공식 YouTube · 2026.11.18' },
+    { id: '6zapPaYSZxs', title: 'SEVENTEEN 2027 SEASON’S GREETINGS · 공식 프리뷰', kind: '굿즈 예고', source: 'SEVENTEEN 공식 YouTube · 2026.11.17' },
+    { id: '_2PP0xm9A_A', title: '정한×조슈아 DREAMSCAPE · 녹음 비하인드', kind: '제작 비하인드', source: 'SEVENTEEN 공식 YouTube · 2026.11.14' },
+    { id: 'RrvOS_0VfG4', title: '하니랑 슈아랑 EP.1 · 도예 DREAMSHAPE', kind: '공식 예능', source: 'SEVENTEEN 공식 YouTube · 2026.11.14' },
     { id: 'FEyF183bBWc', title: '도겸×정한 · 정답 없는 여행 NO-CLUE TRIP 하이라이트 예고', kind: '예고편', source: 'SEVENTEEN 공식 YouTube · 2026.11.12' },
     { id: 'ttCHjgJRAWY', title: '정한×조슈아 (JxJ) · One plus one 인천 공연', kind: '공식 무대', source: 'SEVENTEEN 공식 YouTube · 2026.11.11' },
     { id: 'hdwGWGSfABA', title: '정한×조슈아 (JxJ) · 12 o’clock', kind: '뮤직비디오', source: 'HYBE LABELS / PLEDIS · 2026.10.19' },
