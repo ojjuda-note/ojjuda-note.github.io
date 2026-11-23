@@ -220,10 +220,9 @@
     const weekday = ['일','월','화','수','목','금','토'][new Date(date+'T00:00:00Z').getUTCDay()];
     const dailyItems = new Map(Object.entries(games || {}).filter(([, r]) => r.test && !(r.age >= 19)));
     // The four daily destinations follow a fixed, easy-to-scan order.
-    const lifeItems = ['group', 'restaurants', 'festival']
-      .filter(id => dailyItems.has(id))
+    const lifeItems = ['group', 'fanpages', 'restaurants', 'festival']
+      .filter(id => id === 'fanpages' || dailyItems.has(id))
       .map(id => ({id, item: dailyItems.get(id)}));
-    lifeItems.push({id:'fanpages'});
     const dailyHints = {group:'함께하는 이야기',festival:'이번 주 어디 갈까?',restaurants:'맛있는 발견',tour:'가볍게 떠나요'};
     return `<div class="agit-hub" id="agit-hub-view" data-agit-hub data-agit-season="${theme.season}" data-agit-theme="${theme.key}">
       ${options.guest ? guestEntrance(theme) : `      <header class="agit-hero" aria-label="아지트">

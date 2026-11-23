@@ -1,6 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..'),origin='https://entry.test';
+const park=fs.readFileSync(path.join(root,'park/index.html'),'utf8');
 let world=fs.readFileSync(path.join(root,'world.html'),'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,tag=>tag.includes('/park/world-park-notes.js')?tag:'').replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+'my();window.entryFixture={tab:()=>g.tab===\'place\'?g.place?.id:g.tab,guest:()=>({guest:D.parkGuest,user:D.user,online:D.online}),start:()=>om(()=>{},H)};'+world.slice(world.indexOf('</script>',boot));
@@ -13,6 +14,7 @@ world=world.slice(0,boot)+'my();window.entryFixture={tab:()=>g.tab===\'place\'?g
     const url=new URL(route.request().url());if(url.origin!==origin)return route.abort();
     if((mode==='identity-missing'&&url.pathname==='/shared/auth/signup-identity.js')||(mode==='portal-missing'&&url.pathname==='/app/portal/portal.js'))return route.abort();
     if(url.pathname==='/world.html')return route.fulfill({contentType:'text/html',body:world});
+    if(url.pathname==='/park/')return route.fulfill({contentType:'text/html',body:park});
     const file=path.join(root,url.pathname==='/'?'index.html':url.pathname);
     return file.startsWith(root+path.sep)&&fs.existsSync(file)&&fs.statSync(file).isFile()?route.fulfill({path:file}):route.abort();
    });
@@ -46,7 +48,10 @@ world=world.slice(0,boot)+'my();window.entryFixture={tab:()=>g.tab===\'place\'?g
     await page.locator('#login-tab').click();
     await page.locator('#email').fill('fixture@example.invalid');await page.locator('#password').fill('fixture-password');await page.locator('#auth-submit').click();
     await page.waitForURL(origin+'/world.html');await page.waitForFunction(()=>window.entryFixture);assert.equal(await page.evaluate(()=>entryFixture.tab()),'hub');
-    for(const tab of ['arcade','park','my']){await page.goto(origin+'/world.html?tab='+tab);await page.waitForFunction(()=>window.entryFixture);assert.equal(await page.evaluate(()=>entryFixture.tab()),tab);}
+    for(const tab of ['arcade','my']){await page.goto(origin+'/world.html?tab='+tab);await page.waitForFunction(()=>window.entryFixture);assert.equal(await page.evaluate(()=>entryFixture.tab()),tab);}
+    // Park now runs independently: the legacy World bookmark exits before the Hub loads.
+    await page.goto(origin+'/world.html?tab=park');await page.waitForURL(origin+'/park/');
+    await page.locator('#feed-list').waitFor({state:'attached'});assert.match(await page.title(),/공원/);
    }else{
     await page.locator('#entry-status').waitFor({state:'visible',timeout:12000});
     assert.equal(await page.getByRole('button',{name:'다시 시도',exact:true}).isVisible(),true);
@@ -55,10 +60,9 @@ world=world.slice(0,boot)+'my();window.entryFixture={tab:()=>g.tab===\'place\'?g
      await page.locator('#signup-tab').click();assert.equal(await page.locator('#auth-submit').isDisabled(),true,'missing validation code must fail closed');
      await page.locator('[data-close-dialog]').click();
     }
-    await page.getByRole('link',{name:'손님으로 둘러보기',exact:true}).click();await page.waitForURL(origin+'/world.html?place=park&guest=1');
-    await page.waitForFunction(()=>window.entryFixture);
-    assert.equal(await page.evaluate(()=>Promise.race([entryFixture.start().then(()=>true),new Promise(resolve=>setTimeout(()=>resolve(false),500))])),true,'guest entry bypasses stalled authentication');
-    assert.deepEqual(await page.evaluate(()=>entryFixture.guest()),{guest:true,user:null,online:false});
+    await page.getByRole('link',{name:'손님으로 둘러보기',exact:true}).click();await page.waitForURL(origin+'/park/');
+    await page.locator('#feed-list').waitFor({state:'attached',timeout:12000});
+    assert.match(await page.title(),/공원/,'guest recovery reaches independently rendered public Park');
    }
    assert.deepEqual(errors,[],mode+' has no unhandled runtime failure');await context.close();
   }

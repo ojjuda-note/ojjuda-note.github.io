@@ -100,8 +100,11 @@ async function checkSixLineCard(page, width) {
   if(!expectBug){
    assert.ok(before.every(card=>Math.abs(card.height-card.width)<1 && card.width<=600.5),width+'px: feed faces are square');
    if(width>=800)assert.ok(before.every(card=>Math.abs(card.width-600)<1),width+'px: full-size feed faces');
-   const columns=await page.locator('#feed-list').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length);
-   assert.equal(columns,width>=1280?2:1,width+'px: only add a column when both full-size cards fit');
+   const {columns,containerWidth}=await page.locator('#feed-list').evaluate(el=>({
+    columns:getComputedStyle(el).gridTemplateColumns.split(' ').length,
+    containerWidth:el.closest('.park-feed').getBoundingClientRect().width
+   }));
+   assert.equal(columns,containerWidth>=1220?2:1,`${width}px (${containerWidth}px available): only add a column when both full-size cards fit`);
   }
   if(proof&&width===390)await page.screenshot({path:path.join(proof,expectBug?'before-bug.png':'before-fixed.png'),fullPage:true});
   for(const route of expectBug?['button']:['button','browser','embedded']){
@@ -142,7 +145,7 @@ async function checkSixLineCard(page, width) {
    assert.ok(faces.every(face=>Math.abs(face.height-face.width)<1),width+'px: original and reply are both square');
    if(width>=800)assert.ok(Math.abs(faces[0].width-600)<1,'the detail card reaches 600×600');
    assert.ok(Math.abs(faces[1].width-faces[0].width*2/3)<1,`${width}px: replies are two thirds of the parent card width`);
-   assert.ok(faces.every(face=>Math.abs(face.footer)<1&&face.buttonsFit&&face.textFits),`${width}px: photo, text and controls fit without a footer`);
+   assert.ok(faces.every(face=>Math.abs(face.footer)<1&&face.buttonsFit&&face.textFits),`${width}px: photo, text and controls fit without a footer ${JSON.stringify(faces)}`);
    if(width===390)await checkReplyBrowsing(page);
    const full=page.locator('#detail-card-slot .note-full-body');
    await full.evaluate(el=>{el.hidden=false;el.open=true;});

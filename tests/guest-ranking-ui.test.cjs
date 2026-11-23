@@ -11,6 +11,8 @@ world=world.slice(0,boot)+`window.guestFixture={submit:tf,ranking:ef,open:Al,log
   await context.route('**/*',route=>{
    const url=new URL(route.request().url());if(url.origin!==origin)return route.abort();
    if(url.pathname==='/world.html')return route.fulfill({body:world,contentType:'text/html'});
+   // The former Park guest URL now redirects to the independent Park entry.
+   if(url.pathname==='/park/')return route.fulfill({body:'<!doctype html><html lang="ko"><title>오쭈다 공원</title><body><main>공원</main></body></html>',contentType:'text/html; charset=utf-8'});
    if(url.pathname==='/games/ttang.html'||url.pathname==='/games/spot-difference/index.html')return route.fulfill({body:'<!doctype html><body>game frame</body>',contentType:'text/html'});
    const file=path.join(root,url.pathname);return file.startsWith(root+path.sep)&&fs.existsSync(file)&&fs.statSync(file).isFile()?route.fulfill({path:file}):route.abort();
   });
@@ -28,8 +30,13 @@ world=world.slice(0,boot)+`window.guestFixture={submit:tf,ranking:ef,open:Al,log
     }};
    }};
   });
-  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(origin+'/world.html?place=park&guest=1');await page.waitForFunction(()=>window.guestFixture);
+  const page=await context.newPage(),errors=[];page.on('pageerror',e=>{errors.push(e.message);console.error('[guest-ranking boot] browser exception:',e.stack||e.message);});
+  // Exercise World guest rankings without the intentional legacy-Park redirect.
+  await page.goto(origin+'/world.html?guest=1');
+  try {await page.waitForFunction(()=>window.guestFixture);} catch(error) {
+    console.error('[guest-ranking boot] fixture missing:',JSON.stringify({url:page.url(),errors,loaded:await page.evaluate(()=>({ready:document.readyState,main:!!document.querySelector('main'),app:!!document.querySelector('#app'),guestScores:!!window.OjjudaGuestScores,supabase:!!window.supabase,config:!!window.OJJUDA_CONFIG})).catch(e=>({evaluateError:String(e)}))}));
+    throw error;
+  }
   const ranking=await page.evaluate(()=>guestFixture.ranking('breakout'));
   assert.deepEqual(ranking,[{nick:'손님',score:20,me:true,source:'guest_record'}],'the World ranking reader preserves the guest identity');
   const daily=await page.evaluate(()=>calls.find(c=>c.name==='guest_game_ranking'));
@@ -69,7 +76,8 @@ world=world.slice(0,boot)+`window.guestFixture={submit:tf,ranking:ef,open:Al,log
   await page.evaluate(()=>guestFixture.login());
   const browse=page.getByRole('link',{name:'둘러보기',exact:true});assert.equal(await browse.isVisible(),true);
   assert.equal(await browse.getAttribute('href'),'/world.html?place=park&guest=1');
-  await browse.click();await page.waitForURL(origin+'/world.html?place=park&guest=1');
+  await browse.click();await page.waitForURL(origin+'/park/');
+  assert.equal(await page.locator('main').innerText(),'공원','the legacy browse link redirects to the independent Park entry');
   assert.deepEqual(errors,[]);
   await context.close();
   console.log('PASS: real World guest score submission, daily reader and monthly result UI, persistent browser identity, isolated API session, Ttang/Spot bridges, unchanged member submission and login browse link');

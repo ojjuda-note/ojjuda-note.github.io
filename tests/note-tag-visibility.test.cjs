@@ -120,6 +120,12 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
     feedMode:'all',feedSort:'latest',feedTerm:'',feedSnapshot:null,feedCursor:null,editingId:null,kind:'memo',
     tags:{value:''},text:{value:'산책하며 찍은 사진'},manualTags:[],autoTagsNow:[],rejectedTags:new Set(),
     suggestTags:()=>['산책','일상','사진','휴식','운동']});
+  // The isolated VM must load the real card-length helper used by parsedTags.
+  // Do not replace it with a test-only approximation: the ❤️❤️ mask counts as one.
+  const lengthHelper = source.match(/^const maskedTextLength = [^\n]+;/m)?.[0];
+  assert.ok(lengthHelper, 'maskedTextLength definition must remain present in the public composer');
+  vm.runInContext(lengthHelper, context);
+  assert.equal(vm.runInContext("maskedTextLength('❤️❤️')", context), 1);
   vm.runInContext(source.slice(source.indexOf('const tagList ='),source.indexOf('function shownName(')),context);
   vm.runInContext(source.slice(source.indexOf('function parsedTags('),source.indexOf('function validEventBody(')),context);
   const parsed = raw => { context.raw=raw; const values=vm.runInContext('parsedTags(raw)',context); return values && Array.from(values); };

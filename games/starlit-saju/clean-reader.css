@@ -97,6 +97,9 @@ body.saju-clean :is(.payment-status,.saju-price-note,.compatibility-price-note,.
 body.saju-clean .flow-actions { margin-top: 16px; }
 body.saju-clean .flow-actions > button[data-flow-next] { color: var(--page); }
 body.saju-clean :is(input,select),body.saju-clean #birth-form :is(input,select),body.saju-clean .compatibility-person :is(input[type=text],input[type=number],select) { color-scheme: dark; }
+/* readable-design.css also styles generic inputs; the clean dark reader wins
+   for native menus even when both theme classes are present. */
+body.saju-clean.saju-readable :is(input[type=text],input[type=number],select,textarea) { color-scheme: dark; }
 body.saju-clean .reader-scope-note.daeun-time-notice { color: var(--headwind); background: var(--headwind-soft); border-color: var(--border); }
 body.saju-clean .skip-link { color: var(--page); }
 body.saju-clean .reading-pager-step:hover:not(:disabled),body.saju-clean .month-jump.is-current { color: var(--page); background: var(--primary); }
@@ -459,7 +462,7 @@ body.saju-clean .story-menu-title { margin: 0; font: 600 20px/1.5 var(--sans); }
 body.saju-clean :is([data-reader-tools-close],.story-menu-close) { min-width: 44px; min-height: 44px; padding: 8px; background: transparent; color: var(--ink); border: 0; font-size: 22px; }
 body.saju-clean .story-menu-close { font-size: 14px; }
 body.saju-clean .story-period-control { display: flex; align-items: center; gap: 14px; margin: 12px 0; color: var(--text-muted); font: 500 14px/1.5 var(--sans); }
-body.saju-clean .story-period-select { flex: 1; min-width: 0; min-height: 44px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--page); color: var(--ink); font: inherit; }
+body.saju-clean .story-period-select { flex: 1; min-width: 0; min-height: 44px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--page); color: var(--ink); color-scheme: dark; font: 500 16px/1.5 var(--sans); }
 body.saju-clean .reader-tools-dialog .reading-size-control { justify-content: flex-start; padding: 12px 0 20px; }
 body.saju-clean .reader-tools-dialog .reading-size-control button { min-width: 56px; min-height: 44px; }
 body.saju-clean .reader-tools-dialog :is(.reader-settings,.other-reading-options) { margin: 0; border-width: 1px 0 0; border-radius: 0; background: transparent; }
@@ -479,7 +482,7 @@ body.saju-clean .story-menu-list :is(h3,h4) { margin: 24px 0 8px; font: 600 14px
 @media(max-width: 359px) {
   body.saju-clean .story-stage { padding-inline: 36px; }
   body.saju-clean .story-scene .saju-wind-items { gap: 10px; }
-  body.saju-clean .story-scene :is(.saju-wind-label,.saju-wind-value) { font-size: 12px; }
+  body.saju-clean .story-scene :is(.saju-wind-label,.saju-wind-value) { font-size: 13px; }
   body.saju-clean .story-title { font-size: 23px; }
   body.saju-clean .detailed-reading:not([data-reading-size=large]) .story-body { font-size: 18px; }
 }

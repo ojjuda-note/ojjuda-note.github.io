@@ -103,6 +103,8 @@ function readLeaders(client,owner,ids,fresh=false){
    }));
    for(const [id,row] of rows)recovered[id]=row;
   }
+  // A wholly failed fallback must not become a successful 15-second cache entry.
+  if(ids.length&&Object.values(recovered).every(row=>row?.__error))throw Error('ranking_unavailable');
   return {data:recovered,error:null};
  },fresh);
 }
@@ -608,11 +610,11 @@ function checkRollover(){
  if(month!==observedMonth){observedMonth=month;void refreshView(true);}
  scheduleRollover();
 }
-async function home(fresh=false){if(!client||!owner||!active())return false;closeHelp(false);updateGames();rankDispose();view='home';observedMonth=rankingMonth();scheduleRollover();const token=++request;content.replaceChildren();status.textContent='';await Promise.all(leaders(token,fresh));return active()&&token===request;}
+async function home(fresh=false){if(!client||!owner||(guest&&!Object.keys(games).length)||!active())return false;closeHelp(false);updateGames();rankDispose();view='home';observedMonth=rankingMonth();scheduleRollover();const token=++request;content.replaceChildren();status.textContent='';await Promise.all(leaders(token,fresh));return active()&&token===request;}
 let gameplayObserver=null;
 dispose=()=>{alive=false;request++;closeHelp(false);rankDispose();releaseAccess?.();clearTimeout(rolloverTimer);lifecycle.abort();gameplayObserver?.disconnect();};
 controller={refresh:()=>refreshView(true),back,isHistoryOpen:()=>active()&&view==='history',syncCatalog:viewer=>viewer===owner?syncCatalog():Promise.resolve(false)};
-if(!client||!owner){const empty=el('div','','board-rank-empty'),art=el('img');art.src='/assets/design/games/stacker.svg';art.alt='';const copy=el('div'),actions=el('div','','board-rank-actions');actions.append(Object.assign(el('a','회원가입','btn'),{href:'/?auth=signup&next=world'}),Object.assign(el('a','로그인','btn'),{href:'/?auth=login&next=world'}));copy.append(el('h3','이번 달 게임순위'),el('p','처음 오셨나요? 회원가입하거나 로그인하면 게임 기록을 저장하고 순위에 도전할 수 있어요.'),actions);empty.append(art,copy);content.append(empty);return;}
+if(!client||!owner||(guest&&!Object.keys(games).length)){const empty=el('div','','board-rank-empty'),art=el('img');art.src='/assets/design/games/stacker.svg';art.alt='';const copy=el('div'),actions=el('div','','board-rank-actions');actions.append(Object.assign(el('a','회원가입','btn'),{href:'/?auth=signup&next=world'}),Object.assign(el('a','로그인','btn'),{href:'/?auth=login&next=world'}));copy.append(el('h3','이번 달 게임순위'),el('p','처음 오셨나요? 회원가입하거나 로그인하면 게임 기록을 저장하고 순위에 도전할 수 있어요.'),actions);empty.append(art,copy);content.append(empty);return;}
 const playing=()=>document.body.classList.contains('gaming')||document.body.classList.contains('matgo-open');
 let gaming=playing();
 window.addEventListener('ojjuda:game-record-saved',event=>{

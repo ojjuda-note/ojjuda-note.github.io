@@ -7,8 +7,13 @@ for(const from of ['/park/','/park/index.html?card=abc#reply','/note/?compose=me
  const url=new URL(from,'https://fixture.test');let redirected;
  const scope={URL,location:{href:url.href,origin:url.origin,replace:href=>redirected=new URL(href)}};scope.window=scope;scope.parent=scope;
  vm.runInNewContext(read('park/route.js'),scope);
- assert.equal(redirected.pathname,'/world.html');assert.equal(redirected.searchParams.get('place'),'park');assert.equal(redirected.hash,url.hash);
- for(const key of ['card','compose'])assert.equal(redirected.searchParams.get(key),url.searchParams.get(key));
+ if(url.pathname.startsWith('/park/')){
+   assert.equal(redirected,undefined,'standalone Park must not bounce into World');
+ }else{
+   assert.equal(redirected.pathname,'/park/','legacy Note enters standalone Park');
+   assert.equal(redirected.hash,url.hash);
+   for(const key of ['card','compose'])assert.equal(redirected.searchParams.get(key),url.searchParams.get(key));
+ }
 }
 let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
 world=world.replace('<script type="module">',`<script>${['app/world/world-themes.js','park/world-park-notes.js'].map(read).join('\n')}</script><script type="module">`);
@@ -34,7 +39,9 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
    const file=path.join(root,url.pathname);return file.startsWith(root+path.sep)&&fs.existsSync(file)&&fs.statSync(file).isFile()?route.fulfill({path:file}):route.abort();
   });
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto('https://fixture.test/world.html?place=park');
+  // Explicit legacy embedded fixture: privileged-route syntax prevents the new
+  // early standalone redirect, while this fake account stays non-admin.
+  await page.goto('https://fixture.test/world.html?place=park&admin=cards');
   const iframe=page.locator('[data-park-app] iframe');await iframe.waitFor();
   const frame=await (await iframe.elementHandle()).contentFrame();await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
   await frame.evaluate(()=>loadNoticeStateFixture());

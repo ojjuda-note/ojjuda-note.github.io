@@ -224,6 +224,9 @@ const server = http.createServer((request, response) => {
       await inspectReaderPage(expected, prefix);
     }
     async function inspectReaderLayout(label, prefix = 'result') {
+      // Chromium applies a new viewport size before all dialog centering
+      // calculations settle. Verify after two frames, never skip hit tests.
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
       const geometry = await page.evaluate(prefix => {
         const dialog = document.getElementById(prefix + '-dialog');
         const body = document.getElementById(prefix + '-reader-body');
@@ -613,7 +616,7 @@ const server = http.createServer((request, response) => {
       assert.deepEqual(view.smallProse,[],label+': reading text follows the normal/large size');
       assert.deepEqual(view.smallTargets,[],label+': actionable controls retain their intended touch target');
       assert.equal(view.horizontalOverflow,false,label+': the redesigned page stays inside the viewport');
-      assert.ok(view.inputs.every(input=>input.font>=minimumInput&&input.scheme==='dark'),label+': readable input text and native menus use the dark surface');
+      assert.ok(view.inputs.every(input=>input.font>=minimumInput&&input.scheme==='dark'),label+': readable input text and native menus use the dark surface: '+JSON.stringify(view.inputs.filter(input=>input.font<minimumInput||input.scheme!=='dark')));
       sajuReadableViews[label]={samples:view.samples,minimumContrast:view.minimumContrast,minimumBodyFont:view.prose.length?Math.min(...view.prose.map(item=>item.font)):null,minimumTargetHeight:view.minimumTargetHeight};
       return view;
     }

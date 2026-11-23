@@ -1364,11 +1364,9 @@ async function feedWithinDeadline(pending, controller = null) {
 }
 async function getFeedCards(parameters) {
   const controller = new AbortController();
-  const request = query().rpc('list_cards', parameters);
-  const result = await feedWithinDeadline(typeof request.abortSignal === 'function'
-    ? request.abortSignal(controller.signal) : request, controller);
-  if (result?.error) throw result.error;
-  return result?.data;
+  // Reuse the same authenticated RPC boundary as other Park actions. This
+  // keeps fixture overrides and production read/abort behavior consistent.
+  return feedWithinDeadline(noteRpc('list_cards', parameters, controller.signal), controller);
 }
 async function loadFeed(more = false, quiet = false) {
   if (!client || (more && feedLoading)) return false;
@@ -1404,7 +1402,7 @@ async function loadFeed(more = false, quiet = false) {
     button.addEventListener('click', () => refreshNearbyPosition(button, version));
     list.replaceChildren(note, button); return true;
   }
-  // Always request the public cards first. A previously granted GPS fix can wait until the first page is painted.
+  // Public cards load before location warm-up, which starts after first paint.
   let data, error;
   if (feedMode === 'events') {
     try { data = await feedWithinDeadline(noteRpc('list_my_events', {})); } catch (cause) { error = cause; }
@@ -1487,8 +1485,7 @@ async function loadFeed(more = false, quiet = false) {
   updateComposer();
   consumeInitialCard();
   if (!stack.length) resumeGuestWriting(null);
-  // Let the browser paint actual cards before doing location/permission work.
-  // Location is optional for the latest feed; a later fix quietly refreshes it.
+  // Location is optional; fetch it after cards have had time to paint.
   if (!more && !quiet && feedMode === 'all' && !feedTerm && feedSort !== 'nearby'
       && !nearbyPosition && !backgroundLocating && !document.hidden) {
     backgroundLocating = true;
@@ -3665,8 +3662,10 @@ function noteSpamMessage(error) {
   const windowText = seconds % 60 === 0 ? `${seconds / 60}분` : `${seconds}초`;
   return `${windowText}에 ${amount(details.max_posts, 2)}개까지만 쓸 수 있어요. ${amount(details.retry_after_seconds, 1)}초 뒤 다시 시도해 주세요.`;
 }
-async function noteRpc(name, parameters = {}) {
-  const { data, error } = await query().rpc(name, parameters);
+async function noteRpc(name, parameters = {}, signal = null) {
+  const pending = query().rpc(name, parameters);
+  const { data, error } = await (signal && typeof pending.abortSignal === 'function'
+    ? pending.abortSignal(signal) : pending);
   if (error) throw error;
   return data;
 }
@@ -4170,9 +4169,8 @@ notificationController = window.OjjudaNoteNotifications?.install({
 });
 if (client) {
   client.auth.onAuthStateChange((event, current) => {
-    // On a cold app open, a provisional INITIAL_SESSION null must not paint
-    // the public Park entrance while getSession restores a persisted member.
-    if (event === 'INITIAL_SESSION' && !current?.user) return;
+    // Do not show a public guest entrance before the stored session is loaded.
+    if(event==='INITIAL_SESSION'&&!current?.user)return;
     authEventVersion++;
     receiveAuth(current);
   });

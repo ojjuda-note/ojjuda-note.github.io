@@ -24,8 +24,10 @@ async function fixture(context, source, rpc) {
   });
   await page.exposeFunction('chargeRpc', rpc);
   if (source === 'world') {
-    await page.setContent('<base href="https://fixture.test/"><meta name="viewport" content="width=device-width,initial-scale=1"><main class="main" id="world-my"></main>');
+    await page.setContent('<base href="https://fixture.test/"><meta name="viewport" content="width=device-width,initial-scale=1"><div class="shell"><aside class="side" aria-hidden="true"></aside><div class="col"><main class="main" id="world-my"></main></div></div>');
     for (const match of world.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)) await page.addStyleTag({ content: match[1] });
+    // The World settings list now lives in shared CSS, not its inline rules.
+    await page.addStyleTag({ content: read('features/account/settings-list.css') });
     await page.evaluate(() => {
       window.$ = { coins: 70, settings: { accent: 'pink', theme: 'light', defaultVis: 'all', notify: {} }, me: { nick: '검사 회원', bio: '', mood: '😊', moodText: '' }, album: [] };
       window.D = { online: true, user: { id: 'synthetic-user', email: 'test@example.invalid' } };
@@ -81,10 +83,16 @@ async function fixture(context, source, rpc) {
       for (const source of ['world','note']) {
         const current = await fixture(context, source, rpc); fixtures.push(current);
         const { page } = current;
-        const entry = page.locator('.ju-charge-entry');
+        const entry = page.locator(source === 'world' ? '.ojjuda-settings-row[data-ju-charge-open]' : '.ju-charge-entry');
         assert.equal(await entry.count(), 1);
-        assert.equal(await entry.evaluate(node => node.parentElement.nextElementSibling.querySelector('.my-menu-title').textContent), '도움말');
-        assert.equal(await entry.evaluate(node => getComputedStyle(node).borderTopWidth), '0px');
+        const helpLabel = await entry.evaluate(node => node.closest('.ojjuda-settings')?.querySelector('[data-my-group="help"] .ojjuda-settings-label')?.textContent
+          || node.parentElement.nextElementSibling?.querySelector('.my-menu-title')?.textContent);
+        assert.match(helpLabel, /도움말/, 'the wallet control remains before the help section');
+        const borderTop=await entry.evaluate(node=>getComputedStyle(node).borderTopWidth);
+        if(source==='world'){
+          assert.equal(borderTop,'1px','the charge row retains the shared settings-list separator');
+          assert.ok(await entry.evaluate(node=>node.getBoundingClientRect().height>=48),'the charge row stays touch accessible');
+        }else assert.equal(borderTop,'0px');
         if (process.env.JU_CHARGE_QA_DIR) {
           fs.mkdirSync(process.env.JU_CHARGE_QA_DIR, { recursive: true });
           await page.screenshot({ path: path.join(process.env.JU_CHARGE_QA_DIR, `${source}-menu-${viewport.width}.png`), fullPage: true });
@@ -111,7 +119,12 @@ async function fixture(context, source, rpc) {
         assert.equal(await dialog.locator('[data-ju-remaining]').textContent(), `오늘 5회 중 ${5-used}회 남았어요`);
         assert.equal(await page.evaluate(() => chargeBalance), coins);
         assert.equal(await dialog.evaluate(node => node.scrollWidth <= node.clientWidth + 1), true, 'charge contents fit the viewport');
-        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true);
+        const widthCheck=await page.evaluate(()=>({viewport:innerWidth,document:document.documentElement.scrollWidth,
+          overflowing:[...document.querySelectorAll('body *')].filter(el=>{
+            const rect=el.getBoundingClientRect();return rect.width>0&&(rect.right>innerWidth+1||rect.left< -1);
+          }).slice(0,10).map(el=>({tag:el.tagName,className:String(el.className).slice(0,70),rect:{left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right,width:el.getBoundingClientRect().width}}))}));
+        assert.equal(widthCheck.document<=widthCheck.viewport+1,true,
+          `${source} at ${viewport.width}px: charge and host never create page overflow ${JSON.stringify(widthCheck)}`);
         if (process.env.JU_CHARGE_QA_DIR) {
           fs.mkdirSync(process.env.JU_CHARGE_QA_DIR, { recursive: true });
           await page.screenshot({ path: path.join(process.env.JU_CHARGE_QA_DIR, `${source}-${viewport.width}.png`) });
@@ -121,7 +134,7 @@ async function fixture(context, source, rpc) {
         assert.equal(await entry.evaluate(node => node === document.activeElement), true, 'closing returns focus to the menu');
       }
       const { page } = fixtures[0];
-      await page.locator('.ju-charge-entry').click();
+      await page.locator('.ojjuda-settings-row[data-ju-charge-open]').click();
       await page.waitForFunction(() => !document.querySelector('.ju-charge-checkout').disabled);
       assert.equal(await page.locator('[data-ju-remaining]').textContent(), '오늘 5회 중 3회 남았어요', 'World sees the allowance spent in Note');
       for (let i = 0; i < 3; i++) {

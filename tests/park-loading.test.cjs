@@ -425,10 +425,11 @@ test('a stalled Park feed is aborted and a single automatic retry restores cards
     w.OJJUDA_CONFIG = { supabaseUrl: 'https://fixture.test', supabaseKey: 'test' };
     w.supabase = { createClient: () => client };
     w.eval(read('note/preview.js'));
-    // Busy CI runners can delay both the timeout and the queued retry.
-    // Wait for the second request itself, not a fixed 120ms wall-clock guess.
-    const deadline = Date.now() + 2000;
-    while (reads < 2 && Date.now() < deadline) {
+    // Busy CI runners may delay both the retry and the rendered card.
+    // Wait for both real results within two seconds without weakening assertions.
+    const recoveryDeadline = Date.now() + 2000;
+    while (Date.now() < recoveryDeadline &&
+        (reads < 2 || !doc.querySelector('#feed-list [data-card-id="' + card.id + '"]'))) {
       await new Promise(resolve => nativeSetTimeout(resolve, 20));
     }
     assert.equal(aborted, 1, 'stalled network work is aborted at the deadline');
