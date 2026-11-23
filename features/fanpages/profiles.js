@@ -183,21 +183,26 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   a2omay: {
-    checkedAt: '2026.11.10',
+    checkedAt: '2026.11.20',
     debut: '2024.12.20', debutWork: 'Under My Skin (A2O)',
     agency: 'A2O Entertainment',
     concept: '다섯 멤버가 선보이는 Zalpha Pop.',
     heightSource: 'https://kpopdiscover.com/en/groups/a2o-may/',
     awards: [
-      { year: '2025', title: 'Weibo Music Awards 신인상', detail: 'Annual Newcomer Group', href: 'https://prtimes.jp/main/html/rd/p/000001831.000055377.html' }
+      { year: '2026.01', title: 'MBIA 연간 신흥 음악인상', detail: '2026.01.17 · 중국 베이징 · 음악재경×웨이보 나윈', href: 'https://enews.imbc.com/News/ViewAmp/491366' },
+      { year: '2025.11', title: 'Weibo 경연의 밤 신예 그룹상', detail: '2025.11.13 · 중국 베이징', href: 'https://www.bntnews.co.kr/Music/article/view/bnt202511140169' },
+      { year: '2025.11', title: 'Asian Hall of Fame New Artist Award', detail: '2025.11.01 · 미국 로스앤젤레스', href: 'https://sports.khan.co.kr/article/202511031815003' },
+      { year: '2025', title: 'Weibo Music Awards 신인상', detail: 'Annual Newcomer Group · 2025.09.24', href: 'https://prtimes.jp/main/html/rd/p/000001831.000055377.html' }
     ],
     records: [
-      { year: '2025', title: 'Mediabase Top 40 진입', detail: 'Under My Skin (A2O) · 39위', href: 'https://www.melon.com/artist/detail.htm?artistId=4531270' }
+      { year: '2025.06', title: 'Mediabase Top 40 연속 진입', detail: 'BOSS · 2025.06.29 기준 35위, Under My Skin (A2O) · 39위', href: 'https://view.asiae.co.kr/article/2025070109155036873' }
     ],
     members: ['CHENYU', 'SHIJIE', 'QUCHANG', 'MICHE', 'KAT'].map((name) => a2oMember(name, 'https://www.melon.com/artist/detail.htm?artistId=4531270')),
     sources: [
       { label: 'Melon 공식 유통 정보', href: 'https://www.melon.com/artist/detail.htm?artistId=4531270' },
       { label: 'A2O 공식', href: 'https://www.a2oentertainment.world/' },
+      { label: '신인상 4관왕 · The Korea Times', href: 'https://www.koreatimes.co.kr/entertainment/k-pop/20260716/summer-spark-a2o-may-returns-with-love-got-me-ooh' },
+      { label: 'Mediabase 차트 · 아시아경제', href: 'https://view.asiae.co.kr/article/2025070109155036873' },
       { label: '신인상 자료 · The Orchard Japan', href: 'https://prtimes.jp/main/html/rd/p/000001831.000055377.html' }
     ]
   },
