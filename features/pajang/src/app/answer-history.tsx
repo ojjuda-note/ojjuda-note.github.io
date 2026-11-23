@@ -186,26 +186,30 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
   },[result.items]);
   const selectionScope=JSON.stringify([station.me?.id,station.day,station.slot,filter,gender,order]);
   const [selection,setSelection]=useState({scope:selectionScope,question:""});
-  const advance=useRef<{scope:string;question:string}|null>(null);
+  const advance=useRef<{scope:string;question:string;direction:1|-1}|null>(null);
   const index=Math.max(0,selection.scope===selectionScope?groups.findIndex(group=>questionKey(group[0])===selection.question):0);
   const selected=groups[index];
   useEffect(()=>{
     if(result.loading)return;
     const pending=advance.current;
     if(pending?.scope===selectionScope&&!result.error){
-      const after=groups.findIndex(group=>questionKey(group[0])===pending.question)+1;
-      if(after>0&&groups[after]){
+      const found=groups.findIndex(group=>questionKey(group[0])===pending.question);
+      if(found>=0){
+        if(pending.direction===1&&groups[found+1]){
+          advance.current=null;
+          setSelection({scope:selectionScope,question:questionKey(groups[found+1][0])});
+          return;
+        }
+        // The forward edge can land on a partially loaded question. The
+        // reverse edge must reach the actual last question, not the last
+        // question of the first 24-answer batch.
+        if(result.next){load.current("more");return;}
         advance.current=null;
-        setSelection({scope:selectionScope,question:questionKey(groups[after][0])});
-        return;
-      }
-      // One question may fill several pages. Keep looking until the next question
-      // arrives, without ever showing another question's answers under this heading.
-      if(after>0&&result.next){load.current("more");return;}
-      if(after>0&&groups.length>1){
-        advance.current=null;
-        setSelection({scope:selectionScope,question:questionKey(groups[0][0])});
-        return;
+        const destination=pending.direction===1?groups[0]:groups[groups.length-1];
+        if(groups.length>1&&destination){
+          setSelection({scope:selectionScope,question:questionKey(destination[0])});
+          return;
+        }
       }
     }
     advance.current=null;
@@ -216,12 +220,14 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
     advance.current=null;
     const group=groups[index+direction];
     if(group)setSelection({scope:selectionScope,question:questionKey(group[0])});
-    else if(direction>0&&selected&&result.next&&!result.loading){
-      advance.current={scope:selectionScope,question:questionKey(selected[0])};
+    else if(selected&&result.next&&!result.loading){
+      advance.current={scope:selectionScope,question:questionKey(selected[0]),direction:direction>0?1:-1};
       load.current("more");
     }
-    else if(direction>0&&!result.next&&groups.length>1)
-      setSelection({scope:selectionScope,question:questionKey(groups[0][0])});
+    else if(!result.next&&groups.length>1){
+      const destination=direction>0?groups[0]:groups[groups.length-1];
+      setSelection({scope:selectionScope,question:questionKey(destination[0])});
+    }
   }
   return <section id="answers" className="feedsection" aria-labelledby="all-answers-title">
     <div className="sectiontitle history-head">

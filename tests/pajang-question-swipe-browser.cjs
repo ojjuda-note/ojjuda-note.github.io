@@ -29,7 +29,11 @@ const keys = [
   answer('key-day',questionC,'다른 날짜 답변'),
   answer('key-wording',{...questionC,question:'같은 날짜라도 질문이 바뀌면 어떤가요?'},'다른 질문 답변')
 ];
-const sample = {owner,a1,b1,aOwn,a2,b2,c1,keys,initial:[a1,b1,aOwn],more:[a1,a2,b2,c1]};
+const archive=Array.from({length:730},(_,i)=>answer('archive-'+i,{
+  day:new Date(Date.UTC(2026,10,23)-Math.floor(i/2)*86400000).toISOString().slice(0,10),
+  slot:i%2?'am':'pm',question:'질문 '+(i+1)
+},'답변 '+(i+1)));
+const sample = {owner,a1,b1,aOwn,a2,b2,c1,keys,archive,initial:[a1,b1,aOwn],more:[a1,a2,b2,c1]};
 
 // Only account data and the RPC transport are fixtures. The component, grouping,
 // gesture handlers, pagination controller and every stylesheet are production code.
@@ -59,6 +63,13 @@ function installFixture(data) {
           if(signal?.aborted)throw new DOMException('Aborted','AbortError');
           const scenario=new URL(location.href).searchParams.get('fixture');
           if(scenario==='keys')return ok(data.keys);
+          if(scenario==='archive'){
+            const page=Number(args.p_cursor?.page??0),start=page*24;
+            const result=ok(data.archive.slice(start,start+24));
+            result.data.total=data.archive.length;
+            result.data.nextCursor=start+24<data.archive.length?{page:page+1}:null;
+            return result;
+          }
           if(scenario==='closed')return ok(data.initial);
           if(scenario==='single')return ok([data.a1,data.aOwn]);
           if(args.p_cursor&&control.failMore)return {data:null,error:{message:'Could not load the next fixture page'}};
@@ -192,13 +203,20 @@ async function swipe(page,direction,{short=false,vertical=false,target='heading'
     await reset();
     checkpoint='nonadjacent answers and action ownership';
     await shown([a1,aOwn],1,2);
-    assert.equal(await previous().isDisabled(),true,'first question has no previous action');
+    assert.equal(await previous().isDisabled(),false,'first question can fetch the real last question');
     assert.equal(await header().getAttribute('tabindex'),'0','question has a keyboard focus target');
     await active().locator('.answercard').filter({hasText:aOwn.body}).getByRole('button',{name:'답변 수정',exact:true}).click();
     await active().locator('.answercard').filter({hasText:a1.body}).getByRole('button',{name:'대화하기',exact:true}).click();
     assert.deepEqual(await page.evaluate(()=>questionSwipeFixture.actions),[
       {action:'edit',value:aOwn},{action:'chat',value:a1.peer}
     ],'edit and matched chat preserve the selected row and person');
+
+    checkpoint='first reverse swipe reaches the actual last question, not the last loaded batch';
+    await swipe(page,'right',{target:'body'});await shown([c1],3,3);
+    assert.deepEqual(await page.evaluate(()=>questionSwipeFixture.calls.filter(call=>call.p_cursor).map(call=>call.p_cursor)),
+      [{page:2}],'reverse swipe finishes pagination before wrapping');
+    await swipe(page,'left',{target:'body'});await shown([a1,aOwn,a2],1,3);
+    await reset();await shown([a1,aOwn],1,2);
 
     checkpoint='real mobile touch gestures';
     await swipe(page,'left',{short:true});await shown([a1,aOwn],1,2);
@@ -243,22 +261,27 @@ async function swipe(page,direction,{short=false,vertical=false,target='heading'
     await previous().click();await shown([a1,aOwn],1,2);
     await header().focus();await page.keyboard.press('ArrowRight');await shown([b1],2,2);
     await header().focus();await page.keyboard.press('ArrowLeft');await shown([a1,aOwn],1,2);
-    await header().focus();await page.keyboard.press('ArrowLeft');await shown([a1,aOwn],1,2);
+    await header().focus();await page.keyboard.press('ArrowLeft');await shown([c1],3,3);
+    await header().focus();await page.keyboard.press('ArrowRight');await shown([a1,aOwn,a2],1,3);
 
     checkpoint='a swipe from a long answer brings the next question into view';
     const longAnswer=active().locator('.answercard').filter({hasText:aOwn.body}).locator('.quote');
     await longAnswer.evaluate(element=>window.scrollTo({top:scrollY+element.getBoundingClientRect().bottom-innerHeight*.4,behavior:'instant'}));
     assert.ok((await header().boundingBox()).y<0,'the previous heading is above the visible viewport');
-    await swipe(page,'left',{target:longAnswer,scroll:false});await shown([b1],2,2);
+    await swipe(page,'left',{target:longAnswer,scroll:false});await shown([b1,b2],2,3);
     const nextHeading=await header().boundingBox();
     assert.ok(nextHeading.y>=-1&&nextHeading.y+nextHeading.height<=page.viewportSize().height,
       'the next question is visible after swiping from deep in a long answer: '+JSON.stringify(nextHeading));
-    await previous().click();await shown([a1,aOwn],1,2);
+    await previous().click();await shown([a1,aOwn,a2],1,3);
 
-    checkpoint='page boundary loads more answers and then advances';
+    checkpoint='page boundary swipe loads more answers and then advances';
+    await reset();await shown([a1,aOwn],1,2);
     await next().click();await shown([b1],2,2);
     await page.evaluate(()=>{questionSwipeFixture.holdMore=true;});
-    await next().click();
+    await swipe(page,'left',{target:'body',beforeRelease:async()=>{
+      assert.equal(await viewport().getByText('다음 질문을 불러오는 중…').count(),1,
+        'a partial batch previews a pending question instead of appearing stuck');
+    }});
     await page.waitForFunction(()=>typeof questionSwipeFixture.releaseMore==='function');
     await shown([b1],2,2);
     assert.equal(await header().isVisible(),true,'the current question stays visible while the next page loads');
@@ -272,7 +295,9 @@ async function swipe(page,direction,{short=false,vertical=false,target='heading'
     checkpoint='last question loops to the first by button keyboard and body swipe';
     const completeReads=await page.evaluate(()=>questionSwipeFixture.calls.length);
     await next().click();await shown([a1,aOwn,a2],1,3);
-    assert.equal(await previous().isDisabled(),true,'the first question keeps its existing previous boundary');
+    assert.equal(await previous().isDisabled(),false,'first and last questions link in both directions');
+    await swipe(page,'right',{target:'body'});await shown([c1],3,3);
+    await swipe(page,'left',{target:'body'});await shown([a1,aOwn,a2],1,3);
     await next().click();await shown([b1,b2],2,3);
     await next().click();await shown([c1],3,3);
     await header().focus();await page.keyboard.press('ArrowRight');await shown([a1,aOwn,a2],1,3);
@@ -334,7 +359,9 @@ async function swipe(page,direction,{short=false,vertical=false,target='heading'
       assert.ok(previews.every(panel=>panel.hidden));
     }});
     await shown([a1,aOwn],1,2);
-    assert.equal(await previous().isDisabled(),true);
+    assert.equal(await previous().isDisabled(),false);
+    await swipe(page,'right',{target:'body'});await shown([b1],2,2);
+    await swipe(page,'left',{target:'body'});await shown([a1,aOwn],1,2);
 
     checkpoint='the final server page can contain only already known questions';
     await reset('?fixture=known-end');
@@ -354,6 +381,7 @@ async function swipe(page,direction,{short=false,vertical=false,target='heading'
     assert.equal(await next().isDisabled(),true);
     assert.equal(await previous().isDisabled(),true);
     await swipe(page,'left',{target:'body'});await shown([a1,aOwn],1,1);
+    await swipe(page,'right',{target:'body'});await shown([a1,aOwn],1,1);
     assert.equal(await page.evaluate(()=>questionSwipeFixture.calls.length),1);
 
     checkpoint='a page failure keeps the last loaded question and can be retried';
@@ -415,6 +443,16 @@ async function swipe(page,direction,{short=false,vertical=false,target='heading'
       if(i<keys.length-1)await next().click();
     }
 
+    checkpoint='all 730 available question slots can be reached and loop in both directions';
+    await reset('?fixture=archive');await shown([archive[0]],1,24);
+    await swipe(page,'right',{target:'body'});
+    await page.waitForFunction(()=>document.querySelector('#answers .question-position')?.textContent?.trim()==='730 / 730',null,{timeout:45000});
+    await shown([archive[729]],730,730);
+    assert.equal(await page.evaluate(()=>questionSwipeFixture.calls.filter(call=>call.p_cursor).length),30,
+      '730 question cards are reached through all 31 24-answer pages, without an eight-card cap');
+    await next().click();await shown([archive[0]],1,730);
+    await previous().click();await shown([archive[729]],730,730);
+
     checkpoint='320 390 and 750 pixel layouts';
     await reset();
     for(const width of [320,390,750]){
@@ -461,7 +499,7 @@ async function swipe(page,direction,{short=false,vertical=false,target='heading'
     assert.equal(await viewport().getAttribute('data-moving'),'false','the last-to-first loop also respects reduced motion');
     assert.deepEqual(await page.evaluate(()=>questionSwipeFixture.unexpected),[]);
     assert.deepEqual(errors,[],'no browser runtime errors');
-    console.log('PASS pajang question swipe: whole-panel drag, last-to-first loop, body touch, scroll, keyboard, callbacks, pagination, filters, reduced motion, 320/390/750px');
+    console.log('PASS pajang question swipe: all 730 question slots, both edge directions, swipe-to-load pagination, full-panel drag, body touch, scroll, keyboard, callbacks, filters, reduced motion, 320/390/750px');
     await context.close();
   } catch(error) {
     error.message='['+checkpoint+'] '+error.message;

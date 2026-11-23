@@ -22,9 +22,12 @@ export default function QuestionCarousel({groups,index,scope,more,loading,onStep
   function adjacentIndex(direction:number){
     const candidate=index+direction;
     if(candidate>=0&&candidate<groups.length)return candidate;
-    return direction>0&&!more&&groups.length>1?0:-1;
+    if(more||groups.length<2)return -1;
+    return direction>0?0:groups.length-1;
   }
-  const previous=index>0,next=adjacentIndex(1)>=0||(more&&!loading);
+  // Either edge remains swipeable while an older page is available on the server.
+  const previous=adjacentIndex(-1)>=0||(index===0&&more&&!loading);
+  const next=adjacentIndex(1)>=0||(index===groups.length-1&&more&&!loading);
   function move(value:number){dragValue.current=value;setDrag(value);}
   function cancel(){gesture.current=null;move(0);}
   function step(direction:number,keepFocus=true){
@@ -49,7 +52,10 @@ export default function QuestionCarousel({groups,index,scope,more,loading,onStep
     const navigation=requested.current,offset=dragValue.current;
     requested.current=null;departed.current=null;cancel();animation.current?.cancel();animation.current=null;
     setMoving(false);setMinHeight(undefined);
-    const wraps=navigation?.direction===1&&!more&&groups.length>1&&before.index===groups.length-1&&index===0;
+    const wraps=!more&&groups.length>1&&(
+      (navigation?.direction===1&&before.index===groups.length-1&&index===0)||
+      (navigation?.direction===-1&&before.index===0&&index===groups.length-1)
+    );
     if(before.scope!==scope||navigation?.key!==before.key||(!wraps&&Math.abs(index-before.index)!==1))return;
     revealQuestion();
     if(navigation.focus&&(viewport.current?.contains(document.activeElement)||document.activeElement===document.body)){
@@ -78,7 +84,8 @@ export default function QuestionCarousel({groups,index,scope,more,loading,onStep
     let advances=false;
     if(start.horizontal&&Math.abs(dx)>=threshold&&Math.abs(dx)>Math.abs(dy)*1.5){
       const direction=dx<0?1:-1;
-      advances=adjacentIndex(direction)>=0;step(direction,false);
+      advances=direction>0?next:previous;
+      if(advances)step(direction,false);
     }
     // Preserve the last drag offset for the layout effect when selection changes.
     if(!advances)dragValue.current=0;
@@ -105,7 +112,7 @@ export default function QuestionCarousel({groups,index,scope,more,loading,onStep
       }
       if(e.cancelable)e.preventDefault();
       if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){move(0);return;}
-      const adjacent=adjacentIndex(dx>0?-1:1)>=0;
+      const adjacent=dx>0?previous:next;
       const width=e.currentTarget.clientWidth;
       move(Math.max(-width,Math.min(width,dx*(adjacent?1:.18))));
     }}
@@ -119,7 +126,17 @@ export default function QuestionCarousel({groups,index,scope,more,loading,onStep
         const pageIndex=moving&&departed.current?.offset===offset
           ?groups.findIndex(answers=>questionKey(answers[0])===departed.current!.key)
           :active?index:adjacentIndex(offset);
-        const answers=groups[pageIndex];if(!answers)return null;
+        const answers=groups[pageIndex];
+        if(!answers){
+          // The next page is not downloaded yet: show a noninteractive peek
+          // rather than treating the current batch as the end of the carousel.
+          if(!active&&more&&((offset>0&&index===groups.length-1)||(offset<0&&index===0)))
+            return <section key={"pending/"+offset} className="question-page question-preview" inert aria-hidden="true"
+              style={{left:`calc(${offset*100}% + ${offset*12}px)`}}>
+              <header className="question-header"><h3>다음 질문을 불러오는 중…</h3></header>
+            </section>;
+          return null;
+        }
         const question=answers[0];
         return <section key={questionKey(question)+"/"+offset} className={"question-page "+(active?"answer-group":"question-preview")}
           inert={!active} aria-hidden={active?undefined:true} aria-labelledby={active?"selected-question":undefined}
