@@ -62,6 +62,8 @@ test('standalone keeps its navigation, old embedded iframe still hides duplicate
   assert.match(css,/html\[data-park-embedded\] body #note-my-screen/);
   assert.doesNotMatch(css,/html body #note-my-screen \{ display: none !important/);
   assert.match(park,/<nav class="bottomnav"/);
+  assert.equal((park.match(/data-share-page="park"/g)||[]).length,2,'standalone Park has mobile and desktop share controls');
+  assert.match(park,/\/shared\/share\/page-share\.js\?v=/);
   assert.match(park,/href="\/park\/"/);
   const manifest=JSON.parse(read('park/manifest.webmanifest'));
   assert.equal(manifest.id,'/world.html?place=park','installed members keep original app identity');

@@ -9,7 +9,7 @@
     restaurants: { title: '인증맛집 · 오쭈다', text: '지역과 음식 종류별로 인증맛집을 찾아보세요.', path: '/world.html?game=restaurants' },
     agit: { title: '아지트 · 오쭈다', text: '오쭈다 아지트로 초대해요.', path: '/world.html?tab=hub', invite: true },
     arcade: { title: '오락실 · 오쭈다', text: '오쭈다 오락실에서 함께 놀아요.', path: '/world.html?tab=arcade', invite: true },
-    park: { title: '공원 · 오쭈다', text: '오쭈다 공원으로 초대해요.', path: '/world.html?place=park', invite: true },
+    park: { title: '공원 · 오쭈다', text: '오쭈다 공원으로 초대해요.', path: '/park/', invite: true },
     pajang: { title: '파장 · 오쭈다', text: '오쭈다 파장으로 초대해요.', path: '/features/pajang/', invite: true }
   };
   let active = null, notice, noticeTimer;

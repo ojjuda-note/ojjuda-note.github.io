@@ -53,7 +53,7 @@
 <script src="/shared/media/photo-protection.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/shared/viewport/mobile-viewport.css?v=20261106-source-folders1">
 <script src="/shared/viewport/mobile-viewport.js?v=20261106-source-folders1" defer></script>
-<link rel="stylesheet" href="/park/embedded.css?v=20261123-independent-park1">
+<link rel="stylesheet" href="/park/embedded.css?v=20261123-park-share1">
 <link rel="stylesheet" href="/features/account/settings-list.css?v=20261119-guest-account1" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="/shared/brand/service-banners.css?v=20261122-settings-banners1">
 <script src="/shared/brand/service-banners.js?v=20261123-independent-park1" defer></script>
@@ -83,6 +83,8 @@
 <meta name="twitter:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
 <link rel="stylesheet" href="/shared/brand/service-header.css?v=20261119-main-invite1">
+<link rel="stylesheet" href="/shared/share/page-share.css?v=20261123-park-share1" media="print" onload="this.media='all'">
+<script src="/shared/share/page-share.js?v=20261123-park-share1" defer></script>
 </head>
 <body>
   <svg class="icons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -102,6 +104,11 @@
   <div class="shell">
     <aside class="side" id="note-sidebar" aria-label="공원 메뉴">
       <div class="note-side-header"><div class="note-brand-row ojjuda-service-brand"><a class="brand ojjuda-service-home" href="/park/" aria-label="오쭈다 공원 홈"><svg class="brand-icon ojjuda-theme-logo ojjuda-service-logo" viewBox="-16 -16 544 544" width="32" height="32" aria-hidden="true" focusable="false"><path fill="currentColor" d="M100 0H354Q369 0 381 12L499 130Q512 143 512 165V428Q512 512 428 512H84Q0 512 0 428V100Q0 0 100 0Z"/>  <path fill="#FFF" d="M346 37Q346 22 358 31L476 149Q485 161 470 161H395Q346 161 346 112Z"/>  <path d="M108 290Q256 420 404 290" fill="none" stroke="#FFF" stroke-width="60" stroke-linecap="round"/></svg><span class="ojjuda-service-word">오쭈다<span class="ojjuda-service-name">공원</span></span></a><button class="note-dev-badge ojjuda-service-beta" type="button" data-note-feedback title="의견 보내기">베타</button></div></div>
+      <div class="nn-top-actions ojjuda-service-actions park-desktop-actions">
+        <button class="ojjuda-service-invite" type="button" data-share-page="park" aria-label="공원 초대 링크 공유"><span>초대</span></button>
+        <button class="nn-bell" type="button" data-notifications-open aria-label="알림" aria-haspopup="dialog" aria-controls="note-notification-dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg></button>
+        <button class="note-coinpill ojjuda-service-balance" type="button" data-ju-charge-open aria-label="보유 ZU 확인, 충전 열기" aria-haspopup="dialog" aria-controls="ju-charge-dialog"><span class="note-cz" aria-hidden="true"><i>ZU</i></span><span data-note-balance aria-live="polite">—</span></button>
+      </div>
       <div class="side-section-label">공원에서 나누는 이야기</div>
       <nav class="side-nav" aria-label="카드 탐색">
         <button class="nav-button on" type="button" data-show="feed"><svg><use href="#cards"/></svg>카드</button>
@@ -158,7 +165,7 @@
     <div class="col">
       <header class="mobile-top ojjuda-service-header">
         <div class="note-brand-row ojjuda-service-brand"><a class="brand ojjuda-service-home" href="/park/" aria-label="오쭈다 공원 홈"><svg class="brand-icon ojjuda-theme-logo ojjuda-service-logo" viewBox="-16 -16 544 544" width="32" height="32" aria-hidden="true" focusable="false"><path fill="currentColor" d="M100 0H354Q369 0 381 12L499 130Q512 143 512 165V428Q512 512 428 512H84Q0 512 0 428V100Q0 0 100 0Z"/>  <path fill="#FFF" d="M346 37Q346 22 358 31L476 149Q485 161 470 161H395Q346 161 346 112Z"/>  <path d="M108 290Q256 420 404 290" fill="none" stroke="#FFF" stroke-width="60" stroke-linecap="round"/></svg><span class="ojjuda-service-word">오쭈다<span class="ojjuda-service-name">공원</span></span></a><button class="note-dev-badge ojjuda-service-beta" type="button" data-note-feedback title="의견 보내기">베타</button></div>
-        <div class="nn-top-actions ojjuda-service-actions"><button class="nn-bell" type="button" data-notifications-open aria-label="알림" aria-haspopup="dialog" aria-controls="note-notification-dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg><span class="nn-dot" data-notification-dot hidden aria-hidden="true"></span></button><a class="note-coinpill ojjuda-service-balance" href="#ju-charge-dialog" data-ju-charge-open aria-label="보유 ZU 확인, 충전 열기" aria-haspopup="dialog" aria-controls="ju-charge-dialog"><span class="note-cz" aria-hidden="true"><i>ZU</i></span><span id="note-top-balance" data-note-balance aria-live="polite" aria-atomic="true">—</span></a></div>
+        <div class="nn-top-actions ojjuda-service-actions"><button class="ojjuda-service-invite" type="button" data-share-page="park" aria-label="공원 초대 링크 공유"><span>초대</span></button><button class="nn-bell" type="button" data-notifications-open aria-label="알림" aria-haspopup="dialog" aria-controls="note-notification-dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg><span class="nn-dot" data-notification-dot hidden aria-hidden="true"></span></button><a class="note-coinpill ojjuda-service-balance" href="#ju-charge-dialog" data-ju-charge-open aria-label="보유 ZU 확인, 충전 열기" aria-haspopup="dialog" aria-controls="ju-charge-dialog"><span class="note-cz" aria-hidden="true"><i>ZU</i></span><span id="note-top-balance" data-note-balance aria-live="polite" aria-atomic="true">—</span></a></div>
       </header>
 
       <main id="main" class="main">

@@ -32,3 +32,27 @@ html body .back-button { margin-top: 4px; }
 @media (min-width: 900px) {
   html[data-park-embedded] body .shell > .col > .main { padding: 16px 24px 72px; }
 }
+
+/* Standalone Park has its own share, notification and wallet controls. */
+.park-desktop-actions {display:none!important}
+@media(min-width:900px){
+  html:not([data-park-embedded]) body .park-desktop-actions{
+    display:flex!important;justify-content:space-between;gap:4px;
+    margin:0 0 18px;max-width:100%;min-height:44px
+  }
+  html:not([data-park-embedded]) body .park-desktop-actions .ojjuda-service-invite{
+    min-width:44px;flex:1;padding-inline:6px
+  }
+  html:not([data-park-embedded]) body .park-desktop-actions .nn-bell{width:38px;height:38px}
+  html:not([data-park-embedded]) body .park-desktop-actions .ojjuda-service-balance{max-width:112px;padding-inline:6px}
+}
+@media(max-width:600px){
+  html:not([data-park-embedded]) body .mobile-top{padding-inline:8px;gap:3px}
+  html:not([data-park-embedded]) body .mobile-top .note-brand-row{min-width:0;gap:3px}
+  html:not([data-park-embedded]) body .mobile-top .ojjuda-service-word{font-size:16px;white-space:nowrap}
+  html:not([data-park-embedded]) body .mobile-top .note-dev-badge{display:none}
+  html:not([data-park-embedded]) body .mobile-top .ojjuda-service-actions{gap:3px}
+  html:not([data-park-embedded]) body .mobile-top .ojjuda-service-invite{min-width:39px;padding-inline:4px;gap:0}
+  html:not([data-park-embedded]) body .mobile-top .nn-bell{width:32px}
+  html:not([data-park-embedded]) body .mobile-top .ojjuda-service-balance{max-width:88px;padding-inline:4px}
+}

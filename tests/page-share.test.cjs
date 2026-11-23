@@ -10,7 +10,7 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
 const services = {
   agit: { label: '아지트', path: '/world.html?tab=hub' },
   arcade: { label: '오락실', path: '/world.html?tab=arcade' },
-  park: { label: '공원', path: '/world.html?place=park' },
+  park: { label: '공원', path: '/park/' },
   pajang: { label: '파장', path: '/features/pajang/' }
 };
 
@@ -197,7 +197,7 @@ test('an account read failure blocks native sharing and clipboard until a succes
   failing = false;
   await f.window.OjjudaInvite.ready();
   f.button.click(); await tick();
-  assert.deepEqual(f.copies, ['https://ojjuda.kr/world.html?place=park&ref=' + sender]);
+  assert.deepEqual(f.copies, ['https://ojjuda.kr/park/&ref=' + sender]);
 });
 
 test('switching the sender account updates the next invitation without forwarding an incoming referral', async t => {
@@ -271,7 +271,7 @@ test('dynamic service headers and duplicate helper loads never launch competing 
   finish(); await tick();
   replacement.querySelector('span').click();
   assert.equal(f.shares.length, 2, 'a dynamically rendered button works after the first share finishes');
-  assert.equal(f.shares[1].url, 'https://ojjuda.kr/world.html?place=park');
+  assert.equal(f.shares[1].url, 'https://ojjuda.kr/park/');
   finish(); await tick();
   assert.equal(replacement.disabled, false);
   assert.deepEqual(f.copyAttempts, []);
@@ -282,7 +282,7 @@ test('manual invitation stays single through rerenders and restores focus to the
   f.button.click(); await tick();
   const dialog = f.document.querySelector('.page-share-dialog');
   assert.equal(dialog?.open, true);
-  assert.equal(dialog.querySelector('input').value, 'https://ojjuda.kr/world.html?place=park');
+  assert.equal(dialog.querySelector('input').value, 'https://ojjuda.kr/park/');
   const replacement = f.document.createElement('button');
   replacement.type = 'button'; replacement.dataset.sharePage = 'park'; replacement.textContent = '초대';
   f.document.querySelector('main').replaceChildren(replacement);
