@@ -150,7 +150,7 @@ test('installed Agit, Park and Pajang authenticate before displaying their entra
   for (const html of [pajangEntry, pajangMain]) {
     assert.match(html, /entry-design\.css\?v=20261122-app-skip-entry1/);
   }
-  assert.match(pajangEntry, /entry\.mjs\?v=20261122-app-skip-entry1/);
+  assert.match(pajangEntry, /entry\.mjs\?v=20261123-fast-start1/);
   assert.match(read('park/index.html'), /note\/preview\.js\?v=20261123-park-first-paint-rpc2/);
   assert.match(world, /agit-welcome\.js\?v=20261122-member-app-start1/);
 });

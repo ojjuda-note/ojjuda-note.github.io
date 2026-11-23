@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-22",
+  "updatedAt": "2026-11-23",
   "events": [
     {
       "id": "gongju-gunbam-2026",
@@ -11679,17 +11679,17 @@
       "region": "충북",
       "city": "청주시",
       "venue": "오창읍 미래지농촌테마공원",
-      "address": "충북 청주시 청원구 오창읍 미래지농촌테마공원",
+      "address": "충북 청주시 청원구 오창읍 미래지로 99",
       "lat": null,
       "lng": null,
       "geoApprox": false,
       "locationStatus": "unmapped",
       "summary": "청원생명 농산물과 농촌 체험을 중심으로 열린 청주 지역 먹거리·농업축제입니다.",
-      "scheduleNote": "2026년 10월 2~11일 개최(종료)",
-      "priceNote": "요금 및 체험별 가격은 공식 안내 확인",
-      "sourceName": "충청북도 관광 공식 연간 축제 계획(충북나드리)",
-      "sourceUrl": "https://tour.chungbuk.go.kr/www/selectBbsNttList.do?bbsNo=10&key=80&searchCtgry=2026",
-      "sourceCheckedAt": "2026-11-08",
+      "scheduleNote": "2026년 10월 2~11일(종료). 운영 10:00~20:00, 매표 10:00~18:00. 18:00 이후 입장 무료.",
+      "priceNote": "성인 5,000원 / 유아·어린이·청소년·65세 이상 등 공식 무료 대상 / 18:00 이후 무료 입장. 체험은 별도 안내 확인.",
+      "sourceName": "2026 청원생명축제 공식 홈페이지(청주시·축제추진위원회)",
+      "sourceUrl": "https://cw-life-festival.co.kr/2",
+      "sourceCheckedAt": "2026-11-23",
       "status": "scheduled",
       "tags": [
         "농산물",
@@ -11697,13 +11697,19 @@
         "농촌체험"
       ],
       "attendance": {
-        "count": 650000,
-        "kind": "previous",
-        "year": 2025,
-        "sourceName": "청원생명축제 공식 홈페이지 역대 실적",
-        "sourceUrl": "https://cw-life-festival.co.kr/109",
-        "sourceCheckedAt": "2026-11-09"
-      }
+        "count": 630000,
+        "kind": "actual",
+        "year": 2026,
+        "sourceName": "청주시 2026-10-11 폐막 발표(연합뉴스 2026-10-11 보도, 약 63만 명)",
+        "sourceUrl": "https://www.yna.co.kr/amp/view/AKR20261011034000064",
+        "sourceCheckedAt": "2026-11-23"
+      },
+      "accessNote": "반려동물 출입 금지. 무료 대상은 관련 증빙이 필요하며 현장 및 공식 안내를 따릅니다.",
+      "verificationSources": [
+        "https://cw-life-festival.co.kr/844",
+        "https://tour.chungbuk.go.kr/www/selectBbsNttList.do?bbsNo=10&key=80&searchCtgry=2026",
+        "https://www.yna.co.kr/amp/view/AKR20261011034000064"
+      ]
     },
     {
       "id": "cheongju-chojeong-king-sejong-2026",
@@ -20573,8 +20579,8 @@
       "lng": null,
       "geoApprox": false,
       "locationStatus": "unmapped",
-      "priceNote": "음식·체험 구매 요금은 별도 / 입장료 공식 안내 확인",
-      "sourceCheckedAt": "2026-11-11",
+      "priceNote": "축제장 입장 무료 / 식음료 및 개별 유료 체험은 현장·주최 측 안내 확인",
+      "sourceCheckedAt": "2026-11-23",
       "status": "scheduled",
       "id": "daejeon-bread-festival-2026",
       "title": "2026 대전 빵축제",
@@ -20592,6 +20598,9 @@
         "베이커리",
         "먹거리",
         "지역축제"
+      ],
+      "verificationSources": [
+        "https://www.mcst.go.kr/site/s_culture/festival/festivalView.jsp?pRo=106&pSeq=11970"
       ]
     },
     {
