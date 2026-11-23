@@ -533,7 +533,7 @@
         { title: 'STAYC Weverse 공식 일정·공지', sub: '공연·방송·팬행사 안내 및 일정 변경 확인 · 일부 공지 열람은 로그인 필요', href: 'https://weverse.io/stayc/notice' }
       ],
       news: [
-        { date: '2026.11.23', tag: '굿즈', title: '2027 시즌그리팅 Angelic Dream · 11/23 17시 예약 시작, 11/29 23:59 마감', href: 'https://weverse.io/stayc/media/3-244021918' },
+        { date: '2026.11.23', tag: '굿즈', title: '2027 시즌그리팅 Angelic Dream · 11/23 17시 예약 시작, 11/29 23:59 마감 · Weverse 일부 열람 로그인 필요', href: 'https://weverse.io/stayc/media/3-244021918' },
         { date: '2026.11.15', tag: '행사', title: 'STAYC, 11월 22일 안산 AUBL 개막전 참석 발표', href: 'https://x.com/STAYC_official/status/2121931980795458012' },
         { date: '2026.11.12', tag: '방송', title: '11월 18일 MBC 아이돌라디오4 · 수민·아이사 스페셜 DJ 출연 발표', href: 'https://x.com/idolradiokorea/status/2120715809664471156' },
         { date: '2026.11.12', tag: '기념', title: '데뷔 6주년 기념 인사·Special Present 공개 · 열람 시 로그인 필요', href: 'https://weverse.io/stayc/media/2-181504379' },
@@ -543,7 +543,7 @@
         { date: '공식', tag: '로그인', title: 'STAYC Weverse 공식 공지', href: 'https://weverse.io/stayc/notice' }
       ],
       merch: [
-        { title: '2027 시즌그리팅 Angelic Dream', sub: '공식 콘셉트·예약 안내 · 2026.11.23 17:00~11.29 23:59 KST · 판매처·가격·재고는 공식 페이지 확인', href: 'https://weverse.io/stayc/media/3-244021918' },
+        { title: '2027 시즌그리팅 Angelic Dream', sub: '공식 콘셉트·예약 안내 · 2026.11.23 17:00~11.29 23:59 KST · 판매처·가격·재고는 공식 페이지 확인 · Weverse 일부 열람 로그인 필요', href: 'https://weverse.io/stayc/media/3-244021918' },
         { title: '2:LOVE 공식 앨범', sub: 'Weverse Global · COURT ZINE·PLAYER PROFILE·PLVE 버전 · 6/1~15 예약 특전 종료 · 재고는 판매처 확인', href: 'https://shop.weverse.io/en/shop/JPY/artists/34/notices/13295' },
         { title: 'STAYC 공식 상품', sub: 'Weverse Shop · 앨범·굿즈 목록', href: 'https://shop.weverse.io/ko/shop/KRW/artists/34' },
         { title: 'STAY ALIVE 일본 정규 1집 CD', sub: 'UNIVERSAL MUSIC STORE · 통상반 · 스토어 한정 구매 특전 종료 · 재고는 판매처 확인', href: 'https://store-annex.universal-music.co.jp/product/upch29482/' }
