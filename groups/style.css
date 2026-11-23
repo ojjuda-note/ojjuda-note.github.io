@@ -360,7 +360,7 @@
 }
 .draw-stage[data-stage=ladder] .draw-action.primary{background:linear-gradient(#eeffec,var(--stage-metal))}
 .draw-all{margin-block:14px;padding:9px 12px;border:1px solid var(--line);border-radius:12px}
-.draw-all summary{cursor:pointer;font-weight:650;padding:4px 0}
+.draw-all h4{margin:0;padding:4px 0;font-size:1rem;font-weight:750}
 @media(prefers-reduced-motion:no-preference){
   .draw-stage[data-phase=running] .draw-progress{
     display:block;position:absolute;bottom:0;left:0;width:34%;height:2px;
