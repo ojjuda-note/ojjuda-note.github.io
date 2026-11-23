@@ -192,13 +192,20 @@ async function swipe(page,direction,{short=false,vertical=false,target='heading'
     await reset();
     checkpoint='nonadjacent answers and action ownership';
     await shown([a1,aOwn],1,2);
-    assert.equal(await previous().isDisabled(),true,'first question has no previous action');
+    assert.equal(await previous().isDisabled(),false,'first question can fetch the real last question');
     assert.equal(await header().getAttribute('tabindex'),'0','question has a keyboard focus target');
     await active().locator('.answercard').filter({hasText:aOwn.body}).getByRole('button',{name:'답변 수정',exact:true}).click();
     await active().locator('.answercard').filter({hasText:a1.body}).getByRole('button',{name:'대화하기',exact:true}).click();
     assert.deepEqual(await page.evaluate(()=>questionSwipeFixture.actions),[
       {action:'edit',value:aOwn},{action:'chat',value:a1.peer}
     ],'edit and matched chat preserve the selected row and person');
+
+    checkpoint='first reverse swipe reaches the actual last question, not the last loaded batch';
+    await swipe(page,'right',{target:'body'});await shown([c1],3,3);
+    assert.deepEqual(await page.evaluate(()=>questionSwipeFixture.calls.filter(call=>call.p_cursor).map(call=>call.p_cursor)),
+      [{page:2}],'reverse swipe finishes pagination before wrapping');
+    await swipe(page,'left',{target:'body'});await shown([a1,aOwn,a2],1,3);
+    await reset();await shown([a1,aOwn],1,2);
 
     checkpoint='real mobile touch gestures';
     await swipe(page,'left',{short:true});await shown([a1,aOwn],1,2);
@@ -243,7 +250,8 @@ async function swipe(page,direction,{short=false,vertical=false,target='heading'
     await previous().click();await shown([a1,aOwn],1,2);
     await header().focus();await page.keyboard.press('ArrowRight');await shown([b1],2,2);
     await header().focus();await page.keyboard.press('ArrowLeft');await shown([a1,aOwn],1,2);
-    await header().focus();await page.keyboard.press('ArrowLeft');await shown([a1,aOwn],1,2);
+    await header().focus();await page.keyboard.press('ArrowLeft');await shown([c1],3,3);
+    await header().focus();await page.keyboard.press('ArrowRight');await shown([a1,aOwn,a2],1,3);
 
     checkpoint='a swipe from a long answer brings the next question into view';
     const longAnswer=active().locator('.answercard').filter({hasText:aOwn.body}).locator('.quote');
@@ -255,10 +263,14 @@ async function swipe(page,direction,{short=false,vertical=false,target='heading'
       'the next question is visible after swiping from deep in a long answer: '+JSON.stringify(nextHeading));
     await previous().click();await shown([a1,aOwn],1,2);
 
-    checkpoint='page boundary loads more answers and then advances';
+    checkpoint='page boundary swipe loads more answers and then advances';
+    await reset();await shown([a1,aOwn],1,2);
     await next().click();await shown([b1],2,2);
     await page.evaluate(()=>{questionSwipeFixture.holdMore=true;});
-    await next().click();
+    await swipe(page,'left',{target:'body',beforeRelease:async()=>{
+      assert.equal(await viewport().getByText('다음 질문을 불러오는 중…').count(),1,
+        'a partial batch previews a pending question instead of appearing stuck');
+    }});
     await page.waitForFunction(()=>typeof questionSwipeFixture.releaseMore==='function');
     await shown([b1],2,2);
     assert.equal(await header().isVisible(),true,'the current question stays visible while the next page loads');
@@ -272,7 +284,9 @@ async function swipe(page,direction,{short=false,vertical=false,target='heading'
     checkpoint='last question loops to the first by button keyboard and body swipe';
     const completeReads=await page.evaluate(()=>questionSwipeFixture.calls.length);
     await next().click();await shown([a1,aOwn,a2],1,3);
-    assert.equal(await previous().isDisabled(),true,'the first question keeps its existing previous boundary');
+    assert.equal(await previous().isDisabled(),false,'first and last questions link in both directions');
+    await swipe(page,'right',{target:'body'});await shown([c1],3,3);
+    await swipe(page,'left',{target:'body'});await shown([a1,aOwn,a2],1,3);
     await next().click();await shown([b1,b2],2,3);
     await next().click();await shown([c1],3,3);
     await header().focus();await page.keyboard.press('ArrowRight');await shown([a1,aOwn,a2],1,3);
@@ -334,7 +348,9 @@ async function swipe(page,direction,{short=false,vertical=false,target='heading'
       assert.ok(previews.every(panel=>panel.hidden));
     }});
     await shown([a1,aOwn],1,2);
-    assert.equal(await previous().isDisabled(),true);
+    assert.equal(await previous().isDisabled(),false);
+    await swipe(page,'right',{target:'body'});await shown([b1],2,2);
+    await swipe(page,'left',{target:'body'});await shown([a1,aOwn],1,2);
 
     checkpoint='the final server page can contain only already known questions';
     await reset('?fixture=known-end');
@@ -354,6 +370,7 @@ async function swipe(page,direction,{short=false,vertical=false,target='heading'
     assert.equal(await next().isDisabled(),true);
     assert.equal(await previous().isDisabled(),true);
     await swipe(page,'left',{target:'body'});await shown([a1,aOwn],1,1);
+    await swipe(page,'right',{target:'body'});await shown([a1,aOwn],1,1);
     assert.equal(await page.evaluate(()=>questionSwipeFixture.calls.length),1);
 
     checkpoint='a page failure keeps the last loaded question and can be retried';
@@ -461,7 +478,7 @@ async function swipe(page,direction,{short=false,vertical=false,target='heading'
     assert.equal(await viewport().getAttribute('data-moving'),'false','the last-to-first loop also respects reduced motion');
     assert.deepEqual(await page.evaluate(()=>questionSwipeFixture.unexpected),[]);
     assert.deepEqual(errors,[],'no browser runtime errors');
-    console.log('PASS pajang question swipe: whole-panel drag, last-to-first loop, body touch, scroll, keyboard, callbacks, pagination, filters, reduced motion, 320/390/750px');
+    console.log('PASS pajang question swipe: both edge directions, swipe-to-load pagination, full-panel drag, body touch, scroll, keyboard, callbacks, filters, reduced motion, 320/390/750px');
     await context.close();
   } catch(error) {
     error.message='['+checkpoint+'] '+error.message;
