@@ -99,6 +99,12 @@ if(parent!==window){
       assert.equal(await page.locator('iframe').count(),0,'standalone Park is not embedded in another app');
       assert.equal(await page.locator('.bottomnav:visible').count(),1,'own navigation remains accessible on mobile');
       assert.equal(await page.evaluate(()=>document.documentElement.hasAttribute('data-park-embedded')),false);
+      await page.locator('.bottomnav [data-note-my]').click();
+      await page.locator('#note-my-screen').waitFor({state:'visible'});
+      assert.equal(await page.locator('#note-my-screen').isVisible(),true,'independent Park member menu remains usable');
+      await page.goto(origin+'/park/?view=settings');
+      await page.locator('[data-park-settings-root]').waitFor();
+      assert.equal(await page.locator('[data-park-settings-root]').isVisible(),true,'legacy settings deep link opens in standalone Park');
       assert.deepEqual(errors,[],'standalone Park has no unhandled browser script errors');
       await context.close();
     }
