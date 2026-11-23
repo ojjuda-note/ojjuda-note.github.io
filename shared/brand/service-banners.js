@@ -9,7 +9,7 @@
       label: '아지트, 모임과 게임 즐기기'
     },
     park: {
-      name: '공원', caption: '일상·소통', href: '/world.html?place=park',
+      name: '공원', caption: '일상·소통', href: '/park/',
       image: '/features/home/park-community-3d-20261119.webp',
       label: '공원, 일상 이야기 둘러보기'
     },
@@ -39,10 +39,6 @@
         link.target = '_top';
         link.setAttribute('aria-label', service.label);
         if (id === 'pajang') link.setAttribute('data-pajang-launch', '');
-        // Keep the existing in-app Park frame and its navigation history.
-        if (current === 'agit' && id === 'park') {
-          link.dataset.act = 'agit-park';
-        }
         const copy = document.createElement('span');
         copy.className = 'ojjuda-service-banner-copy';
         const title = document.createElement('strong');

@@ -1,10 +1,24 @@
 // Real Park scripts/styles, with identical network delays before and after the change.
 const assert=require('node:assert/strict');
 const fs=require('node:fs/promises'),path=require('node:path');
-const {execFileSync}=require('node:child_process');
 const {chromium}=require('playwright');
 const root=path.resolve(__dirname,'..'),origin='https://park-entry.test';
-const baseline='71785aabf407ca239a27b4811e252a962a725717';
+// Compare the real current Park order against a simulated older order,
+ // with identical downloaded files and a delayed optional brush engine.
+function originalBrushOrder(html) {
+  const optional = [];
+  for (const pattern of [
+    /<script src="\/note\/calligraphy-motifs\.js[^"]*" defer><\/script>/,
+    /<script src="\/note\/calligraphy\.js[^"]*" defer><\/script>/
+  ]) {
+    const tag = html.match(pattern)?.[0];
+    assert.ok(tag, 'expected brush asset tag');
+    optional.push(tag);
+    html = html.replace(tag, '');
+  }
+  return html.replace(/(<script src="\/note\/preview\.js[^"]*" defer><\/script>)/,
+    optional.map(tag => '  '+tag).join('\n')+'\n  $1');
+}
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const cards=Array.from({length:20},(_,i)=>({id:'12345678-1234-4123-8123-'+String(i+1).padStart(12,'0'),
   kind:'memo',body:'공원 이야기 '+i,background_key:String(10+i),tags:[],created_at:'2026-11-10T00:00:00Z'}));
@@ -40,8 +54,8 @@ if(parent!==window){
           if(url.pathname==='/config.js')return route.fulfill({contentType:'text/javascript',body:`window.OJJUDA_CONFIG={supabaseUrl:'${origin}',supabaseKey:'fixture'};`});
           const name=url.pathname==='/park/'?'park/index.html':file;
           try{
-            let body=version==='before'&&['park/index.html','note/preview.js'].includes(name)
-              ?execFileSync('git',['show',baseline+':'+name],{cwd:root,maxBuffer:2e6}):await fs.readFile(path.join(root,name));
+            let body=await fs.readFile(path.join(root,name));
+            if(version==='before'&&name==='park/index.html')body=Buffer.from(originalBrushOrder(body.toString('utf8')));
             if(name==='note/calligraphy.js')await wait(450); // cold download of optional rendering tools
             else if(name.endsWith('.css')||name.endsWith('.js'))await wait(60);
             if(/\.(?:jpg|webp)$/.test(name))await wait(120);
@@ -62,6 +76,37 @@ if(parent!==window){
       results[version]=samples.sort((a,b)=>a-b)[2];
       console.log('PARK_FIRST_CARDS_MS',version,JSON.stringify(samples),'median',results[version],'request starts',JSON.stringify(readStarts));
     }
-    assert.ok(results.after<results.before-80,'preparing the feed overlaps dependency downloads');
+    assert.ok(results.after<results.before-120,'first cards cannot wait for the optional brush download');
+    // A directly opened Park must render real cards without a World host or iframe.
+    {
+      const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,locale:'ko-KR'});
+      await context.route('**/*',async route=>{
+        const url=new URL(route.request().url()),name=url.pathname==='/park/'?'park/index.html':url.pathname.slice(1);
+        if(url.hostname==='cdn.jsdelivr.net')return route.fulfill({contentType:'text/javascript',body:sdk});
+        if(url.origin!==origin)return route.abort();
+        if(url.pathname==='/config.js')return route.fulfill({contentType:'text/javascript',body:`window.OJJUDA_CONFIG={supabaseUrl:'${origin}',supabaseKey:'fixture'};`});
+        try{
+          const body=await fs.readFile(path.join(root,name));
+          return route.fulfill({body,contentType:name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':name.endsWith('.html')?'text/html':undefined});
+        }catch{return route.abort();}
+      });
+      const page=await context.newPage(),errors=[];
+      page.on('pageerror',error=>errors.push(error.message));
+      await page.goto(origin+'/park/');
+      await page.locator('#feed-list article').first().waitFor();
+      assert.equal(new URL(page.url()).pathname,'/park/','independent Park does not redirect to World');
+      assert.equal(await page.locator('#feed-list article').count(),20);
+      assert.equal(await page.locator('iframe').count(),0,'standalone Park is not embedded in another app');
+      assert.equal(await page.locator('.bottomnav:visible').count(),1,'own navigation remains accessible on mobile');
+      assert.equal(await page.evaluate(()=>document.documentElement.hasAttribute('data-park-embedded')),false);
+      await page.locator('.bottomnav [data-note-my]').click();
+      await page.locator('#note-my-screen').waitFor({state:'visible'});
+      assert.equal(await page.locator('#note-my-screen').isVisible(),true,'independent Park member menu remains usable');
+      await page.goto(origin+'/park/?view=settings');
+      await page.locator('[data-park-settings-root]').waitFor();
+      assert.equal(await page.locator('[data-park-settings-root]').isVisible(),true,'legacy settings deep link opens in standalone Park');
+      assert.deepEqual(errors,[],'standalone Park has no unhandled browser script errors');
+      await context.close();
+    }
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

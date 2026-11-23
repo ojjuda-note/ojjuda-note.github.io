@@ -998,8 +998,9 @@ function inkOptions(style, width, cardTags) {
   return { width, inkColor, tags: cardTags, zoom: style.size === 'small' ? .85 : style.size === 'large' ? 1.12 : 1 };
 }
 function renderParkInk(canvas, body, options) {
-  if (!window.ParkCalligraphy.render(canvas, body, options)) return false;
-  const bounds = window.ParkCalligraphy.inkBounds?.(canvas);
+  const renderer = window.ParkCalligraphy;
+  if (!renderer?.render?.(canvas, body, options)) return false;
+  const bounds = renderer.inkBounds?.(canvas);
   let frame = canvas.previousElementSibling;
   if (!frame?.classList.contains('park-ink-box-frame')) {
     if (!bounds) return true;
@@ -1105,6 +1106,15 @@ function refreshExpandedBodies() {
     entry.full.hidden = !photoQuoteClipped(entry.photo, entry.quote, entry.tagRow);
   }
 }
+// Optional brush engine is not on the first-feed critical path.
+window.addEventListener('ojjuda:park-calligraphy-ready', () => {
+  for (const entry of quoteFitEntries) {
+    if (!entry.photo.isConnected || entry.photo.dataset.pendingBackground || !inkCards.has(entry.photo)) continue;
+    drawInkCard(entry.photo);
+  }
+  if (!backdrop.hidden) updateComposer();
+  requestTagFit();
+});
 function photoQuoteClipped(photo, quote, tagRow) {
   const ink = inkCards.get(photo);
   if (ink?.canvas.dataset.inkReady === 'true') return ink.body.length > 36 || ink.body.split('\n').length > 6;
@@ -1132,7 +1142,8 @@ function cardElement(card, compact = false, expanded = false, deferBackground = 
   const photo = node('span', 'photo');
   if (card.kind === 'event') photo.dataset.protectPhoto = String(!card.is_mine);
   const hiddenEvent = card.kind === 'event' && card.body == null;
-  const useInk = !hiddenEvent && style.font === 'calligraphy' && !!window.ParkCalligraphy && typeof card.body === 'string';
+  // Keep the original ink canvas even if its large renderer finishes loading later.
+  const useInk = !hiddenEvent && style.font === 'calligraphy' && typeof card.body === 'string';
   const key = hiddenEvent ? null : photoAssetKey(visiblePhoto);
   if (key && card.kind !== 'event' && document.documentElement.hasAttribute('data-park-webp')) {
     photo.dataset.imageSizes = compact ? 'min(67vw, 500px)' : 'min(100vw, 750px)';

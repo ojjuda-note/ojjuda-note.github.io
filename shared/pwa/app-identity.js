@@ -13,7 +13,7 @@
       note: '게임과 공원을 이용하려면 인터넷 연결이 필요해요.'
     },
     park: {
-      key: 'park', name: '오쭈다 공원', path: '/world.html?place=park',
+      key: 'park', name: '오쭈다 공원', path: '/park/',
       icons: '/park/assets/', manifest: '/park/manifest.webmanifest',
       note: '공원 카드를 이용하려면 인터넷 연결이 필요해요.'
     },

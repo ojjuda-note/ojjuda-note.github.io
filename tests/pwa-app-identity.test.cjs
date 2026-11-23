@@ -10,7 +10,7 @@ const revision = source.match(/const iconRevision = '([^']+)'/)[1];
 const manifestRevision = '20261119-illustrated-icons-1';
 const services = {
   agit: {name: '오쭈다 아지트', manifest: '/manifest.webmanifest', icon: '/icon-192.png', id: '/world.html', start: '/world.html'},
-  park: {name: '오쭈다 공원', manifest: '/park/manifest.webmanifest', icon: '/park/assets/icon-192.png', id: '/world.html?place=park', start: '/world.html?place=park'},
+  park: {name: '오쭈다 공원', manifest: '/park/manifest.webmanifest', icon: '/park/assets/icon-192.png', id: '/world.html?place=park', start: '/park/'},
   pajang: {name: '오쭈다 파장', manifest: '/features/pajang/manifest.webmanifest', icon: '/features/pajang/assets/icon-192.png', id: '/features/pajang/', start: '/features/pajang/'}
 };
 
@@ -151,6 +151,6 @@ test('installed Agit, Park and Pajang authenticate before displaying their entra
     assert.match(html, /entry-design\.css\?v=20261122-app-skip-entry1/);
   }
   assert.match(pajangEntry, /entry\.mjs\?v=20261123-fast-start1/);
-  assert.match(read('park/index.html'), /note\/preview\.js\?v=20261123-park-first-paint1/);
+  assert.match(read('park/index.html'), /note\/preview\.js\?v=20261123-park-deferred-ink1/);
   assert.match(world, /agit-welcome\.js\?v=20261122-member-app-start1/);
 });
