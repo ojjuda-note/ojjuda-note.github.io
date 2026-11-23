@@ -193,7 +193,8 @@ test('Pajang standalone entry defers shared inbox and charging code until first 
   assert.match(shell,/requestAnimationFrame\(\(\)=>setTimeout\(\(\)=>void prepareToolbar\(\),0\)\)/);
   assert.match(shell,/event\.target\.closest\?\.\('\[data-ju-charge-open\],\[data-notifications-open\]'\)/);
   assert.match(shell,/earlyControl=control;/);
-  assert.match(shell,/if\(target\?\.isConnected\)target\.click\(\)/);
+  assert.match(shell,/if\(pending\?\.node\.isConnected && pending\.href===location\.href/);
+  assert.match(shell,/window\.OjjudaPajangHistory\?\.canLeave\?\.\(\)!==false/);
   for(const file of ['index.html','station.html']){
     const html=fs.readFileSync(path.join(root,'features/pajang',file),'utf8');
     assert.match(html,/shell\.mjs\?v=20261123-toolbar-race1/);
