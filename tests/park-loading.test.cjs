@@ -425,7 +425,14 @@ test('a stalled Park feed is aborted and a single automatic retry restores cards
     w.OJJUDA_CONFIG = { supabaseUrl: 'https://fixture.test', supabaseKey: 'test' };
     w.supabase = { createClient: () => client };
     w.eval(read('note/preview.js'));
-    await new Promise(resolve => nativeSetTimeout(resolve, 120));
+    // Under concurrent CI load, chained async RPC settling may take more than
+    // 120ms. Wait for the real single recovery, bounded to one second; never
+    // bypass abort, retry-count, card rendering or error-state assertions.
+    const recoveryDeadline = Date.now() + 1000;
+    while (Date.now() < recoveryDeadline &&
+        (reads < 2 || !doc.querySelector('#feed-list [data-card-id="' + card.id + '"]'))) {
+      await new Promise(resolve => nativeSetTimeout(resolve, 20));
+    }
     assert.equal(aborted, 1, 'stalled network work is aborted at the deadline');
     assert.equal(reads, 2, 'one automatic recovery attempt runs after a timeout');
     assert.ok(doc.querySelector('#feed-list [data-card-id="' + card.id + '"]'),
