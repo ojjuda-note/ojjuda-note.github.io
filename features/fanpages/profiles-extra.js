@@ -449,7 +449,7 @@ if (nctwishProfile) {
 // Official source rechecked 2026-11-12.
 const andteamProfile = window.OJJUDA_FAN_PROFILES.andteam;
 if (andteamProfile) {
-  andteamProfile.checkedAt = '2026.11.17';
+  andteamProfile.checkedAt = '2026.11.19';
   andteamProfile.expanded = true;
   andteamProfile.records = [
     { year: '2022.12', title: '일본 데뷔', detail: 'First Howling : ME · Under the skin', href: 'https://www.andteam-official.jp/news/owsyjh' },
