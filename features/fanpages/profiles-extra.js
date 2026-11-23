@@ -422,8 +422,9 @@ if (treasureProfile) {
 const nctwishProfile = window.OJJUDA_FAN_PROFILES.nctwish;
 if (nctwishProfile) {
   nctwishProfile.expanded = true;
-  nctwishProfile.checkedAt = '2026.11.17';
+  nctwishProfile.checkedAt = '2026.11.22';
   nctwishProfile.awards = [
+    { year: '2026.11.20', title: '2026 MAMA AWARDS 2관왕', detail: 'Best Breakthrough Artist · Qoo10 Favorite Mega Artist · 11/20 일본 교세라돔 오사카', href: 'https://news.jtbc.co.kr/article/NB12329139' },
     { year: '2026.11.15', title: 'MMA2026 4관왕', detail: 'TOP10 · 글로벌 TOP10 · 글로벌 임팩트 아티스트 · 일본 페이보릿 아티스트 by U-NEXT (11/15 시상, 11/16 보도)', href: 'https://www.chosun.com/english/kpop-culture-en/2026/11/16/ZI424YHAEZAUVIJZLT6OUSF4AQ/' },
     { year: '2026.10', title: 'I SPY 음악방송 첫 1위', detail: '2026.10.23 KBS 뮤직뱅크 · 8,352점', href: 'https://www.soompi.com/article/1881045wpp/watch-nct-wish-takes-1st-win-for-i-spy-on-music-bank-performances-by-ive-a2o-lite-and-more' },
     { year: '2026.09', title: '일본 싱글 더블 플래티넘 인증', detail: 'YO-I-DON! / BOY MEETS GIRL · 일본레코드협회 2026년 8월도 · 출하 50만 장 이상', href: 'https://avexnet.jp/news/1036770' }
