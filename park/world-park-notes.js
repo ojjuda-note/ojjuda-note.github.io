@@ -27,8 +27,8 @@
         const network = window.navigator?.connection;
         if (document.hidden || active() || network?.saveData
             || ['slow-2g','2g'].includes(network?.effectiveType) || !document.head) return;
+        // Match the actual standalone destination so the browser can reuse its cache.
         const url = new URL('/park/', location.origin);
-        url.searchParams.set('embedded','1');url.searchParams.set('v',frameVersion);
         for (const [href,as] of [
           [url.pathname + url.search,'document'],
           ['/note/preview.js?v=20261123-park-deferred-ink1','script'],
