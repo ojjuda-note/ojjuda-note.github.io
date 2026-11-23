@@ -356,7 +356,7 @@
       id: 'kissoflife', name: 'KISS OF LIFE', korean: '키스오브라이프', category: 'girl', fan: 'KISSY', agency: 'S2 Entertainment',
       members: ['쥴리', '나띠', '벨', '하늘'],
       debut: '2023.07.05', debutWork: 'KISS OF LIFE', songs: ['쉿 (Shhh)', '안녕, 네버랜드'],
-      checkedAt: '2026.11.20',
+      checkedAt: '2026.11.23',
       concept: '쥴리·나띠·벨·하늘 네 멤버가 각자의 개성과 목소리로 펼치는 음악과 퍼포먼스.',
       official: 'https://kissoflife.jp/', youtube: 'https://www.youtube.com/@KISSOFLIFE_official',
       photo: 'KISS OF LIFE at Music Bank (4K) 20240705 02.png', photoLabel: '뮤직뱅크 출근길', photoYear: '2024', credit: '티비텐 TV10', license: 'CC BY 3.0',
@@ -384,6 +384,7 @@
         { title: '일본 공식 공연·행사', sub: '컬럼비아 공식 공연·발매 이벤트 안내', href: 'https://columbia.jp/artist-info/kissoflife/live/' }
       ],
       news: [
+        { date: '2026.11.21', tag: '영상', title: '2026 KGMA 공식 비하인드 · [KI-OFF] 영상 공개', href: 'https://www.youtube.com/watch?v=6YfthbjU7AQ' },
         { date: '2026.11.20', tag: '영상', title: 'LITTLE WORLD, BIG WISH · 공식 팬 커뮤니티 영상 공개', href: 'https://kissoflife.town/post/3598' },
         { date: '2026.11.19', tag: '컴백', title: 'Greedy · Want it Ver. 공식 이미지 공개', href: 'https://kissoflife.town/post/3594' },
         { date: '2026.11.18', tag: '영상', title: 'Greedy House · 겨울 싱글 공식 영상 공개', href: 'https://kissoflife.town/post/3586' },
