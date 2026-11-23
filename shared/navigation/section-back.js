@@ -9,7 +9,7 @@
   const destinations = {
     hub: '/world.html?tab=hub',
     arcade: '/world.html?tab=arcade',
-    park: '/world.html?tab=park',
+    park: '/park/',
     my: '/world.html?tab=my',
     pajang: '/features/pajang/station.html?tab=profile',
     admin: '/world.html?admin=overview' + (['park','pajang'].includes(from) ? '&from=' + from : '')

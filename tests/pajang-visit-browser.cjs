@@ -104,8 +104,11 @@ function adminHtml() {
     const calls = await page.evaluate(() => window.__calls);
     assert.deepEqual(calls.map(call => call.args.p_event), ['visit', 'feature']);
     assert.equal(calls[1].args.p_feature, 'pajang');
+    const currentShell = (await fs.readFile(path.join(root, 'features/pajang/index.html'), 'utf8'))
+      .match(/\.\/shell\.mjs\?v=([^"]+)/)?.[1];
+    assert.ok(currentShell && requested.has('/features/pajang/shell.mjs?v='+currentShell),
+      'browser loaded the currently published Pajang shell');
     for (const request of [
-      '/features/pajang/shell.mjs?v=20261121-pajang-visits1',
       '/features/pajang/usage.mjs?v=20261121-pajang-visits1',
       '/shared/analytics/site-usage.js?v=20261121-pajang-visits1',
       '/features/pajang/member.mjs?v=20261119-guest-account1',

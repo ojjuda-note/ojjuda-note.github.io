@@ -1164,4 +1164,7 @@
     width: Composition.WIDTH,
     height: Composition.HEIGHT
   });
+  if (typeof window.dispatchEvent === 'function' && typeof window.Event === 'function') {
+    window.dispatchEvent(new window.Event('ojjuda:park-calligraphy-ready'));
+  }
 })();

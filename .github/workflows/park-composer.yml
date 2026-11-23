@@ -90,7 +90,7 @@ jobs:
       - name: Install locked test dependencies
         run: npm --prefix tests ci --ignore-scripts
       - name: Verify Park loading, timeouts and first-page recovery
-        run: node --test tests/park-loading.test.cjs tests/park-opening.test.cjs
+        run: node --test tests/park-loading.test.cjs tests/park-opening.test.cjs tests/park-independent-entry.test.cjs
       - name: Build pinned Park video dependencies
         run: |
           npm --prefix note/vendor ci --ignore-scripts
@@ -111,6 +111,9 @@ jobs:
         id: browser
         working-directory: tests
         run: npx playwright install --with-deps chromium
+      - name: Measure first cards before slow optional brush runtime
+        if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
+        run: node tests/park-entry-browser.cjs
       - name: Check administrator attachments, playback and existing card actions
         if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
         run: node tests/note-admin-media-browser.cjs && node tests/note-admin-workflow-ui.test.cjs

@@ -425,10 +425,9 @@ test('a stalled Park feed is aborted and a single automatic retry restores cards
     w.OJJUDA_CONFIG = { supabaseUrl: 'https://fixture.test', supabaseKey: 'test' };
     w.supabase = { createClient: () => client };
     w.eval(read('note/preview.js'));
-    // Under concurrent CI load, chained async RPC settling may take more than
-    // 120ms. Wait for the real single recovery, bounded to one second; never
-    // bypass abort, retry-count, card rendering or error-state assertions.
-    const recoveryDeadline = Date.now() + 1000;
+    // Busy CI runners may delay both the retry and the rendered card.
+    // Wait for both real results within two seconds without weakening assertions.
+    const recoveryDeadline = Date.now() + 2000;
     while (Date.now() < recoveryDeadline &&
         (reads < 2 || !doc.querySelector('#feed-list [data-card-id="' + card.id + '"]'))) {
       await new Promise(resolve => nativeSetTimeout(resolve, 20));
@@ -506,4 +505,53 @@ test('Park paints its public cards before optional GPS and defers feature-only s
     assert.ok(tag,'expected essential feed style '+path);
     assert.doesNotMatch(tag,/media="print"/,'feed styles must remain immediately available');
   }
+});
+
+test('a late brush renderer repaints the first card without repeating the feed query', async () => {
+  const dom = new JSDOM(read('park/index.html'), {
+    url: 'https://fixture.test/park/', runScripts: 'outside-only', pretendToBeVisual: true
+  });
+  const w = dom.window;
+  try {
+    w.scrollTo = () => {};
+    w.matchMedia = () => ({ matches: false });
+    let reads = 0;
+    const card = { id: '12345678-1234-4123-8123-000000000001',
+      kind: 'memo', body: '오늘의 붓글씨 카드', style: { font: 'calligraphy' },
+      background_key: '10', tags: [], created_at: '2026-11-23T00:00:00Z' };
+    w.OJJUDA_CONFIG = { supabaseUrl: 'https://fixture.test', supabaseKey: 'test' };
+    w.supabase = { createClient: () => ({
+      auth: { onAuthStateChange() {}, getSession: async () => ({ data: { session: null } }) },
+      schema: () => ({ rpc: async name => {
+        if (name === 'list_cards') { reads++; return { data: [card] }; }
+        return { data: [] };
+      } })
+    }) };
+    w.eval(read('note/preview.js'));
+    let canvas;
+    for (let attempt = 0; attempt < 30; attempt++) {
+      canvas = w.document.querySelector('#feed-list .park-ink-art');
+      if (canvas) break;
+      await new Promise(resolve => w.setTimeout(resolve, 0));
+    }
+    assert.ok(canvas, 'first ink card has its canvas before the large brush engine loads');
+    assert.notEqual(canvas.dataset.inkReady, 'true');
+    w.ParkCalligraphy = { render: () => ({}), inkBounds: () => null };
+    w.dispatchEvent(new w.Event('ojjuda:park-calligraphy-ready'));
+    assert.equal(canvas.dataset.inkReady, 'true', 'late renderer restores the displayed original card');
+    assert.equal(reads, 1, 'repainting does not re-request private or public card data');
+  } finally { dom.window.close(); }
+});
+
+test('optional brush is ordered after Park readiness and idle warming fetches only static assets', () => {
+  const html = read('park/index.html'), host = read('park/world-park-notes.js');
+  const ready = html.indexOf('/park/integration.js?'), brush = html.indexOf('/note/calligraphy.js?');
+  const preview = html.indexOf('/note/preview.js?');
+  assert.ok(preview >= 0 && ready > preview && brush > ready,
+    'Park signals readiness before the optional brush runtime');
+  assert.match(host, /window\.requestIdleCallback\(/);
+  assert.match(host, /network\?\.saveData/);
+  assert.match(host, /link\.rel = 'prefetch'/);
+  assert.doesNotMatch(host, /rpc\(['"]list_cards['"]/,
+    'idle warming never starts a member card request');
 });

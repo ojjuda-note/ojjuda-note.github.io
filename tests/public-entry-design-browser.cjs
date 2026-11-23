@@ -142,7 +142,7 @@ async function fits(page, label, selectors = []) {
 
 async function mainInvitation(page, service, label, share = true) {
   const names = { agit: '아지트', arcade: '오락실', park: '공원', pajang: '파장' };
-  const paths = { agit: '/world.html?tab=hub', arcade: '/world.html?tab=arcade', park: '/world.html?place=park', pajang: '/features/pajang/' };
+  const paths = { agit: '/world.html?tab=hub', arcade: '/world.html?tab=arcade', park: '/park/', pajang: '/features/pajang/' };
   const button = page.locator('.ojjuda-service-actions [data-share-page]:visible');
   assert.equal(await button.count(), 1, `${label}: exactly one visible main invitation`);
   assert.equal(await button.getAttribute('data-share-page'), service, `${label}: invitation matches the current service`);
@@ -198,13 +198,11 @@ async function settled(page) {
 
 async function openSpace(page, space) {
   await page.goto(origin + space.url);
-  if (space.id !== 'park') return page;
-  // Keep the real /park/ redirect and World iframe; screenshots include its actual chrome.
-  await page.waitForURL(url => url.pathname === '/world.html' && url.searchParams.get('place') === 'park');
-  await page.frameLocator('[data-park-app] iframe').locator('#park-guest-entry').waitFor({ state: 'visible' });
-  const frame = page.frames().find(frame => new URL(frame.url()).pathname === '/park/');
-  assert.ok(frame, 'Park is mounted in the real World host');
-  return frame;
+  if (space.id === 'park') {
+    assert.equal(new URL(page.url()).pathname, '/park/', 'Park starts without World or an iframe');
+    assert.equal(page.frames().length, 1, 'Park has its own document and navigation');
+  }
+  return page;
 }
 
 (async () => {
@@ -254,12 +252,15 @@ async function openSpace(page, space) {
         if (space.id === 'pajang') assert.equal(await page.locator('#welcome').isVisible(), false);
         await settled(surface);
         await fits(surface, checkpoint, [space.login, space.signup]);
-        if (space.id === 'park') await fits(page, checkpoint + ' host');
+        if (space.id === 'park') assert.equal(page.frames().length, 1, 'no duplicate host frame');
         await mainInvitation(page, space.id, checkpoint);
         if (width === 390 || width === 750) await page.screenshot({ path: path.join(proof, checkpoint + '.png') });
         await page.screenshot({ path: path.join(proof, `${space.id}-invite-header-${width}.png`), clip: { x: 0, y: 0, width, height: 100 } });
         if (space.id !== 'pajang') {
-          await page.evaluate(() => { entryWorld.member(true); entryWorld.member(false); entryWorld.member(true); });
+          if (space.id === 'park') await page.evaluate(() => {
+            entryFixture.setMember(true); entryFixture.setMember(false); entryFixture.setMember(true);
+          });
+          else await page.evaluate(() => { entryWorld.member(true); entryWorld.member(false); entryWorld.member(true); });
           await settled(page);
           await mainInvitation(page, space.id, `${space.id}-member-${width}`);
         }
@@ -283,7 +284,7 @@ async function openSpace(page, space) {
     console.log('PASS arcade main invitation, generic/self-ref links and guest/member rerenders: 320/390/750/1080/1280');
 
     const receivedReferral = '00000000-0000-4000-8000-000000000022';
-    const inviteRoutes = { agit: '/world.html?tab=hub', park: '/world.html?place=park', pajang: '/features/pajang/' };
+    const inviteRoutes = { agit: '/world.html?tab=hub', park: '/park/', pajang: '/features/pajang/' };
     for (const space of spaces) {
       checkpoint = `${space.id}-received-invitation`;
       const incoming = new URL(inviteRoutes[space.id], origin); incoming.searchParams.set('ref', receivedReferral);
@@ -329,7 +330,7 @@ async function openSpace(page, space) {
     await parkFrame.locator('#park-guest-entry').waitFor({ state: 'visible' });
     await parkFrame.locator('#park-guest-entry a[href*="auth=login"]').click();
     await page.locator('#auth-dialog[open][data-entry-space="park"]').waitFor();
-    assert.equal(page.frames().length, 1, 'embedded Park login leaves the host frame');
+    assert.equal(page.frames().length, 1, 'standalone Park login remains in a single page');
 
     checkpoint = 'pajang-membership';
     await page.goto(origin + '/features/pajang/?member=1');

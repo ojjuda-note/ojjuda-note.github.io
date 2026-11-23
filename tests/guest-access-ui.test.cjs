@@ -3,6 +3,7 @@ const {chromium}=require('playwright'),root=path.join(__dirname,'..'),read=p=>fs
 const strip=html=>html.replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'');
 let world=strip(read('world.html')).replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
 const helpers=['shared/games/game-session.js','shared/games/arcade-round-queue.js','shared/games/puzzle-record-queue.js','app/world/world-navigation.js','shared/auth/guest-access.js','shared/games/game-results.js','park/world-park-notes.js','games/mines/world-mines-game.js','games/saetbyeol/world-saetbyeol-game.js','games/ojjuda-tour/world-tour-game.js','games/tank/world-tank-game.js','games/spot-difference/world-spot-game.js','games/ttang/ttang-bridge.js'].map(read).join('\n');
+world=world.replace(/<script>\s*\/\/ Old Park URLs[\s\S]*?<\/script>/,'');
 world=world.replace('<script type="module">',()=>`<script>${helpers}</script><script type="module">`);
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`window.guestFixture={open:Al,close:El,finish:score=>S2(score),board:(kind)=>savePracticeStreak({kind,mode:'local'},'draw'),member:()=>{D.online=true;D.parkGuest=false;D.user={id:'member'};},park:()=>sr.tab({tab:'park'})};

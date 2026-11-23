@@ -54,11 +54,10 @@ function fixture(url='https://ojjuda.kr/world.html'){
   assert.equal(bannerRow.parentElement.lastElementChild,bannerRow,'service banners occupy the bottom of Settings');
   assert.deepEqual([...bannerRow.querySelectorAll('.ojjuda-service-banner')].map(link=>link.dataset.service),['park','pajang']);
   const parkBanner=bannerRow.querySelector('[data-service="park"]');
-  assert.equal(new URL(parkBanner.href).search,'?place=park');
-  const parkClick=new w.MouseEvent('click',{bubbles:true,cancelable:true,button:0});
-  parkBanner.dispatchEvent(parkClick);
-  assert.equal(parkClick.defaultPrevented,true,'the banner does not also reload the whole page');
-  assert.equal(active(),'park','the actual banner opens Park within the existing World shell');
+  assert.equal(new URL(parkBanner.href).pathname,'/park/');
+  assert.equal(parkBanner.dataset.act,undefined,'Park opens as its own document, not inside World');
+  assert.equal(active(),'my','direct Park links do not initialize the old iframe');
+  assert.match(html,/function Wf\(t\)\{return `<a class=\"note-link/,'Park shortcuts open a standalone link');
   t.actions.tab({tab:'hub'});
   t.actions.tab({tab:'arcade'});assert.equal(active(),'arcade');
   assert.equal(w.document.querySelector('#pstage'),null,'the old arcade illustration is removed');

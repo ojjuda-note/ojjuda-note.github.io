@@ -4,7 +4,7 @@
   "short_name": "오쭈다 공원",
   "description": "이름 없이 나누는 오늘의 이야기. 마음이 쉬어가는 오쭈다 공원.",
   "lang": "ko",
-  "start_url": "/world.html?place=park",
+  "start_url": "/park/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#f7f8f4",
