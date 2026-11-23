@@ -620,9 +620,9 @@ async function scenario(name, fn) {
     const disabledId = await dragHand(page, { disabled: true });
     assert.ok((await handLayout(page)).left > 0, 'dragging an unplayable card scrolls its parent');
     assert.equal(JSON.stringify(await stored(page)), original);
-    await page.locator('#hand-scroll').focus(); await page.keyboard.press('End');
+    await page.locator('#hand-scroll').focus(); await page.keyboard.press('End'); await settleHandScroll(page);
     handEndpoint(await handLayout(page), true, 'keyboard hand end');
-    await page.keyboard.press('Home'); handEndpoint(await handLayout(page), false, 'keyboard hand start');
+    await page.keyboard.press('Home'); await settleHandScroll(page); handEndpoint(await handLayout(page), false, 'keyboard hand start');
     const playableId = await dragHand(page, { small: true });
     assert.equal(JSON.stringify(await stored(page)), original, 'releasing a drag on a playable card is not a card action');
     let layout = await handLayout(page);
@@ -683,7 +683,7 @@ async function scenario(name, fn) {
   await scenario('the nineteenth held card is accessible and receiving a twentieth removes active hand controls', async () => {
     const page = await pageFor({ width: 360, height: 640, saved: setup([handCases.hand]) }); await resume(page);
     assert.equal(await page.locator('#hand .hand-card').count(), 19);
-    await page.locator('#hand-scroll').focus(); await page.keyboard.press('End'); handEndpoint(await handLayout(page), true, 'nineteenth card');
+    await page.locator('#hand-scroll').focus(); await page.keyboard.press('End'); await settleHandScroll(page); handEndpoint(await handLayout(page), true, 'nineteenth card');
     await page.locator('#draw-button').click();
     await page.waitForFunction(key => !JSON.parse(localStorage.getItem(key)).state.players[0].active, STORAGE);
     const state = await stored(page); assert.equal(state.players[0].eliminatedReason, 'too-many-cards'); assert.equal(state.players[0].hand.length, 0);
