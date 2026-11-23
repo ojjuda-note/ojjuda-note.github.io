@@ -3,13 +3,13 @@ const fs=require('fs'),path=require('path'),assert=require('node:assert/strict')
  const browser=await chromium.launch({executablePath:process.env.CHROME_BIN || (fs.existsSync('/usr/bin/google-chrome') ? '/usr/bin/google-chrome' : '/usr/bin/chromium'),headless:true,args:['--no-sandbox']});
  try {
  const page=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'reduce'});
- const pages={ive:{},bts:{}}, managers={}, errors=[], uploads=[], permissionChecks=[];
+ const pages={ive:{},bts:{}}, managers={}, errors=[], uploads=[];
  let account='admin';
  page.on('pageerror',err=>errors.push(err.message));
  await page.exposeFunction('api',async ({table,select,eq,rpc,args,upload})=>{
    if(upload){uploads.push(upload);return {data:{path:upload}};}
-   if(rpc==='is_admin'){permissionChecks.push({rpc,account});return {data:account==='admin'};}
-   if(rpc==='can_edit_fanpage'){permissionChecks.push({rpc,account,artist:args.p_artist,manager:managers[args.p_artist]});return {data:account==='admin'||managers[args.p_artist]===account};}
+   if(rpc==='is_admin') return {data:account==='admin'};
+   if(rpc==='can_edit_fanpage') return {data:account==='admin'||managers[args.p_artist]===account};
    if(rpc==='admin_list_member_accounts') return {data:{items:[{id:'member',nickname:'편집자'}]}};
    if(rpc==='create_fanpage'){pages[args.p_artist]={identity:{name:args.p_name,korean:args.p_name,category:args.p_category}};managers[args.p_artist]=args.p_manager;return {data:null};}
    if(rpc==='assign_fanpage_manager'){managers[args.p_artist]=args.p_manager;return {data:null};}
@@ -55,10 +55,10 @@ const fs=require('fs'),path=require('path'),assert=require('node:assert/strict')
  await saveSectionAndWaitForReload();await page.waitForSelector('[data-photo-index="0"]');assert.ok(uploads[0].startsWith('qa-artist/'));assert.equal(pages['qa-artist'].photos[0].label,'담당 사진');
  await btn('팬페이지 관리').click();await label('편집할 항목').selectOption('videos');await btn('영상 항목 추가').click();await label('제목').fill('테스트 영상');await label('영상 파일 업로드').setInputFiles({name:'movie.mp4',mimeType:'video/mp4',buffer:Buffer.from('fixture')});await saveSectionAndWaitForReload();
  await page.locator('[data-video-index="0"]').click();assert.match(await page.locator('#video-viewer video').getAttribute('src'),/qa-artist\/.+\.mp4/);await btn('영상 닫기').click();
- await page.goto(root+'artist.html?group=ive');await page.waitForSelector('#profile');
- const deniedVisible=await btn('팬페이지 관리').isVisible();
- if(deniedVisible) console.error('Access denial diagnostic',JSON.stringify({account,managers,page:await page.evaluate(()=>({href:location.href,hidden:document.getElementById('fan-manage')?.hidden,inlineStyle:document.getElementById('fan-manage')?.getAttribute('style')})),permissionChecks:permissionChecks.slice(-12)}));
- assert.equal(deniedVisible,false);
+ // Closing a viewer consumes its browser-history entry asynchronously.
+ // Wait for the Back navigation to settle before opening another artist.
+ await page.waitForFunction(() => !history.state?.ojjudaPublicDialog && !document.querySelector('#video-viewer')?.open);
+ await page.goto(root+'artist.html?group=ive');await page.waitForSelector('#profile');assert.equal(await btn('팬페이지 관리').isVisible(),false);
  account='admin';await page.reload();await btn('팬페이지 관리').click();await page.locator('summary').filter({hasText:'담당자 지정'}).click();await label('회원 검색').fill('편집자');await btn('회원 찾기').click();await label('검색 결과').selectOption('member');await btn('담당자 지정').click();await page.getByText('담당자를 지정했어요.').waitFor();
  account='member';await page.reload();await btn('팬페이지 관리').click();await label('편집할 항목').selectOption('music');await page.locator('.fan-admin form details summary').first().click();const first=label('제목').first();assert.ok(await first.inputValue());await first.fill('새 음반 제목');await saveSectionAndWaitForReload();await page.getByRole('link',{name:/새 음반 제목/}).first().waitFor();
  account=null;await page.goto(root+'index.html');await label('아이돌 검색').fill('새 팀');await page.getByRole('link',{name:'새 팀 <테스트> 팬페이지 열기'}).waitFor();assert.equal(await btn('아이돌 추가').isVisible(),false);
