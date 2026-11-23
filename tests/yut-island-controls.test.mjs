@@ -109,9 +109,9 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   const entryButton=name=>[...doc.querySelectorAll('#entry-controls button')].find(b=>b.textContent===name);
   assert.equal(doc.body.dataset.mpEntry,'true');assert.ok(doc.getElementById('tabletop').hidden);
   assert.equal(entryButton('컴퓨터 대전').getAttribute('aria-pressed'),'true');
-  entryButton('온라인 대전').click();assert.ok(!entryButton('방 코드로 참가').hidden);
-  entryButton('방 코드로 참가').click();assert.ok(doc.getElementById('join-code'));
-  doc.getElementById('close').click();entryButton('같은 기기').click();
+  entryButton('온라인 대전').click();assert.equal(doc.getElementById('public-room-host').hidden,false);
+  assert.ok(doc.querySelector('[data-arcade-rooms]'));assert.equal(entryButton('방 코드로 참가'),undefined);
+  entryButton('같은 기기').click();assert.equal(doc.getElementById('public-room-host').hidden,true);
   const recordNote=doc.querySelector('#entry-controls .ge-copy');
   assert.equal(recordNote.hidden,false);
   assert.match(recordNote.textContent,/첫 번째 팀\(산호 팀\).*내 월간 연승/);
@@ -358,9 +358,11 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   await until(()=>text('team-title').includes('자두'),450);
   await until(()=>text('team-title').includes('산호'),450);
   assert.equal(first().textContent,'윷 던지기');assert.equal(first().disabled,false);
-  doc.getElementById('settings').click();dialogButton('온라인 멀티').click();dialogButton('방 코드로 참가').click();
-  doc.getElementById('join-code').value='bad';dialogButton('참가하기').click();
-  assert.match(text('dialog-body'),/전체를 붙여 넣으세요/);
+  doc.getElementById('settings').click();dialogButton('온라인 멀티').click();
+  assert.equal(doc.getElementById('setup').hidden,false);
+  assert.equal(doc.querySelector('#entry-controls [aria-pressed="true"]').textContent,'온라인 대전');
+  assert.ok(doc.querySelector('[data-arcade-rooms]'));
+  assert.equal(doc.getElementById('join-code'),null);
 
 });
 
@@ -411,6 +413,120 @@ test('an invited player returning to a finished room sees their own outcome once
   await wait(()=>!doc.querySelector('.game-result-card')&&!doc.getElementById('setup').hidden);
   assert.equal(doc.querySelector('#entry-controls [aria-pressed=true]').textContent,'온라인 대전');
   assert.equal(w.location.hash,'');
+});
+
+for(const reducedMotion of [false,true])test(`back-to-carry announces the pickup and moves the pair together with reduced motion ${reducedMotion}`,async t=>{
+  const keys=await crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);
+  const host=Buffer.from(await crypto.subtle.exportKey('raw',keys.publicKey)).toString('base64url');
+  const html=readFileSync(new URL('../games/yut/index.html',import.meta.url),'utf8');
+  const dom=new JSDOM(html,{url:'https://example.test/games/yut/#room='+host,runScripts:'outside-only'});
+  const w=dom.window,doc=w.document,prefs={matches:reducedMotion,addEventListener(){}};
+  t.after(()=>w.close());
+  w.matchMedia=()=>prefs;
+  for(const [key,value] of Object.entries({window:w,document:doc,location:w.location,history:w.history,
+    sessionStorage:w.sessionStorage,matchMedia:w.matchMedia,requestAnimationFrame:()=>1,cancelAnimationFrame:()=>{}})){
+    Object.defineProperty(globalThis,key,{value,writable:true,configurable:true});
+  }
+  const game=newGame(2);
+  game.phase='move';game.steps=2;game.pendingRolls=[2];game.revision=1;
+  game.eventTiles={3:'carry',4:'back'};game.islandTiles={};
+  game.pawns[0][0]=[1,2];game.pawns[1][0]=[1,2,3];
+  w.sessionStorage.setItem('island-yut:key:'+host,JSON.stringify(await crypto.subtle.exportKey('jwk',keys.privateKey)));
+  w.sessionStorage.setItem('island-yut:state:'+host,JSON.stringify({seats:[host,'guest'],game}));
+  t.mock.method(globalThis,'setInterval',()=>0);
+  const channel={on(){return this;},subscribe(fn){fn('SUBSCRIBED');},async send(){}};
+  w.OjjudaGetClient=()=>({channel:()=>channel,async removeChannel(){}});
+  w.HTMLCanvasElement.prototype.getContext=()=>null;
+  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
+  w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};
+  const action=()=>doc.querySelector('#actions button');
+  const state=()=>JSON.parse(w.sessionStorage.getItem('island-yut:state:'+host)).game;
+  const wait=async pred=>{for(let n=0;n<250&&!pred();n++)await new Promise(r=>setTimeout(r,10));assert.ok(pred());};
+  await import('../games/yut/play.mjs?back-carry-'+reducedMotion);
+  await wait(()=>doc.querySelector('#pawn-picker [data-pawn="0"]')&&!doc.querySelector('dialog').open);
+  doc.querySelector('#pawn-picker [data-pawn="0"]').click();
+  assert.equal(action().textContent,'2칸 이동 · 뒤로');
+  action().click();
+  await wait(()=>action()?.textContent==='한 번 더 던지기'&&!action().disabled);
+  assert.equal(doc.getElementById('note').textContent,'뒤로 · 업기 · 잡기 · 한 번 더');
+  assert.deepEqual(state().pawns[0],[[1,2,3],[1,2,3],[],[]]);
+  assert.equal(state().lastMove.pickedUp,1);
+  assert.deepEqual([...doc.querySelectorAll('#reserve-pawns [data-pawn]')].map(b=>b.dataset.pawn),['2','3']);
+  // The captured opponent grants another throw, so the same UI can move the new pair.
+  prefs.matches=true;let face=0;t.mock.method(Math,'random',()=>face++%4<2?.1:.9);
+  action().click();
+  doc.querySelector('#pawn-picker [data-pawn="0"]').click();
+  assert.equal(action().textContent,'2칸 이동');
+  prefs.matches=reducedMotion;action().click();
+  await wait(()=>state().revision===4&&action().textContent==='상대 팀 차례');
+  assert.deepEqual(state().pawns[0],[[1,2,3,4,5],[1,2,3,4,5],[],[]]);
+  assert.deepEqual(state().lastMove.indices,[0,1]);
+  assert.match(doc.getElementById('team-title').textContent,/바다/);
+});
+
+for(const alreadyCarried of [false,true])test(`capture on carry shows the resolved pair before the next throw, already carried ${alreadyCarried}`,async t=>{
+  const keys=await crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);
+  const host=Buffer.from(await crypto.subtle.exportKey('raw',keys.publicKey)).toString('base64url');
+  const html=readFileSync(new URL('../games/yut/index.html',import.meta.url),'utf8');
+  const dom=new JSDOM(html,{url:'https://example.test/games/yut/#room='+host,runScripts:'outside-only'});
+  const w=dom.window,doc=w.document,prefs={matches:false,addEventListener(){}},frames=new Map();
+  t.after(()=>w.close());
+  w.matchMedia=()=>prefs;
+  let frameId=0;
+  for(const [key,value] of Object.entries({window:w,document:doc,location:w.location,history:w.history,
+    sessionStorage:w.sessionStorage,matchMedia:w.matchMedia,
+    requestAnimationFrame:fn=>{frames.set(++frameId,fn);return frameId;},cancelAnimationFrame:id=>frames.delete(id)})){
+    Object.defineProperty(globalThis,key,{value,writable:true,configurable:true});
+  }
+  const labels=new Set(),gradient=()=>({addColorStop(){}});
+  w.HTMLCanvasElement.prototype.getContext=function(){
+    const boardCanvas=this.id==='board';
+    return new Proxy({createLinearGradient:gradient,createRadialGradient:gradient,
+      fillText(text){if(boardCanvas)labels.add(String(text));}}, {get:(target,key)=>target[key]??(()=>{})});
+  };
+  w.HTMLCanvasElement.prototype.getBoundingClientRect=()=>({width:390,height:500,left:0,top:0});
+  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
+  w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};
+  const paint=()=>{
+    labels.clear();const queued=[...frames.values()];frames.clear();
+    queued.forEach(fn=>fn(performance.now()+1000));
+    return [...labels].filter(label=>/^(산호|바다) /.test(label)).sort();
+  };
+  const game=newGame(2);game.phase='move';game.steps=1;game.pendingRolls=[1];game.revision=1;
+  game.eventTiles={3:'carry'};game.islandTiles={};game.pawns[0][2]=[1,2];
+  if(alreadyCarried)game.pawns[0][0]=[1,2];
+  game.pawns[1]=[[1,2,3],[1,2,3],[],[]];
+  w.sessionStorage.setItem('island-yut:key:'+host,JSON.stringify(await crypto.subtle.exportKey('jwk',keys.privateKey)));
+  w.sessionStorage.setItem('island-yut:state:'+host,JSON.stringify({seats:[host,'guest'],game}));
+  t.mock.method(globalThis,'setInterval',()=>0);
+  const channel={on(){return this;},subscribe(fn){fn('SUBSCRIBED');},async send(){}};
+  w.OjjudaGetClient=()=>({channel:()=>channel,async removeChannel(){}});
+  const action=()=>doc.querySelector('#actions button');
+  const state=()=>JSON.parse(w.sessionStorage.getItem('island-yut:state:'+host)).game;
+  const wait=async pred=>{for(let n=0;n<250&&!pred();n++)await new Promise(r=>setTimeout(r,10));assert.ok(pred());};
+  await import('../games/yut/play.mjs?capture-carry-'+alreadyCarried);
+  const actor=alreadyCarried?0:2;
+  await wait(()=>doc.querySelector(`#pawn-picker [data-pawn="${actor}"]`)&&!doc.querySelector('dialog').open);
+  assert.deepEqual(paint(),[alreadyCarried?'산호 1·3':'산호 3','바다 1·2'].sort());
+  doc.querySelector(`#pawn-picker [data-pawn="${actor}"]`).click();action().click();
+  await wait(()=>state().revision===2&&doc.getElementById('note').textContent==='업기');
+  // The carry announcement pauses on the landing. Record what the real board
+  // paints there, before the controls unlock or its final idle redraw runs.
+  const landingLabels=paint();assert.equal(action().disabled,true);
+  await wait(()=>action()?.textContent==='한 번 더 던지기'&&!action().disabled);
+  assert.deepEqual(state().pawns[0],[[1,2,3],[],[1,2,3],[]]);
+  assert.deepEqual(state().pawns[1],[[],[],[],[]]);
+  assert.equal(state().lastMove.pickedUp,alreadyCarried?null:0);
+  assert.deepEqual(landingLabels,['산호 1·3'],'the landing already shows both teammates and removes the captured opponents');
+  assert.deepEqual(paint(),['산호 1·3']);
+  assert.deepEqual([...doc.querySelectorAll('#reserve-pawns [data-pawn]')].map(b=>b.dataset.pawn),['1','3']);
+  // The ordinary capture grants one throw, and the visible pair stays together
+  // when that throw is used immediately through the same controls.
+  prefs.matches=true;let face=0;t.mock.method(Math,'random',()=>face++%4<2?.1:.9);
+  action().click();doc.querySelector('#pawn-picker [data-pawn="0"]').click();action().click();
+  await wait(()=>state().revision===4&&action()?.textContent==='상대 팀 차례');
+  assert.deepEqual(state().pawns[0],[[1,2,3,4,5],[],[1,2,3,4,5],[]]);
+  assert.deepEqual(state().lastMove.indices,[0,2]);assert.deepEqual(paint(),['산호 1·3']);
 });
 
 test('board dragging uses the chosen pawn and its legal squares, including after rotation',()=>{

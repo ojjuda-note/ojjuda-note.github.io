@@ -1,0 +1,178 @@
+{
+  "revision": "20261120-korean-wordmarks-1",
+  "names": {
+    "agit": "아지트",
+    "park": "공원",
+    "pajang": "파장"
+  },
+  "masters": [
+    {
+      "app": "agit",
+      "theme": "spring",
+      "path": "brand/app-icons/seasonal/agit/spring.png",
+      "sha256": "2b238f3fe72a201c707d935059b4ffd73cb9266776fc6d789efc6ec8850cc39c",
+      "bytes": 61989
+    },
+    {
+      "app": "agit",
+      "theme": "summer",
+      "path": "brand/app-icons/seasonal/agit/summer.png",
+      "sha256": "53b5aad71f3dec57f34ef695f1845bed44f6bad61b468d109d0d090bfc39425b",
+      "bytes": 61980
+    },
+    {
+      "app": "agit",
+      "theme": "autumn",
+      "path": "brand/app-icons/seasonal/agit/autumn.png",
+      "sha256": "35f076d8cb9f843fd8a019969960cfb7bb11d7c8b3048b40410e803545bd3e06",
+      "bytes": 61889
+    },
+    {
+      "app": "agit",
+      "theme": "winter",
+      "path": "brand/app-icons/seasonal/agit/winter.png",
+      "sha256": "3db34b9793e11ec00003c9f839073324415d1403fbe61d1a44e01359bae09cdd",
+      "bytes": 62919
+    },
+    {
+      "app": "agit",
+      "theme": "newyear",
+      "path": "brand/app-icons/seasonal/agit/newyear.png",
+      "sha256": "329b6f3101bbe201fede208bd76d02af252e3b16cfbc8beea8fc0c610d5b258f",
+      "bytes": 61409
+    },
+    {
+      "app": "agit",
+      "theme": "seollal",
+      "path": "brand/app-icons/seasonal/agit/seollal.png",
+      "sha256": "a9960361750a6e9895013b626f4ff2a90e10fd8e2f79f10df0e174c60af39808",
+      "bytes": 62777
+    },
+    {
+      "app": "agit",
+      "theme": "chuseok",
+      "path": "brand/app-icons/seasonal/agit/chuseok.png",
+      "sha256": "e251a2ee4e60f329048d161eb8dcfb3845bb60a665a36c589d705999123f907f",
+      "bytes": 59293
+    },
+    {
+      "app": "agit",
+      "theme": "christmas",
+      "path": "brand/app-icons/seasonal/agit/christmas.png",
+      "sha256": "352e0794515c431bc4b3b84d581cafb296effc1625b3f74718baa9fa23123c9c",
+      "bytes": 63774
+    },
+    {
+      "app": "park",
+      "theme": "spring",
+      "path": "brand/app-icons/seasonal/park/spring.png",
+      "sha256": "2f02a1754a43590970feb863d4c0ee2b396b43a086115d785c4b077b14453b81",
+      "bytes": 61347
+    },
+    {
+      "app": "park",
+      "theme": "summer",
+      "path": "brand/app-icons/seasonal/park/summer.png",
+      "sha256": "37ac68e896d1e20d4f5d66b49fbe9e2c8e2ba1a341caed355f335427a7a98bc2",
+      "bytes": 62278
+    },
+    {
+      "app": "park",
+      "theme": "autumn",
+      "path": "brand/app-icons/seasonal/park/autumn.png",
+      "sha256": "b4893dc4edc8a6bad6d7c3bf00728be8f5ed9fecdc274b4d9b6f272af1f383fa",
+      "bytes": 60982
+    },
+    {
+      "app": "park",
+      "theme": "winter",
+      "path": "brand/app-icons/seasonal/park/winter.png",
+      "sha256": "d6b73709a48a6608756394c785edc171b3373030fbe21d64f4da04be420ca598",
+      "bytes": 62483
+    },
+    {
+      "app": "park",
+      "theme": "newyear",
+      "path": "brand/app-icons/seasonal/park/newyear.png",
+      "sha256": "90badfb4bfde7c2c89f1a611fbd377e453762b9d44ae8479deb9863be7d80bd4",
+      "bytes": 60620
+    },
+    {
+      "app": "park",
+      "theme": "seollal",
+      "path": "brand/app-icons/seasonal/park/seollal.png",
+      "sha256": "cf1d0fd403ba19d41e4ce9b4cf680d7520f4a484e291e8aa7b7036e071fb2798",
+      "bytes": 62279
+    },
+    {
+      "app": "park",
+      "theme": "chuseok",
+      "path": "brand/app-icons/seasonal/park/chuseok.png",
+      "sha256": "5e4411364fb694b37ed030441da34c1a7263665c0331ee07a3d50237e9c0e118",
+      "bytes": 60054
+    },
+    {
+      "app": "park",
+      "theme": "christmas",
+      "path": "brand/app-icons/seasonal/park/christmas.png",
+      "sha256": "fa6b5a35ffa28ec22ab65c6c02d6d6b89957ea6b22dfca4fd3619aafc53bb208",
+      "bytes": 63433
+    },
+    {
+      "app": "pajang",
+      "theme": "spring",
+      "path": "brand/app-icons/seasonal/pajang/spring.png",
+      "sha256": "560898083c41fdc17ac030791428b20d877d2f6f05d2de2f55e85ae9257f38d8",
+      "bytes": 61908
+    },
+    {
+      "app": "pajang",
+      "theme": "summer",
+      "path": "brand/app-icons/seasonal/pajang/summer.png",
+      "sha256": "7c59960c8bc4df6360cd2308f8548a86ceb500f56853d31539fc2b1a52a1c916",
+      "bytes": 61666
+    },
+    {
+      "app": "pajang",
+      "theme": "autumn",
+      "path": "brand/app-icons/seasonal/pajang/autumn.png",
+      "sha256": "05df0b884b489eecff458033309969c8d27335c629df486b6af9e8d5482b06c8",
+      "bytes": 63294
+    },
+    {
+      "app": "pajang",
+      "theme": "winter",
+      "path": "brand/app-icons/seasonal/pajang/winter.png",
+      "sha256": "ebb9be2f852dfbee0ce7a427c5390a2c4b1f6bb084cb877cf7d3cc5d06255784",
+      "bytes": 62220
+    },
+    {
+      "app": "pajang",
+      "theme": "newyear",
+      "path": "brand/app-icons/seasonal/pajang/newyear.png",
+      "sha256": "8a27510ac1e99ea4b860a361e9a264e7fe0b9e98105373f326ef8efb9dc19c4b",
+      "bytes": 62282
+    },
+    {
+      "app": "pajang",
+      "theme": "seollal",
+      "path": "brand/app-icons/seasonal/pajang/seollal.png",
+      "sha256": "e30a19a1847e4e8fa5b3ab29d959e20843fdab35ac37ac7f203e9eabc2025414",
+      "bytes": 61853
+    },
+    {
+      "app": "pajang",
+      "theme": "chuseok",
+      "path": "brand/app-icons/seasonal/pajang/chuseok.png",
+      "sha256": "88760dc3b9bcfdd61c9deb9100c7bb0c0b717e4fbf4e0e286cc67f2090ba9470",
+      "bytes": 59904
+    },
+    {
+      "app": "pajang",
+      "theme": "christmas",
+      "path": "brand/app-icons/seasonal/pajang/christmas.png",
+      "sha256": "0f9cce569cda7b24c4af00e83dc265fe9117c282251a3808beccbaeea1d6f551",
+      "bytes": 65460
+    }
+  ]
+}

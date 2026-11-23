@@ -39,12 +39,27 @@ export function showGate(message,login = false) {
   const gate=document.getElementById('gate');
   for(const id of ['welcome','station']){const area=document.getElementById(id);if(area)area.hidden=true;}
   gate.hidden=false;
-  const title=document.createElement('strong'),line=document.createElement('p'),link=document.createElement('a');
+  const title=document.createElement('strong'),line=document.createElement('p');
   title.textContent='파장 · 회원 전용 소개팅';
   line.textContent=message;
-  link.href=login?'/?auth=login&next=pajang':'/world.html';link.target='_top';
-  link.textContent=login?'오쭈다 로그인하기':'아지트로 돌아가기';
-  gate.replaceChildren(title,line,link);
+  gate.replaceChildren(title,line);
+  if(login){
+    const account=document.createElement('div'),actions=document.createElement('div');
+    account.className='ojjuda-guest-account';account.dataset.guestAccount='pajang';
+    account.setAttribute('role','group');account.setAttribute('aria-label','회원가입 및 로그인');
+    actions.className='ojjuda-guest-account-actions';
+    for(const [mode,label] of [['signup','회원가입'],['login','로그인']]){
+      const link=document.createElement('a');
+      link.className='ojjuda-guest-account-'+mode;
+      link.href='/?auth='+mode+'&next=pajang';link.target='_top';link.textContent=label;
+      actions.append(link);
+    }
+    account.append(actions);gate.append(account);
+  }else{
+    const link=document.createElement('a');
+    link.href='/world.html';link.target='_top';link.textContent='아지트로 돌아가기';
+    gate.append(link);
+  }
 }
 export async function requireMember(action='entry',onSession,onResult) {
   try {
@@ -59,7 +74,10 @@ export async function requireMember(action='entry',onSession,onResult) {
     const {data:{subscription}}=db.auth.onAuthStateChange((_event,current)=>{
       if(!current||current.user?.id!==expected||current.user.is_anonymous){
         changed=true;verifiedUser=undefined;
-        showGate('회원 정보를 다시 확인하고 있어요.');location.reload();
+        rememberRound(expected,false);
+        showGate('회원 정보를 다시 확인하고 있어요.');
+        if(!current)(window.top||window).location.replace('/features/pajang/');
+        else location.reload();
       }
     });
     window.addEventListener('pagehide',()=>subscription.unsubscribe(),{once:true});
@@ -87,5 +105,7 @@ export async function requireMember(action='entry',onSession,onResult) {
     rememberRound(user.id,action==='state'?result.data?.me?.body:result.data?.body,result.data?.nextAt);
     if(changed)return;
     return result.data;
-  }catch(e){showGate(e.code==='42501'?'이 계정은 파장을 이용할 수 없어요. 만 19세 이상 회원 전용이에요.':'회원 정보를 확인하지 못했어요. 잠시 후 다시 열어주세요.');}
+  }catch(e){
+    showGate(e.code==='42501'?'이 계정은 파장을 이용할 수 없어요. 만 19세 이상 회원 전용이에요.':'회원 정보를 확인하지 못했어요. 잠시 후 다시 열어주세요.');
+  }
 }

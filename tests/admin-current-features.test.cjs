@@ -16,10 +16,11 @@ async function entry(query, allowed = true, signedIn = true, userError = null) {
       },
       onAuthStateChange(listener) { onAuth = listener; }
     },
-    from() {
+    from(table) {
+      assert.equal(table,'app_admins','all services use the same server-owned administrator registry');
       return {
-        select() { return this; },
-        eq() { return this; },
+        select(columns) { assert.equal(columns,'user_id');return this; },
+        eq(column,id) { assert.equal(column,'user_id');assert.equal(id,'synthetic-admin');return this; },
         async maybeSingle() {
           checks.role++;
           beforeRoleResponse?.();
@@ -32,7 +33,9 @@ async function entry(query, allowed = true, signedIn = true, userError = null) {
     document: {getElementById: id => panels[id]},
     window: {OJJUDA_CONFIG: {supabaseUrl: 'https://fixture.invalid', supabaseKey: 'synthetic'},
       supabase: {createClient: () => client}}};
-  vm.runInNewContext(read('admin/app.js'), context);
+  const sandbox=vm.createContext(context);
+  vm.runInContext(read('admin/service-scope.js'),sandbox);
+  vm.runInContext(read('admin/app.js'),sandbox);
   async function flush() {
     await new Promise(setImmediate);
     while (scheduled.length) await scheduled.shift()();
@@ -51,11 +54,49 @@ async function entry(query, allowed = true, signedIn = true, userError = null) {
   }
  }
  const menuWindow = {document: {addEventListener() {}}};
+ vm.runInNewContext(read('admin/service-scope.js'), {window: menuWindow});
  vm.runInNewContext(read('admin/navigation.js'), {window: menuWindow});
  const menuTabs = new Set(menuWindow.OjjudaAdminNavigation.GROUPS.flatMap(group => group.items.map(item => item[1])));
  for (const tab of menuTabs) {
   const {redirects} = await entry('?admin=' + tab);
-  assert.equal(new URL(redirects[0]).searchParams.get('admin'), tab, 'direct menu link: ' + tab);
+  const destination = new URL(redirects[0]);
+  if (tab === 'organization') {
+   assert.equal(destination.pathname, '/admin/operations.html', 'organization opens the protected standalone page');
+   assert.equal(destination.searchParams.has('admin'), false, 'standalone pages do not pretend to be World tabs');
+  } else {
+   assert.equal(destination.pathname, '/world.html');
+   assert.equal(destination.searchParams.get('admin'), tab, 'direct menu link: ' + tab);
+  }
+  assert.equal(new URL(redirects[0]).searchParams.get('from'),menuWindow.OjjudaAdminScope.resolve(null,tab),'the service is inferred from a dedicated direct link');
+ }
+ for(const [route,service] of [
+  ['?admin=messages','agit'],['?admin=cards','park'],['?admin=pajang-answers','pajang'],
+  ['?admin=pajang-chats','pajang'],['?admin=reports&from=park','park'],
+  ['?admin=users&from=pajang','pajang'],['?admin=messages&from=constructor','agit'],
+  ['?admin=cards&from=__proto__','park'],['?admin=note','park'],
+  ['?admin=note-cards','park'],['?admin=note-risk','park'],['?admin=note-map','park'],
+  ['?admin=note-spam','park'],['?admin=note-settings','park']
+ ]){
+  const result=await entry(route);
+  assert.equal(new URL(result.redirects[0]).searchParams.get('from'),service,route);
+ }
+ for(const service of ['agit','park','pajang']){
+  for(const requested of ['?admin=organization&from='+service,'?from='+service+'#organization']){
+   const result=await entry(requested),destination=new URL(result.redirects[0]);
+   assert.equal(destination.pathname,'/admin/operations.html');
+   assert.equal(destination.searchParams.get('from'),service,'organization preserves the administrator service');
+  }
+  for(const [allowed,signedIn,panel] of [[false,true,'no-permission'],[true,false,'auth-required']]){
+   const result=await entry('?admin=organization&from='+service,allowed,signedIn);
+   assert.deepEqual(result.redirects,[],'organization entry requires the existing verified administrator role');
+   assert.equal(result.panels[panel].hidden,false);
+  }
+  const route='?admin=reports&from='+service;
+  for(const [allowed,signedIn,panel] of [[false,true,'no-permission'],[true,false,'auth-required']]){
+   const result=await entry(route,allowed,signedIn);
+   assert.deepEqual(result.redirects,[],`${service} links never grant a role`);
+   assert.equal(result.panels[panel].hidden,false);
+  }
  }
  for (const [route, expected] of [
   ['?admin=unknown#messages', 'messages'],

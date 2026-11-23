@@ -214,8 +214,8 @@ test('joint pages stop repeating the individual relationship advice and use dist
   const reading=buildCompatibilityReading(chart(birthA),chart(birthB));
   const body=[...reading.people.flatMap(person=>[...person.paragraphs,...person.cards.flatMap(card=>card.paragraphs)]),
     ...reading.synthesis.paragraphs,...reading.cards.flatMap(card=>card.paragraphs),...reading.score.items.flatMap(item=>item.paragraphs)];
-  for(const line of ['챙겨 준 행동에 어떤 마음이 있었는지 짧게 말해 주세요.',
-    '서로 의견이 다를 때는 같이 정할 부분과 각자 정해도 되는 부분을 나누어 말해 주세요.']) {
+  for(const line of ['챙긴 행동에 담긴 마음을 짧게 말하세요.',
+    '같이 정할 부분과 각자 정할 부분을 나누어 말하세요.']) {
     assert.equal(body.reduce((count,paragraph)=>count+paragraph.split(line).length-1,0),1,'an individual instruction belongs in its personal story, not five joint pages');
   }
   const joint=[...reading.cards,...reading.score.items];
@@ -233,7 +233,7 @@ test('shared traits stay shared in the new conclusion and an unknown hour cannot
     const own=chart(input),reading=buildCompatibilityReading(own,own);
     assert.match(reading.synthesis.headline,/^두 사람 모두/);
     assert.doesNotMatch(reading.synthesis.headline,/A와|B가|서로 다른|완벽|최고/);
-    assert.match(reading.synthesis.paragraphs[4],/닮았지만 지금 필요한 배려까지 같다고 보지는/);
+    assert.match(reading.synthesis.paragraphs[4],/닮아도 지금 필요한 배려는 직접 확인해야/);
     assert.equal(reading.synthesis.summaryLines.length,2);
     for(const item of [...reading.cards,...reading.score.items]) {
       const practice=item.paragraphs.at(-1);

@@ -1,10 +1,10 @@
 import { getPersonalContext } from './personal-contexts.js?v=20261114-tarot-first-person1';
-import { buildCardConnections } from './card-connections.js?v=20261114-tarot-first-person1';
-import { PERSONAL_READING_BASIS } from './person-narrative.js?v=20261114-tarot-first-person1';
-import { getReading } from './readings.js?v=20261114-tarot-first-person1';
+import { buildCardConnections } from './card-connections.js?v=20261120-tarot-voice2';
+import { PERSONAL_READING_BASIS } from './person-narrative.js?v=20261120-tarot-voice2';
+import { getReading } from './readings.js?v=20261120-tarot-voice2';
 import { splitSummarySentences, summaryLinesFrom } from './reading-summary.js?v=20261113-tarot-summary1';
-import { directAction, directCardAdvice } from './reading-voice.js?v=20261113-tarot-easy1';
-import { getPersonStory } from './person-stories.js?v=20261114-tarot-first-person1';
+import { directInterpretation, directAction, directCardAdvice } from './reading-voice.js?v=20261120-tarot-voice2';
+import { getPersonStory } from './person-stories.js?v=20261120-tarot-voice2';
 
 export const PERSONAL_BASIS = PERSONAL_READING_BASIS;
 const roles = ['지금 문제를 대하는 나', '지금 상황과 속마음', '이번에 바꿀 선택'];
@@ -32,30 +32,30 @@ export function buildPersonalReading({ cards, topicId, contextId } = {}) {
   const connected = buildCardConnections({ cards, context, names });
   const connection = piece('personal-connection', '이 고민에 담긴 내 마음',
     connected.paragraphs, connected.summaryLines);
-  const solution = getPersonStory(cards[2].id)[context.topicId];
+  const solution = directInterpretation(getPersonStory(cards[2].id)[context.topicId]);
   const [support, tension] = splitSummarySentences(solution);
   const comparison = {
-    title: context.comparison.title,
+    title: directInterpretation(context.comparison.title),
     basis: solution,
     basisSummaryLines: summaryLinesFrom(support, tension),
     options: ['a', 'b'].map(key => {
       const option = context.comparison[key];
       // These are practical tradeoffs, not claims made by the drawn card.
-      const gain = option.gain;
-      const burden = option.burden;
+      const gain = directInterpretation(option.gain);
+      const burden = directInterpretation(option.burden);
       const prepare = directAction(option.prepare);
       return { id: `personal-choice-${key}`, key, ...option, gain, burden, prepare,
         summaryLines: summaryLinesFrom(gain, burden, [prepare]) };
     })
   };
   const followUps = context.followUps.map(item => {
-    const paragraphs = [item.paragraphs[0], directAction(item.paragraphs[1])];
-    return piece(`personal-question-${item.id}`, item.question, paragraphs,
+    const paragraphs = [directInterpretation(item.paragraphs[0]), directAction(item.paragraphs[1])];
+    return piece(`personal-question-${item.id}`, directInterpretation(item.question), paragraphs,
       summaryLinesFrom(paragraphs[0], paragraphs[1]));
   });
   return {
-    contextId, topicId, label: context.label, question: context.question,
-    example: context.example, cards: cards.map(card => card.id), names,
+    contextId, topicId, label: context.label, question: directInterpretation(context.question),
+    example: directInterpretation(context.example), cards: cards.map(card => card.id), names,
     primary, connection, comparison, followUps, basis: PERSONAL_BASIS
   };
 }

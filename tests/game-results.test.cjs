@@ -20,7 +20,7 @@ function fixture(t, options = {}) {
 }
 test('every game and mode shares a canonical game-only link without private session parameters', t => {
   const { api } = fixture(t);
-  assert.equal(Object.keys(api.games).length, 29);
+  assert.deepEqual(Object.keys(api.games).sort(), ['sacheonseong', 'solitaire', 'mines', 'saetbyeol', 'mole', 'runner', 'stacker', 'breakout', 'spot', 'screw', 'screw_box', 'screw_flat', 'onecard', 'bang', 'tank', 'tour', 'yut', 'ttang', 'janggi', 'chess', 'billiards', 'carom4', 'carom3', 'pool8', 'matgo', 'poker', 'roulette', 'photo_ttang', 'archery', 'chacha_rush'].sort());
   for (const game of Object.keys(api.games)) {
     const data = api.shareData({ game, outcome: 'success' });
     assert.equal(data.url, 'https://ojjuda.kr/world.html?game=' + game);
@@ -46,6 +46,48 @@ test('result text is escaped and pending settlements can hide sharing', t => {
   assert.equal(card.querySelector('.game-result-metric').textContent, '<b>100</b>');
   assert.equal(card.querySelector('[data-game-result-share]'), null);
   assert.equal(card.dataset.resultKey, '" onfocus="bad');
+});
+test('explicit navigation roles place exit before auxiliary controls and replay without reordering stage choices', t => {
+  const { render } = fixture(t);
+  const card = render({ actions: '<div id="stages"><button>이전</button><button>지금</button><button disabled>다음</button></div><button data-game-result-action="primary">다시 시작</button><button data-game-result-action="constructor">판 보기</button><a href="/world.html?tab=arcade" data-game-result-action="exit">나가기</a>' });
+  assert.deepEqual([...card.querySelectorAll('#stages button')].map(button => button.textContent), ['이전', '지금', '다음']);
+  assert.deepEqual([...card.querySelectorAll('.game-result-actions > button, .game-result-actions > a')].map(button => button.textContent), ['나가기', '판 보기', '다시 시작']);
+  assert.equal(card.querySelector('#stages button:disabled').textContent, '다음');
+  const nested = render({ actions: '<div class="game-result-navigation"><button data-game-result-action="primary">계속하기</button><button data-game-result-action="exit">나가기</button></div>' });
+  assert.deepEqual([...nested.querySelector('.game-result-navigation').children].map(button => button.textContent), ['나가기', '계속하기']);
+});
+test('decorate orders original exit and replay nodes while preserving callbacks, disabled state and repeated decoration', async t => {
+  const { api, host, w } = fixture(t);
+  host.innerHTML = '<dialog><button id="replay" data-game-result-action="primary" disabled>다시 시작</button><button id="look" data-game-result-action="secondary">판 보기</button><a id="exit" data-game-result-action="exit" href="#arcade">나가기</a></dialog>';
+  const dialog = host.firstElementChild, replay = w.document.getElementById('replay'), look = w.document.getElementById('look'), exit = w.document.getElementById('exit');
+  const calls = []; replay.onclick = () => calls.push('replay'); look.onclick = () => calls.push('look'); exit.onclick = event => { event.preventDefault(); calls.push('exit'); };
+  for (const outcome of ['failure', 'success']) {
+    const card = api.decorate(dialog, { game: 'spot', outcome, actions: [replay, look, exit] });
+    assert.deepEqual([...card.querySelector('.game-result-actions').children], [exit, look, replay]);
+    assert.equal(replay.disabled, true); replay.click(); look.click(); exit.click();
+    await tick();
+    assert.equal(card.querySelector('#replay'), replay);
+  }
+  assert.deepEqual(calls, ['look', 'exit', 'look', 'exit']);
+});
+test('role-ordered dialog keeps replay focus and request gates through failure, retry and close', async t => {
+  const { api, w } = fixture(t);
+  let attempts = 0, reject, finish, exits = 0;
+  const handle = api.show({ game: 'yut', actions: [
+    { id: 'replay', role: 'primary', label: '다시 시작', onClick: () => { attempts++; return new Promise((resolve, fail) => { finish = resolve; reject = fail; }); } },
+    { id: 'look', role: 'secondary', label: '판 보기', disabled: true },
+    { id: 'exit', role: 'exit', label: '나가기', onClick: () => { exits++; } }
+  ] });
+  const replay = w.document.getElementById('replay'), exit = w.document.getElementById('exit'), look = w.document.getElementById('look');
+  assert.deepEqual([...handle.card.querySelector('.game-result-actions').children], [exit, look, replay]);
+  assert.equal(w.document.activeElement, replay);
+  replay.click(); replay.click(); exit.click();
+  assert.equal(attempts, 1); assert.equal(exits, 0); assert.equal(replay.getAttribute('aria-busy'), 'true');
+  reject(new Error('retryable')); await tick();
+  assert.equal(replay.disabled, false); assert.equal(exit.disabled, false); assert.equal(look.disabled, true);
+  assert.equal(replay.hasAttribute('aria-busy'), false); assert.equal(handle.card.querySelector('[role="status"]').textContent, '다시 눌러 주세요');
+  replay.click(); finish(false); await tick(); assert.equal(handle.element.isConnected, true); assert.equal(attempts, 2);
+  exit.click(); await tick(); assert.equal(exits, 1); assert.equal(handle.element.isConnected, false);
 });
 test('decorate moves original stage and settlement controls without losing their handlers or disabled gate', t => {
   const { api, host, w } = fixture(t);

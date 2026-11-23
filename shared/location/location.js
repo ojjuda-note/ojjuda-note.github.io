@@ -14,10 +14,10 @@ function failure(code) { return Object.assign(Error(notices[code]),{code}); }
 function locationError(error) {
   return failure(error?.code===1||error?.name==='SecurityError'?'denied':error?.code===3?'timeout':'unavailable');
 }
-function positionFrom(position) {
+function positionFrom(position,maxAccuracy=2000) {
   const {latitude,longitude,accuracy}=position.coords||{};
   if(!Number.isFinite(latitude)||!Number.isFinite(longitude)||!Number.isFinite(accuracy)||
-      Math.abs(latitude)>90||Math.abs(longitude)>180||accuracy<0||accuracy>2000)return null;
+      Math.abs(latitude)>90||Math.abs(longitude)>180||accuracy<0||accuracy>maxAccuracy)return null;
   return {latitude,longitude,accuracy,capturedAt:Number.isFinite(position.timestamp)?position.timestamp:Date.now()};
 }
 function locate(geo,{signal,precise,timeout,fresh}) {
@@ -71,7 +71,34 @@ async function measurePosition({signal,onProgress,fresh=false,preciseTimeout=200
 const preferences=new Map(),listeners=new Map(),active=new Map();
 let host=root;
 try{if(root.top&&root.location?.origin&&root.top.location.origin===root.location.origin)host=root.top;}catch{}
+// KMA's official DFS Lambert projection, 5 km grid. Raw weather coordinates
+// never leave this service or enter storage.
+// https://www.weather.go.kr/w/resources/js/app-2021/app-index.js (convertDfsGrid)
+function weatherCell(position){
+  if(!freshPosition(position,5000))return null;
+  const rad=Math.PI/180,re=6371.00877/5,lat1=30*rad,lat2=60*rad;
+  const sn=Math.log(Math.cos(lat1)/Math.cos(lat2))/Math.log(Math.tan(Math.PI/4+lat2/2)/Math.tan(Math.PI/4+lat1/2));
+  const sf=Math.pow(Math.tan(Math.PI/4+lat1/2),sn)*Math.cos(lat1)/sn;
+  const ro=re*sf/Math.pow(Math.tan(Math.PI/4+38*rad/2),sn);
+  const ra=re*sf/Math.pow(Math.tan(Math.PI/4+position.latitude*rad/2),sn);
+  let theta=(position.longitude-126)*rad;
+  if(theta>Math.PI)theta-=2*Math.PI;if(theta< -Math.PI)theta+=2*Math.PI;
+  theta*=sn;
+  const nx=Math.floor(ra*Math.sin(theta)+43.5),ny=Math.floor(ro-ra*Math.cos(theta)+136.5);
+  return nx>=1&&nx<=149&&ny>=1&&ny<=253?{nx,ny,capturedAt:position.capturedAt}:null;
+}
+// Existing feature reads also supply the current grid, without account details.
+function notifyWeather(position,accountId){
+  const target=typeof host.dispatchEvent==='function'?host:root;
+  if(typeof target.dispatchEvent!=='function'||typeof target.CustomEvent!=='function')return;
+  // A late settings/teardown callback from another account cannot cancel the
+  // current member's weather. The account identifier never enters the event.
+  if(!position&&accountId&&target.__ojjudaThemeWeather?.isAccount&&!target.__ojjudaThemeWeather.isAccount(accountId))return;
+  const detail=weatherCell(position);
+  target.dispatchEvent(new target.CustomEvent('ojjuda:weather-location',{detail}));
+}
 const memory=host.__ojjudaLocationMemory||(host.__ojjudaLocationMemory=new Map());
+const featureReads=host.__ojjudaLocationReads||(host.__ojjudaLocationReads=new Map());
 const signalKey='ojjuda:location-choice',cachePrefix='ojjuda:location-cell:';
 let channel;
 try{channel=typeof BroadcastChannel==='function'?new BroadcastChannel('ojjuda-location'):null;}catch{}
@@ -87,6 +114,7 @@ function acceptPreference(accountId,value,broadcast=false){
   const next={enabled:value.enabled,version:value.version,checkedAt:Date.now()};
   preferences.set(accountId,next);
   const changed=!previous||previous.version!==next.version||previous.enabled!==next.enabled;
+  if(!next.enabled)notifyWeather(null,accountId);
   if(changed&&!next.enabled){
     clearPosition(accountId);
     for(const controller of active.get(accountId)||[])controller.abort(failure('disabled'));
@@ -104,15 +132,18 @@ if(channel)channel.onmessage=event=>received(event.data);
 root.addEventListener?.('storage',event=>{if(event.key===signalKey){try{received(JSON.parse(event.newValue));}catch{}}});
 async function verifyAccount(db,accountId){
   const {data,error}=await db.auth.getSession();
-  if(error||data.session?.user?.id!==accountId||data.session?.user?.is_anonymous)
+  if(error||data.session?.user?.id!==accountId||data.session?.user?.is_anonymous){
     throw Error('회원 정보를 다시 확인해 주세요.');
+  }
 }
-async function preference(db,accountId,{refresh=false,legacyDisabled=false}={}){
+async function preference(db,accountId,{refresh=false,legacyDisabled=false,signal}={}){
   if(!accountId)return {enabled:true,version:0};
   await verifyAccount(db,accountId);
   const cached=preferences.get(accountId);
   if(!refresh&&!legacyDisabled&&cached&&Date.now()-cached.checkedAt<5000)return cached;
-  const {data,error}=await db.rpc('ojjuda_location_preference',{p_account_id:accountId,p_legacy_disabled:legacyDisabled});
+  const query=db.rpc('ojjuda_location_preference',{p_account_id:accountId,p_legacy_disabled:legacyDisabled});
+  const {data,error}=await (signal&&query.abortSignal?query.abortSignal(signal):query);
+  if(signal?.aborted)throw signal.reason;
   if(error)throw Object.assign(Error(error.message||'위치 설정을 확인하지 못했어요.'),{code:error.code});
   await verifyAccount(db,accountId);
   const next=acceptPreference(accountId,data,true);
@@ -146,10 +177,10 @@ function observe(db,accountId,callback){
   root.document?.addEventListener('visibilitychange',refresh);void refresh();
   return()=>{closed=true;clearInterval(timer);unsubscribe();root.document?.removeEventListener('visibilitychange',refresh);};
 }
-function freshPosition(value){
+function freshPosition(value,maxAccuracy=2000){
   return value&&Number.isFinite(value.capturedAt)&&Date.now()>=value.capturedAt&&Date.now()-value.capturedAt<120000&&
     Number.isFinite(value.latitude)&&Math.abs(value.latitude)<=90&&Number.isFinite(value.longitude)&&Math.abs(value.longitude)<=180&&
-    Number.isFinite(value.accuracy)&&value.accuracy>=0&&value.accuracy<=2000;
+    Number.isFinite(value.accuracy)&&value.accuracy>=0&&value.accuracy<=maxAccuracy;
 }
 function rememberPosition(accountId,position){
   if(!accountId||!freshPosition(position))return;
@@ -162,7 +193,7 @@ function rememberPosition(accountId,position){
 }
 async function cachedPosition(accountId,coarseCache){
   if(!accountId)return null;
-  try{if((await navigator.permissions?.query({name:'geolocation'}))?.state!=='granted'){clearPosition(accountId);return null;}}catch{return null;}
+  try{if((await navigator.permissions?.query({name:'geolocation'}))?.state!=='granted'){clearPosition(accountId);notifyWeather(null,accountId);return null;}}catch{return null;}
   let value=memory.get(accountId);
   if(!freshPosition(value)&&coarseCache){try{value=JSON.parse(sessionStorage.getItem(cachePrefix+accountId));}catch{}}
   if(freshPosition(value))return {...value};
@@ -180,6 +211,7 @@ async function readPosition({db,accountId,allowDisabled=false,coarseCache=false,
       if(db&&accountId)await verifyAccount(db,accountId);
       if(options.signal?.aborted)throw options.signal.reason;
       if(!allowDisabled&&preferences.get(accountId)?.enabled===false)throw failure('disabled');
+      if(preferences.get(accountId)?.enabled!==false)notifyWeather(cached);
       return cached;
     }
   }
@@ -188,18 +220,89 @@ async function readPosition({db,accountId,allowDisabled=false,coarseCache=false,
   options.signal?.addEventListener('abort',cancel,{once:true});
   if(!active.has(accountId))active.set(accountId,new Set());
   active.get(accountId).add(controller);
+  let measured;
   try{
     if(options.signal?.aborted)cancel();
-    const position=await measurePosition({...options,signal:controller.signal});
+    measured=measurePosition({...options,signal:controller.signal});
+    if(accountId)featureReads.set(accountId,measured);
+    const position=await measured;
     if(db&&accountId)await verifyAccount(db,accountId);
     if(controller.signal.aborted)throw controller.signal.reason;
-    if(cache)rememberPosition(accountId,position);return position;
-  }finally{controller.abort();active.get(accountId).delete(controller);options.signal?.removeEventListener('abort',cancel);}
+    if(cache)rememberPosition(accountId,position);
+    if(preferences.get(accountId)?.enabled!==false)notifyWeather(position);
+    return position;
+  }catch(error){
+    if(error?.code==='denied'||error?.code==='disabled')notifyWeather(null,accountId);
+    throw error;
+  }finally{
+    if(featureReads.get(accountId)===measured)featureReads.delete(accountId);
+    controller.abort();active.get(accountId).delete(controller);options.signal?.removeEventListener('abort',cancel);
+  }
+}
+function weatherPosition(signal,existing){
+  return new Promise((resolve,reject)=>{
+    let done=false,watchId=null;
+    const finish=(error,position)=>{
+      if(done)return;done=true;clearTimeout(timer);
+      if(watchId!==null)navigator.geolocation.clearWatch(watchId);
+      signal.removeEventListener('abort',cancel);
+      error?reject(error):resolve(position);
+    };
+    const cancel=()=>finish(signal.reason||new DOMException('Location cancelled','AbortError'));
+    const timer=setTimeout(()=>finish(failure('timeout')),8000);
+    if(signal.aborted){cancel();return;}
+    signal.addEventListener('abort',cancel,{once:true});
+    if(existing){existing.then(position=>finish(null,position),error=>finish(error));return;}
+    if(!navigator.geolocation?.watchPosition||root.isSecureContext===false){finish(failure('unsupported'));return;}
+    try{
+      // A cancellable one-shot, without a high-accuracy fallback or saved fix.
+      watchId=navigator.geolocation.watchPosition(position=>{
+        const value=positionFrom(position,5000);
+        finish(value?null:failure('inaccurate'),value);
+      },error=>finish(locationError(error)),{enableHighAccuracy:false,maximumAge:0,timeout:8000});
+      if(done)navigator.geolocation.clearWatch(watchId);
+    }catch(error){finish(locationError(error));}
+  });
+}
+async function readWeatherPosition({db,accountId,signal,cell}={}){
+  if(!db||!accountId)throw failure('disabled');
+  const controller=new AbortController(),cancel=()=>controller.abort(signal?.reason);
+  let permission;
+  const revoked=()=>{if(permission.state!=='granted')controller.abort(failure('denied'));};
+  const check=()=>{if(controller.signal.aborted)throw controller.signal.reason;};
+  signal?.addEventListener('abort',cancel,{once:true});if(signal?.aborted)cancel();
+  if(!active.has(accountId))active.set(accountId,new Set());active.get(accountId).add(controller);
+  try{
+    check();
+    const choice=await preference(db,accountId,{refresh:true,signal:controller.signal});check();
+    if(!choice.enabled)throw failure('disabled');
+    permission=await navigator.permissions?.query({name:'geolocation'});check();
+    if(permission?.state!=='granted')throw failure('denied');
+    permission.addEventListener?.('change',revoked);
+    let grid=cell&&Number.isInteger(cell.nx)&&cell.nx>=1&&cell.nx<=149&&Number.isInteger(cell.ny)&&cell.ny>=1&&cell.ny<=253&&
+      Number.isFinite(cell.capturedAt)&&cell.capturedAt<=Date.now()&&Date.now()-cell.capturedAt<120000?
+      {nx:cell.nx,ny:cell.ny,capturedAt:cell.capturedAt}:null;
+    if(!grid){
+      const cached=memory.get(accountId);
+      const position=freshPosition(cached)?cached:await weatherPosition(controller.signal,featureReads.get(accountId));
+      check();grid=weatherCell(position);
+      if(!grid)throw failure('unavailable');
+    }
+    // A settings change while GPS was pending must invalidate its result.
+    const latest=await preference(db,accountId,{refresh:true,signal:controller.signal});check();
+    if(!latest.enabled||permission.state!=='granted')throw failure(latest.enabled?'denied':'disabled');
+    return grid;
+  }finally{
+    permission?.removeEventListener?.('change',revoked);controller.abort();
+    active.get(accountId).delete(controller);signal?.removeEventListener('abort',cancel);
+  }
 }
 function forget(accountId){
+  if(!accountId)return;
+  notifyWeather(null,accountId);
   clearPosition(accountId);preferences.delete(accountId);
   for(const controller of active.get(accountId)||[])controller.abort();
 }
-root.OjjudaLocation={readPosition,preference,setPreference,acceptPreference,subscribe,observe,forget,
+root.OjjudaLocation={readPosition,readWeatherPosition,preference,setPreference,acceptPreference,subscribe,observe,forget,
   current:accountId=>preferences.get(accountId),errorText:error=>error?.message||notices.unavailable};
 })(globalThis);

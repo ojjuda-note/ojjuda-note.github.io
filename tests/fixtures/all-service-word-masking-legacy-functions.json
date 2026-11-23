@@ -1,0 +1,68 @@
+[
+  {
+    "schema": "ojjuda_note_internal",
+    "name": "enforce_note_blocked_words",
+    "signature": "ojjuda_note_internal.enforce_note_blocked_words()",
+    "definition": "CREATE OR REPLACE FUNCTION ojjuda_note_internal.enforce_note_blocked_words()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nBEGIN\n  IF auth.uid() IS NULL AND (TG_OP <> 'INSERT' OR NEW.author_id IS NOT NULL) THEN\n    RAISE EXCEPTION 'Sign in required' USING ERRCODE = '42501';\n  END IF;\n  IF public.has_banned(coalesce(NEW.body, '')) OR EXISTS (\n    SELECT 1 FROM unnest(coalesce(NEW.tags, ARRAY[]::text[])) AS tag(value)\n    WHERE public.has_banned(tag.value)\n  ) THEN\n    RAISE EXCEPTION '노트 운영 기준에 맞지 않는 표현이 포함되어 있어요.' USING ERRCODE = '23514';\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n"
+  },
+  {
+    "schema": "public",
+    "name": "check_banned_cols",
+    "signature": "check_banned_cols()",
+    "definition": "CREATE OR REPLACE FUNCTION public.check_banned_cols()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog'\nAS $function$\r\ndeclare col text; v text; changed boolean;\r\nbegin\r\n  foreach col in array TG_ARGV loop\r\n    if TG_OP = 'UPDATE' then\r\n      execute format('select ($1).%I::text is distinct from ($2).%I::text', col, col) into changed using new, old;\r\n      if not changed then continue; end if;\r\n    end if;\r\n    execute format('select ($1).%I::text', col) into v using new;\r\n    if v is not null and public.has_banned(v) then\r\n      raise exception 'banned_word' using errcode = 'P0001', hint = '욕설, 음란, 마약 관련 표현은 쓸 수 없어요';\r\n    end if;\r\n  end loop;\r\n  return new;\r\nend $function$\n"
+  },
+  {
+    "schema": "ojjuda_note",
+    "name": "valid_tags",
+    "signature": "ojjuda_note.valid_tags(text[])",
+    "definition": "CREATE OR REPLACE FUNCTION ojjuda_note.valid_tags(input_tags text[])\n RETURNS boolean\n LANGUAGE sql\n IMMUTABLE STRICT\n SET search_path TO 'pg_catalog'\nAS $function$\n  SELECT cardinality(input_tags) <= 5\n    AND NOT EXISTS (\n      SELECT 1 FROM unnest(input_tags) AS t(tag)\n      WHERE t.tag IS NULL OR t.tag <> btrim(t.tag)\n         OR char_length(t.tag) NOT BETWEEN 1 AND 20\n         OR t.tag ~ U&'[[:space:]\\00A0\\1680\\2000-\\200A\\2028\\2029\\202F\\205F\\3000\\FEFF]'\n    )\n    AND cardinality(input_tags) = (\n      SELECT count(DISTINCT t.tag) FROM unnest(input_tags) AS t(tag)\n    );\n$function$\n"
+  },
+  {
+    "schema": "ojjuda_note_internal",
+    "name": "admin_reply_inquiry",
+    "signature": "ojjuda_note_internal.admin_reply_inquiry(uuid,text,timestamp with time zone)",
+    "definition": "CREATE OR REPLACE FUNCTION ojjuda_note_internal.admin_reply_inquiry(p_id uuid, p_reply text, p_expected_updated_at timestamp with time zone)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nBEGIN\n IF NOT ojjuda_note_internal.is_note_moderator() THEN RAISE EXCEPTION 'Note moderator required' USING ERRCODE='42501'; END IF;\n IF p_reply IS NULL OR char_length(btrim(p_reply)) NOT BETWEEN 1 AND 2000 OR p_expected_updated_at IS NULL THEN RAISE EXCEPTION 'Invalid reply' USING ERRCODE='22023'; END IF;\n UPDATE ojjuda_note_internal.inquiries SET reply=btrim(p_reply),status='resolved',replied_by=auth.uid(),updated_at=clock_timestamp() WHERE id=p_id AND updated_at=p_expected_updated_at;\n IF NOT FOUND THEN RAISE EXCEPTION '문의가 변경됐어요. 새로 불러온 뒤 답변해 주세요.' USING ERRCODE='40001'; END IF;\n -- Record the action without copying private inquiry content to the audit feed.\n INSERT INTO ojjuda_note_internal.moderation_actions(moderator_id,subject_user_id,action,reason,detail) SELECT auth.uid(),i.user_id,'reply_inquiry','노트 문의 답변',jsonb_build_object('inquiry_id',p_id) FROM ojjuda_note_internal.inquiries i WHERE i.id=p_id;\nEND $function$\n"
+  },
+  {
+    "schema": "ojjuda_note_internal",
+    "name": "send_friend_message",
+    "signature": "ojjuda_note_internal.send_friend_message(uuid,text,uuid)",
+    "definition": "CREATE OR REPLACE FUNCTION ojjuda_note_internal.send_friend_message(p_recipient uuid, p_body text, p_request uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE viewer uuid:=auth.uid(); clean text:=regexp_replace(p_body,'^\\s+|\\s+$','','g'); item ojjuda_note_internal.friend_messages;\nBEGIN\n IF viewer IS NULL OR NOT EXISTS(SELECT 1 FROM auth.users WHERE id=viewer) THEN RAISE EXCEPTION 'sign_in_required' USING ERRCODE='42501'; END IF;\n IF p_recipient IS NULL OR viewer=p_recipient OR p_request IS NULL OR clean IS NULL OR length(clean) NOT BETWEEN 1 AND 1000 OR octet_length(clean)>4000 THEN RAISE EXCEPTION 'invalid_message' USING ERRCODE='22023'; END IF;\n -- Serialize this sender's retries/rate checks without locking any other account.\n PERFORM pg_advisory_xact_lock(hashtextextended('friend_message:'||viewer::text,0));\n IF public.is_banned(viewer) OR ojjuda_note_internal.friend_message_blocked(p_recipient)\n OR NOT EXISTS(SELECT 1 FROM public.friendships f WHERE f.status='accepted' AND ((f.requester=viewer AND f.addressee=p_recipient) OR (f.requester=p_recipient AND f.addressee=viewer)))\n OR NOT EXISTS(SELECT 1 FROM auth.users WHERE id=p_recipient) THEN RAISE EXCEPTION 'friend_message_unavailable' USING ERRCODE='42501'; END IF;\n SELECT * INTO item FROM ojjuda_note_internal.friend_messages WHERE sender_id=viewer AND request_id=p_request;\n IF FOUND THEN\n  IF item.recipient_id<>p_recipient OR item.body<>clean THEN RAISE EXCEPTION 'request_conflict' USING ERRCODE='22023'; END IF;\n  RETURN jsonb_build_object('ok',true,'id',item.id,'replayed',true);\n END IF;\n IF (SELECT count(*) FROM ojjuda_note_internal.friend_messages WHERE sender_id=viewer AND created_at>clock_timestamp()-interval '1 minute')>=20 THEN RAISE EXCEPTION 'message_rate_limit' USING ERRCODE='P0001'; END IF;\n INSERT INTO ojjuda_note_internal.friend_messages(sender_id,recipient_id,body,request_id) VALUES(viewer,p_recipient,clean,p_request) RETURNING * INTO item;\n RETURN jsonb_build_object('ok',true,'id',item.id,'replayed',false);\nEND $function$\n"
+  },
+  {
+    "schema": "ojjuda_note_internal",
+    "name": "submit_inquiry",
+    "signature": "ojjuda_note_internal.submit_inquiry(uuid,text)",
+    "definition": "CREATE OR REPLACE FUNCTION ojjuda_note_internal.submit_inquiry(p_request_id uuid, p_body text)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE result_id uuid;\nBEGIN\n IF NOT ojjuda_note_internal.is_world_member() THEN RAISE EXCEPTION 'World membership required' USING ERRCODE='42501'; END IF;\n IF p_request_id IS NULL OR p_body IS NULL OR char_length(btrim(p_body)) NOT BETWEEN 1 AND 2000 THEN RAISE EXCEPTION 'Invalid inquiry' USING ERRCODE='22023'; END IF;\n -- Serialize each author's submissions, including concurrent retries and quota checks.\n PERFORM pg_advisory_xact_lock(hashtextextended('note-inquiry:'||auth.uid()::text,0));\n SELECT i.id INTO result_id FROM ojjuda_note_internal.inquiries i WHERE i.user_id=auth.uid() AND i.request_id=p_request_id;\n IF result_id IS NOT NULL THEN RETURN result_id; END IF;\n IF (SELECT count(*) FROM ojjuda_note_internal.inquiries i WHERE i.user_id=auth.uid() AND i.created_at>now()-interval '24 hours')>=3 THEN\n  RAISE EXCEPTION '하루에 문의를 3개까지 보낼 수 있어요.' USING ERRCODE='22023';\n END IF;\n INSERT INTO ojjuda_note_internal.inquiries(user_id,request_id,body) VALUES(auth.uid(),p_request_id,btrim(p_body)) RETURNING id INTO result_id;\n RETURN result_id;\nEND $function$\n"
+  },
+  {
+    "schema": "ojjuda_note_internal",
+    "name": "valid_note_body",
+    "signature": "ojjuda_note_internal.valid_note_body(text)",
+    "definition": "CREATE OR REPLACE FUNCTION ojjuda_note_internal.valid_note_body(p_body text)\n RETURNS boolean\n LANGUAGE sql\n IMMUTABLE STRICT\n SET search_path TO 'pg_catalog'\nAS $function$\n  SELECT char_length(p_body) BETWEEN 1 AND 200\n    AND position(chr(13) IN p_body)=0\n    AND regexp_replace(p_body,\n      '[[:space:][:cntrl:]' || chr(127) || '-' || chr(159)\n      || chr(160) || chr(173) || chr(5760) || chr(6158)\n      || chr(8192) || '-' || chr(8207)\n      || chr(8232) || '-' || chr(8238)\n      || chr(8239) || chr(8287)\n      || chr(8288) || '-' || chr(8303)\n      || chr(12288) || chr(65279) || ']', '', 'g') <> '';\n$function$\n"
+  },
+  {
+    "schema": "public",
+    "name": "has_banned",
+    "signature": "public.has_banned(text)",
+    "definition": "CREATE OR REPLACE FUNCTION public.has_banned(t text)\n RETURNS boolean\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\ndeclare n text; a record;\r\nbegin\r\n  n := norm_text(t);\r\n  if n = '' then return false; end if;\r\n  for a in select phrase from banned_allow loop n := replace(n, norm_text(a.phrase), ''); end loop;\r\n  return exists (select 1 from banned_base b where b.active and norm_text(b.word) <> '' and position(norm_text(b.word) in n) > 0)\r\n      or exists (select 1 from banned_words w where norm_text(w.word) <> '' and position(norm_text(w.word) in n) > 0);\r\nend $function$\n"
+  },
+  {
+    "schema": "ojjuda_groups_internal",
+    "name": "activity_labels",
+    "signature": "ojjuda_groups_internal.activity_labels(jsonb,boolean)",
+    "definition": "CREATE OR REPLACE FUNCTION ojjuda_groups_internal.activity_labels(items jsonb, require_unique boolean)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE\n SET search_path TO ''\nAS $function$\ndeclare item jsonb; label text; labels jsonb:='[]';\nbegin\n  if jsonb_typeof(items) is distinct from 'array' then raise exception '항목을 입력해 주세요.'; end if;\n  if jsonb_array_length(items) not between 2 and 10 then raise exception '항목은 2~10개 입력해 주세요.'; end if;\n  for item in select value from jsonb_array_elements(items) loop\n    label:=btrim(item #>> '{}');\n    if jsonb_typeof(item)<>'string' or length(label) not between 1 and 40 or label ~ '[[:cntrl:]]' then\n      raise exception '각 항목은 한 줄에 1~40자로 입력해 주세요.';\n    end if;\n    if require_unique and labels ? label then raise exception '같은 이름의 항목을 구분해 주세요.'; end if;\n    if public.has_banned(label) then raise exception 'banned_word'; end if;\n    labels:=labels || jsonb_build_array(label);\n  end loop;\n  return labels;\nend $function$\n"
+  },
+  {
+    "schema": "public",
+    "name": "admin_rename_user",
+    "signature": "admin_rename_user(uuid,text)",
+    "definition": "CREATE OR REPLACE FUNCTION public.admin_rename_user(p_user uuid, p_nick text)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\ndeclare v_nick text := btrim(coalesce(p_nick, '')); v_old text;\r\nbegin\r\n  if not public.is_admin() then raise exception 'not_admin'; end if;\r\n  if char_length(v_nick) < 1 or char_length(v_nick) > 12 then raise exception 'bad_nick'; end if;\r\n  if exists (select 1 from public.profiles p where p.nickname = v_nick and p.id <> p_user) then raise exception 'nick_taken'; end if;\r\n  select p.nickname into v_old from public.profiles p where p.id = p_user;\r\n  if not found then raise exception 'not_found'; end if;\r\n  update public.profiles p set nickname = v_nick where p.id = p_user;\r\n  perform public.admin_note('rename', p_user, v_nick, jsonb_build_object('old', v_old));\r\nend $function$\n"
+  },
+  {
+    "schema": "public",
+    "name": "ensure_member_for_note",
+    "signature": "ensure_member_for_note(text)",
+    "definition": "CREATE OR REPLACE FUNCTION public.ensure_member_for_note(p_nickname text DEFAULT NULL::text)\n RETURNS boolean\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare\n  v_uid uuid := (select auth.uid());\n  v_name text;\nbegin\n  if v_uid is null then\n    raise exception 'sign_in_required' using errcode = '42501';\n  end if;\n\n  if not exists (select 1 from public.profiles where id = v_uid) then\n    v_name := pg_catalog.btrim(p_nickname);\n    if v_name is null or pg_catalog.char_length(v_name) not between 1 and 12 then\n      raise exception 'nickname_required' using errcode = '22023';\n    end if;\n    insert into public.profiles (id, nickname)\n    values (v_uid, v_name)\n    on conflict (id) do nothing;\n  end if;\n\n  insert into public.user_private (user_id)\n  values (v_uid)\n  on conflict (user_id) do nothing;\n  return true;\nend;\n$function$\n"
+  }
+]

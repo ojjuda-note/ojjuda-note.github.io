@@ -1,0 +1,174 @@
+name: Build unsigned Android apps
+
+on:
+  pull_request:
+    paths:
+      - 'ops/android-apps/**'
+      - 'brand/app-icons/seasonal/**'
+      - 'shared/app-icons/calendar.json'
+      - '.github/workflows/android-apps.yml'
+  workflow_dispatch:
+    inputs:
+      version_code:
+        description: 'Candidate versionCode; verify against every Play track before signing'
+        required: true
+        default: '2'
+        type: string
+      version_name:
+        description: 'Candidate versionName'
+        required: true
+        default: '1.1.0'
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-unsigned-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unsigned-bundles:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+        working-directory: ops/android-apps
+    env:
+      RELEASE_VERSION_CODE: ${{ inputs.version_code || '2' }}
+      RELEASE_VERSION_NAME: ${{ inputs.version_name || '1.1.0' }}
+      HOMEBREW_NO_AUTO_UPDATE: '1'
+      HOMEBREW_NO_INSTALL_CLEANUP: '1'
+      HOMEBREW_NO_ANALYTICS: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /ops/android-apps/
+            /brand/app-icons/seasonal/
+            /shared/app-icons/calendar.json
+
+      - name: Require the runner's existing JDK, Android SDK and license records
+        run: |
+          set -euo pipefail
+          build_jdk="${JAVA_HOME_17_X64:?The runner must already provide JDK 17}"
+          sdk_path="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+          test -x "$build_jdk/bin/java"
+          test -x "$build_jdk/bin/javac"
+          test -n "$sdk_path"
+          test -s "$sdk_path/licenses/android-sdk-license"
+          test -s "$sdk_path/platforms/android-36/android.jar"
+          test -s "$sdk_path/platforms/android-36/package.xml"
+          test -x "$sdk_path/build-tools/36.0.0/aapt2"
+          test -x "$sdk_path/build-tools/36.0.0/d8"
+          test -s "$sdk_path/build-tools/36.0.0/package.xml"
+          printf 'JAVA_HOME=%s\nANDROID_HOME=%s\nANDROID_SDK_ROOT=%s\n' \
+            "$build_jdk" "$sdk_path" "$sdk_path" >> "$GITHUB_ENV"
+          printf '%s/bin\n' "$build_jdk" >> "$GITHUB_PATH"
+          "$build_jdk/bin/java" -version
+          "$sdk_path/build-tools/36.0.0/aapt2" version
+          python3 - <<'PY'
+          import os, re
+          code = os.environ['RELEASE_VERSION_CODE']
+          name = os.environ['RELEASE_VERSION_NAME']
+          if not code.isascii() or not code.isdecimal() or not 2 <= int(code) <= 2100000000:
+              raise SystemExit('version_code must be an integer from 2 to 2100000000')
+          if not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+(?:[.-][A-Za-z0-9]+)*', name):
+              raise SystemExit('version_name must use a numeric major.minor.patch version')
+          print('Existing SDK 36, build-tools 36.0.0 and license records verified.')
+          PY
+
+      - name: Use ImageMagick 7 from the runner or official Homebrew formula
+        run: |
+          set -euo pipefail
+          image_tool="$(command -v magick || true)"
+          if [[ -z "$image_tool" ]] || [[ "$("$image_tool" -version)" != Version:\ ImageMagick\ 7.* ]]; then
+            brew_tool=/home/linuxbrew/.linuxbrew/bin/brew
+            test -x "$brew_tool"
+            "$brew_tool" install --force-bottle imagemagick
+            image_tool="$("$brew_tool" --prefix imagemagick)/bin/magick"
+          fi
+          image_version="$("$image_tool" -version)"
+          [[ "$image_version" == Version:\ ImageMagick\ 7.* ]]
+          printf '%s\n' "$image_version"
+          printf '%s\n' "$(dirname "$image_tool")" >> "$GITHUB_PATH"
+
+      - name: Prepare the approved native images and generated manifests
+        run: python3 scripts/prepare_resources.py
+
+      - name: Verify app launcher URLs and generated TWA manifests
+        run: python3 -m unittest discover -s scripts -p 'test_launch_routes.py' -v
+
+      - name: Test the shared native calendar and icon switching rules
+        run: |
+          bash ./gradlew :core:test \
+            --no-daemon --console=plain -Pandroid.builder.sdkDownload=false
+
+      - name: Lint all three release variants
+        run: |
+          bash ./gradlew :app:lintAgitRelease :app:lintParkRelease :app:lintPajangRelease \
+            --no-daemon --console=plain -Pandroid.builder.sdkDownload=false \
+            "-PreleaseVersionCode=$RELEASE_VERSION_CODE" "-PreleaseVersionName=$RELEASE_VERSION_NAME"
+
+      - name: Build all three unsigned release bundles
+        run: |
+          bash ./gradlew :app:bundleAgitRelease :app:bundleParkRelease :app:bundlePajangRelease \
+            --no-daemon --console=plain -Pandroid.builder.sdkDownload=false \
+            "-PreleaseVersionCode=$RELEASE_VERSION_CODE" "-PreleaseVersionName=$RELEASE_VERSION_NAME"
+
+      - name: Verify unsigned bundle structure and record checksums
+        run: |
+          python3 - <<'PY'
+          import hashlib, os, re, zipfile
+          from pathlib import Path
+          bundle_root = Path('app/build/outputs/bundle')
+          checksums = []
+          for app in ('agit', 'park', 'pajang'):
+              bundles = list((bundle_root / f'{app}Release').glob('*.aab'))
+              if len(bundles) != 1:
+                  raise SystemExit(f'Expected one unsigned AAB for {app}, found {len(bundles)}')
+              bundle = bundles[0]
+              with zipfile.ZipFile(bundle) as archive:
+                  names = set(archive.namelist())
+                  if not {'BundleConfig.pb', 'base/manifest/AndroidManifest.xml'} <= names:
+                      raise SystemExit(f'Missing Android App Bundle structure: {bundle.name}')
+                  if any(re.fullmatch(r'META-INF/[^/]+\.(?:SF|RSA|DSA|EC)', name.upper()) for name in names):
+                      raise SystemExit(f'A signing entry was found in {bundle.name}; expected unsigned output')
+                  if archive.testzip() is not None:
+                      raise SystemExit(f'Corrupt bundle: {bundle.name}')
+              digest = hashlib.sha256(bundle.read_bytes()).hexdigest()
+              checksums.append(f'{digest}  {bundle.relative_to(bundle_root)}')
+              print(f'Unsigned bundle verified: {bundle.name} ({bundle.stat().st_size} bytes)')
+          (bundle_root / 'SHA256SUMS').write_text('\n'.join(checksums) + '\n')
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+              summary.write('## Unsigned Android bundles\n\n')
+              summary.write(f"Commit: `{os.environ['GITHUB_SHA']}`\n\n")
+              summary.write('Agit, Park and Pajang passed core tests, release lint and unsigned bundle checks.\n\n')
+              summary.write('These artifacts require the registered upload key before a Play update.\n')
+          PY
+
+      - name: Upload unsigned bundles
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: android-unsigned-aab-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ops/android-apps/app/build/outputs/bundle/*Release/*.aab
+            ops/android-apps/app/build/outputs/bundle/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload JVM and Android lint reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: android-validation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ops/android-apps/core/build/reports/tests/test/
+            ops/android-apps/core/build/test-results/test/
+            ops/android-apps/app/build/reports/lint-results-*
+            ops/android-apps/app/build/generated/seasonal/inventory.json
+          if-no-files-found: warn
+          retention-days: 14

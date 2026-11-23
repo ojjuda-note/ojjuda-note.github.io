@@ -9,7 +9,9 @@ const nextReset=month=>Date.UTC(Number(month.slice(0,4)),Number(month.slice(5,7)
 const validMonth=month=>typeof month==='string'&&/^\d{4}-(0[1-9]|1[0-2])$/.test(month);
 const monthName=month=>Number(month.slice(0,4))+'년 '+Number(month.slice(5,7))+'월';
 const rankGroups=[{id:'solo',name:'혼자하는 플레이'},{id:'multi',name:'함께하는 플레이'},{id:'adult',name:'어른들 플레이'}];
-const multiGames=new Set(['bang','tank','tour','yut','ttang','janggi','chess','billiards']);
+// Preview the public solo leaderboards without exposing member-only multiplayer records.
+const publicPreviewGames=new Set(['saetbyeol','screw_box','screw_flat','runner','mole','stacker','breakout','chacha_rush']);
+const multiGames=new Set(['onecard','bang','tank','tour','yut','ttang','janggi','chess','billiards']);
 const adultGames=new Set(['matgo','poker','roulette','photo_ttang']);
 const rankGroupFor=id=>adultGames.has(id)?'adult':multiGames.has(id)?'multi':'solo';
 const groupedEntries=entries=>rankGroups.map(group=>({...group,entries:entries.filter(([id])=>rankGroupFor(id)===group.id)})).filter(group=>group.entries.length);
@@ -18,6 +20,7 @@ const boardCondition='회원 대결 → 어려움 → 보통 → 쉬움 순으�
 const scoreCondition='해당 월에 기록한 가장 높은 점수로 정해요.';
 const goldMetric=id=>id==='roulette'?'한 판 최대 당첨 골드':'한 판 최대 획득 골드(순이익)';
 const rankingConditions={
+ onecard:'로그인한 컴퓨터 대전과 온라인 대전의 월 최고 연승으로 정해요. 비로그인·이전 버전 이어하기는 연습이며, 끝나기 전에 나간 판은 내 기록에 넣지 않아요.',
  archery:'통과한 단계가 높은 순, 같은 단계에서는 해당 월 최고 점수, 점수도 같으면 먼저 달성한 순으로 정해요. 이벤트 사격 기록은 제외돼요.',
  bang:streakCondition,
  sacheonseong:'완료한 단계가 높은 순, 같은 단계에서는 완료 시간이 짧은 순으로 정해요.',
@@ -71,7 +74,39 @@ function readRanking(client,owner,key,query,fresh=false){
  return entry.promise;
 }
 function readLeaders(client,owner,ids,fresh=false){
- return readRanking(client,owner,readKey('leaders',rankingMonth(),ids),()=>client.rpc('community_game_monthly_leaders',{p_games:ids}),fresh);
+ // Keep compatibility with lightweight RPC clients used in tests and offline mode.
+ const bounded=(name,args,ms)=>{
+  const query=client.rpc(name,args);
+  return typeof query?.abortSignal==='function'&&typeof AbortSignal!=='undefined'&&typeof AbortSignal.timeout==='function'
+   ?query.abortSignal(AbortSignal.timeout(ms)):query;
+ };
+ return readRanking(client,owner,readKey('leaders',rankingMonth(),ids),async()=>{
+  // The authenticated batch reader is preferable, but its failure must not
+  // hide results that can still be read individually.
+  if(owner!=='public-preview'){
+   try{
+    const batch=await bounded('community_game_monthly_leaders',{p_games:ids},10000);
+    if(!batch.error&&batch.data&&typeof batch.data==='object')return batch;
+   }catch{}
+  }
+  const recovered={};
+  // Limit parallel recovery reads to avoid overwhelming the database.
+  for(let offset=0;offset<ids.length;offset+=4){
+   const chunk=ids.slice(offset,offset+4);
+   const rows=await Promise.all(chunk.map(async id=>{
+    if(owner==='public-preview'&&!publicPreviewGames.has(id))return [id,{__error:true}];
+    try{
+     const response=await bounded('community_game_monthly_personal',{p_game:id,p_guest_token:null},7000);
+     if(response.error||!Array.isArray(response.data?.leaders))return [id,{__error:true}];
+     return [id,response.data.leaders[0]||null];
+    }catch{return [id,{__error:true}];}
+   }));
+   for(const [id,row] of rows)recovered[id]=row;
+  }
+  // A wholly failed fallback must not become a successful 15-second cache entry.
+  if(ids.length&&Object.values(recovered).every(row=>row?.__error))throw Error('ranking_unavailable');
+  return {data:recovered,error:null};
+ },fresh);
 }
 function readHistory(client,owner,ids,month,fresh=false){
  return readRanking(client,owner,readKey('history',[rankingMonth(),month||rankingMonth()],ids),()=>client.rpc('community_game_monthly_history',{p_games:ids,p_month:month?month+'-01':null}),fresh);
@@ -81,7 +116,16 @@ function shareCurrentLeaders(client,owner,ids,data){
  rankingScope.reads.set(readKey('leaders',data.currentMonth,ids),{response:{data:data.leaders},at:Date.now(),promise:null});
 }
 function mount(host,{client,owner,games={},getGames=null,onOpenGame=null,authorized=()=>true}={}){
-dispose?.();dispose=null;controller=null;scopeFor(client,owner);if(!host)return;
+dispose?.();dispose=null;controller=null;
+const guest=!owner&&!!client;
+if(guest){
+ owner='public-preview';
+ const onlyPublic=catalog=>Object.fromEntries(Object.entries(catalog||{}).filter(([id])=>publicPreviewGames.has(id)));
+ games=onlyPublic(games);
+ const originalGetGames=getGames;
+ if(typeof originalGetGames==='function')getGames=()=>onlyPublic(originalGetGames());
+}
+scopeFor(client,owner);if(!host)return;
 let rankDispose=()=>{},releaseAccess=null,alive=true,request=0,catalogKey=null;
 const rankStates=new Map();
 let view='home',historyMonth=null,historyInfo=null,observedMonth=rankingMonth(),rolloverTimer=0,help=null,rankCategory=null,automaticOverride=null;
@@ -236,6 +280,20 @@ function rankingCarousel(groups,head,token,items,onChange=()=>{},onResize=()=>{}
  prev.setAttribute('aria-label','이전 게임 순위');next.setAttribute('aria-label','다음 게임 순위');controls.append(prev,position,next);
  head.insertBefore(controls,head.querySelector('.board-rank-back'));
  groups.tabIndex=0;groups.setAttribute('role','region');groups.setAttribute('aria-label','게임순위 목록');
+ let heightFrame=0;
+ function fitVisibleHeight(){
+  cancelAnimationFrame(heightFrame);
+  heightFrame=requestAnimationFrame(()=>{
+   if(!active()||token!==request)return;
+   for(const panel of panels){
+    const viewport=panel.querySelector('.board-rank-viewport');
+    const current=viewport?.querySelector('.board-rank-page[aria-hidden="false"]');
+    if(viewport&&current)viewport.style.height=Math.ceil(current.getBoundingClientRect().height)+'px';
+   }
+   const current=panels[index];
+   if(current)groups.style.height=Math.ceil(current.getBoundingClientRect().height)+'px';
+  });
+ }
  const count=()=>items.reduce((total,item)=>total+item.count(),0);
  function paint(){
   const total=count(),current=items.slice(0,index).reduce((sum,item)=>sum+item.count(),0)+(items[index]?.current()||0);
@@ -254,7 +312,7 @@ function rankingCarousel(groups,head,token,items,onChange=()=>{},onResize=()=>{}
   const next=(value+panels.length)%panels.length,animate=Math.abs(next-index)===1;
   index=next;rankCategory=ids[index];groups.dataset.rankCategory=rankCategory;
   panels.forEach((panel,i)=>{panel.inert=i!==index;panel.setAttribute('aria-hidden',String(i!==index));});
-  paint();if(scroll)align(animate);onChange();
+  paint();if(scroll)align(animate);onChange();fitVisibleHeight();
  }
  function move(direction){
   if(!enabled||!active()||token!==request||count()<2)return;
@@ -303,17 +361,17 @@ function rankingCarousel(groups,head,token,items,onChange=()=>{},onResize=()=>{}
  });resize.observe(groups);
  onResize();paint();select(index,true);
  return {
-  controls,count,move,update:paint,
+  controls,count,move,update(){paint();fitVisibleHeight();},
   setEnabled(value){enabled=value;paint();},
   setAutomatic(value){position.setAttribute('aria-live',value?'off':'polite');},
-  dispose(){cancelAnimationFrame(resizeFrame);events.abort();resize.disconnect();}
+  dispose(){cancelAnimationFrame(resizeFrame);cancelAnimationFrame(heightFrame);events.abort();resize.disconnect();}
  };
 }
   function leaders(token,fresh){
    const entries=Object.entries(games);if(!entries.length)return [];
    const section=el('section','','board-leaders');section.setAttribute('aria-label','게임순위');section.dataset.worldSwipe='off';
-   const head=el('header','','board-rank-head'),heading=el('h3'),openHistory=button('게임순위',()=>{if(active()&&token===request)void showHistory(null,false,true);},'board-rank-history-open');
-   openHistory.setAttribute('aria-label','월별 게임순위 보기');openHistory.append(Object.assign(el('span','›'),{ariaHidden:'true'}));heading.append(openHistory);head.append(heading,el('span','이번 달','board-rank-caption'));section.append(head);
+   const head=el('header','','board-rank-head'),heading=el('h3'),openHistory=button(guest?'전체 게임순위':'게임순위',()=>{if(!active()||token!==request)return;if(guest)location.assign('/features/arcade/monthly-ranking.html');else void showHistory(null,false,true);},'board-rank-history-open');
+   openHistory.setAttribute('aria-label',guest?'게임별 이번 달 순위 보기':'월별 게임순위 보기');openHistory.append(Object.assign(el('span','›'),{ariaHidden:'true'}));heading.append(openHistory);head.append(heading,el('span','이번 달','board-rank-caption'));section.append(head);
    const groups=el('div','','board-rank-groups'),targets=new Set(),panels=new Map();section.append(groups);content.append(section);
    let timer=0,hover=false,touching=false,loaded=false,categories=null;
    const motion=matchMedia('(prefers-reduced-motion: reduce)'),events=new AbortController(),options={signal:events.signal};
@@ -427,7 +485,7 @@ function rankingCarousel(groups,head,token,items,onChange=()=>{},onResize=()=>{}
    // Fetch the visible games in one request instead of competing with the feed
    // for thirty separate HTTP/database connections.
    const batch=result(readLeaders(client,owner,entries.map(([id])=>id),fresh)).then(leaders=>{
-    if(active()&&token===request&&typeof CustomEvent==='function'){
+    if(!guest&&active()&&token===request&&typeof CustomEvent==='function'){
      window.dispatchEvent(new CustomEvent('ojjuda:leaders-loaded',{
       detail:{owner,month:rankingMonth(),leaders}
      }));
@@ -444,6 +502,7 @@ function rankingCarousel(groups,head,token,items,onChange=()=>{},onResize=()=>{}
      try{
       const ranking=await (initial?batch:result(readLeaders(client,owner,[key],true)));
       if(!active()||token!==request||version!==loadVersion)return;
+      if(ranking?.[key]?.__error)throw Error('ranking_unavailable');
       record.record=ranking?.[key]||null;record.status='ready';paintTarget(id);
      }catch{if(active()&&token===request&&version===loadVersion){record.status='error';paintTarget(id);}}
      finally{loading=false;panels.get(rankGroupFor(id)).orderByRecords();fitScores();}
@@ -551,11 +610,11 @@ function checkRollover(){
  if(month!==observedMonth){observedMonth=month;void refreshView(true);}
  scheduleRollover();
 }
-async function home(fresh=false){if(!client||!owner||!active())return false;closeHelp(false);updateGames();rankDispose();view='home';observedMonth=rankingMonth();scheduleRollover();const token=++request;content.replaceChildren();status.textContent='';await Promise.all(leaders(token,fresh));return active()&&token===request;}
+async function home(fresh=false){if(!client||!owner||(guest&&!Object.keys(games).length)||!active())return false;closeHelp(false);updateGames();rankDispose();view='home';observedMonth=rankingMonth();scheduleRollover();const token=++request;content.replaceChildren();status.textContent='';await Promise.all(leaders(token,fresh));return active()&&token===request;}
 let gameplayObserver=null;
 dispose=()=>{alive=false;request++;closeHelp(false);rankDispose();releaseAccess?.();clearTimeout(rolloverTimer);lifecycle.abort();gameplayObserver?.disconnect();};
 controller={refresh:()=>refreshView(true),back,isHistoryOpen:()=>active()&&view==='history',syncCatalog:viewer=>viewer===owner?syncCatalog():Promise.resolve(false)};
-if(!client||!owner){const empty=el('div','','board-rank-empty'),art=el('img');art.src='/assets/design/games/stacker.svg';art.alt='';const copy=el('div'),actions=el('div','','board-rank-actions');actions.append(Object.assign(el('a','회원가입','btn'),{href:'/?auth=signup&next=world'}),Object.assign(el('a','로그인','btn'),{href:'/?auth=login&next=world'}));copy.append(el('h3','이번 달 게임순위'),el('p','처음 오셨나요? 회원가입하거나 로그인하면 게임 기록을 저장하고 순위에 도전할 수 있어요.'),actions);empty.append(art,copy);content.append(empty);return;}
+if(!client||!owner||(guest&&!Object.keys(games).length)){const empty=el('div','','board-rank-empty'),art=el('img');art.src='/assets/design/games/stacker.svg';art.alt='';const copy=el('div'),actions=el('div','','board-rank-actions');actions.append(Object.assign(el('a','회원가입','btn'),{href:'/?auth=signup&next=world'}),Object.assign(el('a','로그인','btn'),{href:'/?auth=login&next=world'}));copy.append(el('h3','이번 달 게임순위'),el('p','처음 오셨나요? 회원가입하거나 로그인하면 게임 기록을 저장하고 순위에 도전할 수 있어요.'),actions);empty.append(art,copy);content.append(empty);return;}
 const playing=()=>document.body.classList.contains('gaming')||document.body.classList.contains('matgo-open');
 let gaming=playing();
 window.addEventListener('ojjuda:game-record-saved',event=>{

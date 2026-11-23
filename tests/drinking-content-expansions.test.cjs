@@ -19,7 +19,9 @@ const entryKeys = entries => entries.map(entry => JSON.stringify(entry)).sort();
 const rowEntry = row => row.second === null ? row.body : [row.body, row.second];
 // The SQL below intentionally exercises historical expansion wording. Bundled
 // client files instead follow the current reviewed corrections.
-const currentCatalog = async kind => (await import('../scripts/lib/drinking-catalogs.mjs')).loadDrinkingCatalog(kind);
+const currentCatalog = async kind => kind === 'king'
+  ? (await import('../scripts/build-drinking-king-actions.mjs')).createKingActionsPlan().entries.map(entry => entry.body)
+  : (await import('../scripts/lib/drinking-catalogs.mjs')).loadDrinkingCatalog(kind);
 
 function validateWords(entries, maxLength) {
   for (const word of entries) {

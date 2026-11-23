@@ -1,26 +1,39 @@
-import {personalReadingMap,pairReadingMap,connectReadingMap,indexPages} from './reading-map.mjs?v=20261115-saju-menus1';
 import {getReadingSources} from './sources.mjs?v=20261113-saju-reader1';
 import {applyReadingSummaryViews} from './reading-summary-view.mjs?v=20261113-saju-summary1';
-import {applyReadingScoreViews} from './reading-score-view.mjs?v=20261114-saju-copy1';
+import {applyReadingScoreViews} from './reading-score-view.mjs?v=20261120-saju-story2';
 import {createCompatibilityScoreboard,createCompatibilityScoreDetails} from './compatibility-score-view.mjs?v=20261114-saju-copy1';
 import {appendReadingDetail} from './reading-detail.mjs?v=20261114-saju-depth1';
-import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261115-saju-menus1';
-import {createReadingNavigator} from './reading-navigator.mjs?v=20261114-saju-almanac1';
-import {attachReadingSwipe} from './reading-swipe.mjs?v=20261114-saju-slide1';
-import {createReadingMotion} from './reading-motion.mjs?v=20261114-saju-slide1';
+import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261120-saju-prune1';
+import {createStoryReader} from './story-reader.mjs?v=20261120-saju-prune1';
 
 const readingPagers=new WeakMap();
 const pagerDocuments=new WeakSet();
 
+function disposeReadingPagers(container) {
+  for(const owner of [container,...container.querySelectorAll('[data-reader-paged]')]) {
+    const pager=readingPagers.get(owner);if(!pager)continue;
+    pager.dispose?.();readingPagers.delete(owner);
+    owner.classList.remove('story-reader');
+    for(const attribute of ['data-reader-paged','data-story-scenes','data-map-view','aria-label'])owner.removeAttribute(attribute);
+  }
+}
+
+function revealPagedId(doc,id,{move=false}={}) {
+  for(const container of doc.querySelectorAll('[data-reader-paged]')) {
+    const pager=readingPagers.get(container);
+    if(pager?.hasTarget?.(id))return pager.revealId(id,{move});
+  }
+  return false;
+}
+
 function revealPagedTarget(target) {
-  const container=target?.closest('[data-reader-paged]');
-  return container?readingPagers.get(container)?.reveal(target):false;
+  return target?.id?Boolean(revealPagedId(target.ownerDocument,target.id)):false;
 }
 
 export function restoreReadingPage(container,pageId) {
   if(typeof pageId!=='string'||!pageId)return false;
-  const target=[...container.querySelectorAll('[data-reader-page]')].find(element=>element.id===pageId);
-  return target?Boolean(revealPagedTarget(target)):false;
+  const owner=readingPagers.has(container)?container:container.querySelector('[data-reader-paged]');
+  return Boolean(owner&&readingPagers.get(owner)?.restore(pageId));
 }
 
 function watchReadingTargets(doc) {
@@ -29,15 +42,14 @@ function watchReadingTargets(doc) {
   doc.addEventListener('click',event=>{
     if(event.button||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
     const link=event.target.closest?.('a[href^="#"]');
-    const target=link&&doc.getElementById(link.hash.slice(1));
-    if(target&&revealPagedTarget(target))target.focus({preventScroll:true});
+    const target=link&&revealPagedId(doc,link.hash.slice(1),{move:true});
+    if(target) {
+      event.preventDefault();event.stopPropagation();target.focus({preventScroll:true});
+    }
   },true);
   doc.defaultView?.addEventListener('hashchange',()=>{
-    const target=doc.getElementById(doc.defaultView.location.hash.slice(1));
-    if(target&&revealPagedTarget(target)) {
-      target.focus({preventScroll:true});
-      target.scrollIntoView({block:'start',behavior:'instant'});
-    }
+    const target=revealPagedId(doc,doc.defaultView.location.hash.slice(1),{move:true});
+    if(target)target.focus({preventScroll:true});
   });
 }
 
@@ -193,7 +205,9 @@ function portraitSummaryTable(portrait) {
     description.append(node('p','summary-cell-text',item.title));
     row.append(label,description);body.append(row);
   }
-  return table;
+  const details=node('details','reading-story-details reading-overview-details');
+  details.append(node('summary','reading-story-toggle','상황별로 한눈에 보기'),table);
+  return details;
 }
 
 function readerOverview(overview, sectionId, chapters=[], showLabel=false, fallbackEvidenceId=null, parentHeadingId=null) {
@@ -323,6 +337,7 @@ function moreAdvice(advice, sectionId) {
   const suggestions=adviceView(advice,sectionId);
   if (!suggestions) return null;
   const details=node('details','reading-more-advice');
+  details.dataset.readingOverview='advice';
   details.append(node('summary','full-reading-toggle','생활에 적용해 보기'),suggestions);
   return details;
 }
@@ -646,6 +661,7 @@ function sourcesView(topic,year) {
 function monthSpotlight(overviews, currentMonth, year) {
   const start=currentMonth||1;
   const spotlight=node('section','months-spotlight');
+  spotlight.dataset.readingOverview='monthly-spotlight';
   spotlight.setAttribute('aria-label',currentMonth?'지금부터 이어지는 월별 흐름':`${year}년의 시작`);
   spotlight.append(node('p','reader-label',currentMonth?'지금부터 이어지는 흐름':`${year}년의 시작`));
   const cards=node('div','month-spotlight-cards');
@@ -844,6 +860,7 @@ function timingsView(timings, reading, fortune) {
     const headingId=`reading-timings-month-${item.month}`;
     links.append(readingLink(`${item.month}월`,headingId,'reader-topic-link'));
     const article=node('details','reader-timing-card');
+    article.dataset.readingOverview='timing';
     article.open=item.month===initiallyOpen;
     article.dataset.month=String(item.month);
     article.dataset.origin=item.origin||timings.origin;
@@ -1074,20 +1091,24 @@ export function renderCompatibilityReport(container, reading, {names=[]}={}) {
     element.id=`compatibility-reading-card-${index+1}`;
     pages.push({element,label:reading.cards[index].label,group:'궁합 자세히 읽기'});
   });
-  const pager=createCompatibilityPager(section,pages,pairReadingMap(reading));
-  if(reading.readingScope)section.append(readingScopeView(reading.readingScope,'compatibility-reading-coverage'));
+  if(reading.readingScope) {
+    const coverage=readingScopeView(reading.readingScope,'compatibility-reading-coverage');section.append(coverage);
+    pages.push({element:coverage,label:'풀이 안내',group:'풀이 안내',kind:'information'});
+  }
+  const pager=createCompatibilityPager(section,pages);
   section.dataset.readerPaged='true';readingPagers.set(section,pager);
   watchReadingTargets(section.ownerDocument);
+  disposeReadingPagers(container);
   container.replaceChildren(section);
 }
 
-// Keep the purchased reading in its original DOM. Only its current reading unit
-// and the ancestors needed to reach it are shown; the calculation is untouched.
+// Register authored units, then turn their complete text into one flat story
+// scene at a time. Calculations and purchased reading data remain untouched.
 function buildReadingPager(root,{reading,fortune,topic}) {
   const pages=[],pageByNode=new Map(),defaults=new Map();
   const find=id=>root.querySelector(`[id="${id}"]`);
   const all=(scope,selector)=>[...(scope?.querySelectorAll(selector)||[])];
-  let serial=0,host=root,current=null,lastReading=null,motion=null,mapView=null;
+  let serial=0;
   function add(element,label,group,options={}) {
     if(!element)return null;
     if(pageByNode.has(element))return pageByNode.get(element);
@@ -1121,6 +1142,8 @@ function buildReadingPager(root,{reading,fortune,topic}) {
   const lifelong=find('reading-lifelong');
   if(lifelong) {
     const intro=lifelong.querySelector('.portrait-intro')||lifelong.querySelector('.reader-intro');
+    const earlierIntro=lifelong.querySelector('.portrait-previous .reader-intro');
+    if(earlierIntro)earlierIntro.dataset.readingOverview='legacy-lifelong';
     const first=add(intro,'나의 성격 요약','평생운 · 나의 성격',{showHeading:true});
     defaults.set(lifelong,first);
     const portraitCards=new Map(all(lifelong,'.portrait-card').map(element=>[element.dataset.portraitCard,element]));
@@ -1192,184 +1215,26 @@ function buildReadingPager(root,{reading,fortune,topic}) {
   if(allNav)add(allNav,'전체 풀이 목록','읽기 목록',{kind:'contents',inMenu:false});
   if(!pages.length)throw new Error('읽을 내용을 나누지 못했어요. 다시 불러와 주세요.');
 
-  function parentPage(element) {
-    for(let parent=element.parentElement;parent&&parent!==host;parent=parent.parentElement) {
-      if(pageByNode.has(parent))return pageByNode.get(parent);
-    }
-    return null;
-  }
-  // Month and ten-year summaries offer a short list of their own sections.
-  // The original cards and their h4/h5/paragraph order are never moved.
+  const coverage=find('reading-coverage');
+  if(coverage)add(coverage,'풀이 안내','풀이 안내',{kind:'information'});
   for(const page of pages) {
-    if(page.childLinks===false||page.kind==='contents')continue;
-    const children=pages.filter(child=>child!==page&&child.kind!=='contents'&&parentPage(child.element)===page);
-    if(!children.length)continue;
-    const existingOutline=page.element.querySelector('.chapter-outline');
-    if(existingOutline&&page.kind==='support')continue;
-    const links=node('nav','reading-page-sections');
-    links.setAttribute('aria-label',`${page.label} 세부 내용`);
-    const list=node('ul');
-    for(const child of children) {
-      const item=node('li');item.append(readingLink(child.label,child.id,'reading-page-section-link'));list.append(item);
-    }
-    links.append(list);page.element.append(links);
-  }
-
-  const navigation=node('nav','reading-pager');navigation.id='reading-pager';navigation.tabIndex=-1;
-  navigation.setAttribute('aria-label','운세 분야 선택');
-  const label=node('label','reading-pager-label','읽을 내용');label.htmlFor='reading-page-select';
-  const select=node('select','reading-page-select');select.id='reading-page-select';
-  const groups=new Map();
-  for(const page of pages.filter(page=>page.inMenu)) {
-    if(!groups.has(page.menuGroup)) {
-      const group=node('optgroup');group.label=page.menuGroup;groups.set(page.menuGroup,group);select.append(group);
-    }
-    const option=node('option','',page.label);option.value=page.id;groups.get(page.menuGroup).append(option);
-  }
-  const temporary=node('optgroup');temporary.label='지금 읽는 세부 내용';
-  const domainForPage=page=>page.element.closest('#reading-daeun')?'daeun'
-    :page.element.closest('#reading-annual')?'annual'
-    :page.element.closest('#reading-months,#reading-timings')?'monthly':'lifelong';
-  const picker=createReadingNavigator({select,pages,domainForPage,
-    domains:[{id:'lifelong',label:'평생운'},{id:'daeun',label:'대운'},{id:'annual',label:'올해운'},{id:'monthly',label:'월별운'}],
-    groupForPage:page=>String(page.menuGroup||page.group).replace(/^평생운\s*·\s*/,'')
-      .replace(/^\d+년 올해운\s*·\s*/,'').replace(/^\d+년 월별운$/,'월 선택')});
-  label.hidden=true;
-  const controls=node('div','reading-pager-controls');
-  const previous=node('button','reading-pager-step','이전');previous.type='button';
-  const position=node('p','reading-page-position');position.id='reading-page-position';position.setAttribute('role','status');position.setAttribute('aria-live','polite');
-  const next=node('button','reading-pager-step','다음');next.type='button';
-  controls.append(previous,position,next);
-  navigation.append(label,select,picker.element,controls);
-  picker.toggle.setAttribute('aria-describedby',position.id);
-  const back=readingLink('다른 분야 고르기','reading-pager','reader-detail-link reading-back-to-picker');
-  back.addEventListener('click',event=>{
-    if(event.button||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
-    picker.focus({open:true});
-  });
-
-  const managed=new Set();
-  for(const page of pages) {
-    let element=page.element;
-    managed.add(element);
-    while(element.parentElement&&element.parentElement!==root) {
-      for(const sibling of element.parentElement.children)managed.add(sibling);
-      element=element.parentElement;
+    page.domain=page.kind==='information'?'information':page.element.closest('#reading-daeun')?'daeun'
+      :page.element.closest('#reading-annual')?'annual':page.element.closest('#reading-months,#reading-timings')?'monthly':'lifelong';
+    if(page.domain==='monthly') {
+      const owner=page.element.closest('.month-reading,.reader-timing-card');
+      const month=Number(owner?.dataset.month||owner?.id.match(/^reading-month-(\d+)$/)?.[1]);
+      page.period=month?{id:`month-${month}`,label:`${fortune.year}년 ${month}월`,current:month===activeMonth}
+        :{id:'monthly-overview',label:'월별 요약·안내'};
+    } else if(page.domain==='daeun') {
+      const period=page.element.closest('.daeun-period');
+      page.period=period?{id:period.id,label:period.querySelector('.daeun-age').textContent,
+        current:period.classList.contains('is-current')}:{id:'daeun-overview',label:'10년 흐름 안내'};
     }
   }
-  for(const element of root.children)managed.add(element);
-  const originallyHidden=new Set([...managed].filter(element=>element.hidden));
-  for(const element of managed)element.dataset.readerBranch='';
-  const readable=pages.filter(page=>page.kind==='reading');
-  function show(page,{move=false}={}) {
-    if(!page)return false;
-    mapView?.revealDetail();
-    let transition=null;
-    if(move&&current&&current!==page)transition=motion?.prepare(Math.sign(pages.indexOf(page)-pages.indexOf(current)));
-    else motion?.cancel();
-    const contexts=new Set();
-    for(let ancestor=page.element;ancestor&&ancestor!==host;ancestor=ancestor.parentElement) {
-      if(ancestor.tagName==='DETAILS') {
-        ancestor.open=true;
-        const summary=ancestor.querySelector(':scope > summary');if(summary)contexts.add(summary);
-      }
-      if(ancestor.classList.contains('daeun-period')) {
-        const dates=ancestor.querySelector('.daeun-dates');if(dates)contexts.add(dates);
-      }
-      if(ancestor.classList.contains('reader-daeun')) {
-        const notice=ancestor.querySelector(':scope > .daeun-time-notice');if(notice)contexts.add(notice);
-      }
-      if(ancestor.classList.contains('month-reading')) {
-        const dates=ancestor.querySelector('.month-period');if(dates)contexts.add(dates);
-      }
-    }
-    if(page.showHeading) {
-      const heading=page.element.closest('.report-section')?.querySelector(':scope > .report-section-heading');
-      if(heading)contexts.add(heading);
-    }
-    for(const element of managed) {
-      const ownsPage=pageByNode.has(element);
-      const visible=element===page.element||element.contains(page.element)
-        ||(!ownsPage&&page.element.contains(element))||contexts.has(element);
-      element.hidden=originallyHidden.has(element)||!visible;
-    }
-    if(current)current.element.removeAttribute('data-reader-current');
-    current=page;page.element.dataset.readerCurrent='true';
-    if(page.kind==='reading')lastReading=page;
-    temporary.replaceChildren();temporary.remove();
-    if(!page.inMenu) {
-      const option=node('option','',`${page.group} · ${page.label}`);option.value=page.id;
-      temporary.append(option);select.append(temporary);
-    }
-    select.value=page.id;
-    picker.sync();
-    const index=readable.indexOf(page),siblings=readable.filter(item=>item.group===page.group);
-    const supporting=page.kind!=='reading';
-    previous.textContent=supporting?'풀이로':'이전';
-    previous.disabled=supporting?!lastReading:index<=0;
-    next.disabled=supporting||index===readable.length-1;
-    position.textContent=supporting?page.label:`${page.group} · ${siblings.indexOf(page)+1} / ${siblings.length}`;
-    select.setAttribute('aria-describedby',position.id);
-    page.element.append(back);
-    if(move) {
-      // Keep the picker or step button focused for consecutive keyboard choices.
-      // Links into the reading still focus their destination in readingLink().
-      navigation.scrollIntoView({block:'start',behavior:transition||document.documentElement.dataset.reducedMotion==='true'?'instant':'smooth'});
-    }
-    motion?.finish(transition,page.element);
-    return true;
-  }
-  function pageFor(target) {
-    if(navigation.contains(target))return null;
-    for(let element=target;element&&element!==host;element=element.parentElement) {
-      if(pageByNode.has(element))return pageByNode.get(element);
-      if(defaults.has(element))return defaults.get(element);
-      const contained=pages.find(page=>element.contains(page.element));
-      if(contained)return contained;
-    }
-    return null;
-  }
-  select.addEventListener('change',()=>show(pages.find(page=>page.id===select.value),{move:true}));
-  previous.addEventListener('click',()=>show(current.kind==='reading'?readable[readable.indexOf(current)-1]:lastReading,{move:true}));
-  next.addEventListener('click',()=>show(readable[readable.indexOf(current)+1],{move:true}));
-  root.prepend(navigation);
-  const initial=topic==='monthly'?defaults.get(months):defaults.get(lifelong||annual)||readable[0];
-  show(initial);
+  const initial=topic==='monthly'?defaults.get(months):defaults.get(lifelong||annual)||pages.find(page=>page.kind==='reading');
   return {mount(container) {
-    const map=personalReadingMap(container,reading,fortune,topic,initial);
-    const monthMenu={label:'월별 세부 풀이',fieldLabel:'월 선택',periods:new Map(),currentId:'reading-month-'+activeMonth};
-    const ageMenu={label:'10년 대운 세부 풀이',fieldLabel:'나이 구간',periods:new Map(),currentId:daeun?.querySelector('.daeun-period.is-current')?.id};
-    const mainPages=[];
-    for(const page of pages) {
-      if(page.kind==='contents')continue;
-      const age=page.element.closest('.daeun-period');
-      const timing=page.element.closest('.reader-timing-card');
-      const month=page.element.closest('.month-reading') || (timing && months?.querySelector('#reading-month-'+timing.dataset.month));
-      const period=age||month;
-      if(!period) {
-        if(page.inMenu)mainPages.push(page);
-        continue;
-      }
-      const menu=age?ageMenu:monthMenu;
-      if(!menu.periods.has(period.id)) {
-        const label=age?age.querySelector('.daeun-age').textContent:(month.dataset.month || month.id.replace('reading-month-',''))+'월';
-        menu.periods.set(period.id,{label,pages:[]});
-      }
-      menu.periods.get(period.id).pages.push(page);
-    }
-    indexPages(map,mainPages,page=>page.menuGroup,[monthMenu,ageMenu]);
-    mapView=connectReadingMap(container,map);
-    host=container;container.dataset.readerPaged='true';
-    motion=createReadingMotion(container,{getCurrentPage:()=>current?.element});
-    attachReadingSwipe(container,{previous,next,motion});
-    readingPagers.set(container,{reveal:target=>{
-      if(mapView.contains(target))return false;
-      if(!show(pageFor(target)))return false;
-      for(let element=target;element&&element!==container;element=element.parentElement) {
-        if(element.tagName==='DETAILS')element.open=true;
-      }
-      return true;
-    }});
+    const controller=createStoryReader(container,{pages,initialPage:initial,defaults});
+    readingPagers.set(container,controller);
     watchReadingTargets(container.ownerDocument);
   }};
 }
@@ -1435,8 +1300,9 @@ export function renderDetailedReport(container, {reading, fortune, topic}) {
   removeReadingReferenceViews(fragment);
   applyReadingSummaryViews(fragment,reading);
   applyReadingScoreViews(fragment,reading);
-  const pager=buildReadingPager(fragment,{reading,fortune,topic});
   if(reading.readingScope)fragment.append(readingScopeView(reading.readingScope,'reading-coverage'));
+  const pager=buildReadingPager(fragment,{reading,fortune,topic});
+  disposeReadingPagers(container);
   container.replaceChildren(fragment);
   pager.mount(container);
 }

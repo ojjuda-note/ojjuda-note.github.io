@@ -11,7 +11,7 @@ if (proof) fs.mkdirSync(proof, { recursive: true });
 let world = fs.readFileSync(path.join(root, 'world.html'), 'utf8')
   .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g, '')
   .replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";', 'const screwGame={};');
-world = world.replace('</head>', () => '<script>' + fs.readFileSync(path.join(root, 'app/world/world-themes.js'), 'utf8') + '</script></head>');
+world = world.replace('</head>', () => '<script>' + ['shared/content/word-mask.js','app/world/world-themes.js'].map(file=>fs.readFileSync(path.join(root,file),'utf8')).join('\n') + '</script></head>');
 const boot = world.indexOf('j1(()=>H());gm(');
 assert.ok(boot > 0, 'World boot is available');
 world = world.slice(0, boot) + `
@@ -116,6 +116,18 @@ g.tab='my';H();
       const { mood, moodText } = profileTest.model.me;
       return { mood, moodText };
     }), { mood: '😊', moodText: '저장한 기분' }, 'saving active fields preserves existing legacy profile data');
+    await page.locator('#p-nick').fill('새 ㅅㅂ 이름');
+    await page.locator('#p-bio').fill('반가워 씨.1발 오늘도 함께해요');
+    await page.locator('[data-act="profile-save"]').click();
+    assert.deepEqual(await readProfile(),{nick:'새 ❤️❤️ 이름',bio:'반가워 ❤️❤️ 오늘도 함께해요'},'forbidden spans are replaced and the profile is saved');
+    assert.deepEqual(await page.evaluate(()=>({nick:profileTest.model.me.nick,bio:profileTest.model.me.bio})),await readProfile(),'the visible profile and saved model use the same masked text');
+    const fullBio='가'.repeat(39)+'좆';
+    await page.locator('#p-bio').fill(fullBio);
+    await page.locator('[data-act="profile-save"]').click();
+    await page.waitForFunction(()=>document.querySelector('#p-bio').maxLength===43);
+    assert.equal(await page.locator('#p-bio').inputValue(),'가'.repeat(39)+'❤️❤️','mask expansion does not truncate a valid maximum-length profile');
+    await page.locator('[data-act="profile-save"]').click();
+    assert.equal(await page.locator('#p-bio').inputValue(),'가'.repeat(39)+'❤️❤️','editing an already masked profile is idempotent');
     const refreshed = { nick: '저장 후 이름', bio: '다른 기기에서 바꾼 소개' };
     await page.evaluate(profile => { Object.assign(profileTest.model.me, profile); profileTest.render(); }, refreshed);
     assert.deepEqual(await readProfile(), refreshed, 'a saved draft is cleared and does not mask subsequent model updates');

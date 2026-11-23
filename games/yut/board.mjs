@@ -1,5 +1,5 @@
-import { animalFor,drawZodiac } from './zodiac.mjs?v=5';
-import { TEAMS,EVENT_NAMES,tileEffect } from './rules.mjs?v=17';
+import { animalFor,drawZodiac } from './zodiac.mjs?v=6';
+import { TEAMS,EVENT_NAMES,tileEffect } from './rules.mjs?v=21';
 
 // Orthographic view of a walnut board with a green lacquer playing surface.
 const TAU = Math.PI * 2;

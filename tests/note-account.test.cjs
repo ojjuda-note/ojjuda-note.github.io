@@ -13,21 +13,26 @@ const defer = () => { let resolve; const promise = new Promise(r => { resolve = 
 const plain = value => JSON.parse(JSON.stringify(value));
 
 (async () => {
-  let dom, window, document, behavior, calls, run, authUser, profileNickname;
+  let dom, window, document, behavior, calls, run, authUser, profileNickname, authListeners;
   const user = id => ({ user: { id, email: `${id}@example.test` }, access_token: `test-token-${id}` });
   const button = label => [...document.querySelectorAll('#management-backdrop button')].find(b => b.textContent === label);
-  const message = () => document.querySelector('.management-message').textContent;
+  const message = () => document.querySelector('#management-backdrop .management-message').textContent;
   const submit = async () => { document.querySelector('.note-account-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true })); await settle(); };
   const click = async id => { document.getElementById(id).click(); await settle(); };
   function boot(id = 'alice') {
     dom?.window.close();
     dom = new JSDOM(html, { url: 'https://ojjuda.test/note/', runScripts: 'outside-only', pretendToBeVisual: true });
     window = dom.window; document = window.document;
-    behavior = {}; calls = []; authUser = id ? user(id) : null; profileNickname = '포근한고래';
+    behavior = {}; calls = []; authListeners = []; authUser = id ? user(id) : null; profileNickname = '포근한고래';
     window.scrollTo = () => {}; window.HTMLElement.prototype.scrollTo = () => {};
     window.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
     run = code => new vm.Script(code).runInContext(dom.getInternalVMContext());
     const api = {
+      schema() { return {rpc:async name=>{
+        assert.ok(['get_note_state','list_my_inquiries'].includes(name));
+        calls.push(['support-read',name]);
+        return {data:name==='get_note_state'?{}:[]};
+      }}; },
       from(table) {
         assert.equal(table, 'profiles');
         let update, ownerId;
@@ -44,6 +49,7 @@ const plain = value => JSON.parse(JSON.stringify(value));
         }; return query;
       },
       auth: {
+        onAuthStateChange(callback) { authListeners.push(callback); },
         async getSession() { calls.push(['session']); return { data: { session: authUser }, error: null }; },
         async getUser(token) { calls.push(['verify', token]); return behavior.verify ? behavior.verify() : { data: { user: authUser?.user }, error: null }; },
         async updateUser(value) { calls.push(['password', plain(value)]); return behavior.password ? behavior.password() : { data: { user: authUser?.user }, error: null }; },
@@ -69,6 +75,7 @@ const plain = value => JSON.parse(JSON.stringify(value));
       };
     } };
     run(fs.readFileSync(path.join(root, 'features/account/account-deletion.js'), 'utf8'));
+    run(fs.readFileSync(path.join(root, 'note/support.js'), 'utf8'));
     run(source.slice(0, bootAt));
     // Keep the real account/dialog/auth-change code; unrelated feed requests are out of scope.
     run(`loadWorldBalance = async () => {}; loadModerator = async () => {}; loadNoteState = async () => {};
@@ -76,13 +83,37 @@ const plain = value => JSON.parse(JSON.stringify(value));
       leaveNoteAccount = () => window.__leave();`);
     window.__leave = () => calls.push(['leave']);
     run(`session = ${JSON.stringify(authUser)}; authKnown = true; updateAuth();`);
+    for (const callback of authListeners) callback('INITIAL_SESSION',authUser);
   }
   function switchTo(id) {
     authUser = id ? user(id) : null;
     run(`receiveAuth(${JSON.stringify(authUser)})`);
+    for (const callback of authListeners) callback(id?'SIGNED_IN':'SIGNED_OUT',authUser);
+  }
+  async function openDelete() {
+    assert.equal(document.getElementById('note-delete-account'),null);
+    document.querySelector('#note-help-actions .support-entry').click(); await settle();
+    const panel = document.querySelector('.note-support-layer [role="dialog"]');
+    const account = panel.querySelector('[data-support-account]');
+    const withdrawal = panel.querySelector('[data-support-withdrawal]');
+    assert.equal(window.OjjudaNoteSupport.isOpen(),true);
+    assert.equal(panel.lastElementChild,withdrawal.closest('footer'));
+    assert.equal(withdrawal.closest('footer').hidden,false);
+    assert.equal(account.open,false,'each support entry starts with account management collapsed');
+    withdrawal.click(); await settle();
+    assert.equal(window.OjjudaNoteSupport.isOpen(),true);
+    assert.equal(document.getElementById('note-delete-nickname'),null);
+    panel.querySelector('[data-support-account-toggle]').click(); await settle();
+    assert.equal(account.open,true);
+    assert.equal(withdrawal.textContent,'회원 탈퇴 안내');
+    assert.equal(document.getElementById('note-delete-nickname'),null,'expanding account management does not open confirmation');
+    assert.equal(calls.some(call=>call[0]==='rpc'||call[0]==='signout'),false);
+    withdrawal.click(); await settle();
+    assert.equal(window.OjjudaNoteSupport.isOpen(),false);
+    assert.ok(document.getElementById('note-delete-nickname'));
   }
   async function readyDelete() {
-    await click('note-delete-account');
+    await openDelete();
     document.getElementById('note-delete-nickname').value = profileNickname;
     document.querySelector('.note-account-consent input').checked = true;
   }
@@ -102,7 +133,7 @@ const plain = value => JSON.parse(JSON.stringify(value));
     assert.equal(write[1], 'alice'); assert.equal(write[2].nickname, '반짝고래');
     assert.deepEqual(Object.keys(write[2]).sort(), ['nickname', 'updated_at']);
     assert.equal(document.getElementById('note-account-name').textContent, '반짝고래');
-    assert.match(document.querySelector('.management-body').textContent, /닉네임을 저장/);
+    assert.match(document.querySelector('#management-backdrop .management-body').textContent, /닉네임을 저장/);
 
     boot(); behavior.profileWrite = async () => ({ error: { code: '23505' } });
     await click('note-change-nickname'); await submit();
@@ -114,7 +145,7 @@ const plain = value => JSON.parse(JSON.stringify(value));
     await click('note-change-nickname'); switchTo('bob');
     oldRead.resolve({ data: { nickname: '<img src=x onerror=alert(1)>' }, error: null }); await settle();
     assert.equal(document.getElementById('note-new-nickname'), null);
-    assert.equal(document.querySelector('.management-body img'), null);
+    assert.equal(document.querySelector('#management-backdrop .management-body img'), null);
 
     boot(); await click('note-change-password');
     document.getElementById('note-new-password').value = '123';
@@ -128,7 +159,7 @@ const plain = value => JSON.parse(JSON.stringify(value));
     assert.equal(document.getElementById('note-new-password').disabled, true);
     pendingPassword.resolve({ error: null }); await settle();
     assert.equal(document.getElementById('note-new-password'), null);
-    assert.match(document.querySelector('.management-body').textContent, /비밀번호를 바꿨어요/);
+    assert.match(document.querySelector('#management-backdrop .management-body').textContent, /비밀번호를 바꿨어요/);
 
     boot(); await click('note-change-password');
     document.getElementById('note-new-password').value = 'new-password';
@@ -146,7 +177,7 @@ const plain = value => JSON.parse(JSON.stringify(value));
     assert.deepEqual(calls.find(c => c[0] === 'signout')[1], { scope: 'local' });
     assert.equal(calls.filter(c => c[0] === 'leave').length, 1);
 
-    boot(); await click('note-delete-account'); await submit();
+    boot(); await openDelete(); await submit();
     assert.match(message(), /닉네임이 맞지/);
     document.getElementById('note-delete-nickname').value = profileNickname; await submit();
     assert.match(message(), /안내를 확인/); assert.equal(calls.some(c => c[0] === 'session'), false);

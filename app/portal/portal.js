@@ -19,6 +19,7 @@
     ? (window.ojjudaSupabase || (window.ojjudaSupabase = window.supabase.createClient(config.supabaseUrl, config.supabaseKey)))
     : null;
   window.OjjudaSiteUsage?.configure({ client });
+  window.OjjudaGrowthAttribution?.configure({ client });
 
   const dialog = $('auth-dialog');
   const form = $('auth-form');
@@ -46,7 +47,6 @@
 
   let authMode = 'login';
   let signupNickname = null;
-  let generatedSignupNickname = null;
   let session = null;
   let authReady = false;
   let pendingDestination = null;
@@ -55,6 +55,7 @@
   let identityVersion = 0;
   let pendingIdentity = null;
   let authEventVersion = 0;
+  let authIdentityEventVersion = 0;
   let authViewVersion = 0;
   let enteringNote = false;
   let recoveryPending = /(?:^|[?&])reset=1(?:&|$)/.test(location.search.slice(1))
@@ -78,13 +79,15 @@
     ? authQuery.get('card') : null;
   let groupInvite = authQuery.get('next') === 'groups' && authQuery.getAll('invite').length === 1 && validReturnCard(authQuery.get('invite')) ? authQuery.get('invite') : null;
   let returnQueryDestination = destinationPath(authQuery.get('next')) ? authQuery.get('next') : null;
+  // Keep the chosen space when the dialog closes or switches account modes.
+  let entryDestination = returnQueryDestination;
   let requestedAuthMode = ['login', 'signup', 'forgot'].includes(authQuery.get('auth'))
     ? authQuery.get('auth') : returnQueryDestination ? 'login' : null;
 
   function messageFor(error) {
     const text = String(error?.message || error || '').toLowerCase();
     if (text.includes('nickname_unavailable')) return '닉네임을 만들지 못했어요. 잠시 후 다시 시도해 주세요.';
-    if (text.includes('nickname_not_allowed')) return '사용할 수 없는 닉네임이에요. 다른 이름을 입력해 주세요.';
+    if (nicknameTaken(error)) return '이미 사용 중인 닉네임이에요. 다른 이름을 입력해 주세요.';
     if (text.includes('invalid_signup_referrer')) return '추천인 정보가 바뀌었어요. 다시 찾아 확인해 주세요.';
     if (text.startsWith('추천인')) return error.message;
     if (text.includes('rejoin_wait_3_days')) return '탈퇴 후 3일(72시간)이 지난 뒤 다시 가입할 수 있어요.';
@@ -110,6 +113,18 @@
     return '처리하지 못했어요. 잠시 후 다시 시도해 주세요.';
   }
 
+  // Keep this IIFE aligned with shared/content/text-length.mjs.
+  const nicknameLength = value => [...String(value ?? '').replaceAll('❤️❤️', '♥')].length;
+  function syncNicknameLimit() {
+    nickname.maxLength = 12 + nickname.value.length - nicknameLength(nickname.value);
+  }
+  nickname.addEventListener('input', syncNicknameLimit);
+
+  function nicknameTaken(error) {
+    const text = String(error?.message || '').toLowerCase();
+    return text.includes('nickname') && (error?.code === '23505' || /already|conflict|_key/.test(text));
+  }
+
   function ensureSignupNickname(captureInput = false) {
     if (captureInput) signupNickname = nickname.value.trim();
     if (signupNickname === null) {
@@ -120,25 +135,27 @@
       else for (let i = 0; i < random.length; i++) random[i] = Math.floor(Math.random() * 256);
       signupNickname = words[random[0] % words.length]
         + Array.from(random.slice(1), value => alphabet[value % alphabet.length]).join('');
-      generatedSignupNickname = signupNickname;
     }
     nickname.value = signupNickname;
+    syncNicknameLimit();
     return signupNickname;
   }
 
+  async function canonicalNickname(candidate, isCurrent) {
+    const { data, error } = await client.rpc('mask_banned', { t: candidate });
+    if (!isCurrent()) return null;
+    if (error) throw error;
+    if (typeof data !== 'string' || !data.trim() || nicknameLength(data.trim()) > 12)
+      throw new Error('nickname_unavailable');
+    return data.trim();
+  }
+
   async function prepareSignupNickname(currentView) {
-    // Only regenerate rejected candidates; never retry the account creation.
-    for (let attempt = 0; attempt < 4; attempt++) {
-      const candidate = ensureSignupNickname();
-      const { data, error } = await client.rpc('has_banned', { t: candidate });
-      if (!currentView()) return null;
-      if (error) throw new Error('nickname_unavailable');
-      if (data === false) return candidate;
-      if (data !== true) throw new Error('nickname_unavailable');
-      if (candidate !== generatedSignupNickname) throw new Error('nickname_not_allowed');
-      signupNickname = null;
-    }
-    throw new Error('nickname_unavailable');
+    const name = await canonicalNickname(ensureSignupNickname(), currentView);
+    if (name === null) return null;
+    signupNickname = nickname.value = name;
+    syncNicknameLimit();
+    return name;
   }
 
   function setBusy(value) {
@@ -168,13 +185,40 @@
     return data;
   }
 
+  // Identity only: authentication and the validated return destination stay shared.
+  function syncEntryIdentity(destination) {
+    const spaces = {
+      note: {key:'park', name:'공원', copy:'마음이 쉬어가는 공원.', line:'이름 없이 나누는\n오늘의 이야기.'},
+      pajang: {key:'pajang', name:'파장', copy:'마음이 닿는 오늘의 한마디.', line:'답변으로 시작하는\n새로운 인연.'},
+      world: {key:'agit', name:'아지트', copy:'취향이 모이는 우리의 아지트.', line:'가볍게 놀고,\n다정하게 나눠요.'}
+    };
+    const space = spaces[destination] || spaces.world;
+    dialog.setAttribute('data-entry-space', space.key);
+    const text = (id, value) => { const element = $(id); if (element) element.textContent = value; };
+    text('account-space-name', space.name);
+    text('account-space-line', space.line);
+    text('auth-space-copy', space.copy);
+    text('front-title', '오쭈다 ' + space.name);
+    text('front-copy', space.copy);
+    text('front-space', space.name);
+    const browse = $('entry-browse');
+    if (browse) browse.href = destinationPath(destination || 'world') + (destination === 'note' ? '&guest=1' : '');
+    return space;
+  }
+
   function setAuthMode(mode, notice = '') {
     if (dialog.open && authMode === 'signup') signupNickname = nickname.value.trim();
     authViewVersion++;
     authMode = mode;
     $('guest-browse').hidden = mode !== 'login';
+    const guestDestination = pendingDestination || entryDestination || returnQueryDestination || 'world';
+    const entrySpace = syncEntryIdentity(guestDestination);
+    $('guest-browse').href = destinationPath(guestDestination) + (guestDestination === 'note' ? '&guest=1' : '');
     const isSignup = mode === 'signup';
-    if (isSignup) prepareSignupFields();
+    if (isSignup) {
+      prepareSignupFields();
+      window.OjjudaGrowthAttribution?.startSignup();
+    }
     else referral?.setActive(false);
     const isForgot = mode === 'forgot';
     const isReset = mode === 'reset' || mode === 'direct-reset';
@@ -205,12 +249,12 @@
     $('password-label').textContent = isReset ? '새 비밀번호' : '비밀번호';
     $('password-confirm-label').textContent = isReset ? '새 비밀번호 확인' : '비밀번호 확인';
     password.autocomplete = isSignup || isReset ? 'new-password' : 'current-password';
-    $('auth-title').textContent = isSignup ? '오쭈다 아지트' : isForgot ? '비밀번호 찾기' : isReset ? '새 비밀번호 설정' : isNickname ? '닉네임 정하기' : '오쭈다 아지트';
-    $('auth-intro').textContent = isSignup ? '한 번 가입하면 오쭈다 아지트의 모든 공간을 이용할 수 있어요.'
+    $('auth-title').textContent = isForgot ? '비밀번호 찾기' : isReset ? '새 비밀번호 설정' : isNickname ? '닉네임 정하기' : '오쭈다 ' + entrySpace.name;
+    $('auth-intro').textContent = isSignup ? (guestDestination === 'pajang' ? '만 19세 이상 회원만 파장을 이용할 수 있어요.' : '오쭈다 계정 하나로 함께해요.')
       : isForgot ? '등록된 이메일·전화번호·생년월일·성별을 모두 입력해 주세요.'
         : isReset ? '새 비밀번호를 입력하고, 확인 칸에 한 번 더 입력해 주세요.'
           : isNickname ? '아지트에서 사용할 닉네임을 정해 주세요.'
-          : '오락실에서 게임을 즐기고 공원에서 이야기를 나눠요.';
+          : guestDestination === 'pajang' ? '만 19세 이상 회원만 이용할 수 있어요.' : '오쭈다 계정으로 함께해요.';
     submit.firstChild.textContent = isSignup ? '회원가입 ' : isForgot ? '회원정보 확인 ' : isReset ? '확인 ' : isNickname ? '아지트 시작하기 ' : '로그인 ';
     feedback.textContent = notice;
     if ((isSignup || isForgot) && !window.OjjudaIdentity?.fields) feedback.textContent = '회원정보 입력 화면을 불러오지 못했어요. 다시 시도해 주세요.';
@@ -222,8 +266,8 @@
   }
 
   function openAuth(mode, destination) {
-    if (destination !== undefined) pendingDestination = destination;
-    else if (!pendingDestination) pendingDestination = returnQueryDestination;
+    if (destinationPath(destination)) entryDestination = destination;
+    pendingDestination = entryDestination || returnQueryDestination;
     setAuthMode(mode);
     showDialog();
     if (!client) {
@@ -232,7 +276,7 @@
       return;
     }
     submit.disabled = busy || (['signup', 'forgot'].includes(mode) && !window.OjjudaIdentity);
-    (mode === 'nickname' ? nickname : mode === 'reset' ? password : email).focus();
+    (mode === 'nickname' ? nickname : mode === 'reset' ? password : email).focus({ preventScroll: true });
   }
 
   function showState(title, body, buttonText = '로그인 화면으로') {
@@ -254,6 +298,22 @@
   function destinationPath(key) {
     if (!Object.hasOwn(destinations, key)) return null;
     return destinations[key] + (key === 'groups' && groupInvite ? '#invite=' + encodeURIComponent(groupInvite) : key === 'byeolcheonji' && bookingReturn ? '?' + bookingReturn : '');
+  }
+
+  function authReturnUrl(destination) {
+    const url = new URL('/', location.href);
+    if (!destinationPath(destination)) return url;
+    url.searchParams.set('next', destination);
+    if (destination === 'groups' && groupInvite) url.searchParams.set('invite', groupInvite);
+    if (destination === 'note' && returnCard) url.searchParams.set('card', returnCard);
+    if (destination === 'byeolcheonji') for (const [key, value] of new URLSearchParams(bookingReturn)) url.searchParams.set(key, value);
+    return url;
+  }
+
+  function clearRecoveryLocation() {
+    const url = authReturnUrl(pendingDestination || entryDestination || returnQueryDestination);
+    // Remove recovery credentials while retaining only the validated return route.
+    history.replaceState(history.state, '', location.pathname + url.search);
   }
 
   function rememberAfterEmail(destination, address) {
@@ -300,23 +360,25 @@
       url.searchParams.delete('room');
       url.searchParams.delete('guests');
       url.searchParams.delete('invite');
-      history.replaceState(null, '', url.pathname + url.search + url.hash);
+      history.replaceState(history.state, '', url.pathname + url.search + url.hash);
     }
   }
 
-  function goToDestination(key) {
+  function goToDestination(key, replace = true) {
     const path = destinationPath(key);
     if (key === 'note') {
-      void enterNote();
+      void enterNote(undefined, replace);
     } else if (path) {
       clearReturnDestination();
-      location.assign(path);
+      // Authentication is an intermediate step, not a page to revisit on Back.
+      location[replace ? 'replace' : 'assign'](path);
     }
   }
 
   function showNicknameSetup(candidate, notice) {
     openAuth('nickname', 'note');
     nickname.value = candidate || '';
+    syncNicknameLimit();
     feedback.textContent = notice;
     nickname.focus();
   }
@@ -328,7 +390,7 @@
       || /nickname|banned|forbidden|금지|닉네임/.test(detail);
   }
 
-  async function enterNote(overrideNickname) {
+  async function enterNote(overrideNickname, replace = true) {
     if (enteringNote) return;
     if (!client || !session?.user) {
       openAuth('login', 'note');
@@ -337,12 +399,13 @@
     enteringNote = true;
     const expectedUserId = session.user.id;
     const expectedIdentityVersion = identityVersion;
+    const expectedAuthEventVersion = authIdentityEventVersion;
     const expectedViewVersion = authViewVersion;
     const noteButton = document.querySelector('[data-destination="note"]');
     if (noteButton) noteButton.disabled = true;
     const release = () => { if (noteButton) noteButton.disabled = false; enteringNote = false; };
     const accountChanged = () => session?.user?.id !== expectedUserId || identityVersion !== expectedIdentityVersion
-      || authViewVersion !== expectedViewVersion;
+      || authIdentityEventVersion !== expectedAuthEventVersion || authViewVersion !== expectedViewVersion;
     try {
       const { data: identity, error: identityError } = await verifyCurrentUser();
       if (accountChanged()) return;
@@ -364,9 +427,15 @@
         feedback.textContent = '로그인을 다시 확인해 주세요.';
         return;
       }
-      const candidate = overrideNickname === undefined
+      let candidate = overrideNickname === undefined
         ? String(identity.user.user_metadata?.nickname || '').trim()
         : String(overrideNickname).trim();
+      if (overrideNickname !== undefined) {
+        const name = await canonicalNickname(candidate, () => !accountChanged());
+        if (name === null || accountChanged()) return;
+        candidate = nickname.value = name;
+        syncNicknameLimit();
+      }
       const { data, error } = await client.rpc('ensure_member_for_note', { p_nickname: candidate });
       if (accountChanged()) return;
       if (error) {
@@ -379,9 +448,20 @@
         showNicknameSetup(candidate, '공원 연결을 확인하지 못했어요. 다시 시도해 주세요.');
         return;
       }
+      const { data: profile, error: profileError } = await client.from('profiles')
+        .select('id,nickname').eq('id', expectedUserId).maybeSingle();
+      if (accountChanged()) return;
+      if (profileError || profile?.id !== expectedUserId || typeof profile.nickname !== 'string'
+          || !profile.nickname.trim() || nicknameLength(profile.nickname) > 12) {
+        showNicknameSetup(candidate, '저장한 닉네임을 확인하지 못했어요. 다시 시도해 주세요.');
+        return;
+      }
+      nickname.value = profile.nickname;
+      syncNicknameLimit();
+      $('account-badge').textContent = `${profile.nickname}님`;
       const notePath = destinations.note + (returnCard ? `&card=${encodeURIComponent(returnCard)}` : '');
       clearReturnDestination();
-      location.assign(notePath);
+      location[replace ? 'replace' : 'assign'](notePath);
     } catch (error) {
       console.warn('노트 회원 준비 실패:', error);
       if (accountChanged()) return;
@@ -398,7 +478,7 @@
       requestedAuthMode = null;
       const url = new URL(location.href);
       url.searchParams.delete('auth');
-      history.replaceState(null, '', url.pathname + url.search + url.hash);
+      history.replaceState(history.state, '', url.pathname + url.search + url.hash);
       // Existing sessions resume the chosen space; recovery links take priority.
       if ((!user || mode === 'forgot') && !recoveryPending) openAuth(mode, returnQueryDestination);
     }
@@ -487,7 +567,7 @@
     let signupIdentity = null, recoveryDetails = null, signupReferrer = null;
     if (authMode === 'signup' || authMode === 'nickname') {
       const name = authMode === 'signup' ? ensureSignupNickname(true) : nickname.value.trim();
-      if (!name || name.length > 12) {
+      if (!name || nicknameLength(name) > 12) {
         feedback.textContent = '닉네임을 1~12자로 입력해 주세요.';
         nickname.focus();
         return;
@@ -532,6 +612,7 @@
       prepareSignupFields();
       try {
         signupIdentity = window.OjjudaIdentity.read(form, 'signup');
+        if(window.OjjudaInvite?.pending()&&!referral)throw Error('추천인 입력 화면을 불러오지 못했어요. 새로고침한 뒤 다시 가입해 주세요.');
         signupReferrer = referral?.read() || null;
       } catch (error) {
         feedback.textContent = error.message;
@@ -552,7 +633,14 @@
 
     const requestView = authViewVersion;
     const currentView = () => dialog.open && authViewVersion === requestView;
-    let nicknameRejected = false;
+    const requestIdentity = identityVersion, requestAuthEvent = authIdentityEventVersion;
+    const currentSignup = () => {
+      if (!currentView()) return false;
+      if (identityVersion === requestIdentity && authIdentityEventVersion === requestAuthEvent) return true;
+      feedback.textContent = '로그인 상태가 바뀌었어요. 다시 확인해 주세요.';
+      return false;
+    };
+    let duplicateNickname = false;
     setBusy(true);
     try {
       if (authMode === 'login') {
@@ -561,21 +649,20 @@
         if (error) throw error;
         if (!data?.session?.user) throw new Error('missing_session');
         applySession(data.session);
-        const destination = pendingDestination || resumedDestination(data.session.user);
+        const destination = pendingDestination || entryDestination || resumedDestination(data.session.user) || 'world';
         pendingDestination = null;
         dialog.close();
-        if (destination) goToDestination(destination);
-        else $('places').scrollIntoView({ behavior: 'smooth' });
+        goToDestination(destination);
       } else if (authMode === 'signup') {
         await referral?.verify(signupReferrer);
-        if (!currentView()) return;
-        const name = await prepareSignupNickname(currentView);
-        if (!currentView() || !name) return;
-        const confirmationUrl = new URL('/', location.href);
-        if (destinationPath(pendingDestination)) confirmationUrl.searchParams.set('next', pendingDestination);
-        if (pendingDestination === 'groups' && groupInvite) confirmationUrl.searchParams.set('invite', groupInvite);
-        if (pendingDestination === 'note' && returnCard) confirmationUrl.searchParams.set('card', returnCard);
-        if (pendingDestination === 'byeolcheonji') for (const [key, value] of new URLSearchParams(bookingReturn)) confirmationUrl.searchParams.set(key, value);
+        if (!currentSignup()) return;
+        const name = await prepareSignupNickname(currentSignup);
+        if (!currentSignup() || !name) return;
+        const destination = pendingDestination || entryDestination || 'world';
+        const confirmationUrl = authReturnUrl(destination);
+        let campaignMetadata = {};
+        try { campaignMetadata = await window.OjjudaGrowthAttribution?.signupMetadata() || {}; } catch {}
+        if (!currentSignup()) return;
         const { data, error } = await client.auth.signUp({
           email: address,
           password: secret,
@@ -588,26 +675,27 @@
               gender_code: signupIdentity.genderCode,
               phone_number: signupIdentity.phone,
               age_14_or_older: true,
-              ...(signupReferrer ? { referrer_id: signupReferrer.id, referrer_nickname: signupReferrer.nickname } : {})
+              ...campaignMetadata,
+              ...(signupReferrer?.code ? {referrer_code:signupReferrer.code}
+                : signupReferrer ? { referrer_id: signupReferrer.id, referrer_nickname: signupReferrer.nickname } : {})
             },
             emailRedirectTo: confirmationUrl.href
           }
         });
+        if(!error)window.OjjudaInvite?.clear();
         if (!currentView()) return;
         if (error) throw error;
-        signupNickname = generatedSignupNickname = null;
+        signupNickname = null;
         referral?.reset();
         for (const input of $('signup-identity-slot').querySelectorAll('input')) input.value = '';
         $('signup-result').textContent = '';
         if (data?.session?.user) {
           applySession(data.session);
-          const destination = pendingDestination;
           pendingDestination = null;
           dialog.close();
-          if (destination) goToDestination(destination);
-          else $('places').scrollIntoView({ behavior: 'smooth' });
+          goToDestination(destination);
         } else {
-          rememberAfterEmail(pendingDestination, address);
+          rememberAfterEmail(destination, address);
           pendingDestination = null;
           showState('이메일을 확인해 주세요', '가입 확인 메일을 보냈어요. 메일함에서 인증한 뒤 로그인해 주세요.');
         }
@@ -628,7 +716,7 @@
         if (!currentView() || recoveryGrant !== grant) return;
         if (data?.reset !== true) throw new Error('recovery_restart_required');
         recoveryPending = false;
-        history.replaceState(null, '', location.pathname);
+        clearRecoveryLocation();
         showState('비밀번호가 바뀌었어요', '새 비밀번호로 다시 로그인해 주세요.', '로그인하기');
         recoveryCompleted = true;
       } else if (authMode === 'reset') {
@@ -636,14 +724,14 @@
         if (!currentView()) return;
         if (error) throw error;
         recoveryPending = false;
-        history.replaceState(null, '', location.pathname);
+        clearRecoveryLocation();
         if (data?.user) applySession({ ...(session || {}), user: data.user });
-        showState('비밀번호가 바뀌었어요', '이제 아지트로 이동할 수 있어요.', '공간 고르기');
+        showState('비밀번호가 바뀌었어요', '로그인했던 곳으로 돌아갈 수 있어요.', '돌아가기');
       }
     } catch (error) {
       console.warn('계정 처리 실패:', error);
       if (!currentView()) return;
-      nicknameRejected = error.message === 'nickname_not_allowed';
+      duplicateNickname = nicknameTaken(error);
       if (authMode === 'direct-reset' && !/invalid_recovery_password|recovery_password_mismatch/.test(error.message || '')) setAuthMode('forgot', messageFor(error));
       else feedback.textContent = messageFor(error);
     } finally {
@@ -652,19 +740,19 @@
         passwordConfirm.value = '';
       }
       setBusy(false);
-      if (nicknameRejected && currentView()) nickname.focus();
+      if (duplicateNickname && currentView()) nickname.focus();
     }
   }
 
   document.querySelectorAll('[data-open-auth]').forEach(button => {
-    button.addEventListener('click', () => openAuth(button.dataset.openAuth, 'world'));
+    button.addEventListener('click', () => openAuth(button.dataset.openAuth));
   });
   document.querySelectorAll('[data-destination]').forEach(button => {
     button.addEventListener('click', event => {
       const target = button.dataset.destination;
       if (!destinationPath(target)) return;
       event.preventDefault();
-      if (session?.user) goToDestination(target);
+      if (session?.user) goToDestination(target, false);
       else openAuth('login', target);
     });
   });
@@ -681,7 +769,7 @@
     clearRecoveryGrant();
     recoveryCompleted = false;
     form.reset();
-    signupNickname = generatedSignupNickname = null;
+    signupNickname = null;
     referral?.reset(); referral?.setActive(false);
     feedback.textContent = '';
     if ($('signup-result')) $('signup-result').textContent = '';
@@ -697,8 +785,9 @@
     if (recoveryGrant) { setAuthMode('forgot'); email.focus(); }
     else if (recoveryCompleted) { setAuthMode('login'); email.focus(); }
     else if (!recoveryPending && session?.user) {
+      const destination = pendingDestination || entryDestination || resumedDestination(session.user) || 'world';
       dialog.close();
-      $('places').scrollIntoView({ behavior: 'smooth' });
+      goToDestination(destination);
     } else {
       setAuthMode('login');
       email.focus();
@@ -734,6 +823,7 @@
     console.error('오쭈다 계정 연결 정보를 확인해 주세요.');
   } else {
     client.auth.onAuthStateChange((event, current) => {
+      if ((session?.user?.id || null) !== (current?.user?.id || null)) authIdentityEventVersion++;
       authEventVersion++;
       // Supabase warns against awaiting another auth operation in this callback.
       setTimeout(() => {
@@ -777,3 +867,4 @@
     });
   }
 })();
+

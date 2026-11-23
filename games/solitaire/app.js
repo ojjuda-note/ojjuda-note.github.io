@@ -11,11 +11,20 @@ const SUIT_NAMES={spades:'스페이드',hearts:'하트',clubs:'클로버',diamon
 const cardElements=new Map();
 const recordOwner=new URLSearchParams(location.search).get('owner')||'guest';
 const KEY='ojjuda-solitaire-v1:'+recordOwner;
+const DIFFICULTY_KEY='ojjuda-solitaire-difficulty-v1:'+recordOwner;
+// Preference changes must never overwrite an unfinished solitaire game.
+function preferredDraw(){
+  try{return localStorage.getItem(DIFFICULTY_KEY)==='1'?1:3;}catch{return 3;}
+}
+function rememberDraw(value){
+  if(value!==1&&value!==3)return;
+  try{localStorage.setItem(DIFFICULTY_KEY,String(value));}catch{}
+}
 const records=window.OjjudaPuzzleRecords.open('solitaire',recordOwner);
 let delivery=null,deliveryTimer;
 const adminPreview=()=>window.parent!==window&&window.parent.OjjudaAdminPreview?.isEnabled?.()===true;
 let externalPaused=false, runId=crypto.randomUUID(), completion=null, stopWinAnimation=null;
-let state=createGame(), history=[], elapsed=0, started=false, selected=null, locked=false, winPlaying=false, lastTick=Date.now(), ignoreClickUntil=0, lastTap=null, pointer=null, toastTimer, saveWorking=true;
+let state=createGame(preferredDraw()), history=[], elapsed=0, started=false, selected=null, locked=false, winPlaying=false, lastTick=Date.now(), ignoreClickUntil=0, lastTap=null, pointer=null, toastTimer, saveWorking=true;
 try {
   const saved=JSON.parse(localStorage.getItem(KEY));
   if(saved?.version===1 && validateState(saved.state)) {
@@ -234,9 +243,10 @@ async function finish(){
 }
 const dialog=$('#dialog');
 const entryDialog=$('#entry-dialog');
-let entryDraw=state.drawCount;
-function chooseEntryDraw(value){
-  entryDraw=value===3?3:1;
+let entryDraw=preferredDraw();
+function chooseEntryDraw(value,remember=false){
+  entryDraw=value===1?1:3;
+  if(remember)rememberDraw(entryDraw);
   entryDialog.querySelectorAll('[data-entry-draw]').forEach(button=>{
     const active=Number(button.dataset.entryDraw)===entryDraw;
     button.setAttribute('aria-pressed',String(active));
@@ -245,7 +255,7 @@ function chooseEntryDraw(value){
 }
 function showEntry(){
   const resumable=(started||state.moves>0)&&!isWon(state);
-  chooseEntryDraw(state.drawCount);
+  chooseEntryDraw(preferredDraw());
   $('#entry-continue').hidden=!resumable;
   const start=$('#entry-start');
   start.classList.toggle('ge-primary',!resumable);
@@ -256,7 +266,7 @@ function showEntry(){
   entryDialog.showModal();
   (resumable?$('#entry-continue'):start).focus({preventScroll:true});
 }
-entryDialog.querySelectorAll('[data-entry-draw]').forEach(button=>button.onclick=()=>chooseEntryDraw(Number(button.dataset.entryDraw)));
+entryDialog.querySelectorAll('[data-entry-draw]').forEach(button=>button.onclick=()=>chooseEntryDraw(Number(button.dataset.entryDraw),true));
 $('#entry-continue').onclick=()=>{entryDialog.close();lastTick=Date.now();$('#stock')?.focus({preventScroll:true});};
 $('#entry-start').onclick=()=>{entryDialog.close();startNewGame(entryDraw);$('#stock')?.focus({preventScroll:true});};
 $('#entry-help').onclick=()=>help();
@@ -272,16 +282,16 @@ function openDialog(html){
 dialog.addEventListener('close',()=>{lastTick=Date.now();});
 function newGameDialog(){
   if(locked&&!isWon(state))return;
-  stopCelebration();let chosen=state.drawCount;
+  stopCelebration();let chosen=preferredDraw();
   openDialog(`<div class="dialog-icon">♠</div><div class="dialog-kicker">A FRESH START</div><h2 class="dialog-title">새로운 한 판</h2><p class="dialog-text">${state.moves&&!isWon(state)?'진행 중인 게임은 새 게임으로 바뀌어요.':'카드를 섞고, 천천히 시작해 볼까요?'}<br>난이도를 골라 주세요.</p><div class="draw-options"><button class="draw-option ${chosen===1?'active':''}" data-draw="1" aria-pressed="${chosen===1}"><strong>초보</strong><small>한 번에 1장씩 공개</small></button><button class="draw-option ${chosen===3?'active':''}" data-draw="3" aria-pressed="${chosen===3}"><strong>보통</strong><small>한 번에 3장씩 공개</small></button></div><div class="dialog-buttons"><button data-close>돌아가기</button><button class="primary" id="start-new">게임 시작</button></div>`);
-  dialog.querySelectorAll('[data-draw]').forEach(b=>b.onclick=()=>{chosen=Number(b.dataset.draw);dialog.querySelectorAll('[data-draw]').forEach(x=>{x.classList.toggle('active',Number(x.dataset.draw)===chosen);x.setAttribute('aria-pressed',String(Number(x.dataset.draw)===chosen));});});
+  dialog.querySelectorAll('[data-draw]').forEach(b=>b.onclick=()=>{chosen=Number(b.dataset.draw);rememberDraw(chosen);dialog.querySelectorAll('[data-draw]').forEach(x=>{x.classList.toggle('active',Number(x.dataset.draw)===chosen);x.setAttribute('aria-pressed',String(Number(x.dataset.draw)===chosen));});});
   $('#start-new').onclick=()=>startNewGame(chosen);
 }
 function stopCelebration(){
   const stop=stopWinAnimation;stopWinAnimation=null;winPlaying=false;locked=false;stop?.();
 }
 function startNewGame(drawCount=state.drawCount){
-  stopCelebration();
+  stopCelebration();rememberDraw(drawCount);
   state=createGame(drawCount);runId=crypto.randomUUID();completion=null;history=[];elapsed=0;started=false;selected=null;lastTap=null;lastTick=Date.now();ignoreClickUntil=0;
   $('#confetti').replaceChildren();render();save();if(dialog.open)dialog.close();
   $('#new-game').focus({preventScroll:true});toast('새 카드를 나눴어요. 편안하게 즐겨 주세요.');

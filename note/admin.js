@@ -5,8 +5,8 @@
   const ADMIN_BASE = (() => { try { return new URL('.', document.currentScript?.src || location.href).href; } catch { return ''; } })();
   let adminMap = null;
   const FONT_CHOICES = [
-    ['default', '고운돋움'], ['round', '둥근 글씨'], ['serif', '명조'],
-    ['handwriting', '손글씨'], ['mono', '고정폭']
+    ['default', '고운돋움'], ['round', '둥근 글씨'], ['serif', '명조'], ['nanum-myeongjo', '나눔명조'],
+    ['handwriting', '손글씨'], ['heart', '하트 손글씨 · 싱글데이'], ['mono', '고정폭']
   ];
   const EFFECT_CHOICES = [
     ['none', '없음'], ['rain', '비 내리기'], ['shimmer', '빛 스치기'],
@@ -82,6 +82,8 @@
   let root, panel, nav, main, status, closeButton;
   let editPreviewObserver = null;
   let inquiryController = null;
+  let mediaGeneration = 0, mediaDialog = null;
+  const mediaViews = new Set(), mediaRequests = new Set(), mediaUrls = new Map();
   const draftValues = new Map();
   let extraDraftCheck = () => false;
 
@@ -120,6 +122,7 @@
   function empty(target, message) { target.append(el('p', 'na-empty', message)); }
   function badge(text, variant = '') { return el('span', `na-badge${variant ? ` na-badge--${variant}` : ''}`, text); }
   function sectionTitle(title, help) {
+    clearCardMedia();
     editPreviewObserver?.disconnect(); editPreviewObserver = null;
     inquiryController?.destroy?.(); inquiryController = null;
     draftValues.clear(); extraDraftCheck = () => false;
@@ -193,6 +196,237 @@
     if (error) throw error;
     return data;
   }
+  function releaseVideo(video) {
+    if (!video) return;
+    try { video.pause(); } catch {}
+    video.removeAttribute('src'); video.removeAttribute('poster');
+    try { video.load(); } catch {}
+  }
+  function closeMediaDialog(restoreFocus = true) {
+    if (!mediaDialog) return;
+    const { dialog, trigger, image } = mediaDialog; mediaDialog = null;
+    image.removeAttribute('src');
+    try { dialog.close(); } catch {}
+    dialog.remove();
+    if (restoreFocus && trigger.isConnected && !trigger.closest('[inert]')) trigger.focus({ preventScroll: true });
+  }
+  function clearCardMedia() {
+    mediaGeneration++;
+    closeMediaDialog(false);
+    for (const controller of mediaRequests) controller.abort();
+    mediaRequests.clear();
+    for (const view of mediaViews) {
+      releaseVideo(view.video);
+      view.image?.removeAttribute('src');
+    }
+    mediaViews.clear(); mediaUrls.clear();
+  }
+  function mediaPath(value) {
+    return typeof value === 'string' && value.length > 0 && value.length <= 1024
+      && !/[\\?#\x00-\x1f\x7f]/.test(value) && !value.startsWith('/')
+      && value.split('/').every(part => part && part !== '.' && part !== '..');
+  }
+  function signedMediaUrl(value, bucket, path) {
+    try {
+      const base = new URL(window.OJJUDA_CONFIG?.supabaseUrl || client?.storage?.url || client?.supabaseUrl);
+      const url = new URL(value, base);
+      return url.protocol === 'https:' && url.origin === base.origin && !url.username && !url.password
+        && decodeURIComponent(url.pathname) === `/storage/v1/object/sign/${bucket}/${path}` ? url.href : null;
+    } catch { return null; }
+  }
+  async function signMedia(bucket, paths, current, force = false) {
+    if (!['note-card-photos', 'note-event-photos', 'note-card-videos'].includes(bucket)
+      || !paths.every(mediaPath)) throw new Error('invalid_media_path');
+    const result = new Map(), missing = [];
+    for (const path of new Set(paths)) {
+      const key = bucket + ':' + path, cached = mediaUrls.get(key);
+      if (!force && cached?.until > Date.now()) result.set(path, cached.url);
+      else { mediaUrls.delete(key); missing.push(path); }
+    }
+    if (!missing.length) return result;
+    const { data, error } = await client.storage.from(bucket).createSignedUrls(missing, 120);
+    if (!current()) return new Map();
+    if (error || !Array.isArray(data)) throw error || new Error('media_signing_failed');
+    for (const row of data) {
+      if (!missing.includes(row.path) || row.error) continue;
+      const url = signedMediaUrl(row.signedUrl, bucket, row.path);
+      if (!url) continue;
+      const now = Date.now();
+      mediaUrls.set(bucket + ':' + row.path, { url, until: now + 90000, expiresAt: now + 120000 });
+      result.set(row.path, url);
+    }
+    return result;
+  }
+  function cardMediaSlot(card) {
+    const slot = el('section', 'na-card-media'); slot.dataset.cardId = card.id; slot.hidden = true;
+    return { card, slot };
+  }
+  function mediaError(target, retry) {
+    const message = el('div', 'na-media-error'); message.setAttribute('role', 'status');
+    message.append(el('span', '', '사진·영상을 불러오지 못했어요.'), button('다시 불러오기', retry));
+    target.replaceChildren(message);
+  }
+  function showMediaPhoto(view, trigger) {
+    if (!view.current()) return;
+    closeMediaDialog(false);
+    const dialog = el('dialog', 'na-media-dialog'); dialog.setAttribute('aria-label', '업로드 사진');
+    const image = el('img', 'na-media-full-photo'); image.alt = '사용자가 올린 사진';
+    const content = el('div', 'na-media-dialog-content');
+    const closeButton = button('닫기', () => closeMediaDialog()); closeButton.classList.add('na-media-dialog-close');
+    content.append(closeButton, image); dialog.append(content); panel.append(dialog);
+    mediaDialog = { dialog, image, trigger };
+    const current = () => view.current() && mediaDialog?.dialog === dialog;
+    const load = async () => {
+      if (!current()) return;
+      for (const error of content.querySelectorAll('.na-media-error')) error.remove();
+      try {
+        const urls = await signMedia(view.media.photo_bucket, [view.media.photo_path], current);
+        if (!current()) return;
+        const url = urls.get(view.media.photo_path); if (!url) throw new Error('missing_media_url');
+        image.hidden = false; image.src = url;
+      } catch {
+        if (!current()) return;
+        image.hidden = true;
+        const error = el('div'); content.append(error);
+        mediaError(error, () => { error.remove(); mediaUrls.delete(view.media.photo_bucket + ':' + view.media.photo_path); void load(); });
+      }
+    };
+    image.addEventListener('error', () => {
+      if (!current()) return;
+      image.hidden = true;
+      const error = el('div'); content.append(error);
+      mediaError(error, () => { error.remove(); mediaUrls.delete(view.media.photo_bucket + ':' + view.media.photo_path); void load(); });
+    });
+    dialog.addEventListener('cancel', event => { event.preventDefault(); closeMediaDialog(); });
+    dialog.addEventListener('close', () => { if (mediaDialog?.dialog === dialog) closeMediaDialog(); });
+    dialog.addEventListener('click', event => { if (event.target === dialog) closeMediaDialog(); });
+    dialog.addEventListener('keydown', event => {
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeMediaDialog(); }
+      else if (event.key === 'Tab') {
+        event.stopPropagation();
+        const controls = [...dialog.querySelectorAll('button:not(:disabled)')].filter(control => !control.closest('[hidden]'));
+        const first = controls[0], last = controls.at(-1);
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+      }
+    });
+    if (typeof dialog.showModal === 'function') dialog.showModal(); else dialog.setAttribute('open', '');
+    closeButton.focus(); void load();
+  }
+  function renderCardMedia(entry, media, run, generation, initialUrl) {
+    const { slot } = entry;
+    const view = { slot, media, image: null, video: null,
+      current: () => validRun(run) && authorized && mediaGeneration === generation && slot.isConnected };
+    mediaViews.add(view); slot.hidden = false;
+    const isVideo = !!media.video_path;
+    const caption = el('p', 'na-media-label', isVideo ? '업로드 동영상' : '업로드 사진');
+    const surface = el('div', 'na-media-surface'); slot.replaceChildren(caption, surface);
+    let request = 0, automaticPosterRetry = false;
+    const posterError = () => {
+      mediaError(surface, () => void poster(null, true));
+      if (isVideo) surface.append(button('동영상 보기', () => void playVideo()));
+    };
+    const poster = async (url, force = false) => {
+      const ticket = ++request;
+      releaseVideo(view.video); view.video = null;
+      view.image?.removeAttribute('src'); view.image = null;
+      surface.replaceChildren();
+      try {
+        if (!url && media.photo_path) url = (await signMedia(media.photo_bucket, [media.photo_path], view.current, force)).get(media.photo_path);
+        if (!view.current() || request !== ticket) return;
+        if (media.photo_path && !url) throw new Error('missing_media_url');
+        const open = button(isVideo ? '동영상 보기' : '', () => isVideo ? void playVideo() : showMediaPhoto(view, open));
+        open.classList.add(isVideo ? 'na-media-play' : 'na-media-photo');
+        open.setAttribute('aria-label', isVideo ? '동영상 보기' : '업로드 사진 크게 보기');
+        if (url) {
+          const image = el('img', 'na-media-thumbnail'); image.alt = isVideo ? '사용자가 올린 동영상 미리보기' : '사용자가 올린 사진';
+          const signed = mediaUrls.get(media.photo_bucket + ':' + media.photo_path);
+          const expiresAt = signed?.url === url ? signed.expiresAt : 0;
+          image.loading = 'lazy'; image.decoding = 'async'; image.src = url; view.image = image;
+          image.addEventListener('error', () => {
+            if (!view.current() || ticket !== request) return;
+            if (!automaticPosterRetry && expiresAt > 0 && Date.now() >= expiresAt) {
+              automaticPosterRetry = true; void poster(null, true);
+            } else posterError();
+          });
+          open.prepend(image);
+        }
+        if (!isVideo) open.append(el('span', 'na-media-open', '크게 보기'));
+        surface.append(open);
+      } catch { if (view.current() && request === ticket) posterError(); }
+    };
+    const playVideo = async () => {
+      if (!view.current()) return;
+      const ticket = ++request;
+      for (const other of mediaViews) if (other !== view && other.video) { try { other.video.pause(); } catch {} }
+      releaseVideo(view.video);
+      const video = el('video', 'na-media-video'); video.controls = true; video.playsInline = true; video.preload = 'metadata';
+      video.setAttribute('aria-label', '사용자가 올린 동영상');
+      const pending = el('p', 'na-media-loading', '동영상을 불러오는 중이에요.'); pending.setAttribute('role', 'status');
+      view.video = video; surface.replaceChildren(video, pending);
+      const current = () => view.current() && ticket === request && view.video === video;
+      const failed = () => {
+        if (!current()) return;
+        request++; releaseVideo(video); view.video = null;
+        mediaUrls.delete(media.video_bucket + ':' + media.video_path);
+        mediaError(surface, () => void playVideo());
+      };
+      video.addEventListener('error', failed);
+      video.addEventListener('loadedmetadata', () => { if (current()) pending.remove(); });
+      try {
+        const urls = await signMedia(media.video_bucket, [media.video_path], current);
+        if (!current()) return;
+        const url = urls.get(media.video_path); if (!url) throw new Error('missing_media_url');
+        video.src = url;
+        const play = video.play(); play?.catch?.(() => { if (current()) pending.remove(); });
+      } catch { failed(); }
+    };
+    // A failed batch shows a retry control instead of immediately sending one
+    // signing request per card. Video remains playable when its poster is lost.
+    if (media.photo_path && !initialUrl) posterError(); else void poster(initialUrl);
+  }
+  function hydrateCardMedia(entries, run, list) {
+    if (!entries.length || !validRun(run)) return;
+    const generation = mediaGeneration, ids = [...new Set(entries.map(entry => entry.card.id))];
+    const current = () => validRun(run) && authorized && mediaGeneration === generation && list.isConnected;
+    let pending = false, notice = null;
+    const load = async () => {
+      if (!current() || pending) return;
+      pending = true; notice?.remove(); notice = null;
+      const controller = new AbortController(); mediaRequests.add(controller);
+      try {
+        let request = client.schema('ojjuda_note').rpc('admin_card_media_paths', { p_ids: ids });
+        if (typeof request?.abortSignal === 'function') request = request.abortSignal(controller.signal);
+        const { data, error } = await request;
+        if (!current()) return;
+        if (error || !Array.isArray(data) || data.length > ids.length) throw error || new Error('invalid_media_rows');
+        const media = new Map(), groups = new Map();
+        for (const row of data) {
+          if (!ids.includes(row.card_id) || media.has(row.card_id)) continue;
+          const photo = ['note-card-photos', 'note-event-photos'].includes(row.photo_bucket) && mediaPath(row.photo_path);
+          const video = row.video_bucket === 'note-card-videos' && mediaPath(row.video_path);
+          if (!photo && !video) continue;
+          const value = { ...row, photo_bucket: photo ? row.photo_bucket : null, photo_path: photo ? row.photo_path : null,
+            video_bucket: video ? row.video_bucket : null, video_path: video ? row.video_path : null };
+          media.set(row.card_id, value);
+          if (photo) { if (!groups.has(row.photo_bucket)) groups.set(row.photo_bucket, []); groups.get(row.photo_bucket).push(row.photo_path); }
+        }
+        const signed = new Map();
+        await Promise.all([...groups].map(async ([bucket, paths]) => {
+          try { signed.set(bucket, await signMedia(bucket, paths, current)); } catch { signed.set(bucket, new Map()); }
+        }));
+        if (!current()) return;
+        for (const entry of entries) {
+          const row = media.get(entry.card.id); if (!row) continue;
+          renderCardMedia(entry, row, run, generation, signed.get(row.photo_bucket)?.get(row.photo_path));
+        }
+      } catch {
+        if (!current()) return;
+        notice = el('div', 'na-media-notice'); list.prepend(notice); mediaError(notice, () => void load());
+      } finally { mediaRequests.delete(controller); pending = false; }
+    };
+    void load();
+  }
   function friendlyError(error) {
     const message = String(error?.message || '').toLowerCase();
     if ((message.includes('moderator') || message.includes('administrator')) && message.includes('restrict')) return '관리자는 이용 제한 대상이 될 수 없어요.';
@@ -223,7 +457,7 @@
     return true;
   }
   async function drainPendingPhotoCleanup(run) {
-    const buckets = new Set(['note-card-photos', 'note-event-photos']);
+    const buckets = new Set(['note-card-photos', 'note-event-photos', 'note-card-videos']);
     let previousBatch = '';
     for (let batch = 0; batch < 10; batch++) {
       if (!validInstance(run)) return { complete: false };
@@ -387,7 +621,7 @@
         activeStyle = styleActive && visual.style && typeof visual.style === 'object' ? visual.style : {};
         const imageKey = photoActive && visual.photo_key ? visual.photo_key : visual.background_key || card.background_key;
         photo.style.backgroundImage = photoKeyValid(imageKey) ? `url("${photoUrl(imageKey)}")` : '';
-        for (const code of ['round', 'serif', 'handwriting', 'mono']) preview.classList.toggle(`na-edit-font-${code}`, activeStyle.font === code);
+        for (const code of ['round', 'serif', 'nanum-myeongjo', 'handwriting', 'heart', 'mono']) preview.classList.toggle(`na-edit-font-${code}`, activeStyle.font === code);
         for (const code of ['large', 'small']) preview.classList.toggle(`na-edit-size-${code}`, activeStyle.size === code);
         visualReady = true;
         previewHelp.textContent = '고정된 사진 크기에서 글과 태그가 보이는 모습입니다.';
@@ -511,6 +745,7 @@
           const nextStyle = { ...style, font: font.input.value, size: size.input.value,
             theme: theme.input.value, effect: effect.input.value,
             textColor: textColor.input.value, boxColor: boxColor.input.value };
+          if (['heart', 'nanum-myeongjo'].includes(nextStyle.font)) nextStyle.shopFont = 'none';
           delete nextStyle.backgroundColor;
           perform('admin_edit_card_visual', {
             p_card_id: card.id,
@@ -526,6 +761,7 @@
     });
   }
   function localDateTime(value) {
+    if (value == null || value === '') return '';
     const date = new Date(value);
     if (!Number.isFinite(date.getTime())) return '';
     return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
@@ -669,7 +905,7 @@
     const passedSet = new Set(passedIds || []);
     if (!rows?.length) { empty(main, filter.offset ? '이 페이지에 콘텐츠가 없어요.' : '조건에 맞는 카드와 답글이 없어요.'); if (filter.offset) main.append(button('첫 페이지로', () => { filters.cards.offset = 0; load('cards'); })); return; }
     const total = rows[0].total_count; main.append(el('p', 'na-count', `총 ${number(total)}개 · ${filter.offset + 1}–${filter.offset + rows.length}`));
-    const list = el('div', 'na-list');
+    const list = el('div', 'na-list'), media = [];
     for (const card of rows) {
       const reviewedRisk = (filter.view === 'risk' && filter.riskReview === 'passed') || passedSet.has(card.id);
       const riskSignal = RISK_SIGNAL.test(String(card.body || '')) && !reviewedRisk;
@@ -677,7 +913,8 @@
       const meta = el('p', 'na-meta'); meta.append(badge(card.kind === 'comment' ? '답글' : card.kind === 'event' ? '이벤트 카드' : '익명카드'), badge(card.hidden ? '개별 숨김' : '개별 숨김 없음', card.hidden ? 'warn' : 'good'), el('span', '', formatDate(card.created_at)));
       if (reviewedRisk) meta.prepend(badge('✓ 통과됨', 'good'));
       else if (riskSignal) meta.prepend(badge('⚠️ 위험 신호', 'risk'));
-      header.append(meta); item.append(header, el('blockquote', 'na-card-body', card.body));
+      const upload = cardMediaSlot(card); media.push(upload);
+      header.append(meta); item.append(header, el('blockquote', 'na-card-body', card.body), upload.slot);
       if (card.tags?.length) { const tags = el('div', 'na-tags'); for (const tag of card.tags) tags.append(el('span', '', `#${tag}`)); item.append(tags); }
       item.append(el('p', 'na-reason', `작성자: ${shortUser(card.author_id)}`));
       if (card.moderation_reason) item.append(el('p', 'na-reason', `공개 상태 처리 사유: ${card.moderation_reason}`));
@@ -690,7 +927,8 @@
       if (card.author_id) more.row.append(button('이 작성자의 카드 모두 보기', () => { Object.assign(filters.cards, { view: 'card', query: card.author_id, state: 'all', offset: 0, expiredOffset: 0 }); load('cards'); }));
       item.append(actions, more.more); list.append(item);
     }
-    main.append(list); pagination(main, filter.offset, total, offset => { filters.cards.offset = offset; load('cards'); });
+    main.append(list); hydrateCardMedia(media, run, list);
+    pagination(main, filter.offset, total, offset => { filters.cards.offset = offset; load('cards'); });
   }
   function viewArchivedThread(archived) {
     actionScreen('보관된 원문과 답글', '보관 시작부터 한 달 동안 관리자만 원문을 볼 수 있습니다. 이후에는 자동으로 영구 정리됩니다.', (form) => {
@@ -707,12 +945,15 @@
           if (!validRun(run)) return;
           if (offset === 0) content.replaceChildren();
           if (!rows?.length && offset === 0) { empty(content, '보관 원문을 찾지 못했어요.'); return; }
+          const media = [];
           for (const row of rows || []) {
             const item = el('article', 'adm-card na-item');
-            item.append(badge(row.kind === 'comment' ? '답글' : row.kind === 'event' ? '이벤트 카드' : '익명카드'), el('blockquote', 'na-card-body', row.body || '원문 없음'));
+            const upload = cardMediaSlot(row); media.push(upload);
+            item.append(badge(row.kind === 'comment' ? '답글' : row.kind === 'event' ? '이벤트 카드' : '익명카드'), el('blockquote', 'na-card-body', row.body || '원문 없음'), upload.slot);
             if (row.tags?.length) { const tags = el('div', 'na-tags'); for (const tag of row.tags) tags.append(el('span', '', `#${tag}`)); item.append(tags); }
             item.append(details([['카드 번호', row.id], ['작성자 번호', row.author_id], ['작성', formatDate(row.created_at)], ['보관 시작', formatDate(row.archived_at)]])); content.append(item);
           }
+          hydrateCardMedia(media, run, content);
           offset += rows?.length || 0;
           const total = Number(rows?.[0]?.total_count) || offset;
           if (offset < total && rows?.length) more.append(el('span', '', `${number(offset)} / ${number(total)}`), button('답글 더 보기', nextPage));
@@ -811,11 +1052,12 @@
     } else {
       const total = rows[0].total_count; activeSection.append(el('p', 'na-count', `보관 중 ${number(total)}개`));
       const bulk = el('div', 'na-actions'); bulk.append(button(`이 페이지 ${number(rows.length)}개 모두 영구 삭제`, () => confirmPurgeNow(rows), 'danger')); activeSection.append(bulk);
-      const list = el('div', 'na-list');
+      const list = el('div', 'na-list'), media = [];
       for (const archived of rows) {
         const item = el('article', 'adm-card na-item');
         const meta = el('p', 'na-meta'); meta.append(badge(archived.kind === 'event' ? '이벤트 카드' : archived.kind === 'comment' ? '답글' : '익명카드'), badge('관리자 보관', 'warn'));
-        item.append(meta, el('blockquote', 'na-card-body', archived.body || '원문 없음'));
+        const upload = cardMediaSlot(archived); media.push(upload);
+        item.append(meta, el('blockquote', 'na-card-body', archived.body || '원문 없음'), upload.slot);
         if (archived.tags?.length) { const tags = el('div', 'na-tags'); for (const tag of archived.tags) tags.append(el('span', '', `#${tag}`)); item.append(tags); }
         const archiveSource = { retention: '기간 만료', owner: '작성자 삭제', admin: '관리자 삭제' }[archived.archive_reason] || '기타';
         item.append(el('p', 'na-reason', `함께 보관된 답글 ${number(archived.reply_count)}개 · 보관 원인: ${archiveSource}`));
@@ -823,7 +1065,8 @@
         const actions = el('div', 'na-actions'); actions.append(button('원문·답글 보기', () => viewArchivedThread(archived)), button('꾸미기·사진 지정', () => editCardVisual(archived)), button('복구', () => confirmArchiveRestore(archived), 'primary'), button('지금 영구 삭제', () => confirmPurgeNow([archived]), 'danger'));
         item.append(actions); list.append(item);
       }
-      activeSection.append(list); pagination(activeSection, filter.offset, total, offset => { filter.offset = offset; load('cards'); });
+      activeSection.append(list); hydrateCardMedia(media, run, list);
+      pagination(activeSection, filter.offset, total, offset => { filter.offset = offset; load('cards'); });
     }
     const expiredSection = el('section', 'na-archive-section'); expiredSection.append(el('h4', '', '정리 대기')); main.append(expiredSection);
     if (!expired?.length) {
@@ -1099,6 +1342,7 @@
   }
   function close() {
     instance++; pageRun++; busy = false; actionReturn = null;
+    clearCardMedia();
     subscription?.unsubscribe(); subscription = null;
     editPreviewObserver?.disconnect(); editPreviewObserver = null;
     inquiryController?.destroy?.(); inquiryController = null;

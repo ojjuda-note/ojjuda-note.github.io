@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#f7f5ef">
+  <meta name="theme-color" content="#101820">
   <meta name="description" content="두 사람의 출생 정보로 읽는 별빛 궁합. 종합 점수와 항목별 막대그래프, 자세한 풀이를 20쭈에 보고 같은 두 사람은 결제 후 24시간 무료로 다시 보세요.">
   <title>두 사람의 별빛 궁합 · 오쭈다</title>
   <link rel="icon" href="../moonlit-tarot/assets/favicon.svg" type="image/svg+xml">
@@ -15,8 +15,9 @@
   <link rel="stylesheet" href="./reading-detail.css?v=20261114-saju-correction1">
   <link rel="stylesheet" href="./almanac.css?v=20261115-saju-reading-map1">
   <link rel="stylesheet" href="./directory.css?v=20261115-saju-menus1">
+  <link rel="stylesheet" href="./clean-reader.css?v=20261120-saju-story2">
 </head>
-<body class="saju-readable saju-flow saju-edition saju-directory">
+<body class="saju-readable saju-flow saju-edition saju-directory saju-clean">
   <a class="skip-link" href="#compatibility-form">출생 정보 입력으로 바로가기</a>
   <svg class="svg-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
     <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 2.6 7.4L22 12l-7.4 2.6L12 22l-2.6-7.4L2 12l7.4-2.6Z"/></symbol>
@@ -90,11 +91,11 @@
       <noscript><p class="form-error">궁합을 읽으려면 자바스크립트를 켜 주세요.</p></noscript>
     </section>
     <section id="compatibility-result" class="result" aria-labelledby="compatibility-result-title" hidden>
-      <header class="result-heading reading-result-heading"><h2 id="compatibility-result-title" tabindex="-1">두 사람의 <em>궁합</em></h2><div class="reading-size-control" role="group" aria-label="본문 글자 크기"><span aria-hidden="true">글자 크기</span><button type="button" data-reading-size="normal" aria-pressed="true">보통</button><button type="button" data-reading-size="large" aria-pressed="false">크게</button></div></header>
-      <div id="compatibility-detailed" class="detailed-reading" data-reading-size="normal"><div id="compatibility-report"></div><details class="reader-settings"><summary>출생 정보 · 이용 시간</summary><div class="reading-tools"><a href="./" class="other-reading-link">나의 사주 보기</a></div><details class="reading-birth-info"><summary>두 사람의 출생 정보</summary><p id="compatibility-births" class="birth-summary"></p><div class="zodiac-pair"><p id="self-result-zodiac" class="zodiac-preview zodiac-result" hidden></p><p id="partner-result-zodiac" class="zodiac-preview zodiac-result" hidden></p></div></details><p id="compatibility-expiry" class="field-hint"></p></details></div>
-      <div class="result-actions"><button id="compatibility-edit" class="primary-button" type="button">출생 정보 다시 보기</button><button id="compatibility-copy" class="secondary-button" type="button" disabled>성격·궁합 풀이 복사하기</button></div><p id="compatibility-copy-status" class="field-hint" role="status"></p>
+      <header class="result-heading reading-result-heading"><a class="reader-close" href="./" aria-label="풀이 목록으로 돌아가기">‹</a><h2 id="compatibility-result-title" tabindex="-1">두 사람의 <em>궁합</em></h2><button type="button" class="reader-tools-open" data-reader-tools="compatibility-tools" aria-controls="compatibility-tools" aria-haspopup="dialog" aria-expanded="false" aria-label="읽기 설정과 복사">···</button></header>
+      <div id="compatibility-detailed" class="detailed-reading" data-reading-size="normal"><div id="compatibility-report"></div><dialog id="compatibility-tools" class="reader-tools-dialog" aria-labelledby="compatibility-tools-title"><header class="reader-tools-heading"><h3 id="compatibility-tools-title">읽기 설정</h3><button type="button" data-reader-tools-close aria-label="읽기 설정 닫기">×</button></header><div class="reading-size-control" role="group" aria-label="본문 글자 크기"><span aria-hidden="true">글자 크기</span><button type="button" data-reading-size="normal" aria-pressed="true">보통</button><button type="button" data-reading-size="large" aria-pressed="false">크게</button></div><details class="reader-settings"><summary>출생 정보 · 이용 시간</summary><div class="reading-tools"><a href="./" class="other-reading-link">나의 사주 보기</a></div><details class="reading-birth-info"><summary>두 사람의 출생 정보</summary><p id="compatibility-births" class="birth-summary"></p><div class="zodiac-pair"><p id="self-result-zodiac" class="zodiac-preview zodiac-result" hidden></p><p id="partner-result-zodiac" class="zodiac-preview zodiac-result" hidden></p></div></details><p id="compatibility-expiry" class="field-hint"></p></details>
+      <div class="result-actions"><button id="compatibility-edit" class="primary-button" type="button">출생 정보 다시 보기</button><button id="compatibility-copy" class="secondary-button" type="button" disabled>성격·궁합 풀이 복사하기</button></div><p id="compatibility-copy-status" class="field-hint" role="status"></p></dialog></div>
     </section>
   </main>
-  <script src="/shared/analytics/site-usage.js?v=20261113-fortune-visits1"></script>
-  <script type="module" src="./compatibility-app.mjs?v=20261115-saju-reopen1"></script>
+  <script src="/shared/analytics/site-usage.js?v=20261121-pajang-visits1"></script>
+  <script type="module" src="./compatibility-app.mjs?v=20261120-saju-voice1"></script>
 </body></html>

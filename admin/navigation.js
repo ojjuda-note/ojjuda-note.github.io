@@ -12,6 +12,7 @@
       ['payment','settings','첫 방문·무료 충전 설정'] ] },
     { id:'content', label:'콘텐츠 관리', items:[
       ['content','cards','카드'],['content','messages','쪽지 관리'],
+      ['content','pajang-answers','파장 답변 관리'],['content','pajang-questions','질문 제안'],['content','pajang-chats','파장 채팅 관리'],
       ['content','groups','그룹 관리'],['content','photo-stages','포토땅따먹기'],
       ['content','drinking-prompts','술게임 질문·단어 관리'],
       ['content','map','위치 지도'],['library','assets','자료 모아보기'] ] },
@@ -44,39 +45,45 @@
     const value = field ? Number(summary?.[field]) : 0;
     return Number.isSafeInteger(value)&&value>0 ? value : 0;
   }
-  function itemHtml(item,area,tab,summary,groupLabel='') {
+  function itemHtml(item,area,tab,summary,groupLabel='',service='agit') {
     const current=item.area===area&&item.tab===tab;
     const pinned=pins.includes(key(item.area,item.tab));
     const count=badgeNumber(summary,item.area,item.tab);
     const search=(item.label+' '+groupLabel).toLocaleLowerCase('ko-KR');
     const hidden=query&&!search.includes(query)?' hidden':'';
+    const label=`<span>${escape(item.label)}</span><span class="adm-menu-count" data-admin-count="${item.area}:${item.tab}"${count?'':' hidden'}>${count?count.toLocaleString('ko-KR'):''}</span>`;
+    const link=`<button type="button" class="adm-menu-link${current?' is-current':''}" data-act="adm-open" data-area="${item.area}" data-v="${item.tab}"${current?' aria-current="page"':''}>${label}</button>`;
     return `<div class="adm-menu-item" data-admin-nav-item data-search="${escape(search)}"${hidden}>
-      <button type="button" class="adm-menu-link${current?' is-current':''}" data-act="adm-open" data-area="${item.area}" data-v="${item.tab}"${current?' aria-current="page"':''}><span>${escape(item.label)}</span><span class="adm-menu-count" data-admin-count="${item.area}:${item.tab}"${count?'':' hidden'}>${count?count.toLocaleString('ko-KR'):''}</span></button>
+      ${link}
       <button type="button" class="adm-menu-pin${pinned?' is-pinned':''}" data-act="adm-pin" data-area="${item.area}" data-v="${item.tab}" aria-label="${escape(item.label)} 즐겨찾기 ${pinned?'해제':'추가'}" aria-pressed="${pinned}" title="즐겨찾기 ${pinned?'해제':'추가'}">${pinned?'★':'☆'}</button>
     </div>`;
   }
-  function render({area='account',tab='overview',summary=null}={}) {
-    const locationKey=key(area,tab);
+  function render({area='account',tab='overview',summary=null,service}={}) {
+    const scope=global.OjjudaAdminScope;
+    service=scope?.resolve(service,tab)||'agit';
+    const allowed=item=>!scope||scope.allows(service,item.tab);
+    const groups=GROUPS.map(group=>({...group,label:group.id==='content'&&scope?scope.services[service].label+' 관리':group.label,items:group.items.filter(([,target])=>!scope||scope.allows(service,target))}));
+    const locationKey=service+':'+key(area,tab);
     if(lastLocation&&lastLocation!==locationKey){query='';folderSelection=null;}
     lastLocation=locationKey;
     const selected=activeGroup(area,tab);
     const folder=query?'all':folderSelection||selected;
-    const favorites=pins.map(id=>allItems.find(item=>key(item.area,item.tab)===id)).filter(Boolean);
+    const favorites=pins.map(id=>allItems.find(item=>key(item.area,item.tab)===id)).filter(item=>item&&allowed(item));
     const matchedFavorites=favorites.filter(item=>!query||(item.label+' '+GROUPS.find(group=>group.id===item.group)?.label).toLocaleLowerCase('ko-KR').includes(query));
-    const favoriteHtml=favorites.map(item=>itemHtml(item,area,tab,summary,GROUPS.find(group=>group.id===item.group)?.label)).join('');
-    const groupsHtml=GROUPS.map(group=>{
+    const favoriteHtml=favorites.map(item=>itemHtml(item,area,tab,summary,GROUPS.find(group=>group.id===item.group)?.label,service)).join('');
+    const groupsHtml=groups.map(group=>{
       const extra=group.id==='members'
-        ? `<div class="adm-menu-item" data-admin-nav-item data-search="상품권 등록 회원·zu"${query&&!('상품권 등록 회원·zu').includes(query)?' hidden':''}><a class="adm-menu-link" href="/admin/rewards.html">상품권 등록</a></div>` : '';
+        ? `<div class="adm-menu-item" data-admin-nav-item data-search="상품권 등록 회원·zu"${query&&!('상품권 등록 회원·zu').includes(query)?' hidden':''}><a class="adm-menu-link" href="/admin/rewards.html${service==='agit'?'':'?from='+service}">상품권 등록</a></div>` : '';
       const matched=group.items.some(([, ,label])=>!query||(label+' '+group.label).toLocaleLowerCase('ko-KR').includes(query))
         ||(group.id==='members'&&(!query||('상품권 등록 회원·zu').includes(query)));
-      const items=group.items.map(([targetArea,targetTab,label])=>itemHtml({area:targetArea,tab:targetTab,label},area,tab,summary,group.label)).join('')+extra;
+      const items=group.items.map(([targetArea,targetTab,label])=>itemHtml({area:targetArea,tab:targetTab,label},area,tab,summary,group.label,service)).join('')+extra;
       return `<section class="adm-menu-group" data-group="${group.id}"${(query&&!matched)||(!query&&folder!=='all'&&folder!==group.id)?' hidden':''}><h3>${escape(group.label)}</h3><div class="adm-menu-group-items">${items}</div></section>`;
     }).join('');
-    const foldersHtml=[...GROUPS,{id:'all',label:'전체 보기',items:[]}].map(group=>{
+    const foldersHtml=[...groups,{id:'all',label:'전체 보기',items:[]}].map(group=>{
       const total=group.id==='all'?0:group.items.reduce((sum,[a,t])=>sum+badgeNumber(summary,a,t),0);
       return `<button type="button" class="adm-folder-tab${folder===group.id?' is-current':''}" data-act="adm-folder" data-admin-folder="${group.id}" data-v="${group.id}" aria-pressed="${folder===group.id}"><span>${escape(group.label)}</span><span class="adm-menu-count" data-admin-group-count="${group.id}"${total?'':' hidden'}>${total?total.toLocaleString('ko-KR'):''}</span></button>`;
     }).join('');
-    return `<aside class="adm-navigation" aria-label="관리자 메뉴" data-area="${escape(area)}" data-tab="${escape(tab)}">
+    return `<aside class="adm-navigation" aria-label="관리자 메뉴" data-area="${escape(area)}" data-tab="${escape(tab)}" data-service="${service}">
       <div class="adm-nav-body">
         <label class="adm-menu-search-label" for="adm-menu-search">기능 찾기</label>
         <input class="adm-menu-search" id="adm-menu-search" data-admin-search type="search" autocomplete="off" placeholder="관리 기능 검색" value="${escape(query)}">

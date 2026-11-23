@@ -5,17 +5,18 @@
   function view(s,ui) {
     if(s.phase!=='done')return game().markup();
     const g=s.game;
-    if(!Number.isInteger(g.target)){
+    const allSafe=g.allSafe===true;
+    if(!allSafe&&!Number.isInteger(g.target)){
       return '<h1>'+(g.fired?'팡!':'통과')+'</h1><p>팡!이 뜬 휴대폰이 가리킨 사람이 당첨이에요.</p>';
     }
-    const title=ui.esc(s.players[g.target])+' 당첨!';
-    const detail=ui.esc(s.players[g.shooter])+' 휴대폰이 가리킨 사람이에요.';
+    const title=allSafe?'전원 불발':ui.esc(s.players[g.target])+' 당첨!';
+    const detail=allSafe?'다음 판을 시작해요.':ui.esc(s.players[g.shooter])+' 휴대폰이 가리킨 사람이에요.';
     return '<div class="pr-reveal" aria-hidden="true">'+window.PartyRouletteArt.markup()+'</div>'+
       '<h1 class="pr-winner">'+title+'</h1><p class="pr-detail">'+detail+'</p>';
   }
   function mount(s,ui) {
     const id=[s.code,s.round,s.me].join('/');
-    if(id!==key){model=game().model(s.players.length);key=id;}
+    if(id!==key){model=game().model(s.players.length,s.game.chambers??s.players.length);key=id;}
     if(s.phase!=='done'){
       board=game().mount(document.querySelector('.roulette-table'),model,{room:s,...ui});return;
     }
@@ -31,8 +32,9 @@
     prop.dataset.mirror=String((model.side||1)===1);
     stage.parentElement.classList.add('pr-revealing');
     revealTimer=setTimeout(()=>{
-      effectKey=id;game().pulse(g.fired);
-      if(g.fired)window.PartyRouletteArt.flash(prop);
+      const fired=g.allSafe!==true&&g.fired;
+      effectKey=id;game().pulse(fired);
+      if(fired)window.PartyRouletteArt.flash(prop);
     },wait);
     showTimer=setTimeout(()=>{
       stage.parentElement.classList.remove('pr-revealing');stage.hidden=true;

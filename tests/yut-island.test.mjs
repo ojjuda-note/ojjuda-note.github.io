@@ -165,6 +165,30 @@ test('duplicate results are spent one at a time; captures preserve unused result
   g=ordinary();g.pawns[1][0]=[4];g=roll(roll(g,faces(4)),faces(1));
   g=move(g,0,false,4);assert.equal(g.lastMove.captured,1);assert.equal(g.phase,'move');assert.deepEqual(g.pendingRolls,[1]);
 });
+test('yut and mo captures on carry keep the pair but never grant a second capture bonus',()=>{
+  for(const steps of [4,5])for(const captureFirst of [false,true]){
+    const game=ordinary();game.eventTiles={[steps]:'carry'};
+    const destination=Array.from({length:steps},(_,i)=>i+1);
+    game.pawns[1]=[[...destination],[...destination],[],[]];
+    let next=roll(game,faces(steps));
+    assert.equal(next.team,0);assert.equal(next.phase,'roll','yut/mo earns its throw before moving');
+    next=roll(next,faces(1));
+    if(!captureFirst)next=move(next,3,false,1);
+    next=move(next,2,false,steps);
+    assert.deepEqual(next.pawns[0],[[...destination],[],[...destination],captureFirst?[]:[1]]);
+    assert.deepEqual(next.pawns[1],[[],[],[],[]],'the complete opposing stack returns home');
+    assert.equal(next.lastMove.pickedUp,0,'the first reserve joins the third pawn');
+    if(captureFirst){
+      assert.equal(next.phase,'move','only the unspent result remains; no extra throw is offered');
+      assert.deepEqual(next.pendingRolls,[1]);
+      assert.equal(roll(next,faces(2)),next);
+      next=move(next,3,false,1);
+    }
+    assert.equal(next.team,1,'the opponent plays after both earned moves are spent');
+    assert.equal(next.turn,2);assert.equal(next.phase,'roll');assert.deepEqual(next.pendingRolls,[]);
+    assert.deepEqual(next.pawns[0],[[...destination],[],[...destination],[1]]);
+  }
+});
 test('retired obstacle squares are ordinary even on a saved shortcut',()=>{
   const g=ordinary();
   g.eventTiles={2:'home',4:'back'};g.islandTiles={21:'whirl',1:'breeze'};
@@ -263,6 +287,62 @@ test('carry takes exactly one waiting teammate and both travel on the same trail
   const capture=move(roll(foe,faces(3)),2);
   assert.equal(capture.team,0);assert.equal(capture.lastMove.pickedUp,0);
   assert.deepEqual(capture.pawns[1],[[],[],[],[]]);
+});
+test('a back tile landing on carry picks up one reserve and the saved pair moves together',()=>{
+  const g=ordinary();g.eventTiles={3:'carry',4:'back'};g.pawns[0][2]=[1,2];
+  const landed=move(roll(g,faces(2)),2);
+  assert.deepEqual(landed.pawns[0],[[1,2,3],[],[1,2,3],[]]);
+  assert.equal(landed.lastMove.pickedUp,0);assert.equal(landed.lastMove.event,'back');
+  assert.equal(landed.lastMove.landing,4);assert.deepEqual(landed.lastMove.frames,[3,4,3]);
+  assert.match(landed.note,/뒤로/);assert.match(landed.note,/업기/);
+  assert.equal(landed.team,1);assert.equal(landed.phase,'roll');
+  assert.deepEqual(g.pawns[0],[[],[],[1,2],[]]);
+  const resumed=restoreGame(JSON.parse(JSON.stringify(landed)));
+  const continued=move(roll({...resumed,team:0},faces(2)),0);
+  assert.deepEqual(continued.pawns[0],[[1,2,3,4,5],[],[1,2,3,4,5],[]]);
+  assert.deepEqual(continued.lastMove.indices,[0,2]);
+});
+test('backdo and a back tile both pick up on carry while preserving shortcut history',()=>{
+  const trail=[1,2,3,4,5,20,21];
+  for(const useBackdo of [false,true]){
+    const g=ordinary();g.eventTiles={21:'carry',22:'back'};
+    g.pawns[0][1]=useBackdo?[...trail,22]:[...trail];
+    const landed=move(roll(g,useBackdo?[0,0,0,1]:faces(1)),1);
+    assert.deepEqual(landed.pawns[0],[[...trail],[...trail],[],[]]);
+    assert.equal(landed.lastMove.pickedUp,0);
+    assert.deepEqual(landed.lastMove.frames,useBackdo?[21]:[22,21]);
+    const again=move(roll({...landed,team:0},[0,0,0,1]),0);
+    assert.deepEqual(again.pawns[0],[[1,2,3,4,5,20],[1,2,3,4,5,20],[],[]]);
+    assert.deepEqual(again.lastMove.indices,[0,1]);
+  }
+});
+test('back-to-carry does not add a reserve to an existing stack or invent a reserve',()=>{
+  for(const [pawns,expected] of [
+    [[[1,2],[1,2],[],[]],[[1,2,3],[1,2,3],[],[]]],
+    [[[1,2],[3],[],[]],[[1,2,3],[1,2,3],[],[]]],
+    [[[1,2],[8],[FINISH],[20]],[[1,2,3],[8],[FINISH],[20]]]
+  ]){
+    const g=ordinary();g.eventTiles={3:'carry',4:'back'};g.pawns[0]=pawns;
+    const landed=move(roll(g,faces(2)),0);
+    assert.deepEqual(landed.pawns[0],expected);assert.equal(landed.lastMove.pickedUp,null);
+    assert.equal(landed.lastMove.event,'back');assert.equal(landed.team,1);
+  }
+});
+test('back-to-carry captures the destination stack, grants one throw and preserves banked results',()=>{
+  const g=ordinary();g.eventTiles={3:'carry',4:'back'};g.pawns[0][0]=[1,2];
+  g.pawns[1]=[[1,2,3],[1,2,3],[],[]];
+  const banked=roll(roll(g,faces(4)),faces(2));
+  const landed=move(banked,0,false,2);
+  assert.deepEqual(landed.pawns[0],[[1,2,3],[1,2,3],[],[]]);
+  assert.deepEqual(landed.pawns[1],[[],[],[],[]]);
+  assert.equal(landed.lastMove.captured,2);assert.equal(landed.lastMove.pickedUp,1);
+  assert.equal(landed.team,0);assert.equal(landed.turn,g.turn);assert.equal(landed.phase,'roll');
+  assert.deepEqual(landed.pendingRolls,[4]);
+  const thrown=roll(landed,faces(1));
+  assert.equal(thrown.phase,'move');assert.deepEqual(thrown.pendingRolls,[4,1]);
+  const continued=move(thrown,0,false,4);
+  assert.deepEqual(continued.pawns[0],[[1,2,3,4,5,6,7],[1,2,3,4,5,6,7],[],[]]);
+  assert.equal(continued.phase,'move');assert.deepEqual(continued.pendingRolls,[1]);
 });
 test('back and home apply on landing, once, and affect only the arriving group',()=>{
   const g=newGame(2,2,'easy',3);g.eventTiles={20:'back',5:'home'};

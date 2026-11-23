@@ -5,6 +5,7 @@ const { test } = require('node:test');
 const { JSDOM } = require('jsdom');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'shared/pwa/pwa-install.js'), 'utf8');
+const identitySource = fs.readFileSync(path.join(__dirname, '..', 'shared/pwa/app-identity.js'), 'utf8');
 const ANDROID = 'Mozilla/5.0 (Linux; Android 16) AppleWebKit/537.36 Chrome/144.0 Mobile Safari/537.36';
 const buttons = '<button type="button" id="install" data-pwa-install><span data-pwa-label>앱 설치</span>' +
   '<span data-pwa-caption>홈 화면 아이콘으로 바로 열기</span></button>' +
@@ -71,6 +72,7 @@ async function fixture(t, options = {}) {
   if (options.dismissed) window.sessionStorage.setItem('ojjuda:pwa:hide-banner', '1');
   const errors = [];
   window.addEventListener('error', (event) => errors.push(event.error || event.message));
+  window.eval(identitySource);
   window.eval(source);
   t.after(() => assert.deepEqual(errors, [], 'installation interactions must not produce page errors'));
   return {
@@ -299,4 +301,34 @@ test('a rejected worker registration does not break manual installation guidance
   assert.equal(f.registrations.length, 1);
   f.install().click();
   assert.equal(f.dialog().open, true);
+});
+
+test('each app shows its own icon and name and copies only its safe installation URL', async (t) => {
+  for (const [entry, name, icon, destination] of [
+    ['/world.html?tab=hub', '오쭈다 아지트', '/icon-192.png', '/world.html'],
+    ['/world.html?place=park', '오쭈다 공원', '/park/assets/icon-192.png', '/park/'],
+    ['/world.html?tab=park', '오쭈다 공원', '/park/assets/icon-192.png', '/park/'],
+    ['/features/pajang/?tab=profile', '오쭈다 파장', '/features/pajang/assets/icon-192.png', '/features/pajang/'],
+    ['/features/pajang/station.html?tab=profile', '오쭈다 파장', '/features/pajang/assets/icon-192.png', '/features/pajang/']
+  ]) {
+    const f = await fixture(t, {url: 'https://ojjuda.kr' + entry + '&code=private-code#access_token=private-token'});
+    f.install().click();
+    assert.equal(f.dialog().querySelector('.pwa-eyebrow').textContent, name);
+    assert.equal(new URL(f.dialog().querySelector('img').src).pathname, icon);
+    f.dialog().querySelector('[data-pwa-copy]').click();
+    await settle();
+    assert.deepEqual(f.copies, ['https://ojjuda.kr' + destination]);
+    assert.doesNotMatch(f.dialog().textContent, /private-/);
+    f.window.dispatchEvent(new f.window.Event('appinstalled'));
+    f.install().click();
+    assert.match(f.dialog().querySelector('#pwa-install-description').textContent, new RegExp(name));
+  }
+});
+
+test('pages without a custom installation control keep the browser installation offer', async (t) => {
+  const f = await fixture(t, {url: 'https://ojjuda.kr/features/pajang/'});
+  f.document.getElementById('app').replaceChildren();
+  const prompt = offer(f);
+  assert.equal(prompt.event.defaultPrevented, false);
+  assert.equal(prompt.calls(), 0);
 });

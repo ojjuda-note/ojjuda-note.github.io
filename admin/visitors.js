@@ -11,7 +11,7 @@
   const sourceLabels = Object.freeze({ direct:'직접 방문',naver:'네이버 검색',google:'구글 검색',
     search:'기타 검색',social:'SNS·메신저',external:'외부 사이트',internal:'사이트 내부',campaign:'캠페인' });
   const featureLabels = Object.freeze({
-    agit:'아지트',arcade:'오락실',park:'공원',settings:'설정',portal:'첫 화면',
+    agit:'아지트',arcade:'오락실',park:'공원',pajang:'파장',settings:'설정',portal:'첫 화면',
     group:'그룹',fanpages:'팬페이지',restaurants:'인증맛집',festival:'축제일정',tarot:'타로',saju:'사주',biorhythm:'바이오리듬',
     game_chacha_rush:'차차 러시',game_solitaire:'솔리테어',game_archery:'바람의 궁수',
     game_sacheonseong:'사천성',game_mines:'지뢰찾기',game_saetbyeol:'새별',
@@ -104,17 +104,22 @@
   function featureChart(data) {
     const fortune = fortuneTotals(data.fortune_visits, data.today_date);
     const biorhythm = fortuneTotals(data.fortune_visits, data.today_date, ['biorhythm'], 'biorhythm_started_at');
-    // Keep the existing top 12 and all products on one scale. Product totals
+    const pajang = data.pajang_visits;
+    const hasPajang = typeof pajang?.started_at === 'string' && Number.isFinite(Date.parse(pajang.started_at))
+      && Date.parse(pajang.started_at) <= Date.parse(data.today_date + 'T23:59:59.999+09:00')
+      && typeof pajang.uses === 'number' && validCount(pajang.uses);
+    // Keep the existing top 12, Pajang and all products on one scale. Product totals
     // come only from their validated daily report, so a duplicate cannot add
     // a second row or double-count a visit.
-    const features = new Map(data.features.filter(row => !['tarot', 'saju', 'biorhythm'].includes(row.feature))
+    const features = new Map(data.features.filter(row => !['tarot', 'saju', 'biorhythm', 'pajang'].includes(row.feature))
       .map(row => [row.feature, { feature: row.feature, uses: Number(row.uses) }]));
     if (fortune) for (const row of fortune.rows) features.set(row.feature, row);
     if (biorhythm) for (const row of biorhythm.rows) features.set(row.feature, row);
+    if (hasPajang) features.set('pajang', { feature: 'pajang', uses: pajang.uses });
     const rows = [...features.values()].sort((a, b) => b.uses - a.uses
       || (a.feature < b.feature ? -1 : a.feature > b.feature ? 1 : 0));
     const card = horizontalChart('많이 선택한 기능', '최근 30일 · 브라우저당 기능별 하루 1회',
-      rows, 'uses', featureLabels, { showZeroRows: !!fortune || !!biorhythm });
+      rows, 'uses', featureLabels, { showZeroRows: hasPajang || !!fortune || !!biorhythm });
     card.dataset.chart = 'features';
     for (const [key, label, report] of [['fortune', '타로·사주', fortune], ['biorhythm', '바이오리듬', biorhythm]]) {
       const note = el('p', report ? `${label}: ${report.startLabel}부터 집계 · 이전 방문 제외`
@@ -173,6 +178,40 @@
     );
     host.append(grid);
   }
+  function renderCampaigns(host, data) {
+    const channels = {threads:'스레드',naver:'네이버',instagram:'인스타그램',facebook:'페이스북',
+      youtube:'유튜브',tiktok:'틱톡',kakao:'카카오',x:'X',google:'구글',other:'기타'};
+    const metrics = ['visits','signup_starts','confirmed_signups'];
+    if (data?.model !== 'session24h-confirm7d' || !Number.isFinite(Date.parse(data.started_at))
+        || !/^\d{4}-\d{2}-\d{2}$/.test(data.date_from || '') || !/^\d{4}-\d{2}-\d{2}$/.test(data.date_to || '')
+        || !metrics.every(key => validCount(data.totals?.[key])) || !Array.isArray(data.rows) || data.rows.length>100
+        || !data.rows.every(row => Object.hasOwn(channels,row.source) && ['social','blog','video','search','referral','organic','paid','other'].includes(row.medium)
+          && /^[a-z][a-z0-9_-]{0,63}$/.test(row.campaign || '') && /^[a-z][a-z0-9_-]{0,63}$/.test(row.content || '')
+          && metrics.every(key => validCount(row[key])))) throw Error('invalid_campaign_statistics');
+    host.replaceChildren(el('h3','홍보 글별 가입'));
+    const start = new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'long',day:'numeric'}).format(new Date(data.started_at));
+    host.append(el('p',`${start}부터 측정 · 최근 30일에 유입된 방문 기준`, 'visitor-note'));
+    const cards = el('div',undefined,'visitor-cards');
+    for (const [key,label,unit] of [['visits','홍보 링크 방문','회'],['signup_starts','가입 화면 시작','회'],['confirmed_signups','가입 확인 완료','계정']]) {
+      const card=el('div',undefined,'visitor-card');
+      card.append(el('span',label),el('strong',number(data.totals[key])+unit));cards.append(card);
+    }
+    host.append(cards,el('p','같은 탭의 유효한 홍보 링크를 24시간 연결하고, 새 계정의 이메일 확인이 7일 안에 끝나면 완료로 셉니다. 기존 회원의 로그인은 제외합니다.','visitor-note'));
+    host.append(el('p','방문은 사람 수가 아니며 회원 총계와 다릅니다. 태그 없는 과거 글, 추적 방지 설정, 다른 기기·탭의 가입은 연결되지 않을 수 있어요.','visitor-note'));
+    if (!data.rows.length) { host.append(el('p','아직 측정된 홍보 링크 방문이 없어요.','visitor-empty')); return; }
+    const wrap=el('div',undefined,'visitor-table-wrap');wrap.tabIndex=0;wrap.setAttribute('aria-label','홍보 글별 방문과 가입 통계');
+    const table=el('table');table.append(el('caption',`${data.date_from} ~ ${data.date_to} 홍보 유입별 가입`));
+    const head=el('thead'),hr=el('tr');
+    for(const title of ['채널','캠페인','게시글','방문','가입 시작','확인 완료']) { const th=el('th',title);th.scope='col';hr.append(th); }
+    head.append(hr);const body=el('tbody');
+    for(const row of data.rows) {
+      const tr=el('tr'),name=el('th',channels[row.source]+(row.medium==='blog'?' 블로그':''));name.scope='row';
+      tr.append(name,el('td',row.campaign),el('td',row.content==='unlabeled'?'게시글 미지정':row.content),
+        ...metrics.map(key => el('td',number(row[key]))));body.append(tr);
+    }
+    table.append(head,body);wrap.append(table);host.append(wrap);
+    if(data.truncated===true)host.append(el('p','표는 상위 100개 글입니다. 위 합계에는 나머지 글도 포함합니다.','visitor-note'));
+  }
   function mount({ container, client, getAdminId, isCurrent = () => container.isConnected }) {
     const owner = getAdminId?.();
     let disposed = false, request = 0, subscription;
@@ -192,10 +231,12 @@
       body);
     const insights = el('section', undefined, 'visitor-insights');
     insights.setAttribute('aria-label','사이트 방문·이용 분석');
-    section.append(header, status, insights, legacy); container.replaceChildren(section);
+    const campaigns = el('section', undefined, 'visitor-campaigns');
+    campaigns.setAttribute('aria-label','홍보 글별 가입 통계');
+    section.append(header, status, insights, campaigns, legacy); container.replaceChildren(section);
     refreshButton.addEventListener('click', () => void refresh());
     function clear(message) {
-      request++; body.replaceChildren(); insights.replaceChildren(); refreshButton.disabled = true;
+      request++; body.replaceChildren(); insights.replaceChildren(); campaigns.replaceChildren(); refreshButton.disabled = true;
       section.setAttribute('aria-busy', 'false'); status.textContent = message; status.hidden = false;
     }
     function table(title, rows, monthly) {
@@ -236,7 +277,9 @@
       const version = ++request; refreshButton.disabled = true;
       section.setAttribute('aria-busy', 'true'); status.textContent = '불러오는 중'; status.hidden = false; body.replaceChildren();
       const insightsRequest = Promise.resolve().then(() => client.rpc('admin_site_usage_stats')).catch(error => ({ error }));
+      const campaignRequest = Promise.resolve().then(() => client.rpc('admin_campaign_signup_stats')).catch(error => ({ error }));
       insights.replaceChildren(el('p','방문 그래프를 불러오는 중이에요…','visitor-status'));
+      campaigns.replaceChildren(el('p','홍보별 가입 통계를 불러오는 중이에요…','visitor-status'));
       try {
         const { data, error } = await client.rpc('admin_guest_visit_stats');
         if (version !== request || !current()) return;
@@ -260,6 +303,15 @@
       } catch {
         insights.replaceChildren(el('h3','사이트 방문·이용 분석'),
           el('p','통계 그래프를 불러오지 못했어요. 잠시 후 새로고침해 주세요.','visitor-status'));
+      }
+      const campaignResult = await campaignRequest;
+      if (version !== request || !current()) return;
+      try {
+        if (campaignResult.error) throw campaignResult.error;
+        renderCampaigns(campaigns,campaignResult.data);
+      } catch {
+        campaigns.replaceChildren(el('h3','홍보 글별 가입'),
+          el('p','홍보별 가입 통계를 확인하지 못했어요. 잠시 후 새로고침해 주세요.','visitor-status'));
       }
     }
     subscription = client.auth?.onAuthStateChange?.((_event, session) => {

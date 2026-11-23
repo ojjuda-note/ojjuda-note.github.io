@@ -1,10 +1,9 @@
 import { listPersonalContexts } from './personal-contexts.js?v=20261114-tarot-first-person1';
-import { buildPersonalReading, personalReadingCopyLines } from './personal-reading.js?v=20261114-tarot-first-person1';
-import { appendSummaryLines } from './reading-summary-view.js?v=20261113-tarot-summary1';
+import { buildPersonalReading, personalReadingCopyLines } from './personal-reading.js?v=20261120-tarot-voice2';
 
 // This view only reinterprets the three already revealed cards. It does not
 // start a purchase, draw a card, change a receipt, or extend its expiry.
-export function createPersonalReading({ getSnapshot, canRead, renderSections, renderText }) {
+export function createPersonalReading({ getSnapshot, canRead, onReport }) {
   const element = (tag, className, text) => {
     const node = document.createElement(tag);
     if (className) node.className = className;
@@ -13,7 +12,6 @@ export function createPersonalReading({ getSnapshot, canRead, renderSections, re
   };
   let topicId = null;
   let selectedId = '';
-  let panel = null;
   let report = null;
   let currentCards = [];
 
@@ -74,44 +72,9 @@ export function createPersonalReading({ getSnapshot, canRead, renderSections, re
     introSelect.value = selectedId;
   }
 
-  function renderComparison(target, data) {
-    const details = element('details', 'personal-disclosure personal-comparison');
-    details.id = 'personal-comparison';
-    const summary = element('summary', '', '두 선택 비교');
-    appendSummaryLines(summary, data.options.map(option => `${option.key.toUpperCase()}. ${option.label}`), { inline: true });
-    details.append(summary);
-    const body = element('div', 'personal-disclosure-body');
-    body.append(element('h4', 'personal-comparison-title', data.title));
-    const basis = element('div', 'personal-comparison-basis');
-    renderSections(basis, [{ title: '이번 선택에서 살펴볼 기준', paragraphs: [data.basis], summaryLines: data.basisSummaryLines }], '', 'h4', []);
-    body.append(basis);
-    const choices = element('div', 'personal-choice-grid');
-    for (const option of data.options) {
-      const article = element('article', 'personal-choice');
-      article.id = option.id;
-      const title = element('h4');
-      title.append(element('span', 'personal-choice-letter', option.key.toUpperCase()), document.createTextNode(option.label));
-      article.append(title);
-      appendSummaryLines(article, option.summaryLines);
-      const original = element('details', 'reading-summary-details');
-      original.append(element('summary', '', '자세히 읽기'));
-      const list = element('dl');
-      for (const [key, label] of [['gain', '이 선택의 장점'], ['burden', '감수할 부담'], ['prepare', '먼저 준비할 것']]) {
-        list.append(element('dt', '', label), element('dd', '', option[key]));
-      }
-      original.append(list);
-      article.append(original);
-      choices.append(article);
-    }
-    body.append(choices);
-    details.append(body);
-    target.append(details);
-  }
-
-  function renderPanel() {
-    if (!panel || !readable()) return;
+  function renderReport(changed = false) {
+    if (!readable()) return false;
     report = selectedId ? buildPersonalReading({ cards: currentCards, topicId, contextId: selectedId }) : null;
-    panel.replaceChildren();
     const picker = element('div', 'personal-context-picker personal-result-picker');
     const label = element('label', '', '지금 내 상황');
     label.htmlFor = 'result-context-select';
@@ -121,46 +84,10 @@ export function createPersonalReading({ getSnapshot, canRead, renderSections, re
     select.addEventListener('change', () => {
       if (!readable()) return;
       choose(select.value);
-      renderPanel();
-      panel?.querySelector('#result-context-select')?.focus();
+      renderReport(true);
     });
     picker.append(label, select);
-    panel.append(picker);
-    if (!report) {
-      panel.append(element('p', 'personal-empty', '지금 내 고민에 맞는 상황을 고르면, 상황별 풀이와 두 선택의 장단점을 함께 볼 수 있다.'));
-      return;
-    }
-    const criteria = element('details', 'reading-source personal-basis');
-    criteria.id = 'personal-basis';
-    criteria.append(element('summary', '', '상황 예시로 살펴보기'), element('p', 'personal-example', report.example));
-    panel.append(criteria);
-    const reading = element('div', 'personal-reading');
-    reading.id = 'personal-reading';
-    reading.append(element('h3', 'personal-main-question', report.question));
-    const links = element('div', 'personal-card-connections');
-    links.id = 'personal-card-connections';
-    renderSections(links, [report.connection], '', 'h3', []);
-    reading.append(links);
-    const sections = element('div', 'personal-card-guides');
-    renderSections(sections, report.primary, '', 'h3', []);
-    reading.append(sections);
-    renderComparison(reading, report.comparison);
-    const following = element('section', 'personal-followups');
-    following.id = 'personal-followups';
-    following.append(element('h3', '', '이어지는 질문'));
-    for (const question of report.followUps) {
-      const details = element('details', 'personal-disclosure personal-followup');
-      details.id = question.id;
-      const questionTitle = element('summary', '', question.title);
-      appendSummaryLines(questionTitle, question.summaryLines, { inline: true, setText: renderText });
-      details.append(questionTitle);
-      const answer = element('div', 'personal-disclosure-body personal-answer');
-      renderSections(answer, [{ title: '이렇게 풀어 보세요', paragraphs: question.paragraphs }], '', 'h4', []);
-      details.append(answer);
-      following.append(details);
-    }
-    reading.append(following);
-    panel.append(reading);
+    return onReport?.({ report, picker, selectedId, changed }) !== false;
   }
 
   introSelect.addEventListener('change', () => {
@@ -180,32 +107,7 @@ export function createPersonalReading({ getSnapshot, canRead, renderSections, re
       syncTopic();
       currentCards = cards;
       if (actualTopic !== topicId || !readable()) return false;
-      const tabs = document.getElementById('summary-tabs');
-      const panels = document.getElementById('summary-text');
-      const tab = element('button', '', '내 상황');
-      tab.type = 'button';
-      tab.id = 'summary-tab-personal';
-      tab.dataset.group = 'personal';
-      tab.setAttribute('role', 'tab');
-      tab.setAttribute('aria-controls', 'summary-panel-personal');
-      tab.setAttribute('aria-selected', 'false');
-      tab.tabIndex = -1;
-      panel = element('div', 'summary-panel personal-panel');
-      panel.id = 'summary-panel-personal';
-      panel.setAttribute('role', 'tabpanel');
-      panel.setAttribute('aria-labelledby', tab.id);
-      panel.tabIndex = 0;
-      panel.hidden = true;
-      // Capture the native details/selection action too, so a suspended expiry
-      // timer cannot leave an old answer open through a new control.
-      panel.addEventListener('click', event => {
-        if (!readable()) { event.preventDefault(); event.stopImmediatePropagation(); }
-      }, true);
-      tabs.append(tab);
-      panels.append(panel);
-      tabs.classList.add('has-personal-reading');
-      renderPanel();
-      return true;
+      return renderReport();
     },
     copyLines() {
       return readable() ? personalReadingCopyLines(report) : [];
@@ -214,11 +116,7 @@ export function createPersonalReading({ getSnapshot, canRead, renderSections, re
       selectedId = '';
       report = null;
       currentCards = [];
-      panel = null;
       introSelect.value = '';
-      document.getElementById('summary-tab-personal')?.remove();
-      document.getElementById('summary-panel-personal')?.remove();
-      document.getElementById('summary-tabs').classList.remove('has-personal-reading');
     }
   };
 }

@@ -1,4 +1,4 @@
-/* Local brush, Hangul outlines and phrase layout used by park cards. */
+/* Local brush, Hangul and numeral outlines, and phrase layout used by park cards. */
 (() => {
   'use strict';
 
@@ -497,6 +497,68 @@
     const syllables = str => segmenter ? Array.from(segmenter.segment(str), entry => entry.segment) : Array.from(str);
     const dictionary = new Map();
     const shapes = new Map();
+    const digitsByChar = new Map();
+    function brushDigit(ch, advance, inkTop, inkBottom, ...strokes) {
+      const glyph = { advance, inkTop, inkBottom, brushCode: ch.codePointAt(0), strokes };
+      digitsByChar.set(ch, glyph);
+      digitsByChar.set(String.fromCodePoint(0xFF10 + Number(ch)), glyph);
+    }
+    // Numerals use the same pressure-sensitive brush as Hangul. Keep them
+    // separate from punctuation so their spacing follows the adjacent ink.
+    brushDigit('0', 64, 4, 101, { width: 15.4, knots: [
+      [43,11,.23], [31,9,.61], [18,16,.94], [10,32,1.10], [6,54,1.12],
+      [7,77,.97], [15,91,.76], [27,93,.55], [40,84,.43], [50,66,.43],
+      [55,45,.52], [55,27,.74], [50,15,.78], [43,11,.52], [35,13,.04]
+    ] });
+    brushDigit('1', 46, 6, 101,
+      { width: 15.8, knots: [
+        [7,29,.15], [16,24,.55], [28,12,.77], [31,12,.83],
+        [29,30,1.04], [25,55,1.08], [20,78,.87], [17,94,.10]
+      ] },
+      { width: 11.8, knots: [[6,94,.22], [18,92,.69], [32,88,.48], [41,87,.04]] });
+    brushDigit('2', 64, 4, 99, { width: 15.2, knots: [
+      [7,29,.17], [13,17,.61], [26,10,.87], [40,12,.97], [49,21,1.09],
+      [50,32,1.03], [44,44,.85], [32,58,.68], [17,73,.71], [7,86,.97],
+      [9,91,.95], [22,90,.76], [38,85,.56], [53,83,.29], [61,84,.04]
+    ] });
+    brushDigit('3', 62, 5, 101, { width: 15.5, knots: [
+      [9,21,.16], [22,12,.59], [38,11,.83], [48,19,.97], [47,29,.96],
+      [39,40,.74], [29,48,.40], [24,50,.22], [34,46,.46], [45,50,.83],
+      [50,61,1.07], [47,75,1.05], [36,88,.86], [23,93,.65], [11,89,.38], [4,82,.04]
+    ] });
+    brushDigit('4', 68, 4, 103,
+      { width: 14.2, knots: [
+        [44,10,.25], [35,23,.81], [25,39,1.03], [14,55,.96], [9,64,.57],
+        [23,65,.81], [40,61,.76], [58,57,.05]
+      ] },
+      { width: 16.2, knots: [[47,31,.25], [47,43,.93], [43,64,1.07], [38,86,.83], [36,99,.04]] });
+    brushDigit('5', 63, 3, 101,
+      { width: 12.8, knots: [[12,17,.25], [24,15,.89], [40,11,.72], [55,8,.04]] },
+      { width: 15.4, knots: [
+        [16,16,.25], [14,28,.88], [10,42,.91], [19,40,.57], [33,42,.75],
+        [45,49,1.01], [47,63,1.07], [42,78,1.01], [31,89,.81],
+        [17,93,.59], [6,87,.32], [4,81,.04]
+      ] });
+    brushDigit('6', 61, 5, 103, { width: 15.6, knots: [
+      [48,9,.15], [36,14,.65], [23,28,.93], [13,45,1.03], [8,65,1.05],
+      [10,83,1.07], [20,94,.77], [34,92,.60], [45,81,.45], [49,66,.55],
+      [46,54,.86], [36,48,.83], [24,51,.65], [14,60,.41], [11,69,.04]
+    ] });
+    brushDigit('7', 63, 5, 101, { width: 15.8, knots: [
+      [5,22,.22], [17,19,.81], [33,13,.91], [49,11,.83], [55,15,.66],
+      [48,29,.79], [39,45,1.02], [30,63,1.10], [24,82,.84], [23,96,.04]
+    ] });
+    brushDigit('8', 62, 4, 102, { width: 14.8, knots: [
+      [36,48,.26], [23,41,.64], [14,29,1.00], [17,17,.78], [29,10,.59],
+      [42,12,.61], [49,22,.72], [45,35,.61], [32,46,.42], [18,55,.71],
+      [9,69,1.06], [9,82,1.03], [19,93,.80], [32,93,.61], [44,84,.45],
+      [49,72,.57], [45,60,.86], [33,50,.78], [22,43,.04]
+    ] });
+    brushDigit('9', 62, 4, 103, { width: 15.6, knots: [
+      [48,36,.29], [40,46,.65], [29,50,.75], [17,45,.86], [11,35,1.00],
+      [14,22,1.00], [24,12,.86], [38,10,.77], [48,17,.84], [51,32,.98],
+      [46,51,1.04], [38,70,.96], [27,87,.66], [13,97,.04]
+    ] });
     const marksByChar = new Map();
     function brushMark(chars, advance, inkTop, inkBottom, ...strokes) {
       const glyph = { advance, inkTop, inkBottom, closingScale: .90, brushCode: chars.codePointAt(0), strokes };
@@ -542,6 +604,8 @@
       if (!ch.trim()) return {
         advance: 33
       };
+      const digit = digitsByChar.get(ch);
+      if (digit) return digit;
       const mark = marksByChar.get(ch);
       if (mark) return mark;
       const hand = Lettering.get(ch, phraseEnd);
@@ -1100,4 +1164,7 @@
     width: Composition.WIDTH,
     height: Composition.HEIGHT
   });
+  if (typeof window.dispatchEvent === 'function' && typeof window.Event === 'function') {
+    window.dispatchEvent(new window.Event('ojjuda:park-calligraphy-ready'));
+  }
 })();

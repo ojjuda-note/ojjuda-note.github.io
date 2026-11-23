@@ -1,12 +1,9 @@
-/* Separate admin tools return to the admin dashboard, including browser Back. */
+/* Compatibility loader for previously cached admin entry pages. */
 (() => {
   'use strict';
-  const home = '/world.html?admin=overview';
-  const guard = 'ojjudaAdminSectionBack';
-  try {
-    if (!history.state?.[guard]) history.pushState({ ...(history.state || {}), [guard]: true }, '', location.href);
-  } catch (error) {
-    console.warn('관리 화면 뒤로가기를 준비하지 못했어요.', error);
-  }
-  window.addEventListener('popstate', () => location.replace(home));
+  if (window.OjjudaSectionNavigation) return;
+  const script = document.createElement('script');
+  script.src = '/shared/navigation/section-back.js?v=20261119-history1';
+  script.dataset.returnTo = 'admin';
+  document.head.append(script);
 })();

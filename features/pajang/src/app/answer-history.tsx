@@ -1,12 +1,17 @@
 import {useEffect, useMemo, useRef, useState, type PointerEvent} from "react";
-import {badges, interests, signalsWith, type Slot, type Station} from "../lib/station";
+import {signalsWith, type Slot, type Station} from "../lib/station";
+import {relationshipIntents,type RelationshipIntentKey} from "../lib/profile-preferences.mjs";
 import {InterestArt} from "./interest-art";
 import {I} from "./icons";
+import QuestionCarousel from "./question-carousel";
+import {AnswerLike,useAnswerLikes} from "./answer-likes";
 
 export type DiscoveryAnswer = {
   peer:string; name:string; region:string; interest:string;
   day:string; slot:Slot; at:number; question:string; body:string;
   own:boolean; sent:boolean; received:boolean;
+  liked?:boolean; likeCount?:number;
+  relationship_intents?:RelationshipIntentKey[];
 };
 type Cursor = Record<string, unknown>;
 type Page = {items:DiscoveryAnswer[]; nextCursor:Cursor|null; total:number; remaining:number};
@@ -14,9 +19,9 @@ type Result = {key:string; items:DiscoveryAnswer[]; total:number|null; next:Curs
 type Order = "recommend"|"latest"|"local";
 type Gender = "male"|"all"|"female";
 const genderOptions = [
-  {value:"male", text:"남", label:"남성 답변"},
-  {value:"all", text:"", label:"성별 전체"},
-  {value:"female", text:"여", label:"여성 답변"},
+  {value:"all", text:"전체", label:"성별 전체"},
+  {value:"male", text:"남성", label:"남성 답변"},
+  {value:"female", text:"여성", label:"여성 답변"},
 ] as const;
 declare global {
   interface Window {
@@ -25,6 +30,7 @@ declare global {
 }
 type Intent = "first"|"more"|"check"|"changed";
 const rowKey = (row:DiscoveryAnswer) => row.peer+"/"+row.day+"/"+row.slot;
+const questionKey = (row:DiscoveryAnswer) => JSON.stringify([row.day,row.slot,row.question]);
 const empty = (key:string):Result => ({key,items:[],total:null,next:null,loading:true,changed:false,error:""});
 type SavedPage = {until:number; result:Result};
 function firstPage(cache:Map<string,SavedPage>, key:string):Result {
@@ -33,6 +39,7 @@ function firstPage(cache:Map<string,SavedPage>, key:string):Result {
 }
 
 function useAnswers(filter:string, gender:Gender, order:Order, scope:string, openingScope:string, activity:string, visible:boolean) {
+  const likes=useAnswerLikes();
   const visibleRef=useRef(visible);
   visibleRef.current=visible;
   const key = JSON.stringify([filter,gender,order,scope]);
@@ -61,6 +68,7 @@ function useAnswers(filter:string, gender:Gender, order:Order, scope:string, ope
       if (intent==="first") { pages=0; publish(firstPage(cache,key)); }
       if (append) publish({...current,loading:true,error:""});
       try {
+        const likeVersion=likes?.checkpoint()??0;
         const db=await window.OjjudaGetClient();
         if (signal.aborted) return;
         const opening=intent==="first" && filter==="all" && order==="latest" && gender==="all"
@@ -73,6 +81,7 @@ function useAnswers(filter:string, gender:Gender, order:Order, scope:string, ope
         if (!active || request!==revision) return;
         if (error) throw error;
         const page=data as Page;
+        likes?.hydrate(page.items,likeVersion);
         const rows=new Map((append?current.items:[]).map(row=>[rowKey(row),row]));
         for (const row of page.items) rows.set(rowKey(row),row);
         pages=append?pages+1:1;
@@ -103,7 +112,7 @@ function useAnswers(filter:string, gender:Gender, order:Order, scope:string, ope
     // Refresh the first page in place; scrolling back through earlier pages keeps its cursor.
     const poll=window.setInterval(()=>{if(!document.hidden)void read("check");},60000);
     return ()=>{active=false;controller?.abort();load.current=()=>{};window.clearInterval(poll);document.removeEventListener("visibilitychange",onVisible);};
-  },[key,filter,gender,order,cache,openingScope]);
+  },[key,filter,gender,order,cache,openingScope,likes]);
   const wasVisible=useRef(visible);
   useEffect(()=>{if(visible&&!wasVisible.current)load.current("changed");wasVisible.current=visible;},[visible]);
   useEffect(()=>{cache.clear();load.current("changed");},[activity,cache]);
@@ -156,9 +165,10 @@ function GenderSwitch({value,onChange}:{value:Gender;onChange:(next:Gender)=>voi
 
 type Props = {
   active:boolean; station:Station; revision:number; onProfile:(row:DiscoveryAnswer)=>void;
-  onSignal:(row:DiscoveryAnswer)=>void; onChat:(id:string)=>void; onWrite:()=>void;
+  onSignal:(row:DiscoveryAnswer)=>void; onChat:(id:string)=>void; onWrite:()=>void; onEdit:(row:DiscoveryAnswer)=>void; onBuySignals?:()=>void;
+  onPastQuestion?:(row:DiscoveryAnswer)=>void;
 };
-export default function AnswerHistory({active,station,revision,onProfile,onSignal,onChat,onWrite}:Props) {
+export default function AnswerHistory({active,station,revision,onProfile,onSignal,onChat,onWrite,onEdit,onBuySignals,onPastQuestion}:Props) {
   const [filter,setFilter]=useState("all");
   const [gender,setGender]=useState<Gender>("all");
   const [order,setOrder]=useState<Order>("latest");
@@ -166,57 +176,111 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
   const activity=station.people.filter(p=>p.body).map(p=>p.id+":"+p.at).join(",");
   const openingScope=JSON.stringify([station.me?.id,station.day,station.slot]);
   const {result,load}=useAnswers(filter,gender,order,scope,openingScope,activity,active);
-  const groups:DiscoveryAnswer[][]=[];
-  for(const answer of result.items){
-    const last=groups.at(-1);
-    if(last && last[0].day===answer.day && last[0].slot===answer.slot && last[0].question===answer.question)last.push(answer);
-    else groups.push([answer]);
+  const groups=useMemo(()=>{
+    const questions=new Map<string,DiscoveryAnswer[]>();
+    for(const answer of result.items){
+      const key=questionKey(answer),group=questions.get(key);
+      if(group)group.push(answer);else questions.set(key,[answer]);
+    }
+    return [...questions.values()];
+  },[result.items]);
+  const selectionScope=JSON.stringify([station.me?.id,station.day,station.slot,filter,gender,order]);
+  const [selection,setSelection]=useState({scope:selectionScope,question:""});
+  const advance=useRef<{scope:string;question:string}|null>(null);
+  const index=Math.max(0,selection.scope===selectionScope?groups.findIndex(group=>questionKey(group[0])===selection.question):0);
+  const selected=groups[index];
+  useEffect(()=>{
+    if(result.loading)return;
+    const pending=advance.current;
+    if(pending?.scope===selectionScope&&!result.error){
+      const after=groups.findIndex(group=>questionKey(group[0])===pending.question)+1;
+      if(after>0&&groups[after]){
+        advance.current=null;
+        setSelection({scope:selectionScope,question:questionKey(groups[after][0])});
+        return;
+      }
+      // One question may fill several pages. Keep looking until the next question
+      // arrives, without ever showing another question's answers under this heading.
+      if(after>0&&result.next){load.current("more");return;}
+      if(after>0&&groups.length>1){
+        advance.current=null;
+        setSelection({scope:selectionScope,question:questionKey(groups[0][0])});
+        return;
+      }
+    }
+    advance.current=null;
+    if(selected&&(selection.scope!==selectionScope||!groups.some(group=>questionKey(group[0])===selection.question)))
+      setSelection({scope:selectionScope,question:questionKey(selected[0])});
+  },[groups,result.loading,result.error,result.next,selectionScope,selection,selected,load]);
+  function stepQuestion(direction:number){
+    advance.current=null;
+    const group=groups[index+direction];
+    if(group)setSelection({scope:selectionScope,question:questionKey(group[0])});
+    else if(direction>0&&selected&&result.next&&!result.loading){
+      advance.current={scope:selectionScope,question:questionKey(selected[0])};
+      load.current("more");
+    }
+    else if(direction>0&&!result.next&&groups.length>1)
+      setSelection({scope:selectionScope,question:questionKey(groups[0][0])});
   }
   return <section id="answers" className="feedsection" aria-labelledby="all-answers-title">
     <div className="sectiontitle history-head">
       <div className="history-heading">
         <h2 id="all-answers-title">모두의 답변</h2>
-        <GenderSwitch value={gender} onChange={setGender}/>
-        <span className="feednumber" aria-label={result.total===null?undefined:"답변 "+result.total+"개"}>{result.total}</span>
       </div>
-      <span className="budget"><I n="signal" s={16}/>남은 신호 <b>{station.remaining}<em> / 3</em></b></span>
+      <div className="signal-budget"><span className="budget"><I n="signal" s={16}/>남은 신호 <b>{station.remaining}{station.paidRemaining?<em>개</em>:<em> / 3</em>}</b></span>
+        {!!station.paidRemaining&&<small>무료 {station.freeRemaining??0} · 구매 {station.paidRemaining}</small>}
+        {station.purchasingEnabled&&(station.freeRemaining??station.remaining)===0&&onBuySignals&&<button type="button" className="signal-buy" onClick={onBuySignals}>신호 더하기<I n="right" s={13}/></button>}
+      </div>
     </div>
     <div className="filterrow">
-      <div className="chips" aria-label="취향으로 필터">
+      <GenderSwitch value={gender} onChange={setGender}/>
+      <div className="chips relationship-filters" aria-label="원하는 인연으로 필터">
         <button className={filter==="all"?"sel":""} aria-pressed={filter==="all"} onClick={()=>setFilter("all")}>전체</button>
-        {interests.map(x=><button key={x.key} className={filter===x.key?"sel":""} aria-pressed={filter===x.key} onClick={()=>setFilter(x.key)}>{x.name}</button>)}
+        {relationshipIntents.map(x=><button key={x.key} className={filter===x.key?"sel":""} aria-pressed={filter===x.key} onClick={()=>setFilter(x.key)} title={x.description}>{x.shortLabel}</button>)}
       </div>
       <label className="sort"><select aria-label="답변 정렬" value={order} onChange={e=>setOrder(e.target.value as Order)}>
-        <option value="recommend">내 취향순</option><option value="latest">최신순</option><option value="local">같은 지역순</option>
+        <option value="recommend">대표 취향순</option><option value="latest">최신순</option><option value="local">같은 지역순</option>
       </select><I n="chevron" s={13}/></label>
     </div>
     {result.changed&&<p className="notice" role="status">답변 목록이 바뀌었어요.<button onClick={()=>load.current("first")}>새로고침</button></p>}
     {result.loading&&result.total===null&&<span className="answer-sr" role="status">답변을 불러오고 있어요.</span>}
     <div className="cardgrid" aria-busy={result.loading}>
       {result.loading&&result.total===null&&[0,1,2].map(i=><div className="answer-skeleton" key={i} aria-hidden="true"><i/><i/><i/><i/></div>)}
-      {groups.map(group=><section className="answer-group" key={rowKey(group[0])}>
-        <header><time dateTime={group[0].day}>{group[0].day.replaceAll("-",".")} · {group[0].slot==="am"?"오전":"오후"}</time><h3>{group[0].question}</h3></header>
-        {group.map(row=>{
+      {selected&&<QuestionCarousel groups={groups} index={index} scope={selectionScope} more={Boolean(result.next)} loading={result.loading} onStep={stepQuestion}
+        renderQuestionAction={answers=>{
+          const question=answers[0],own=answers.find(answer=>answer.own&&answer.peer===station.me?.id);
+          if(question.day===station.day&&question.slot===station.slot)return null;
+          const days=(Date.parse(station.day)-Date.parse(question.day))/86400000;
+          if(!own&&(!(days>=0&&days<=364)||(days===0&&question.slot!=="am")))return null;
+          return onPastQuestion&&<button type="button" className="question-answer-link" aria-haspopup="dialog"
+            onClick={()=>own?onEdit(own):onPastQuestion(question)}><I n="pencil" s={14}/>{own?"내 답변 수정":"답변하기"}</button>;
+        }}
+        renderAnswers={answers=>answers.map(row=>{
         const relation=signalsWith(station,row.peer);
         const sent=row.sent||!!relation.outgoing, received=row.received||!!relation.incoming, matched=sent&&received;
-        const badge=badges(row.interest);
+        const intents=relationshipIntents.filter(intent=>row.relationship_intents?.includes(intent.key));
         return <article key={rowKey(row)} className="answercard">
           <button className="person" onClick={()=>onProfile(row)}>
             <InterestArt interest={row.interest}/>
             <span><strong>{row.name}{row.own?" · 내 답변":""}</strong>{row.region&&<small>{row.region}</small>}</span>
           </button>
           <p className="quote">{row.body}</p>
-          <div className="answer-foot"><span className="tag">{badge.name}</span>
-          {!row.own&&<button className={"sendlink "+(sent?"issent":"")} disabled={!matched&&(sent||station.remaining===0)}
+          <div className="answer-foot"><div className="answer-intents" aria-label="원하는 인연">{intents.map(intent=><span key={intent.key} className="tag">{intent.shortLabel}</span>)}</div>
+          <AnswerLike answer={row}/>
+          {row.own&&row.peer===station.me?.id&&<button type="button" className="sendlink" aria-haspopup="dialog" onClick={()=>onEdit(row)}>
+            <span><I n="pencil" s={17}/>답변 수정</span>
+          </button>}
+          {!row.own&&<button className={"sendlink "+(sent?"issent":"")} disabled={!matched&&(sent||(station.remaining===0&&!station.purchasingEnabled))}
             onClick={()=>matched?onChat(row.peer):onSignal(row)}>
             <span><I n={matched?"chat":sent?"check":"signal"} s={17}/>{matched?"대화하기":sent?"보낸 신호":received?"신호 수락하기":"신호 보내기"}</span>
           </button>}</div>
         </article>;
-      })}</section>)}
+      })}/>}
     </div>
     {result.error&&<p className="notice" role="alert">{result.error}<button onClick={()=>load.current(result.next&&result.items.length?"more":"first")}>다시 시도</button></p>}
     {result.total!==null&&!result.error&&!result.items.length&&<div className="empty"><span className="emptyicon" aria-hidden="true"><I n="wave" s={22}/></span>
-      <h3>{gender!=="all"?"선택한 조건에 맞는 답변이 없어요":filter==="all"?"최근 1년 동안 공개된 답변이 없어요":"이 취향의 답변이 아직 없어요"}</h3>
+      <h3>{gender!=="all"?"선택한 조건에 맞는 답변이 없어요":filter==="all"?"지금 공개 중인 답변이 없어요":"이 인연을 원하는 회원의 답변이 아직 없어요"}</h3>
       {gender!=="all"||filter!=="all"?<button className="secondary" onClick={()=>{setGender("all");setFilter("all");}}>전체 답변 보기<I n="arrow" s={16}/></button>:
         !station.me?.body&&<button className="secondary" onClick={onWrite}>첫 답변 쓰기<I n="pencil" s={16}/></button>}
     </div>}

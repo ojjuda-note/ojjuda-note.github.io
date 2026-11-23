@@ -5,6 +5,7 @@ const vm = require('node:vm');
 const { webcrypto } = require('node:crypto');
 const identity = require('../shared/auth/signup-identity.js');
 const source = fs.readFileSync(path.join(__dirname, '../app/portal/portal.js'), 'utf8');
+const invitationSource = fs.readFileSync(path.join(__dirname, '../shared/auth/invite-referral.js'), 'utf8');
 const entrance = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 const entryScript = entrance.match(/<script id="world-default-entry">([\s\S]*?)<\/script>/)?.[1];
 assert.ok(entryScript, 'the root route runs before loading the account controller');
@@ -26,12 +27,14 @@ for (const path of ['/?auth=login', '/?auth=signup&next=world', '/?auth=forgot',
 }
 
 // Exercise the real controller with a fake Auth service: no accounts or emails are created.
-function setup(query, { user = null, confirmed = false, sessionError = false, sessionResponse = null, userResponse = null, signInResponse = null, signupResponse = null, nicknameResponse = null, recoveryResponse = null, recoveryError = null, recoveryVerified = true, resetError = null, now = Date.now() } = {}) {
+function setup(query, { user = null, confirmed = false, sessionError = false, sessionResponse = null, userResponse = null, signInResponse = null, signupResponse = null, nicknameResponse = null, noteResponse = null, profileResponse = null, recoveryResponse = null, recoveryError = null, recoveryVerified = true, resetError = null, now = Date.now(), invitation = false, referralValue, referralVerify = null } = {}) {
   let clock = now;
   let taskId = 0;
   let serviceUser = user;
+  let savedNickname = null;
   let focused = null;
-  const elements = new Map(), tasks = new Map(), navigations = [], signups = [], signins = [], passwordUpdates = [], recoveries = [], storage = new Map();
+  const elements = new Map(), tasks = new Map(), navigations = [], navigationKinds = [], signups = [], signins = [], passwordUpdates = [], recoveries = [], storage = new Map(), nicknameChecks = [], profileReads = [], noteWrites = [];
+  const authListeners = [], referralReads = [], referralVerifications = [], referralResets = [];
   const element = key => {
     if (!elements.has(key)) elements.set(key, {
       hidden: false, disabled: false, readOnly: false, tabIndex: 0, value: '', checked: false, textContent: '',
@@ -43,19 +46,30 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
       querySelector(selector) { return selector.startsWith('#') ? element(selector.slice(1)) : element(selector); },
       querySelectorAll(selector) { return selector === '[data-auth-mode]' ? tabs : []; },
       focus() { focused = key; }, scrollIntoView() {}, reset() {},
-      showModal() { this.open = true; }, close() { this.open = false; }
+      showModal() { this.open = true; },
+      close() {
+        if (!this.open) return;
+        this.open = false;
+        // Native dialog.close() queues its event, including when login immediately reopens the dialog.
+        const id = ++taskId;
+        tasks.set(id, { callback: () => this.listeners.close?.({ target: this }), at: clock });
+      }
     });
     return elements.get(key);
   };
   const tabs = ['login', 'signup'].map(mode => { const e = element(`${mode}-tab`); e.dataset.authMode = mode; return e; });
+  const authButtons = ['login', 'signup'].map(mode => { const e = element(`header-${mode}`); e.dataset.openAuth = mode; return e; });
+  const destinationButtons = ['world', 'pajang', 'note'].map(destination => {
+    const e = element(`destination-${destination}`); e.dataset.destination = destination; return e;
+  });
   const policyLinks = ['terms', 'privacy'].map(name => { const e = element(`${name}-link`); e.dataset.policyDocument = name; return e; });
   const location = new URL(`https://ojjuda.kr/${query}`);
-  location.assign = value => navigations.push(value);
-  let authListener;
+  location.assign = value => { navigationKinds.push('assign'); navigations.push(value); };
+  location.replace = value => { navigationKinds.push('replace'); navigations.push(value); };
   const account = user ? { user } : null;
   const client = {
     auth: {
-      onAuthStateChange(callback) { authListener = callback; },
+      onAuthStateChange(callback) { authListeners.push(callback); return { data: { subscription: { unsubscribe() {} } } }; },
       async getSession() { if (sessionResponse) return sessionResponse(); if (sessionError) throw new Error('network'); return { data: { session: account } }; },
       async getUser() { return userResponse ? userResponse(serviceUser) : { data: { user: serviceUser } }; },
       async updateUser(args) { passwordUpdates.push({ owner: user?.id, ...args }); return { data: { user } }; },
@@ -63,35 +77,60 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
         signins.push(args);
         const result = signInResponse ? await signInResponse(args) : { data: { session: { user: { id: 'signed-in-member', email: args.email, is_anonymous: false } } } };
         if (result.data?.session?.user) serviceUser = result.data.session.user;
+        if (invitation && result.data?.session) for (const callback of authListeners) callback('SIGNED_IN', result.data.session);
         return result;
       },
       async signUp(args) {
         signups.push(args);
         const result = signupResponse ? await signupResponse(args) : { data: { session: confirmed ? { user: { id: 'new-member', email: args.email, is_anonymous: false } } : null } };
         if (result.data?.session?.user) serviceUser = result.data.session.user;
+        if (invitation && result.data?.session) for (const callback of authListeners) callback('SIGNED_IN', result.data.session);
         return result;
       }
     },
     functions: { async invoke(name, args) { recoveries.push({ name, ...args }); if (recoveryResponse) return recoveryResponse(args.body); const error = args.body.action === 'reset' ? resetError : recoveryError; return error ? { error: { context: { json: async () => ({ error }) } } } : { data: args.body.action === 'reset' ? { reset: true } : { verified: recoveryVerified, reset_token: 'a'.repeat(64), expires_in: 300 } }; } },
-    from() { return { select() { return this; }, eq() { return this; }, async maybeSingle() { return { data: null }; } }; },
+    from(table) { return { owner:null, select() { return this; }, eq(key,value) { if(key==='id')this.owner=value;return this; }, async maybeSingle() {
+      if(table!=='profiles')return {data:null};
+      profileReads.push(this.owner);
+      return profileResponse ? profileResponse(this.owner,serviceUser) : {data:{id:serviceUser?.id,nickname:savedNickname || serviceUser?.user_metadata?.nickname || '보리'}};
+    } }; },
     async rpc(name, args) {
-      if (name === 'has_banned') return nicknameResponse ? nicknameResponse(args.t) : { data: false };
+      if (name === 'mask_banned') { nicknameChecks.push(args.t);return nicknameResponse ? nicknameResponse(args.t) : { data: args.t }; }
+      if (name === 'ensure_member_for_note') {
+        noteWrites.push(args.p_nickname);
+        const result=noteResponse ? await noteResponse(args.p_nickname) : {data:true};
+        if(result.data===true)savedNickname=args.p_nickname || savedNickname;
+        return result;
+      }
       return { data: true };
     }
   };
   const context = {
-    window: { OJJUDA_CONFIG: { supabaseUrl: 'https://example.test', supabaseKey: 'test' }, supabase: { createClient: () => client }, OjjudaIdentity: identity, crypto: webcrypto },
-    document: { getElementById: element, querySelector: element, querySelectorAll: selector => selector === '[data-policy-document]' ? policyLinks : [] },
+    window: { OJJUDA_CONFIG: { supabaseUrl: 'https://example.test', supabaseKey: 'test' }, supabase: { createClient: () => client }, OjjudaIdentity: identity, crypto: webcrypto, addEventListener() {} },
+    document: { documentElement: {}, addEventListener() {}, getElementById: element, querySelector: element, querySelectorAll: selector =>
+      selector === '[data-policy-document]' ? policyLinks : selector === '[data-open-auth]' ? authButtons
+        : selector === '[data-destination]' ? destinationButtons : [] },
     Date: class extends Date { static now() { return clock; } },
     location, URL, URLSearchParams, console: { warn() {}, error() {} },
-    history: { replaceState(_state, _title, url) { location.href = new URL(url, location).href; } },
+    history: { state: { sharedNavigation: 'keep' }, replaceState(state, _title, url) { this.state = state; location.href = new URL(url, location).href; } },
     sessionStorage: { getItem: k => storage.get(k) || null, setItem: (k, v) => storage.set(k, v), removeItem: k => storage.delete(k) },
     setTimeout: (callback, delay = 0) => { const id = ++taskId; tasks.set(id, { callback, at: clock + delay }); return id; },
     clearTimeout: id => tasks.delete(id)
   };
+  if (referralValue !== undefined) context.window.OjjudaSignupReferral = { mount: () => ({
+    setActive() {}, setBusy() {}, reset() { referralResets.push(true); },
+    read() { referralReads.push(true); return referralValue ? { ...referralValue } : null; },
+    async verify(value) { referralVerifications.push(value); await referralVerify?.(value); }
+  }) };
+  if (invitation) {
+    context.window.parent = context.window;
+    context.window.OjjudaGetClient = async () => client;
+    context.MutationObserver = class { observe() {} disconnect() {} };
+    vm.runInNewContext(invitationSource, context);
+  }
   vm.runInNewContext(source, context);
   const flush = async () => {
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 20; i++) {
       await Promise.resolve();
       for (const [id, task] of tasks) {
         if (task.at > clock) continue;
@@ -99,14 +138,14 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
       }
     }
   };
-  const emitNow = (event, session) => { serviceUser = session?.user || null; authListener(event, session); };
+  const emitNow = (event, session) => { serviceUser = session?.user || null; for (const callback of authListeners) callback(event, session); };
   const emit = async (event, session) => { emitNow(event, session); await flush(); };
   const submit = async () => { await element('auth-form').listeners.submit({ preventDefault() {} }); await flush(); };
   const fill = () => {
     for (const [key, value] of Object.entries({ email: 'signup-fixture@ojjuda.kr', password: 'test-password', 'password-confirm': 'test-password', 'signup-birth': '000101', 'signup-code': '3', 'signup-phone': '010-2345-6789' })) element(key).value = value;
     element('age-check').checked = element('policy-check').checked = true;
   };
-  return { element, flush, emit, emitNow, submit, fill, navigations, signups, signins, passwordUpdates, recoveries, storage, location, window: context.window, client, get focused() { return focused; }, advance: ms => { clock += ms; } };
+  return { element, flush, emit, emitNow, submit, fill, navigations, navigationKinds, signups, signins, passwordUpdates, recoveries, storage, nicknameChecks, profileReads, noteWrites, referralReads, referralVerifications, referralResets, location, history: context.history, window: context.window, client, get focused() { return focused; }, advance: ms => { clock += ms; } };
 }
 
 // The login controller shares its auth client with navigation tracking.
@@ -116,6 +155,91 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
 }
 
 (async () => {
+  const loginRoutes = [
+    ['world', '/world.html', '/world.html'],
+    ['pajang', '/features/pajang/', '/features/pajang/'],
+    ['note', '/world.html?place=park', '/world.html?place=park&guest=1']
+  ];
+  const signIn = async app => {
+    app.element('email').value = 'member@ojjuda.kr';
+    app.element('password').value = 'fixture-password';
+    await app.submit();
+  };
+  const entryIdentity = (app, destination) => {
+    const [key, name] = { world: ['agit', '아지트'], note: ['park', '공원'], pajang: ['pajang', '파장'] }[destination];
+    assert.equal(app.element('auth-dialog').attributes['data-entry-space'], key);
+    assert.equal(app.element('auth-title').textContent, `오쭈다 ${name}`);
+    assert.equal(app.element('front-title').textContent, `오쭈다 ${name}`);
+  };
+  const closeDialog = async app => {
+    app.element('[data-close-dialog]').listeners.click();
+    await app.flush();
+    assert.equal(app.element('auth-dialog').open, false);
+  };
+  for (const [destination, route] of loginRoutes) {
+    const direct = setup(`?auth=login&next=${destination}`); await direct.flush();
+    entryIdentity(direct, destination);
+    await signIn(direct);
+    assert.deepEqual(direct.navigations, [route], `${destination} returns to its own section after login`);
+    assert.deepEqual(direct.navigationKinds, ['replace'], `${destination} consumes the intermediate login page`);
+    assert.equal(direct.history.state.sharedNavigation, 'keep', 'auth URL cleanup preserves navigation metadata');
+
+    const reopened = setup(`?auth=login&next=${destination}`); await reopened.flush();
+    await closeDialog(reopened);
+    reopened.element('header-login').listeners.click();
+    entryIdentity(reopened, destination);
+    await signIn(reopened);
+    assert.deepEqual(reopened.navigations, [route], `${destination} survives closing and reopening header login`);
+  }
+  for (const [destination, route, guestRoute] of loginRoutes) {
+    const switched = setup(`?auth=login&next=${destination}`); await switched.flush();
+    switched.element('signup-tab').listeners.click(); switched.element('login-tab').listeners.click();
+    entryIdentity(switched, destination);
+    assert.equal(switched.element('guest-browse').href, guestRoute, `${destination} keeps its own guest entrance`);
+    await signIn(switched);
+    assert.deepEqual(switched.navigations, [route], `${destination} survives login/signup tab switches`);
+
+    for (const entry of ['tab', 'header']) {
+      const signup = setup(`?auth=login&next=${destination}`); await signup.flush();
+      if (entry === 'header') { await closeDialog(signup); signup.element('header-signup').listeners.click(); }
+      else signup.element('signup-tab').listeners.click();
+      entryIdentity(signup, destination);
+      signup.fill(); await signup.submit();
+      assert.equal(signup.signups[0].options.emailRedirectTo, `https://ojjuda.kr/?next=${destination}`, `${entry} signup keeps ${destination} in the confirmation link`);
+      assert.equal(JSON.parse(signup.storage.get('ojjuda_post_confirm_destination')).destination, destination);
+    }
+
+    const selected = setup(`?auth=login&next=${destination === 'world' ? 'pajang' : 'world'}`); await selected.flush();
+    await closeDialog(selected);
+    selected.element(`destination-${destination}`).listeners.click({ preventDefault() {} });
+    await closeDialog(selected);
+    selected.element('header-login').listeners.click();
+    await signIn(selected);
+    assert.deepEqual(selected.navigations, [route], 'an explicit section choice survives closing and reopening login');
+
+    const immediate = setup(`?auth=signup&next=${destination}`, { confirmed: true });
+    await immediate.flush(); immediate.fill(); await immediate.submit();
+    assert.deepEqual(immediate.navigations, [route], `${destination} also resumes when signup immediately returns a session`);
+    assert.deepEqual(immediate.navigationKinds, ['replace']);
+    const existing = setup(`?auth=login&next=${destination}`, { user: { id: 'existing-member', email: 'member@ojjuda.kr' } });
+    await existing.flush();
+    assert.deepEqual(existing.navigations, [route], `${destination} also resumes an existing session`);
+    assert.deepEqual(existing.navigationKinds, ['replace']);
+
+    const explicit = setup('?auth=login', { user: { id: 'existing-member', email: 'member@ojjuda.kr' } });
+    await explicit.flush();
+    explicit.element(`destination-${destination}`).listeners.click({ preventDefault() {} });
+    await explicit.flush();
+    assert.deepEqual(explicit.navigations, [route]);
+    assert.deepEqual(explicit.navigationKinds, ['assign'], 'an explicit signed-in service choice keeps its real visit history');
+  }
+  for (const next of ['', '&next=unknown', '&next=https://example.invalid/', '&next=//example.invalid/', '&next=toString']) {
+    const login = setup('?auth=login' + next); await login.flush(); await signIn(login);
+    assert.deepEqual(login.navigations, ['/world.html'], 'missing or untrusted login destinations use the Agit entrance');
+    const signup = setup('?auth=signup' + next, { confirmed: true });
+    await signup.flush(); signup.fill(); await signup.submit();
+    assert.deepEqual(signup.navigations, ['/world.html'], 'missing or untrusted immediate signup destinations use the Agit entrance');
+  }
   for (const [time, version, prefix] of [
     ['2026-11-19T14:59:59.999Z', '2026-09-29-age14', '/policies/2026-09-29/'],
     ['2026-11-19T15:00:00.000Z', '2026-11-20', '/']
@@ -130,11 +254,12 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   const renderer = world.slice(world.indexOf('function nr('), world.indexOf('function J1('));
   const worldRoutes = [];
   vm.runInNewContext(`${renderer}; nr('signup'); nr('forgot');`, {
+    window: {},
     ha: 'login', location: { assign: url => worldRoutes.push(url) },
     qr() { throw new Error('World must use the common signup form'); }
   });
   assert.deepEqual(worldRoutes, ['/?auth=signup&next=world', '/?auth=forgot&next=world']);
-  for (const destination of ['world', 'note']) {
+  for (const destination of ['world', 'note', 'pajang']) {
     const app = setup(`?auth=signup&next=${destination}`); await app.flush();
     const generatedNickname = app.element('nickname').value;
     assert.match(generatedNickname, /^[가-힣]{2}[0-9a-z]{10}$/);
@@ -144,7 +269,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     assert.equal(app.focused, 'email', 'signup starts with the first editable field');
     assert.equal(app.element('auth-dialog').open, true);
     assert.equal(app.element('signup-tab').attributes['aria-selected'], 'true');
-    assert.equal(app.element('auth-title').textContent, '오쭈다 아지트');
+    entryIdentity(app, destination);
     assert.equal(app.element('.password-confirm-field').hidden, false);
     assert.equal(app.element('password-confirm-label').textContent, '비밀번호 확인');
     assert.equal(app.element('password-confirm').required, true);
@@ -255,40 +380,52 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   assert.equal(switched.signups[0].options.data.nickname, '나만의별명', 'signup sends the nickname chosen by the member');
 
   const checkedNames = [];
-  const rejectedName = setup('?auth=signup', { nicknameResponse: name => {
-    checkedNames.push(name); return { data: checkedNames.length === 1 };
+  const maskedName = setup('?auth=signup', { nicknameResponse: name => {
+    checkedNames.push(name); return { data: '❤️❤️' + name.slice(2) };
   } });
-  await rejectedName.flush(); rejectedName.fill(); await rejectedName.submit();
-  assert.equal(checkedNames.length, 2, 'a forbidden candidate is regenerated before account creation');
-  assert.notEqual(checkedNames[0], checkedNames[1]);
-  assert.equal(rejectedName.signups.length, 1);
-  assert.equal(rejectedName.signups[0].options.data.nickname, checkedNames[1]);
+  await maskedName.flush(); maskedName.fill(); const suggestedName=maskedName.element('nickname').value;
+  await maskedName.submit();
+  assert.deepEqual(checkedNames,[suggestedName],'the suggested name is canonicalized once without regeneration');
+  assert.equal(maskedName.signups.length,1);
+  assert.equal(maskedName.signups[0].options.data.nickname,'❤️❤️'+suggestedName.slice(2));
+  assert.equal(maskedName.element('nickname').value,'❤️❤️'+suggestedName.slice(2));
   let customChecks = 0;
-  const rejectedCustom = setup('?auth=signup', { nicknameResponse: () => { customChecks++; return { data: true }; } });
-  await rejectedCustom.flush(); rejectedCustom.fill(); rejectedCustom.element('nickname').value = '직접고른이름';
-  await rejectedCustom.submit();
-  assert.equal(customChecks, 1, 'a rejected custom nickname is never silently regenerated');
-  assert.equal(rejectedCustom.signups.length, 0);
-  assert.equal(rejectedCustom.element('nickname').value, '직접고른이름');
-  assert.equal(rejectedCustom.element('nickname').disabled, false);
-  assert.equal(rejectedCustom.focused, 'nickname');
-  assert.match(rejectedCustom.element('auth-feedback').textContent, /다른 이름을 입력/);
-  let rejectedChecks = 0;
-  const blockedNames = setup('?auth=signup', { nicknameResponse: () => { rejectedChecks++; return { data: true }; } });
-  await blockedNames.flush(); blockedNames.fill(); await blockedNames.submit();
-  assert.equal(rejectedChecks, 4, 'candidate retries are bounded');
-  assert.equal(blockedNames.signups.length, 0);
-  assert.match(blockedNames.element('auth-feedback').textContent, /닉네임을 만들지 못했어요/);
-  for (const result of [{ data: null }, { data: 'false' }, { error: { message: 'network' } }]) {
+  const maskedCustom = setup('?auth=signup', { nicknameResponse: name => { customChecks++; return { data:name.replaceAll('금칙','❤️❤️') }; } });
+  await maskedCustom.flush(); maskedCustom.fill(); maskedCustom.element('nickname').value='가'.repeat(10)+'금칙';
+  await maskedCustom.submit();
+  assert.equal(customChecks,1,'a user-entered name needs one canonicalization request');
+  assert.equal(maskedCustom.signups.length,1);
+  assert.equal(maskedCustom.signups[0].options.data.nickname,'가'.repeat(10)+'❤️❤️');
+  assert.equal(maskedCustom.element('nickname').value,'가'.repeat(10)+'❤️❤️');
+  assert.equal(maskedCustom.element('nickname').maxLength,15,'expanded mask text remains editable');
+  assert.equal(maskedCustom.element('nickname').disabled,false);
+  const {maskedTextLength,textInputMaxLength}=await import('../shared/content/text-length.mjs');
+  for(const name of ['가'.repeat(11)+'❤️❤️','😀'.repeat(12),'❤️❤️'.repeat(12)]){
+    const app=setup('?auth=signup');await app.flush();app.fill();app.element('nickname').value=name;
+    app.element('nickname').listeners.input();
+    assert.equal(app.element('nickname').maxLength,textInputMaxLength(name,12));
+    assert.equal(maskedTextLength(name),12);
+    await app.submit();assert.equal(app.signups[0].options.data.nickname,name,'canonical-length names are accepted');
+  }
+  for (const result of [{data:null},{data:false},{data:true},{data:{}},{data:''},{data:'   '},{data:'가'.repeat(13)},{data:'❤️❤️'.repeat(13)},{error:{message:'network'}}]) {
     const app = setup('?auth=signup', { nicknameResponse: () => result });
-    await app.flush(); app.fill(); await app.submit();
-    assert.equal(app.signups.length, 0, 'only a successful false result allows signup');
+    await app.flush(); app.fill(); const before=app.element('nickname').value;await app.submit();
+    assert.equal(app.signups.length,0,'only a valid canonical string allows signup');
+    assert.equal(app.nicknameChecks.length,1,'malformed or failed canonicalization never retries automatically');
+    assert.equal(app.element('nickname').value,before,'a failed canonicalization preserves the entered name');
   }
   const failedSignup = setup('?auth=signup', { signupResponse: () => ({ error: { message: 'network' } }) });
   await failedSignup.flush(); failedSignup.fill(); const failedName = failedSignup.element('nickname').value;
   await failedSignup.submit();
   assert.equal(failedSignup.signups.length, 1, 'an account creation failure never triggers an automatic retry');
   assert.equal(failedSignup.element('nickname').value, failedName);
+  const takenName=setup('?auth=signup',{nicknameResponse:name=>({data:name.replaceAll('금칙','❤️❤️')}),
+    signupResponse:()=>({error:{code:'23505',message:'duplicate key violates profiles_nickname_key'}})});
+  await takenName.flush();takenName.fill();takenName.element('nickname').value='금칙별명';await takenName.submit();
+  assert.equal(takenName.signups.length,1,'a canonical nickname collision never creates a second signup attempt');
+  assert.equal(takenName.element('nickname').value,'❤️❤️별명');
+  assert.match(takenName.element('auth-feedback').textContent,/이미 사용 중인 닉네임/);
+  assert.equal(takenName.focused,'nickname');
 
   const nicknameMember = { id: 'nickname-member', email: 'member@ojjuda.kr', user_metadata: { nickname: '기존별명' } };
   let authStatus = 555, prepareCalls = 0, identityCalls = 0;
@@ -314,16 +451,30 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   assert.deepEqual(expiredPark.navigations,[]);
   assert.match(expiredPark.element('auth-feedback').textContent,/로그인을 다시 확인/);
 
-  const repair = setup('?auth=login&next=note', { user: nicknameMember });
-  repair.client.rpc = async () => ({ error: { code: '23505', message: 'nickname conflict' } });
+  let repairConflict=true;
+  const repair = setup('?auth=login&next=note', {user:nicknameMember,
+    nicknameResponse:name=>({data:name.replaceAll('금칙','❤️❤️')}),
+    noteResponse:()=>repairConflict?{error:{code:'23505',message:'nickname conflict'}}:{data:true},
+    profileResponse:owner=>({data:{id:owner,nickname:'저장❤️❤️별명'}})});
   await repair.flush();
   assert.equal(repair.element('auth-title').textContent, '닉네임 정하기');
   assert.equal(repair.element('nickname').readOnly, false, 'existing nickname repair remains editable');
   assert.equal(repair.element('nickname-auto-help').hidden, true);
-  repair.element('nickname').value = '새별명';
-  repair.client.rpc = async () => ({ data: true });
+  repair.element('nickname').value = '새금칙별명';
+  repairConflict=false;
   await repair.submit();
   assert.deepEqual(repair.navigations, ['/world.html?place=park']);
+  assert.deepEqual(repair.nicknameChecks,['새금칙별명']);
+  assert.deepEqual(repair.noteWrites,['기존별명','새❤️❤️별명']);
+  assert.deepEqual(repair.profileReads,[nicknameMember.id]);
+  assert.equal(repair.element('nickname').value,'저장❤️❤️별명','nickname mode uses the saved profile returned by the server');
+  assert.equal(repair.element('account-badge').textContent,'저장❤️❤️별명님');
+  for(const profile of [{error:{message:'network'}},{data:null},{data:{id:'another-member',nickname:'다른별명'}}]){
+    const app=setup('?next=note',{user:nicknameMember,profileResponse:()=>profile});await app.flush();
+    assert.deepEqual(app.navigations,[],'a profile read failure or another account cannot confirm entry');
+    assert.equal(app.element('nickname').value,'기존별명');
+    assert.match(app.element('auth-feedback').textContent,/저장한 닉네임을 확인하지 못했어요/);
+  }
   const existing = setup('?auth=signup&next=world', { user: { id: 'existing', email: 'member@example.invalid' } });
   await existing.flush();
   assert.deepEqual(existing.navigations, ['/world.html']);
@@ -331,6 +482,22 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
 
   const cardId = '00000000-0000-4000-8000-000000000010';
   const reader = { id: 'reader', email: 'reader@example.invalid' };
+  const pajangConfirmed = setup('?code=confirmation'); await pajangConfirmed.flush();
+  pajangConfirmed.storage.set('ojjuda_post_confirm_destination', JSON.stringify({
+    destination: 'pajang', email: reader.email, expiresAt: Date.now() + 60000
+  }));
+  await pajangConfirmed.emit('SIGNED_IN', { user: { ...reader, email: reader.email.toUpperCase() } });
+  assert.deepEqual(pajangConfirmed.navigations, ['/features/pajang/'], 'email confirmation returns the matching member to Pajang');
+  for (const stored of [
+    { destination: 'pajang', email: 'another@example.invalid', expiresAt: Date.now() + 60000 },
+    { destination: 'pajang', email: reader.email, expiresAt: Date.now() - 1 },
+    { destination: 'https://example.invalid/', email: reader.email, expiresAt: Date.now() + 60000 }
+  ]) {
+    const confirmation = setup('?code=confirmation'); await confirmation.flush();
+    confirmation.storage.set('ojjuda_post_confirm_destination', JSON.stringify(stored));
+    await confirmation.emit('SIGNED_IN', { user: reader });
+    assert.deepEqual(confirmation.navigations, [], 'confirmation cannot use another account, an expired choice or an external destination');
+  }
   const runningWorldRecovery = setup('?reset=1&next=world', { user: reader });
   await runningWorldRecovery.flush();
   assert.equal(runningWorldRecovery.element('auth-title').textContent, '새 비밀번호 설정');
@@ -341,6 +508,8 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   await runningWorldRecovery.submit();
   assert.deepEqual(runningWorldRecovery.passwordUpdates, [{ owner: 'reader', password: 'replacement-password' }], 'the handoff retains the current recovery session');
   assert.equal(runningWorldRecovery.element('auth-title').textContent, '비밀번호가 바뀌었어요');
+  runningWorldRecovery.element('back-to-login').listeners.click(); await runningWorldRecovery.flush();
+  assert.deepEqual(runningWorldRecovery.navigations, ['/world.html'], 'a completed session recovery returns to its requested section');
   const photoLogin = setup('?auth=login&next=photo', { user: reader });
   await photoLogin.flush();
   assert.deepEqual(photoLogin.navigations, ['/photo-ttang.html'], 'photo login returns to the full game page');
@@ -427,12 +596,41 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   const recovery = setup('?auth=signup&next=world&reset=1'); await recovery.flush();
   assert.equal(recovery.element('auth-title').textContent, '비밀번호 찾기');
   const invalid = setup('?auth=signup&next=https://example.invalid'); await invalid.flush(); invalid.fill(); await invalid.submit();
-  assert.equal(invalid.signups[0].options.emailRedirectTo, 'https://ojjuda.kr/');
+  assert.equal(invalid.signups[0].options.emailRedirectTo, 'https://ojjuda.kr/?next=world');
   assert.deepEqual(invalid.navigations, []);
   const failedSession = setup('?auth=signup&next=world', { sessionError: true }); await failedSession.flush();
   assert.equal(failedSession.element('signup-tab').attributes['aria-selected'], 'true');
   const recoveryValues = { email: 'recovery@example.invalid', 'recovery-phone': '+82 10-1234-5678', 'recovery-birth': '2000-02-29', 'recovery-gender': 'male' };
   const fillRecovery = app => { for (const [key, value] of Object.entries(recoveryValues)) app.element(key).value = value; };
+  for (const [destination, route] of loginRoutes) {
+    const app = setup(`?auth=login&next=${destination}`); await app.flush();
+    app.element('forgot-trigger').listeners.click(); fillRecovery(app); await app.submit();
+    app.element('recovery-reset-button').listeners.click();
+    app.element('password').value = app.element('password-confirm').value = 'new-password';
+    await app.submit();
+    assert.equal(app.location.search, `?next=${destination}`, 'direct password reset keeps only the safe section return');
+    app.element('back-to-login').listeners.click();
+    assert.equal(app.element('login-tab').attributes['aria-selected'], 'true');
+    assert.deepEqual(app.navigations, [], 'direct password recovery still requires a fresh login');
+    await signIn(app);
+    assert.deepEqual(app.navigations, [route], `${destination} survives password recovery and a fresh login`);
+  }
+  for (const [returnQuery, route] of [
+    ['next=pajang', '/features/pajang/'],
+    [`next=note&card=${cardId}`, `/world.html?place=park&card=${cardId}`],
+    [`next=groups&invite=${groupCode}`, groupPath],
+    ['next=byeolcheonji&' + bookingQuery, '/byeolcheonji/?' + bookingQuery]
+  ]) {
+    const app = setup(`?reset=1&${returnQuery}&code=fixture&token_hash=fixture&type=recovery#access_token=fixture&type=recovery`, { user: reader });
+    await app.flush();
+    assert.deepEqual(app.navigations, [], 'session recovery completes before resuming the section');
+    app.element('password').value = app.element('password-confirm').value = 'replacement-password';
+    await app.submit();
+    assert.equal(app.location.search, '?' + returnQuery, 'recovery keeps the validated card, invite or booking return');
+    assert.equal(app.location.hash, '', 'recovery removes callback tokens from the URL');
+    app.element('back-to-login').listeners.click(); await app.flush();
+    assert.deepEqual(app.navigations, [route], 'completed session recovery resumes the original destination');
+  }
   for (const user of [null, { id: 'existing' }]) {
     const app = setup('?auth=forgot&next=world', { user }); await app.flush();
     assert.equal(app.element('auth-dialog').open, true);
@@ -508,10 +706,39 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   assert.match(failedReset.element('auth-feedback').textContent, /확인부터 다시/);
   assert.equal(failedReset.element('recovery-reset-button').hidden, true);
   const closed = setup('?auth=forgot'); await closed.flush(); fillRecovery(closed); await closed.submit();
-  closed.element('auth-dialog').close(); closed.element('auth-dialog').listeners.close();
+  closed.element('auth-dialog').close(); await closed.flush();
   closed.element('recovery-reset-button').listeners.click();
   assert.equal(closed.recoveries.length, 1); assert.equal(closed.element('recovery-reset-button').hidden, true);
   const deferred = () => { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no; }); return { promise, resolve, reject }; };
+  const oneMask=deferred();
+  const doubleSubmit=setup('?auth=signup',{nicknameResponse:()=>oneMask.promise});
+  await doubleSubmit.flush();doubleSubmit.fill();doubleSubmit.element('nickname').value='금칙별명';
+  const firstSubmit=doubleSubmit.submit();await doubleSubmit.flush();await doubleSubmit.submit();
+  assert.deepEqual(doubleSubmit.nicknameChecks,['금칙별명']);
+  assert.equal(doubleSubmit.signups.length,0);
+  doubleSubmit.emitNow('INITIAL_SESSION',null);
+  oneMask.resolve({data:'❤️❤️별명'});await firstSubmit;
+  assert.equal(doubleSubmit.signups.length,1,'two submits while masking create only one account request');
+  assert.equal(doubleSubmit.signups[0].options.data.nickname,'❤️❤️별명','same-identity Auth events do not cancel canonicalization');
+
+  const switchedMask=deferred();
+  const signupAccountSwitch=setup('?auth=signup',{nicknameResponse:()=>switchedMask.promise});
+  await signupAccountSwitch.flush();signupAccountSwitch.fill();signupAccountSwitch.element('nickname').value='이전금칙별명';
+  const signupBeforeSwitch=signupAccountSwitch.submit();await signupAccountSwitch.flush();
+  signupAccountSwitch.emitNow('SIGNED_IN',{user:reader});
+  switchedMask.resolve({data:'이전❤️❤️별명'});await signupBeforeSwitch;
+  assert.equal(signupAccountSwitch.signups.length,0,'an Auth switch invalidates a pending mask before any account is created');
+  assert.equal(signupAccountSwitch.element('nickname').value,'이전금칙별명');
+  assert.match(signupAccountSwitch.element('auth-feedback').textContent,/로그인 상태가 바뀌었어요/);
+
+  const delayedProfile=deferred();
+  const savedProfileRace=setup('?next=note',{user:nicknameMember,profileResponse:()=>delayedProfile.promise});
+  await savedProfileRace.flush();assert.deepEqual(savedProfileRace.profileReads,[nicknameMember.id]);
+  savedProfileRace.emitNow('SIGNED_IN',{user:{...reader,user_metadata:{nickname:'새회원'}}});
+  delayedProfile.resolve({data:{id:nicknameMember.id,nickname:'이전❤️❤️별명'}});await savedProfileRace.flush();
+  assert.deepEqual(savedProfileRace.navigations,[],'a late canonical profile cannot open another account’s park');
+  assert.equal(savedProfileRace.element('account-badge').textContent,'새회원님');
+
   const oldIdentity = deferred(), newIdentity = deferred();
   const owners = [];
   const sessionSwitch = setup('?next=note', {user:nicknameMember,userResponse:user => {
@@ -532,12 +759,12 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   const nicknameRace = setup('?auth=signup', { nicknameResponse: () => oldNickname.promise });
   await nicknameRace.flush(); nicknameRace.fill(); const pendingNickname = nicknameRace.submit();
   await nicknameRace.flush();
-  nicknameRace.element('auth-dialog').close(); nicknameRace.element('auth-dialog').listeners.close();
+  nicknameRace.element('auth-dialog').close(); await nicknameRace.flush();
   nicknameRace.element('login-tab').listeners.click(); nicknameRace.element('auth-dialog').showModal();
   nicknameRace.element('nickname').value = '새창의이름';
-  oldNickname.resolve({ data: true }); await pendingNickname;
+  oldNickname.resolve({ data: '이전❤️❤️별명' }); await pendingNickname;
   assert.equal(nicknameRace.signups.length, 0, 'a late nickname check cannot create an account after closing signup');
-  assert.equal(nicknameRace.element('nickname').value, '새창의이름', 'a late rejection cannot regenerate a name in another view');
+  assert.equal(nicknameRace.element('nickname').value, '새창의이름', 'a late canonical result cannot replace a name in another view');
   assert.equal(nicknameRace.element('login-tab').attributes['aria-selected'], 'true');
   const oldSession = deferred();
   const sessionRace = setup('?auth=login', { sessionResponse: () => oldSession.promise });
@@ -550,7 +777,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     const oldRecovery = deferred();
     const app = setup('?auth=forgot', { recoveryResponse: () => oldRecovery.promise });
     await app.flush(); fillRecovery(app); const pending = app.submit();
-    app.element('auth-dialog').close(); app.element('auth-dialog').listeners.close();
+    app.element('auth-dialog').close(); await app.flush();
     // Reopening the same recovery mode starts a new view even while the previous request settles.
     app.element('login-tab').listeners.click(); app.element('forgot-trigger').listeners.click();
     app.element('auth-dialog').showModal();
@@ -570,12 +797,85 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   await signupRace.flush(); signupRace.fill(); const pendingSignup = signupRace.submit();
   await signupRace.flush();
   assert.equal(signupRace.signups.length, 1, 'the signup request is pending before the dialog closes');
-  signupRace.element('auth-dialog').close(); signupRace.element('auth-dialog').listeners.close();
+  signupRace.element('auth-dialog').close(); await signupRace.flush();
   signupRace.element('login-tab').listeners.click(); signupRace.element('auth-dialog').showModal();
   signupRace.element('password').value = 'replacement-password';
   oldSignup.resolve({ data: { session: null } }); await pendingSignup;
   assert.equal(signupRace.element('login-tab').attributes['aria-selected'], 'true');
   assert.equal(signupRace.element('auth-form').hidden, false, 'a previous signup response cannot replace a reopened login form');
   assert.equal(signupRace.element('password').value, 'replacement-password');
-  console.log('PASS: verified recovery, unified signup entry, required inputs, confirmation destinations, retired destination rejection and account races');
+
+  const invitationCode='00000000-0000-4000-8000-000000000011';
+  const automaticReferrer={id:invitationCode,nickname:'민준',code:invitationCode};
+  for(const destination of ['world','note','pajang']){
+    const invited=setup(`?auth=signup&next=${destination}&ref=${invitationCode}`,{invitation:true,referralValue:automaticReferrer});
+    await invited.flush();invited.fill();await invited.submit();
+    assert.equal(invited.signups.length,1,`${destination}: one signup with an automatic invitation`);
+    const data=invited.signups[0].options.data;
+    assert.equal(data.referrer_code,invitationCode);
+    assert.equal('referrer_id'in data,false);assert.equal('referrer_nickname'in data,false);
+    assert.equal(invited.referralVerifications.length,1,'the controller revalidates the invitation before Auth signup');
+    assert.equal(invited.window.OjjudaInvite.pending(),null,'successful signup consumes the pending invitation');
+    assert.equal(invited.location.searchParams.has('ref'),false);
+    assert.equal(invited.storage.has('ojjuda:signup-referral'),false);
+  }
+  const manualReferrer=setup('?auth=signup',{referralValue:{id:invitationCode,nickname:'민준'}});
+  await manualReferrer.flush();manualReferrer.fill();await manualReferrer.submit();
+  assert.equal(manualReferrer.signups[0].options.data.referrer_id,invitationCode);
+  assert.equal(manualReferrer.signups[0].options.data.referrer_nickname,'민준');
+  assert.equal('referrer_code'in manualReferrer.signups[0].options.data,false,'the existing manual contract remains separate');
+
+  let verificationFails=true;
+  const retryInvitation=setup('?auth=signup&ref='+invitationCode,{invitation:true,referralValue:automaticReferrer,
+    referralVerify:async()=>{if(verificationFails)throw Error('추천인을 확인하지 못했어요. 다시 시도해 주세요.');}});
+  await retryInvitation.flush();retryInvitation.fill();await retryInvitation.submit();
+  assert.equal(retryInvitation.signups.length,0,'failed referral verification must not start Auth signup');
+  assert.equal(retryInvitation.window.OjjudaInvite.pending(),invitationCode);
+  assert.equal(retryInvitation.element('email').value,'signup-fixture@ojjuda.kr','a failed lookup preserves the signup draft');
+  verificationFails=false;retryInvitation.fill();await retryInvitation.submit();
+  assert.equal(retryInvitation.signups.length,1);assert.equal(retryInvitation.signups[0].options.data.referrer_code,invitationCode);
+
+  let signupFails=true;
+  const failedInvitedSignup=setup('?auth=signup&ref='+invitationCode,{invitation:true,referralValue:automaticReferrer,
+    signupResponse:async()=>signupFails?{error:{message:'Synthetic signup network failure'}}:{data:{session:null}}});
+  await failedInvitedSignup.flush();failedInvitedSignup.fill();await failedInvitedSignup.submit();
+  assert.equal(failedInvitedSignup.window.OjjudaInvite.pending(),invitationCode,'an Auth failure does not consume attribution');
+  signupFails=false;failedInvitedSignup.fill();await failedInvitedSignup.submit();
+  assert.equal(failedInvitedSignup.signups.length,2);
+  assert.ok(failedInvitedSignup.signups.every(request=>request.options.data.referrer_code===invitationCode));
+  assert.equal(failedInvitedSignup.window.OjjudaInvite.pending(),null);
+
+  const lookup=deferred();
+  const cancelledInvitation=setup('?auth=signup&ref='+invitationCode,{invitation:true,referralValue:automaticReferrer,referralVerify:()=>lookup.promise});
+  await cancelledInvitation.flush();cancelledInvitation.fill();const verifying=cancelledInvitation.submit();await cancelledInvitation.flush();
+  cancelledInvitation.element('auth-dialog').close();await cancelledInvitation.flush();
+  cancelledInvitation.element('login-tab').listeners.click();cancelledInvitation.element('auth-dialog').showModal();
+  lookup.resolve();await verifying;
+  assert.equal(cancelledInvitation.signups.length,0,'a late verification cannot submit a form that was closed and reopened in login mode');
+  assert.equal(cancelledInvitation.window.OjjudaInvite.pending(),invitationCode,'closing the draft does not discard the invitation');
+  cancelledInvitation.element('signup-tab').listeners.click();cancelledInvitation.fill();await cancelledInvitation.submit();
+  assert.equal(cancelledInvitation.signups.length,1,'the reopened signup can still use its invitation');
+
+  const missingReferralUI=setup('?auth=signup&ref='+invitationCode,{invitation:true});
+  await missingReferralUI.flush();missingReferralUI.fill();await missingReferralUI.submit();
+  assert.equal(missingReferralUI.signups.length,0,'missing referral UI must not silently create an unattributed account');
+  assert.match(missingReferralUI.element('auth-feedback').textContent,/추천인 입력 화면/);
+
+  const existingReferral='00000000-0000-4000-8000-000000000033';
+  const existingInvitedUser={id:'00000000-0000-4000-8000-000000000022',email:'existing@example.invalid',is_anonymous:false,user_metadata:{nickname:'보리',referrer_id:existingReferral}};
+  const existingInvited=setup('?auth=login&next=world&ref='+invitationCode,{invitation:true,user:existingInvitedUser,referralValue:automaticReferrer});
+  await existingInvited.flush();
+  assert.equal(existingInvited.window.OjjudaInvite.pending(),null,'an existing member consumes an inbound link without claiming it');
+  assert.deepEqual(existingInvited.signups,[]);assert.deepEqual(existingInvited.passwordUpdates,[]);
+  assert.equal(existingInvited.referralReads.length,0);assert.equal(existingInvitedUser.user_metadata.referrer_id,existingReferral);
+  assert.deepEqual(existingInvited.navigations,['/world.html']);
+  const invitedLogin=setup('?auth=login&next=world&ref='+invitationCode,{invitation:true,signInResponse:async()=>({data:{session:{user:existingInvitedUser}}})});
+  await invitedLogin.flush();await signIn(invitedLogin);
+  assert.equal(invitedLogin.window.OjjudaInvite.pending(),null,'both the common invitation and portal receive the Auth login event');
+  assert.deepEqual(invitedLogin.signups,[]);assert.deepEqual(invitedLogin.passwordUpdates,[]);
+  assert.equal(existingInvitedUser.user_metadata.referrer_id,existingReferral);
+  assert.deepEqual(invitedLogin.navigations,['/world.html']);
+  console.log('PASS: automatic referrer_code-only signup, manual contract, verification/Auth retry, view cancellation and existing-member attribution preservation');
+  console.log('PASS: Agit/Pajang/Park auth routes, canonical masked nicknames and saved profiles, Unicode/mask limits, unique-name failures, duplicate submits, confirmation/recovery, drafts and account/view races');
 })().catch(error => { console.error(error); process.exitCode = 1; });
+

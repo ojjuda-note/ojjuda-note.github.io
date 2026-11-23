@@ -3,24 +3,31 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f5ed"><title>윷놀이 · 오쭈다 오락실</title>
 <link rel="icon" href="./cover.webp?v=1" type="image/webp">
-<link rel="stylesheet" href="./style.css?v=29">
+<link rel="stylesheet" href="./style.css?v=20261120-service-actions1">
 <link rel="stylesheet" href="/shared/games/game-entry.css?v=20261109-unified-multiplayer-ui2">
 <link rel="stylesheet" href="/shared/games/multiplayer-entry.css?v=20261109-unified-multiplayer-ui2">
+<link rel="stylesheet" href="/features/arcade/arcade-rooms.css?v=20261120-service-actions2">
 <link rel="stylesheet" href="/shared/games/arcade-return.css?v=20261112-arcade-entry-return1">
-<link rel="stylesheet" href="/shared/games/game-results.css?v=20261116-yut-destinations">
+<link rel="stylesheet" href="/shared/games/game-results.css?v=20261120-service-actions1">
 <script defer src="/config.js"></script>
+<script defer src="/features/arcade/arcade-rooms.js?v=20261120-service-actions1"></script>
 <script defer src="/shared/games/guest-game-scores.js?v=20261117-arcade-score-repair1"></script>
-<script defer src="/shared/games/game-results.js?v=20261118-yut-name1"></script>
-<script type="module" src="./play.mjs?v=20261118-yut-first-seat4"></script></head>
+<script defer src="/shared/games/game-results.js?v=20261120-service-actions1"></script>
+<script type="module" src="./play.mjs?v=20261122-yut-solo-first1"></script></head>
 <body data-mp-entry="true">
 <header class="mp-entry-bar"><a class="mp-entry-back arcade-return" href="/world.html?tab=arcade">← 오쭈다 오락실</a><span>오쭈다 오락실</span></header>
 <main id="setup">
-  <section class="game-entry mp-entry" aria-labelledby="entry-title">
+  <section id="yut-entry" class="game-entry mp-entry" aria-labelledby="entry-title">
     <div class="ge-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><g transform="rotate(23 12 12)"><rect x="3" y="4" width="4" height="16" rx="2"/><rect x="10" y="2" width="4" height="17" rx="2"/><rect x="17" y="5" width="4" height="16" rx="2"/><path d="m4 10 2 2m0-2-2 2m7-5 2 2m0-2-2 2"/></g></svg></div>
-    <span class="ge-kicker">오쭈다 오락실 · 멀티게임</span>
+    <span class="ge-kicker">오쭈다 오락실 · 싱글 · 멀티</span>
     <h1 class="ge-title" id="entry-title">윷놀이</h1>
     <p class="ge-copy">우리 팀 동물 말을 먼저 모두 골인시키세요.</p>
     <div id="entry-controls"></div>
+  </section>
+  <section id="online-lobby" class="game-entry mp-entry" aria-labelledby="online-lobby-title" hidden>
+    <span class="ge-kicker">오쭈다 오락실 · 윷놀이</span>
+    <h2 class="ge-title" id="online-lobby-title">온라인 대기실</h2>
+    <div id="online-lobby-body"></div>
   </section>
 </main>
 <main class="tabletop" id="tabletop" hidden>

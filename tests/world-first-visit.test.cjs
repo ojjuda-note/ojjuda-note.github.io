@@ -52,7 +52,10 @@ async function open(query = '', options = {}) {
   const login = html.match(/sr\["account-login"\]=\(\)=>\{[^\n]+\};/)[0];
   for (const [place, destination] of [['park', 'note'], ['arcade', 'world']]) {
     const location = {}, sr = {};
-    vm.runInNewContext(login, { sr, location, g: { tab: 'my', place: { id: place } } });
+    // Browser login actions may retain a referral query; keep that bridge in
+    // the isolated VM so the destination itself is still tested.
+    const window = { OjjudaInvite: { withReferral: path => path } };
+    vm.runInNewContext(login, { sr, location, window, g: { tab: 'my', place: { id: place } } });
     sr['account-login']();
     assert.equal(location.href, '/?auth=login&next=' + destination, 'login from Settings returns to the originating menu');
   }

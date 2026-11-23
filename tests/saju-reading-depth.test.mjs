@@ -9,6 +9,7 @@ import {buildCompatibilityScore} from '../games/starlit-saju/compatibility-score
 import {compatibilityPeopleText} from '../games/starlit-saju/compatibility-people-view.mjs';
 import {compatibilityScoreText} from '../games/starlit-saju/compatibility-score-view.mjs';
 import {readingDetailSections,readingDetailText} from '../games/starlit-saju/reading-detail.mjs';
+import {expectedGeneralCopyGroups,authoredCopyBody} from './helpers/saju-copy-policy.mjs';
 
 const now=new Date('2026-11-13T00:00:00Z');
 const birth={year:1990,month:5,day:17,hour:8,minute:37};
@@ -46,12 +47,14 @@ function generalGroups(report) {
   };
 }
 
-test('every general reading keeps its full structured explanation in the paid category and complete copy',()=>{
+test('every retained reading keeps its full structured explanation in copy while removed layers remain only in the model',()=>{
   const {reading}=general();
+  const selected=new Set(Object.values(expectedGeneralCopyGroups(reading)).flat());
   for(const [category,items] of Object.entries(generalGroups(reading)))for(const item of items) {
     const label=item.id||item.title||item.label;
-    structured(item,label,reading.copyByCategory[category]);
-    for(const text of readingDetailText(item))assert.ok(reading.copyByCategory.all.includes(text),label+': the complete purchase includes every new explanation');
+    structured(item,label,selected.has(item)?reading.copyByCategory[category]:undefined);
+    if(selected.has(item))for(const text of readingDetailText(item))assert.ok(reading.copyByCategory.all.includes(text),label+': the complete purchase keeps the representative explanation');
+    else assert.ok(!reading.copyByCategory.all.includes(authoredCopyBody(item)),label+': the removed interpretation does not return in copy');
   }
   for(const copy of Object.values(reading.copyByCategory))assert.doesNotMatch(copy,/계산 근거|점수를 계산한 방법|자료 출처|상세 산식/);
 });
@@ -127,7 +130,8 @@ test('the same leading traits receive shared wording without an invented A/B con
     assert.doesNotMatch(section.paragraphs.join(' '),/A는 .+ B는|완벽한 궁합|최고의 궁합|100%/);
     const scene=item.detailSections.find(section=>section.title==='이렇게 대화해 보세요');
     assert.match(scene.paragraphs.join(' '),/가상 장면/);
-    assert.match(scene.paragraphs.join(' '),/공통으로 보이는/);
+    assert.match(scene.paragraphs.join(' '),/두 사람 모두/);
+    assert.doesNotMatch(scene.paragraphs.join(' '),/A는 .+ B는/);
   }
 });
 

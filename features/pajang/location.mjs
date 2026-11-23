@@ -1,4 +1,4 @@
-import '../../shared/location/location.js?v=shared1';
+import '../../shared/location/location.js?v=20261119-kma-current1';
 
 export async function readLocationCell(options={}) {
   const {latitude,longitude}=await globalThis.OjjudaLocation.readPosition({...options,coarseCache:true});

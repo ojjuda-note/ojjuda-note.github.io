@@ -142,7 +142,8 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
     assert.equal(await secondReply.inputValue(), '다른 문의에 아직 저장하지 않은 답변', 'pending reload keeps the existing draft visible');
     await support.evaluate(() => inquiryResponse({ data: null, error: { code: 'XX000' } }));
     await inquiryArea.getByText('답변은 저장됐지만 목록을 다시 불러오지 못했어요. 다른 작성 내용은 유지됩니다.', { exact: true }).waitFor();
-    assert.equal(await reply.inputValue(), '첫 문의에 저장할 수정 답변');
+    assert.equal(await reply.inputValue(), '', 'a void save response cannot label unmasked submitted text as the saved reply');
+    assert.equal(await reply.isEnabled(), false, 'the saved reply waits for canonical readback before another edit');
     assert.equal(await secondReply.inputValue(), '다른 문의에 아직 저장하지 않은 답변');
     assert.equal(await support.evaluate(() => controller.hasDraft()), true);
     assert.equal(await support.evaluate(() => controller.canLeave()), true);
@@ -188,6 +189,7 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
         async rpc(name, args) {
           calls.push({ name, args });
           if (name === 'is_note_moderator') return { data: true, error: null };
+          if (name === 'admin_card_media_paths') return { data: [], error: null };
           if (name === 'admin_cards') return { data: [{ ...card, hidden: args.p_state === 'hidden' }], error: null };
           if (name === 'admin_risk_cards') return { data: [{ ...card, body: '합성 위험 신호 카드' }], error: null };
           if (name === 'admin_risk_passed_ids') return { data: [], error: null };

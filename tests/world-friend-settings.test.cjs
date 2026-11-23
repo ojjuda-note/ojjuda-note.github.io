@@ -13,7 +13,7 @@ const tick = () => new Promise(resolve => setTimeout(resolve, 0));
 async function until(condition) { for (let i=0; i<50; i++) { if(condition())return; await tick(); } assert.ok(condition(), 'friend UI finishes updating'); }
 
 (async()=>{
- const errors=[], calls=[], messages=[];
+ const errors=[], calls=[], messages=[], accountWrites=[];
  const virtualConsole = new VirtualConsole();virtualConsole.on('jsdomError', error=>errors.push(error.message));
  const dom = new JSDOM('<div id="app"></div><div id="modal-root"></div><div id="toast"></div>', {
   url:'https://ojjuda.kr/world.html?tab=my', runScripts:'outside-only', pretendToBeVisual:true, virtualConsole
@@ -25,12 +25,20 @@ async function until(condition) { for (let i=0; i<50; i++) { if(condition())retu
   w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};
   w.fetch=async()=>({ok:true,json:async()=>({}),text:async()=>''});
   w.eval(source);
+  w.eval(fs.readFileSync(path.join(root,'note/support.js'),'utf8'));
+  w.OjjudaAccountDeletion={run:async()=>{accountWrites.push('delete');}};
   const t=w.friendTest, doc=w.document;
   const profiles=['accepted','incoming','decline','outgoing','new'].map(id=>({id,nickname:id==='new'?'새 친구':id,bio:'함께 게임해요',mood:'😊'}));
   let rows=[['a','owner','accepted','accepted'],['b','incoming','owner','pending'],['c','decline','owner','pending'],['d','owner','outgoing','pending']]
     .map(([id,requester,addressee,status])=>({id,requester,addressee,status}));
   let failNext=false, deferred=null;
-  const client={from(table){
+  const client={
+   auth:{onAuthStateChange(){},async signOut(){accountWrites.push('signOut');return{};}},
+   schema(){return{rpc:async name=>{
+    assert.ok(['get_note_state','list_my_inquiries'].includes(name),'support only reads guidance and the inquiry list');
+    return{data:name==='get_note_state'?{}:[]};
+   }};},
+   from(table){
    assert.ok(['friendships','profiles'].includes(table), 'retired content must never be queried: '+table);
    calls.push(table);
    let action='select', value, ids, key, pattern, excluded;
@@ -50,11 +58,49 @@ async function until(condition) { for (let i=0; i<50; i++) { if(condition())retu
   const group=()=>doc.querySelector('[data-my-group="friends"]');
   const click=selector=>{const button=doc.querySelector(selector);assert.ok(button,selector);button.click();};
   assert.equal(calls.length,0,'closed settings do not fetch friends');
+  assert.equal(doc.querySelector('.world-settings-header h2').textContent,'아지트 설정');
+  assert.deepEqual([...doc.querySelectorAll('.world-settings-page .ojjuda-settings-heading')].map(node=>node.textContent),
+   ['내 계정','이용 설정','이용 안내','앱 다운로드','계정 관리'],'settings retain the Park-style section order');
+  const account=doc.querySelector('.ojjuda-settings-group[aria-label="내 계정"] > .ojjuda-settings-list');
+  assert.equal(account.firstElementChild.dataset.act,'member-info-open','personal information opens directly from the first account row');
+  assert.equal(account.querySelector('[data-my-group="profile"] [data-act="member-info-open"]'),null);
+  assert.equal(group().closest('.ojjuda-settings-list'),account,'friend management stays in the account section');
+  const close=doc.querySelector('.world-settings-close');
+  assert.equal(close.dataset.act,'navigation-back','closing settings returns to the actual previous screen');
+  assert.equal(doc.querySelector('.world-settings-page [data-act="account-delete-open"]'),null);
+  click('[data-act="support-open"]');
+  await until(()=>doc.querySelector('#note-inquiry-body'));
+  const support=doc.querySelector('.note-support-layer [role="dialog"]');
+  const accountDisclosure=support.querySelector('[data-support-account]');
+  const withdrawal=support.querySelector('[data-support-withdrawal]');
+  assert.equal(withdrawal.closest('footer').hidden,false);
+  assert.equal(support.lastElementChild,withdrawal.closest('footer'),'withdrawal follows all support content');
+  assert.equal(accountDisclosure.open,false,'support starts with account management collapsed');
+  withdrawal.click();
+  assert.equal(w.OjjudaNoteSupport.isOpen(),true);
+  assert.equal(doc.querySelector('#del-nick'),null,'a collapsed withdrawal control cannot open the form');
+  support.querySelector('[data-support-account-toggle]').click();
+  assert.equal(accountDisclosure.open,true);
+  assert.equal(withdrawal.textContent,'회원 탈퇴 안내');
+  assert.equal(doc.querySelector('#del-nick'),null,'opening account management does not start withdrawal');
+  assert.deepEqual(accountWrites,[]);
+  withdrawal.click();
+  assert.equal(w.OjjudaNoteSupport.isOpen(),false);
+  assert.ok(doc.querySelector('#del-nick'),'the existing World nickname confirmation opens');
+  assert.equal(doc.querySelector('#del-nick').value,'');
+  assert.deepEqual(accountWrites,[],'opening support and withdrawal has no destructive effect');
+  click('#modal-root .mfoot [data-act="close"]');
+  assert.equal(doc.querySelector('#del-nick'),null);
+  assert.deepEqual(accountWrites,[],'cancelling withdrawal neither deletes nor signs out');
+  click('[data-act="support-open"]');
+  await until(()=>doc.querySelector('#note-inquiry-body'));
+  assert.equal(accountDisclosure.open,false,'reopening support never leaves withdrawal expanded');
+  w.OjjudaNoteSupport.close();
   group().open=true;await until(()=>doc.querySelector('#fr-q'));
   assert.equal(group().open,true);
   assert.ok(group().textContent.includes('친구 1명'));
   assert.equal(group().querySelector('[data-act="visit"]'),null);
-  assert.deepEqual([...doc.querySelectorAll('.bottomnav [data-tab]')].map(item=>item.textContent.trim()),['아지트','오락실','공원','설정']);
+  assert.deepEqual([...doc.querySelectorAll('.bottomnav [data-tab]')].map(item=>item.textContent.trim()),['아지트','오락실','설정']);
 
   const search=doc.querySelector('#fr-q');search.value='새 친구';search.dispatchEvent(new w.Event('input',{bubbles:true}));
   doc.querySelector('#fr-search-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
@@ -81,8 +127,8 @@ async function until(condition) { for (let i=0; i<50; i++) { if(condition())retu
   assert.equal(t.model.friends.length,0,'a previous account response cannot restore its friend list');
   group().open=true;await until(()=>t.model.loaded);assert.equal(t.model.friends.length,0);
   t.auth.online=false;t.auth.user=null;t.render();
-  assert.ok(group().querySelector('[data-act="account-login"]'));
-  assert.equal(group().querySelector('#fr-search-form'),null,'guests cannot manage a previous account');
+  assert.equal(group(),null,'guests cannot manage a previous account');
+  assert.deepEqual([...doc.querySelectorAll('[data-guest-account="agit"] a')].map(link=>[link.textContent,link.getAttribute('href')]),[['회원가입','/?auth=signup&next=world'],['로그인','/?auth=login&next=world']]);
   assert.deepEqual(errors,[]);
   console.log('PASS: settings entry, search, request, accept, decline, cancel, confirmed removal, notification route, retry and account isolation');
  } finally { dom.window.close(); }

@@ -179,8 +179,9 @@ async function checkCompactColors(page, viewport, area, keyboard = false) {
           await page.addStyleTag({content:`@font-face{font-family:ViewportQA;src:url(data:font/ttf;base64,${font})}:root{--font-b:ViewportQA,sans-serif;--font-d:ViewportQA,sans-serif}body{font-family:ViewportQA,sans-serif}`});
           await page.evaluate(() => document.fonts.ready);
         }
-        // Park is embedded content: World supplies its only visible navigation.
-        if(source==='note')assert.equal(await page.locator('.bottomnav').isVisible(),false,'Park must not duplicate World navigation');
+        // Standalone Park uses its own bottom navigation on mobile and the side menu on desktop.
+        if(source==='note')assert.equal(await page.locator('.bottomnav').isVisible(),viewport.width<900,
+          'independent Park navigation follows the responsive breakpoint');
         // Simulate a 48px system navigation area and a top notch.
         await page.addStyleTag({content:':root{--app-safe-bottom:48px;--app-safe-top:24px}html{scroll-behavior:auto}'});
         await settle(page);
@@ -218,6 +219,10 @@ async function checkCompactColors(page, viewport, area, keyboard = false) {
 
         if (source === 'note') {
           await page.evaluate(async () => {await openComposer('memo');document.querySelector('#publish-card').disabled=false;});
+          assert.equal(await page.locator('#compose-text').evaluate(input=>document.activeElement===input),true,
+            'the initial writer focuses the native text field at every viewport size');
+          await page.keyboard.insertText('열자마자 한글 입력');
+          assert.equal(await page.locator('#compose-text').inputValue(),'열자마자 한글 입력');
           await assertInside(page, page.locator('#publish-card'), area, 'note publish');
           for (const button of await page.locator('[data-compose-tool]').all()) {
             await assertInside(page, button, area, 'note option toolbar');

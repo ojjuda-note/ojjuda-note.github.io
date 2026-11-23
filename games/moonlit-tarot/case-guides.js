@@ -29,7 +29,7 @@ import { CASE_28 } from './case-guides/case-28.js?v=20261114-tarot-first-person1
 import { CASE_29 } from './case-guides/case-29.js?v=20261114-tarot-first-person1';
 import { CASE_30 } from './case-guides/case-30.js?v=20261114-tarot-first-person1';
 import { CASE_31 } from './case-guides/case-31.js?v=20261114-tarot-first-person1';
-import { CASE_32 } from './case-guides/case-32.js?v=20261114-tarot-first-person1';
+import { CASE_32 } from './case-guides/case-32.js?v=20261120-tarot-voice2';
 import { CASE_33 } from './case-guides/case-33.js?v=20261114-tarot-first-person1';
 import { CASE_34 } from './case-guides/case-34.js?v=20261114-tarot-first-person1';
 import { CASE_35 } from './case-guides/case-35.js?v=20261114-tarot-first-person1';
@@ -48,7 +48,7 @@ import { CASE_47 } from './case-guides/case-47.js?v=20261114-tarot-first-person1
 import { CASE_48 } from './case-guides/case-48.js?v=20261114-tarot-first-person1';
 import { CASE_49 } from './case-guides/case-49.js?v=20261114-tarot-first-person1';
 import { CASE_50 } from './case-guides/case-50.js?v=20261114-tarot-first-person1';
-import { directInterpretation, directAction } from './reading-voice.js?v=20261113-tarot-easy1';
+import { directInterpretation, directAction } from './reading-voice.js?v=20261120-tarot-voice2';
 
 // Editorial applications of the existing card meanings, authored for each
 // card/topic pair. They are not new historical sources or verified predictions.

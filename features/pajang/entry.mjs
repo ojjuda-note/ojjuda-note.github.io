@@ -1,7 +1,9 @@
-import {call, client, sameMember, requireMember, showGate, answeredRound} from './member.mjs?v=entry3';
-import {mountStation, prepareProgram} from './load-station.mjs?v=entry3';
-import {prepareLocation} from './location.mjs?v=entry2';
-import {themeFor, interests} from './questions.mjs?v=rounds1';
+import {call, client, sameMember, requireMember, showGate, answeredRound} from './member.mjs?v=20261119-guest-account1';
+import {mountStation, prepareProgram} from './load-station.mjs?v=20261123-fast-start1';
+import {enhanceGuestGate} from './entry-design.mjs?v=20261122-org-display-only1';
+import {prepareLocation} from './location.mjs?v=20261119-kma-current1';
+import {themeFor, interests} from './questions.mjs?v=20261120-question-copy1';
+import {textInputMaxLength} from '../../shared/content/text-length.mjs';
 
 const $ = id => document.getElementById(id);
 const form = $('answer-form');
@@ -40,15 +42,16 @@ function enterMain(destination = main, savedStation) {
   handoff=(async()=>{
     const style=document.createElement('link');
     style.rel='stylesheet';
+    style.dataset.pajangStationStyle='main';
     style.media='print';
-    style.href='./station.css?v=letter1';
+    style.href='./station.css?v=20261122-light-controls1';
     const styled=new Promise((resolve,reject)=>{style.onload=resolve;style.onerror=reject;});
     document.querySelector('link[href*="shell.css"]').before(style);
     await Promise.all([styled,mountStation(async()=>{
       await styled;
       document.getElementById('entry-style').disabled=true;
       style.media='all';
-      history.replaceState(null,'',destination.href);
+      history.replaceState(history.state,'',destination.href);
       window.scrollTo(0,0);
     },savedStation,program,destination)]);
   })().catch(()=>location.replace(destination.href));
@@ -57,7 +60,10 @@ function enterMain(destination = main, savedStation) {
 
 function setupProfile(entry) {
   const {province, city, interest} = form.elements;
-  form.elements.namedItem('name').value = entry.nickname || '';
+  const name = form.elements.namedItem('name');
+  name.value = entry.nickname || '';
+  name.oninput = () => { name.maxLength = textInputMaxLength(name.value,12); };
+  name.oninput();
   for (const item of interests) interest.add(new Option(item.name, item.key));
   const fields = $('join-fields');
   fields.hidden = false;
@@ -158,7 +164,7 @@ async function start(firstEntry) {
   const write = $('write');
   const browse = $('browse');
   const answerFields = $('answer-fields');
-  function openForm(destination) {
+  function openForm(destination, focus = true) {
     mode = destination;
     if (destination === 'feed' && entry.joined) return enterMain(feed);
     const joiningOnly = destination === 'feed';
@@ -167,9 +173,9 @@ async function start(firstEntry) {
     form.hidden = false;
     answerFields.hidden = joiningOnly;
     answerFields.disabled = joiningOnly;
-    submit.textContent = joiningOnly ? '참여하고 '+nextName+' 보기' : '답변 공개하고 오늘로';
+    submit.textContent = joiningOnly ? '참여하고 '+nextName+' 보기' : '답변하기';
     write.setAttribute('aria-expanded', String(!joiningOnly));
-    (!entry.joined ? form.elements.consent : mine).focus();
+    if (focus) (!entry.joined ? form.elements.consent : mine).focus();
   }
   write.onclick = () => openForm('answer');
   browse.onclick = () => openForm('feed');
@@ -184,8 +190,15 @@ async function start(firstEntry) {
     status.textContent = '';
     trigger.focus();
   };
+  // This screen is only reached after a verified member session. Skip its
+  // second welcome action and show the answer immediately, without opening the
+  // mobile keyboard. A first-time member still completes consent in this form.
   if (view === 'feed' || view === 'write') openForm(view === 'feed' ? 'feed' : 'answer');
-  mine.oninput = () => mine.setCustomValidity('');
+  else openForm('answer', false);
+  // The member has passed Auth and Pajang membership checks. Installed-app
+  // launches show the answer directly, not the decorated public entry scene.
+  $('welcome').dataset.memberEntry = 'direct';
+  mine.oninput = () => { mine.setCustomValidity(''); mine.maxLength = textInputMaxLength(mine.value,220); };
   form.onsubmit = async event => {
     event.preventDefault();
     if (submit.disabled) return;
@@ -199,7 +212,7 @@ async function start(firstEntry) {
     const joiningOnly = mode === 'feed';
     status.textContent = joiningOnly ? '참여 정보를 확인하고 있어요.' : '답변을 저장하고 있어요.';
     try {
-      const data = joiningOnly ? {} : {body, day:entry.day, slot:entry.slot, archive:true};
+      const data = joiningOnly ? {} : {body, day:entry.day, slot:entry.slot, archive:true, publicationPolicy:"year-v1"};
       if (!joiningOnly && entry.question) data.questionId = entry.question.id;
       if (!entry.joined) {
         const {province, city, interest, consent} = form.elements;
@@ -244,4 +257,5 @@ if (entry) {
     }
   }
   catch { showGate('질문을 불러오지 못했어요. 잠시 후 다시 열어 주세요.'); }
-}
+} else enhanceGuestGate();
+

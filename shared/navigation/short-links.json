@@ -66,6 +66,11 @@
       "label": "차차 러시!"
     },
     {
+      "slug": "onecard",
+      "target": "/games/onecard/index.html",
+      "label": "원카드 · 혼자 또는 최대 5명"
+    },
+    {
       "slug": "solitaire",
       "target": "/games/solitaire/index.html",
       "label": "솔리테어"
@@ -554,6 +559,11 @@
       "slug": "sitemap",
       "target": "/sitemap.html",
       "label": "사이트맵"
+    },
+    {
+      "slug": "park-story",
+      "target": "/features/guide/park.html",
+      "label": "오쭈다 공원 소개"
     }
   ]
 }

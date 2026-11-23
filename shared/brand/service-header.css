@@ -1,0 +1,115 @@
+/* One wordmark and account toolbar for Agit, Park, and Pajang. */
+:root .ojjuda-service-brand {
+  display:flex;align-items:center;flex:none;gap:6px;min-width:0;
+  margin:0;padding:0;line-height:1;white-space:nowrap;
+}
+:root .ojjuda-service-brand .ojjuda-service-home {
+  display:inline-flex;align-items:center;flex:none;gap:8px;min-height:44px;
+  margin:0;padding:0;border:0;border-radius:0;background:none;
+  color:var(--ink);font-family:var(--font-b,"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif);
+  text-decoration:none;white-space:nowrap;cursor:pointer;
+}
+:root .ojjuda-service-brand .ojjuda-service-logo {
+  display:block;flex:none;width:34px;height:34px;max-width:none;
+  margin:0;padding:0;border:0;border-radius:0;background:none;
+  color:var(--accent);filter:none;transform:none;
+}
+:root .ojjuda-service-brand .ojjuda-service-word {
+  display:inline-flex;align-items:baseline;gap:4px;margin:0;padding:0;
+  font:800 21px/1.2 var(--font-b,"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif);
+  letter-spacing:-.065em;color:var(--ink);white-space:nowrap;
+}
+:root .ojjuda-service-brand .ojjuda-service-name {
+  display:inline-block;margin:0;padding:0;font-size:16px;line-height:1.2;
+  font-style:normal;font-weight:500;letter-spacing:-.055em;color:var(--ink-2);
+}
+:root .ojjuda-service-brand .ojjuda-service-beta {
+  display:inline-flex;align-items:center;justify-content:center;flex:none;
+  min-width:38px;min-height:32px;margin:0;padding:5px 7px;border:0;
+  border-radius:999px;background:var(--accent-soft);color:var(--ink);
+  font:700 10px/1.2 var(--font-b,"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif);
+  letter-spacing:0;white-space:nowrap;transform:none;
+}
+:root .ojjuda-service-actions {display:flex;align-items:center;flex:none;gap:10px;min-width:0}
+:root .ojjuda-service-actions .ojjuda-service-invite {
+  display:inline-flex;align-items:center;justify-content:center;flex:none;gap:5px;
+  min-width:64px;min-height:44px;margin:0;padding:6px 12px;
+  border:1px solid var(--line);border-radius:999px;background:var(--accent-soft);color:var(--accent-ink);
+  font:700 13px/1.2 var(--font-b,"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif);
+  white-space:nowrap;cursor:pointer;
+}
+:root .ojjuda-service-actions .ojjuda-service-invite svg {
+  width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;
+}
+:root .ojjuda-service-actions .ojjuda-service-invite:hover {background:var(--surface-2,var(--surface))}
+:root .ojjuda-service-actions .ojjuda-service-invite:disabled {opacity:.6;cursor:wait}
+:root .ojjuda-service-actions .nn-bell {
+  position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;
+  width:40px;height:40px;padding:0;border:0;border-radius:50%;background:none;color:var(--ink-2);cursor:pointer;
+}
+:root .ojjuda-service-actions .nn-bell svg {width:22px;height:22px;flex:none}
+:root .ojjuda-service-actions .ojjuda-service-balance {
+  display:inline-flex;align-items:center;justify-content:center;flex:none;gap:6px;
+  min-width:0;max-width:160px;height:38px;padding:0 12px;border:1px solid var(--line);
+  border-radius:10px;background:var(--surface);color:var(--ink);
+  font:600 13px/1.2 var(--font-b,"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif);
+  font-variant-numeric:tabular-nums;white-space:nowrap;text-decoration:none;cursor:pointer;
+}
+:root .ojjuda-service-balance :is(.cz,.note-cz) {
+  display:inline-grid;place-items:center;flex:none;width:22px;height:22px;
+  border-radius:50%;background:#eedcb4;transform:none;
+}
+:root .ojjuda-service-balance :is(.cz,.note-cz) i {
+  color:#665123;font:700 8px/1 var(--font-b,system-ui,sans-serif);transform:none;opacity:1;
+}
+:root .ojjuda-service-balance :is(.ojjuda-service-amount,[data-note-balance],[data-pajang-balance]) {
+  min-width:0;overflow:hidden;text-overflow:ellipsis;
+}
+:root .ojjuda-service-brand :is(a,button):focus-visible,
+:root .ojjuda-service-actions :is(a,button):focus-visible {outline:2px solid var(--accent-ink);outline-offset:3px}
+.pajang-mast {background:var(--surface);border-color:var(--line)}
+.pajang-mast .ojjuda-service-header {
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  width:100%;max-width:1264px;min-height:84px;height:auto;margin:auto;padding:0 32px;box-sizing:border-box;
+}
+@media(min-width:901px){.pajang-mast~#station .station-nav{top:calc(20px + env(safe-area-inset-top))}}
+@media(max-width:900px){
+  .pajang-mast~#station .station-nav {
+    inset:auto 0 0;transform:none;display:grid;grid-template-columns:repeat(3,1fr);
+    padding:5px 12px calc(5px + env(safe-area-inset-bottom));
+    background:color-mix(in srgb,var(--surface) 98%,transparent);border-top:1px solid var(--line);
+  }
+  .pajang-mast~#station .station-nav a {flex-direction:column;gap:2px;min-height:46px;padding:3px;border-radius:12px;font-size:11px}
+  .pajang-mast~#station .station-content.wrap {padding-bottom:calc(77px + env(safe-area-inset-bottom))}
+}
+@media(max-width:899px){
+  :root .ojjuda-service-header {
+    display:flex;align-items:center;justify-content:space-between;flex-wrap:nowrap;gap:8px;
+    width:100%;min-height:64px;height:auto;margin:0;padding:10px 18px;
+    border-bottom:1px solid var(--line);background:var(--surface);box-sizing:border-box;
+  }
+  .pajang-mast .ojjuda-service-header {border:0}
+  :root .ojjuda-service-brand .ojjuda-service-logo {width:30px;height:30px}
+  :root .ojjuda-service-brand .ojjuda-service-word {font-size:20px}
+  :root .ojjuda-service-brand .ojjuda-service-name {font-size:14px}
+  :root .ojjuda-service-actions {gap:5px}
+  :root .ojjuda-service-actions .ojjuda-service-invite {min-width:58px;padding-inline:8px;font-size:12px;gap:4px}
+  :root .ojjuda-service-actions .nn-bell {width:34px;height:34px}
+  :root .ojjuda-service-actions .ojjuda-service-balance {height:34px;padding-inline:8px;font-size:12px;gap:5px;max-width:116px}
+}
+@media(max-width:479px){
+  :root .ojjuda-service-header:has(.ojjuda-service-invite) .ojjuda-service-beta {display:none}
+  :root .ojjuda-service-actions .ojjuda-service-invite {min-width:44px;padding-inline:6px;gap:0}
+  :root .ojjuda-service-actions .ojjuda-service-invite svg {display:none}
+}
+@media(max-width:380px){
+  :root .ojjuda-service-header {padding-inline:12px;gap:4px}
+  :root .ojjuda-service-brand,:root .ojjuda-service-actions {gap:4px}
+  :root .ojjuda-service-brand .ojjuda-service-home {gap:6px}
+  :root .ojjuda-service-brand .ojjuda-service-logo {width:24px;height:24px}
+  :root .ojjuda-service-brand .ojjuda-service-word {font-size:17px;gap:3px}
+  :root .ojjuda-service-brand .ojjuda-service-name {font-size:12px}
+  :root .ojjuda-service-brand .ojjuda-service-beta {min-width:34px;padding-inline:6px}
+  :root .ojjuda-service-actions .nn-bell {width:28px;height:34px}
+  :root .ojjuda-service-actions .ojjuda-service-balance {padding-inline:6px;gap:4px;font-size:11px;max-width:100px}
+}

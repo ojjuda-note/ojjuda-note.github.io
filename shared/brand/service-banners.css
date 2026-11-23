@@ -1,0 +1,140 @@
+ojjuda-service-banners {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin-top: 2px;
+}
+.ojjuda-service-banners {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+}
+.ojjuda-service-banners .ojjuda-service-banner {
+  --service-ink: #614630;
+  --service-muted: #78614b;
+  --service-accent: #8a613c;
+  --service-start: #fff4de;
+  --service-end: #ebd3b5;
+  --service-line: #dfc7a8;
+  box-sizing: border-box;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 46%;
+  align-items: center;
+  min-width: 0;
+  min-height: 112px;
+  margin: 0;
+  padding: 12px 6px 12px 14px;
+  overflow: hidden;
+  border: 1px solid var(--service-line);
+  border-radius: 17px;
+  background: radial-gradient(ellipse at 75% 5%, #ffffffa3, transparent 65%), linear-gradient(120deg, var(--service-start), var(--service-end));
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--service-line) 62%, transparent), inset 0 1px 0 #ffffffb3;
+  color: var(--service-ink);
+  font-family: var(--font-b, var(--sans, system-ui, sans-serif));
+  text-align: left;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+/* The public Pajang gate has its own anchor layout and tighter nested gutters. */
+#gate .ojjuda-service-banners .ojjuda-service-banner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 36%;
+  padding-inline: 10px 4px;
+  color: var(--service-ink);
+}
+.ojjuda-service-banners [data-service="park"] {
+  --service-ink: #234d38;
+  --service-muted: #436650;
+  --service-accent: #316b4d;
+  --service-start: #eff8df;
+  --service-end: #b9dec3;
+  --service-line: #b3d0b6;
+}
+.ojjuda-service-banners [data-service="pajang"] {
+  --service-ink: #644067;
+  --service-muted: #805c7e;
+  --service-accent: #945b83;
+  --service-start: #fff0eb;
+  --service-end: #e4cfee;
+  --service-line: #dec2db;
+}
+.ojjuda-service-banner-copy {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: start;
+  gap: 5px;
+  min-width: 0;
+}
+.ojjuda-service-banner-copy strong {
+  color: var(--service-ink);
+  font-size: clamp(18px, 4.8vw, 23px);
+  font-weight: 750;
+  line-height: 1.25;
+  letter-spacing: -.035em;
+}
+.ojjuda-service-banner-copy small {
+  color: var(--service-muted);
+  font-size: 11px;
+  font-weight: 550;
+  line-height: 1.45;
+  letter-spacing: -.025em;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.ojjuda-service-banner-arrow {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 22px;
+  margin-top: 3px;
+  border: 1px solid #ffffff99;
+  border-radius: 8px;
+  background: #ffffff80;
+  color: var(--service-accent);
+  font: 600 18px/1 system-ui, sans-serif;
+}
+.ojjuda-service-banner-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 110px;
+  object-fit: contain;
+  filter: drop-shadow(0 5px 5px #44351d16);
+  pointer-events: none;
+}
+.ojjuda-service-banners .ojjuda-service-banner:focus-visible {
+  outline: 3px solid var(--service-accent);
+  outline-offset: 3px;
+}
+@media (hover: hover) {
+  .ojjuda-service-banners .ojjuda-service-banner:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 0 color-mix(in srgb, var(--service-line) 62%, transparent), 0 8px 16px #3d302311;
+  }
+}
+:root[data-theme="dark"] .ojjuda-service-banners [data-service="agit"] {
+  --service-ink: #f7e4ca; --service-muted: #dfc6aa; --service-accent: #eed0a7;
+  --service-start: #3e342b; --service-end: #63503e; --service-line: #80674f;
+}
+:root[data-theme="dark"] .ojjuda-service-banners [data-service="park"] {
+  --service-ink: #e5f3d8; --service-muted: #c8dfbd; --service-accent: #c0e4ad;
+  --service-start: #253d32; --service-end: #3e5d43; --service-line: #58765b;
+}
+:root[data-theme="dark"] .ojjuda-service-banners [data-service="pajang"] {
+  --service-ink: #f9e8f2; --service-muted: #e6c9e0; --service-accent: #f0bedc;
+  --service-start: #443147; --service-end: #674864; --service-line: #876781;
+}
+:root[data-theme="dark"] .ojjuda-service-banners .ojjuda-service-banner {
+  background: radial-gradient(ellipse at 75% 5%, #ffffff12, transparent 65%), linear-gradient(120deg, var(--service-start), var(--service-end));
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--service-line) 50%, transparent), inset 0 1px 0 #ffffff16;
+}
+:root[data-theme="dark"] .ojjuda-service-banner-arrow { border-color: #ffffff24; background: #ffffff12; }
+@media (prefers-reduced-motion: reduce) {
+  .ojjuda-service-banners .ojjuda-service-banner { transition: none; }
+  .ojjuda-service-banners .ojjuda-service-banner:hover { transform: none; }
+}

@@ -6,6 +6,7 @@ import { buildDetailedReading } from '../games/starlit-saju/readings.mjs';
 import * as referenceText from '../games/starlit-saju/readings-data.mjs';
 import { getReadingSources } from '../games/starlit-saju/sources.mjs';
 import { GOD_CONTEXTS, PAIR_CONTEXTS, TOPIC_CONTEXTS } from '../games/starlit-saju/deeper-reading-data.mjs';
+import {expectedGeneralCopyGroups,authoredCopyBody} from './helpers/saju-copy-policy.mjs';
 
 const now = new Date('2026-11-13T00:00:00Z');
 const sample = { year: 2005, month: 12, day: 23, hour: 8, minute: 37 };
@@ -194,8 +195,10 @@ test('all twelve months keep grounded service suggestions, including repeated sy
         assert.equal(card.origin,'service-advice');
         for(const field of ['title','why','action','caution']){
           assert.ok(typeof card[field]==='string'&&card[field].trim(),`${card.id}: missing ${field}`);
-          assert.equal(report.copyByCategory[topic].includes(card[field]),field!=='why',`${card.id}: copy visibility differs for ${field}`);
         }
+        assert.ok(!report.copyByCategory[topic].includes([card.title,'해 볼 일: '+card.action,'함께 살펴볼 점: '+card.caution].join('\n')),
+          `${card.id}: a removed standalone suggestion must not return in the product copy`);
+        assert.ok(!report.copyByCategory[topic].includes(card.why),'the calculation reason stays internal');
         assert.ok(card.factIds.length>0,'a suggestion needs an observed condition');
         for(const id of card.factIds){
           assert.ok(facts.has(id)&&evidence.has(id),`${card.id}: invalid or out-of-product reason ${id}`);
@@ -228,8 +231,9 @@ test('source records remain available internally but are not appended to purchas
   }
 });
 
-test('every purchased topic copies its visible personal explanation while keeping the old source appendix internal', () => {
+test('every purchased topic copies its representative explanation while keeping removed parallel bodies and the old source appendix internal', () => {
   const { report } = reading();
+  const selected=new Set(Object.values(expectedGeneralCopyGroups(report)).flat());
   assert.ok(report.guide?.title);
   assert.ok(report.guide.paragraphs.every(text => typeof text === 'string' && text.trim()));
   assert.ok(report.guide.paragraphs.length > 0, 'the reader needs an introduction to the symbols');
@@ -257,6 +261,10 @@ test('every purchased topic copies its visible personal explanation while keepin
     }
     const overviews=topic==='monthly'?report.reader.months:[report.reader[topic]];
     for(const overview of overviews)for(const item of [overview,...overview.cards]) {
+      if(!selected.has(item)) {
+        assert.ok(!text.includes(authoredCopyBody(item)),`${topic}/${item.id||item.title}: the removed body must not return in copy`);
+        continue;
+      }
       assert.ok(text.includes(item.title));
       for(const paragraph of item.paragraphs)assert.ok(text.includes(paragraph),`${topic}/${item.id||item.title}: visible prose was omitted`);
     }

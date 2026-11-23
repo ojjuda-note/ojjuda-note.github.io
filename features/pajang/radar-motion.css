@@ -1,0 +1,45 @@
+/* Shared by the entry preview and member radar, including the in-page handoff. */
+.scope .sweep,.radar-scope .radar-sweep{display:none;animation:none}
+.scope::before,.scope::after,.radar-scope::before,.radar-scope::after{
+  content:"";
+  position:absolute;
+  inset:1%;
+  z-index:1;
+  box-sizing:border-box;
+  border:1.5px solid color-mix(in srgb,var(--accent) 55%,var(--surface));
+  border-top-color:var(--surface);
+  border-left-color:color-mix(in srgb,var(--accent) 18%,var(--surface));
+  border-right-color:color-mix(in srgb,var(--accent) 72%,var(--surface));
+  border-bottom-color:var(--accent-ink);
+  border-radius:50%;
+  background:radial-gradient(closest-side,transparent 85%,color-mix(in srgb,var(--accent) 17%,transparent) 88%,color-mix(in srgb,var(--accent) 50%,transparent) 92%,color-mix(in srgb,var(--accent-soft) 92%,transparent) 96%,color-mix(in srgb,var(--surface) 96%,transparent) 98%,color-mix(in srgb,var(--accent) 70%,transparent) 100%);
+  box-shadow:0 5px 7px -2px color-mix(in srgb,var(--accent-ink) 40%,transparent),0 1px 1px color-mix(in srgb,var(--surface) 70%,transparent),inset 0 3px 3px color-mix(in srgb,var(--surface) 90%,transparent),inset 0 -3px 5px color-mix(in srgb,var(--accent-ink) 44%,transparent);
+  opacity:.38;
+  transform:scale(.42);
+  transform-origin:center;
+  pointer-events:none;
+}
+.scope::after,.radar-scope::after{transform:scale(.72);opacity:.25}
+.scope .rose,.scope .self,.scope .dot,.radar-scope .scope-self,.radar-scope .scope-person{z-index:2}
+@keyframes pajang-ripple{
+  0%{transform:scale(.055);opacity:0}
+  12%{opacity:.9}
+  55%{opacity:.65}
+  100%{transform:scale(1);opacity:0}
+}
+@media(prefers-reduced-motion:no-preference){
+  .scope::before,.scope::after,.radar-scope::before,.radar-scope::after{
+    animation:pajang-ripple 9.6s linear infinite;
+  }
+  .scope::after,.radar-scope::after{animation-delay:-4.8s}
+}
+
+/* One location marker opens that member's answers to the latest three questions. */
+.radar-answer-list{display:grid;gap:18px;min-width:0}
+.radar-answer+.radar-answer{padding-top:18px;border-top:1px solid var(--line)}
+.radar-answer-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:7px;color:var(--ink-2,var(--muted));font-size:13px;font-weight:600;line-height:1.5}
+.radar-answer-meta span{padding:2px 7px;border-radius:6px;background:var(--accent-soft,var(--soft));color:var(--accent-ink,var(--dark));font-size:12px}
+.radar-answer-question{margin:0 0 7px;font:650 15px/1.6 var(--sans);letter-spacing:-.025em;color:var(--ink);overflow-wrap:anywhere}
+.radar-answer-list .radar-quote{margin:0;font-size:16px;line-height:1.75}
+.nearby-section .nearby-heading p{font-size:14px;line-height:1.65}
+@media(min-width:701px){.radar-answer-list .radar-quote{font-size:17px}}

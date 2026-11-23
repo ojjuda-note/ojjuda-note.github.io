@@ -6,7 +6,14 @@
   const artist = new URLSearchParams(location.search).get('group');
   const hub = document.body.dataset.page === 'hub';
   const launch = document.getElementById('fan-manage');
-  let admin = false, dialog, sessionId, check = 0;
+  let admin = false, dialog, sessionId, check = 0, accessGranted = false;
+  function setManagementAccess(allowed) {
+    accessGranted = allowed === true;
+    // Keep the action hidden even if an author stylesheet overrides [hidden].
+    launch.hidden = !accessGranted;
+    launch.style.display = accessGranted ? '' : 'none';
+  }
+  setManagementAccess(false);
   function el(tag, text) {
     const n = document.createElement(tag);
     if (text !== undefined) n.textContent=text;
@@ -192,16 +199,16 @@
     nav.addEventListener('change',draw); draw();
   }
   async function access(id) {
-    const run=++check; sessionId=id; admin=false; launch.hidden=true; dialog?.close();
+    const run=++check; sessionId=id; admin=false; setManagementAccess(false); dialog?.close();
     await catalog.ready;
     if(!id || !catalog.available || run!==check) return;
     try {
       const isAdmin=await result(client.rpc('is_admin'));
       const allowed=hub ? isAdmin : catalog.entries.has(artist) && await result(client.rpc('can_edit_fanpage',{p_artist:artist}));
-      if(run===check){admin=!!isAdmin; launch.hidden=!allowed;}
+      if(run===check){admin=!!isAdmin; setManagementAccess(allowed);}
     } catch { /* Public reading remains available. */ }
   }
-  launch.addEventListener('click',()=>hub?create():editor());
+  launch.addEventListener('click',()=>{ if (!accessGranted) return; return hub?create():editor(); });
   client.auth.onAuthStateChange((_event,session)=>{
     const id=session?.user?.id || null;
     if(id!==sessionId) setTimeout(()=>{if(id!==sessionId) void access(id);},0);

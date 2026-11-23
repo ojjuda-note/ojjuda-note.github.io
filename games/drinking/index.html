@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#faf7ed">
   <title>오쭈다</title>
-  <link rel="stylesheet" href="hub.css?v=20261116-drinking-entry-scenes1">
+  <link rel="stylesheet" href="hub.css?v=20261120-service-actions1">
   <link rel="stylesheet" href="/games/drinking/access.css?v=20261116-drinking-3d-art1">
   <script defer src="/config.js"></script>
   <script defer src="/games/matgo/matgo-access.js?v=20261114-drinks-adult1"></script>
@@ -29,7 +29,7 @@
       </div>
       <nav class="mode-options" aria-label="플레이 방식">
         <a id="resume-drinks" hidden><strong>참여 중인 방으로 돌아가기</strong></a>
-        <a class="mode-card" id="local-play" href="local/?v=20261116-shapematch-selected1">
+        <a class="mode-card" id="local-play" href="local/?v=20261120-service-actions1">
           <img src="assets/mode-local.webp" width="720" height="480" alt="">
           <div class="mode-copy"><strong>한 대로 플레이</strong><span>휴대폰 한 대를 함께 써요.</span></div>
         </a>
@@ -73,7 +73,7 @@
       </div>
     </section>
     <section id="lobby" hidden aria-labelledby="room-title">
-      <div class="room-head"><h1 id="room-title" tabindex="-1"></h1><button id="leave" type="button">방 나가기</button></div>
+      <div class="room-head"><h1 id="room-title" tabindex="-1"></h1></div>
       <section class="panel roster">
         <div class="room-head"><h2 id="member-count"></h2><button id="invite" type="button" aria-haspopup="dialog">친구 초대</button></div>
         <ul id="members"></ul>
@@ -84,7 +84,7 @@
           <button id="random-start" type="button" hidden disabled>랜덤 게임</button>
         </div>
         <p id="selected-game" role="status"></p>
-        <button id="start" class="primary" type="button">게임 시작</button>
+        <div class="room-actions"><button id="leave" type="button">방 나가기</button><button id="start" class="primary" type="button">게임 시작</button></div>
         <div id="games" aria-label="술게임 목록"></div>
       </div>
     </section>
@@ -99,7 +99,7 @@
     <span data-module="/games/drinking/table-view.js?v=20261116-drinking-3d-art1"></span>
     <span data-module="/games/drinking/connection.js?v=20261114-drinks-stability1"></span>
     <span data-module="entry-refresh.js?v=20261115-shapematch1"></span>
-    <span data-module="hub.js?v=20261115-drinking-menu2"></span>
+    <span data-module="hub.js?v=20261120-service-actions1"></span>
   </template>
 </body>
 </html>

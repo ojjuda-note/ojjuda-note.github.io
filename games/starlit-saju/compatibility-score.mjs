@@ -65,27 +65,27 @@ export function buildCompatibilityScore({profiles,comparisons,interactions}) {
   });
   const items=[
     item('temperament','기본 성향',temperament,
-      sameElement?'이 풀이의 강점은 닮은 성향이에요.\n서로 다른 취향도 물어보세요.'
-        :generating?'생각과 경험을 나누는 것이 강점이에요.\n어떤 도움이 필요한지 물어보세요.'
-          :stemCombination?'다르지만 통할 부분도 있어요.\n각자 잘하는 일을 나눠 보세요.'
-            :'함께 맞출 부분은 각자가 중요하게 보는 기준이에요.\n먼저 챙기고 싶은 것을 이야기해 보세요.',
+      sameElement?'생각하는 방식이 닮은 조합이에요.\n원하는 선택까지 같은지는 직접 물어보세요.'
+        :generating?'서로의 생각과 경험을 보태는 조합이에요.\n조언하기 전에 필요한 도움부터 물어보세요.'
+          :stemCombination?'판단 기준은 다르지만 힘을 모으는 조합이에요.\n각자 잘하는 일을 나눠 맡으세요.'
+            :'함께 결정할 때 중요하게 보는 기준이 달라요.\n각자 꼭 지키고 싶은 조건을 먼저 말하세요.',
       temperamentReason,['self.day-master','partner.day-master','day-master.self-to-partner','day-master.partner-to-self',
         ...dayMatches.filter(match=>match.kind==='stem-combination').map(match=>match.id)]),
     item('complement','서로의 보완',complement,
-      (ratios.some(value=>value>0)?'서로 보탤 부분이 있어요.':'이번 비교에서는 보완되는 점이 두드러지지 않아요.')+'\n잘하는 일을 나눠 맡아 보세요.',
+      (ratios.some(value=>value>0)?'서로 다른 강점을 보태는 조합이에요.':'이번 비교에서는 뚜렷한 보완점이 없어요.')+'\n잘하는 일과 맡을 수 있는 일을 함께 확인하세요.',
       complementReason,['self.scope','partner.scope','self.elements','partner.elements']),
     item('daily','일상 호흡',daily,
-      dailyCombination?'이 풀이의 강점은 작은 약속을 함께 지키는 거예요.\n함께 지킬 일을 하나 정해요.'
-        :dailyClash?'함께 맞출 부분은 연락과 쉬는 방식이에요.\n서로 편한 시간을 말해 보세요.'
-          :sameBranch?'닮은 생활 모습에 주목하는 조합이에요.\n서로 다른 습관도 물어보세요.'
-            :'일상 호흡은 기본 점수로 표시했어요.\n평소 생활 습관을 이야기해 보세요.',
+      dailyCombination?'작은 약속을 함께 지키는 힘이 강점이에요.\n연락할 시간과 함께할 일을 하나씩 정하세요.'
+        :dailyClash?'연락하는 때와 쉬는 방식의 차이를 맞춰야 해요.\n혼자 쉴 시간과 다시 연락할 때를 알려 주세요.'
+          :sameBranch?'생활 방식의 닮은 점을 살리는 조합이에요.\n각자 다른 습관도 직접 물어보세요.'
+            :'이 비교에는 일상 호흡을 가를 뚜렷한 단서가 없어요.\n평소 연락과 휴식 습관을 이야기하세요.',
       dailyReason,['day-branches','self.pillar.day','partner.pillar.day',
         ...dayMatches.filter(match=>match.position==='branch').map(match=>match.id)]),
     item('harmony','관계 조화',harmony,
-      branchClashes&&stemCombinations+branchCombinations?'잘 맞는 점과 차이가 함께 보여요.\n편했던 일부터 이야기해요.'
-        :branchClashes?'함께 맞출 부분은 서로의 생각을 이해하는 방식이에요.\n불편한 점을 차분히 말해요.'
-          :stemCombinations+branchCombinations?'서로 힘을 보탤 점이 보여요.\n작은 일부터 함께 해 보세요.'
-            :'관계 조화는 기본 점수로 표시했어요.\n함께 즐길 수 있는 일을 찾아보세요.',
+      branchClashes&&stemCombinations+branchCombinations?'잘 맞는 점과 조율할 차이가 함께 있어요.\n편했던 일과 불편했던 일을 나누어 말하세요.'
+        :branchClashes?'같은 말을 서로 다르게 이해하기 쉬운 조합이에요.\n내가 뜻한 것과 상대가 들은 뜻을 확인하세요.'
+          :stemCombinations+branchCombinations?'함께 준비하고 힘을 보태는 조합이에요.\n작은 일 하나를 정해 역할을 나누세요.'
+            :'이 비교에는 관계 조화를 가를 뚜렷한 단서가 없어요.\n함께한 뒤 편했던 점과 바꿀 점을 이야기하세요.',
       harmonyReason,['comparison.scope','interaction.counts',...comparisons.map(value=>value.id),...interactions.map(value=>value.id)]),
   ];
   const total=rounded(items.reduce((sum,value)=>sum+value.value,0)/items.length);

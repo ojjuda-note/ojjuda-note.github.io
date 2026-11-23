@@ -74,7 +74,7 @@ function render(s,force=false){
     const high=Math.max(...s.totals),leaders=s.totals.flatMap((v,i)=>v===high?[i]:[]);
     const title=leaders.length>1?'투표가 동점으로 끝났어요':leaders[0]===s.liar?'라이어를 찾았어요!':'라이어가 정체를 숨겼어요!';
     content='<h1 class="suite-heading">'+title+'</h1><p class="suite-hint">라이어는 <strong>'+esc(s.players[s.liar])+'</strong> · 제시어는 <strong>'+esc(s.word)+'</strong></p><ol class="members">'+
-      s.players.map((n,i)=>'<li>'+esc(n)+' · '+s.totals[i]+'표</li>').join('')+'</ol>'+hints+(s.me===(s.hostSeat??0)?control('한 판 더','again',true):'');
+      s.players.map((n,i)=>'<li>'+esc(n)+' · '+s.totals[i]+'표</li>').join('')+'</ol>'+hints;
   }else{
     const role=revealed?'<p class="secret">'+(s.role==='liar'?'당신은 라이어예요.':'제시어 · '+esc(s.word))+'</p>':'';
     const card='<section class="role">'+control(revealed?'내 카드 가리기':'내 카드 보기','reveal')+role+'</section>';
@@ -88,7 +88,8 @@ function render(s,force=false){
         (s.voted?'':'<div class="ballots">'+s.players.map((n,i)=>i===s.me?'':'<button class="secondary" data-do="vote" data-slot="'+i+'">'+esc(n)+'</button>').join('')+'</div>');
     }
   }
-  view.innerHTML='<section class="card"><div class="inside">'+heading+content+'<div class="actions">'+control('방 나가기','leave')+'</div></div></section>';
+  const replay=s.phase==='done'&&s.me===(s.hostSeat??0)?control('한 판 더','again',true):'';
+  view.innerHTML='<section class="card"><div class="inside">'+heading+content+'<div class="actions drinking-round-actions">'+control('방 나가기','leave')+replay+'</div></div></section>';
   const field=view.querySelector('[name="hint"]');
   if(field&&draft!=null)field.value=draft;
   if(field&&focus){field.focus({preventScroll:true});field.setSelectionRange(focus.start,focus.end,focus.direction);}

@@ -194,7 +194,13 @@
     "matgo",
     "matgo-release-transfer",
     "member-recovery",
+    "park-video",
     "poker",
     "tank"
-  ]
+  ],
+  "generatedAssets": {
+    "note/vendor/mediabunny-1.66.2.mjs": "note/vendor/build.mjs",
+    "note/vendor/mediabunny-aac-encoder-1.66.2.mjs": "note/vendor/build.mjs",
+    "note/vendor/tus-js-client-4.3.1.mjs": "note/vendor/build.mjs"
+  }
 }

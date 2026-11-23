@@ -4,26 +4,179 @@ on:
     branches: [main]
     paths:
       - 'features/pajang/**'
+      - 'features/account/settings-list.css'
       - 'features/home/location-warmup.mjs'
+      - 'features/home/agit-hub.*'
+      - 'features/home/agit-welcome.*'
+      - 'features/home/entry-design.css'
+      - 'app/portal/**'
+      - 'index.html'
+      - 'world.html'
+      - 'tests/public-entry-design-browser.cjs'
       - 'shared/location/**'
+      - 'shared/brand/service-header.css'
+      - 'shared/share/**'
+      - 'shared/auth/**'
+      - 'tests/invite-referral.test.cjs'
+      - 'tests/signup-referrals*.test.cjs'
+      - 'tests/signup-invite-referral-db.test.cjs'
+      - 'supabase/migrations/*signup_invite_referral*'
+      - 'tests/page-share.test.cjs'
+      - 'features/wallet/ju-charge.js'
+      - 'note/notifications.js'
+      - 'tests/pajang-account-toolbar.test.cjs'
+      - 'tests/pajang-signal-purchase*.test.*'
+      - 'tests/pajang-content-validation.test.cjs'
+      - 'tests/pajang-question-copy-db.test.cjs'
+      - 'tests/pajang-personality-questions-db.test.cjs'
+      - 'scripts/build-pajang-personality-questions.mjs'
+      - 'tests/pajang-relationship-questions-db.test.cjs'
+      - 'scripts/build-pajang-relationship-questions.mjs'
+      - 'tests/all-service-word-rules*.test.*'
+      - 'tests/all-service-word-masking*.test.*'
+      - 'tests/fixtures/all-service-word-masking*'
+      - 'shared/content/**'
+      - 'groups/**'
+      - 'tests/portal-auth-entry.test.cjs'
+      - 'tests/world-profile-draft-ui.test.cjs'
+      - 'tests/note-content-validation.test.cjs'
+      - 'tests/friend-messages-ui.test.cjs'
+      - 'features/friends/friend-messages.js'
+      - 'supabase/migrations/*all_service_word_rules*'
+      - 'app/world/world-themes.*'
+      - 'app/world/world-weather.js'
+      - 'supabase/functions/theme-weather/**'
+      - 'tests/theme-browser-helpers.cjs'
+      - 'tests/world-design-ui.test.cjs'
+      - 'tests/my-menu-ui.test.cjs'
+      - 'tests/weather-current-browser.cjs'
+      - 'tests/world-themes.test.cjs'
+      - 'tests/theme-preview-smoke.test.cjs'
+      - 'tests/*weather*.test.cjs'
+      - 'tests/package.json'
       - 'note/preview.js'
+      - 'note/support.js'
+      - 'note/support.css'
       - 'note/glasses.js'
       - 'park/**'
       - 'supabase/functions/pajang-assets/index.ts'
+      - 'ops/publish-pajang-program.py'
+      - 'tests/pajang-discovery-browser.cjs'
+      - 'tests/pajang-navigation*'
+      - 'tests/pajang-question-swipe-browser.cjs'
+      - 'tests/window-safe-area-ui.test.cjs'
+      - 'tests/pajang-question-suggestion.test.cjs'
+      - 'tests/pajang-next-question-*.test.cjs'
+      - 'tests/pajang-answer-edit-browser.cjs'
+      - 'tests/pajang-answer-edit-form.test.cjs'
+      - 'tests/pajang-answer-history-edit-db.test.mjs'
+      - 'tests/pajang-answer-likes-db.test.cjs'
+      - 'tests/pajang-past-questions-db.test.cjs'
+      - 'tests/pajang-nearby-recent*.cjs'
+      - 'tests/pajang-answer-interactions*.cjs'
+      - 'tests/fixtures/pajang-answer-likes-fixture.cjs'
+      - 'tests/fixtures/pajang-answer-feeds-before-likes.sql'
+      - 'tests/fixtures/pajang-past-questions-fixture.cjs'
+      - 'tests/fixtures/pajang-before-past-questions.sql'
+      - 'tests/pajang-profile-preferences-ui.test.cjs'
+      - 'tests/pajang-profile-preferences-db.test.cjs'
+      - 'tests/pajang-age-groups-db.test.cjs'
+      - 'tests/pajang-adult-endpoint-guards-db.test.cjs'
+      - 'tests/pajang-adult-only-retirement.test.cjs'
+      - 'tests/pajang-exchange-profile.test.cjs'
+      - 'tests/pajang-exchange-height.test.mjs'
+      - 'tests/test_pajang_program_publish.py'
       - 'supabase/migrations/*pajang*'
       - '.github/workflows/pajang-discovery.yml'
   pull_request:
     paths:
       - 'features/pajang/**'
+      - 'features/account/settings-list.css'
       - 'features/home/location-warmup.mjs'
+      - 'features/home/agit-hub.*'
+      - 'features/home/agit-welcome.*'
+      - 'features/home/entry-design.css'
+      - 'app/portal/**'
+      - 'index.html'
+      - 'world.html'
+      - 'tests/public-entry-design-browser.cjs'
       - 'tests/agit-location.test.mjs'
       - 'shared/location/**'
+      - 'shared/brand/service-header.css'
+      - 'shared/share/**'
+      - 'shared/auth/**'
+      - 'tests/invite-referral.test.cjs'
+      - 'tests/signup-referrals*.test.cjs'
+      - 'tests/signup-invite-referral-db.test.cjs'
+      - 'supabase/migrations/*signup_invite_referral*'
+      - 'tests/page-share.test.cjs'
+      - 'features/wallet/ju-charge.js'
+      - 'note/notifications.js'
+      - 'tests/pajang-account-toolbar.test.cjs'
+      - 'tests/pajang-signal-purchase*.test.*'
+      - 'tests/pajang-content-validation.test.cjs'
+      - 'tests/pajang-question-copy-db.test.cjs'
+      - 'tests/pajang-personality-questions-db.test.cjs'
+      - 'scripts/build-pajang-personality-questions.mjs'
+      - 'tests/pajang-relationship-questions-db.test.cjs'
+      - 'scripts/build-pajang-relationship-questions.mjs'
+      - 'tests/all-service-word-rules*.test.*'
+      - 'tests/all-service-word-masking*.test.*'
+      - 'tests/fixtures/all-service-word-masking*'
+      - 'shared/content/**'
+      - 'groups/**'
+      - 'tests/portal-auth-entry.test.cjs'
+      - 'tests/world-profile-draft-ui.test.cjs'
+      - 'tests/note-content-validation.test.cjs'
+      - 'tests/friend-messages-ui.test.cjs'
+      - 'features/friends/friend-messages.js'
+      - 'supabase/migrations/*all_service_word_rules*'
+      - 'app/world/world-themes.*'
+      - 'app/world/world-weather.js'
+      - 'supabase/functions/theme-weather/**'
+      - 'tests/theme-browser-helpers.cjs'
+      - 'tests/world-design-ui.test.cjs'
+      - 'tests/my-menu-ui.test.cjs'
+      - 'tests/weather-current-browser.cjs'
+      - 'tests/world-themes.test.cjs'
+      - 'tests/theme-preview-smoke.test.cjs'
+      - 'tests/*weather*.test.cjs'
+      - 'tests/package.json'
       - 'note/preview.js'
+      - 'note/support.js'
+      - 'note/support.css'
       - 'note/glasses.js'
       - 'park/**'
       - 'tests/park-entry-browser.cjs'
       - 'tests/park-opening.test.cjs'
       - 'tests/pajang-discovery-browser.cjs'
+      - 'tests/pajang-navigation*'
+      - 'tests/pajang-question-swipe-browser.cjs'
+      - 'tests/window-safe-area-ui.test.cjs'
+      - 'tests/pajang-question-suggestion.test.cjs'
+      - 'tests/pajang-next-question-*.test.cjs'
+      - 'tests/pajang-answer-edit-browser.cjs'
+      - 'tests/pajang-answer-edit-form.test.cjs'
+      - 'tests/pajang-answer-history-edit-db.test.mjs'
+      - 'tests/pajang-answer-likes-db.test.cjs'
+      - 'tests/pajang-past-questions-db.test.cjs'
+      - 'tests/pajang-nearby-recent*.cjs'
+      - 'tests/pajang-answer-interactions*.cjs'
+      - 'tests/fixtures/pajang-answer-likes-fixture.cjs'
+      - 'tests/fixtures/pajang-answer-feeds-before-likes.sql'
+      - 'tests/fixtures/pajang-past-questions-fixture.cjs'
+      - 'tests/fixtures/pajang-before-past-questions.sql'
+      - 'tests/pajang-profile-preferences-ui.test.cjs'
+      - 'tests/pajang-profile-preferences-db.test.cjs'
+      - 'tests/pajang-age-groups-db.test.cjs'
+      - 'tests/pajang-adult-endpoint-guards-db.test.cjs'
+      - 'tests/pajang-adult-only-retirement.test.cjs'
+      - 'tests/pajang-exchange-profile.test.cjs'
+      - 'tests/pajang-exchange-height.test.mjs'
+      - 'ops/publish-pajang-program.py'
+      - 'tests/test_pajang_program_publish.py'
+      - 'tests/pajang-account.test.mjs'
+      - 'features/account/account-deletion.js'
       - 'tests/pajang-discovery-gender.test.mjs'
       - 'tests/pajang-answer-history.sql'
       - 'supabase/migrations/*pajang*'
@@ -37,7 +190,7 @@ permissions:
 jobs:
   browser:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -46,17 +199,90 @@ jobs:
         with:
           node-version: '22'
       - run: npm --prefix tests ci --ignore-scripts
-      - run: npm --prefix features/pajang install --no-package-lock --no-audit --no-fund
+      - name: Check automatic calendar and rain/snow themes
+        run: npm --prefix tests run test:themes
+      - run: npm --prefix features/pajang ci --ignore-scripts --no-audit --no-fund
       - run: npm --prefix features/pajang run build
-      - run: node --test tests/pajang-discovery-gender.test.mjs tests/pajang-location.test.mjs tests/shared-location.test.cjs tests/agit-location.test.mjs tests/park-loading.test.cjs tests/park-frame-cache.test.cjs tests/park-opening.test.cjs
+      - name: Print protected member program digest
+        run: sha256sum features/pajang/assets/station.js
+      - run: node --test tests/pajang-navigation.test.mjs tests/pajang-navigation-dom.test.cjs
+      - name: Check question copy, calendar assignments and safe reruns
+        run: node --test tests/pajang-question-copy-db.test.cjs tests/pajang-personality-questions-db.test.cjs tests/pajang-relationship-questions-db.test.cjs
+      - name: Check next-question previews and account isolation
+        run: node --test tests/pajang-next-question-*.test.cjs
+      - run: python -m unittest discover -s tests -p 'test_pajang_program_publish.py'
+      - run: node --test tests/pajang-exchange-profile.test.cjs tests/pajang-exchange-height.test.mjs tests/pajang-private-exchange.test.mjs
+      - run: node --test tests/pajang-account-toolbar.test.cjs tests/pajang-signal-purchase-db.test.mjs tests/pajang-signal-purchase-ui.test.cjs
+      - name: Check main invitation links and sharing fallbacks
+        run: node --test tests/page-share.test.cjs tests/invite-referral.test.cjs tests/signup-referrals-db.test.cjs tests/signup-invite-referral-db.test.cjs
+      - name: Check automatic word masking and saved content
+        run: node --test tests/all-service-word-rules*.test.* tests/all-service-word-masking*.test.* tests/pajang-content-validation.test.cjs tests/note-content-validation.test.cjs tests/portal-auth-entry.test.cjs
+      - run: node --test tests/pajang-account.test.mjs tests/pajang-discovery-gender.test.mjs tests/pajang-location.test.mjs tests/shared-location.test.cjs tests/agit-location.test.mjs tests/park-loading.test.cjs tests/park-frame-cache.test.cjs tests/park-opening.test.cjs
+      - run: node --test tests/admin-pajang-moderation-db.test.cjs
+      - run: node --test tests/pajang-profile-preferences-db.test.cjs
+      - name: Verify age tiers without opening adult features to minors
+        run: node --test tests/pajang-age-groups-db.test.cjs
+      - name: Check server-side adult API isolation across profile, exchange, and media
+        run: node --test tests/pajang-adult-endpoint-guards-db.test.cjs
+      - name: Prevent reintroducing retired youth functionality
+        run: node --test tests/pajang-adult-only-retirement.test.cjs
+      - name: Check chat exchange consent, responses, and profile safety notice
+        run: node --test tests/pajang-chat-exchange-ui.test.cjs
+      - name: Check past answer edit permissions and form state
+        run: node --test tests/pajang-answer-history-edit-db.test.mjs tests/pajang-answer-edit-form.test.cjs
+      - name: Check answer likes and past question writing
+        run: node --test tests/pajang-answer-likes-db.test.cjs tests/pajang-past-questions-db.test.cjs tests/pajang-answer-interactions.test.cjs
+      - name: Check nearby answers from the latest three question slots
+        run: node --test tests/pajang-nearby-recent*.test.cjs
       - run: node tests/note-composer-settings.test.cjs
       - name: Install Chromium and Korean fonts
         working-directory: tests
         run: |
+          if [[ -f /etc/apt/apt-mirrors.txt ]]; then
+            printf '%s\n' 'https://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
+          fi
           npx playwright install --with-deps chromium
           sudo apt-get install -y fonts-noto-cjk
+      - name: Check shared support layouts in Agit, Park and Pajang
+        env:
+          WINDOW_AUDIT_FILTER: '문의·의견'
+        run: node tests/window-safe-area-ui.test.cjs
+      - name: Check masked friend messages and recovery
+        env:
+          FRIEND_MESSAGE_PROOF_DIR: tests/artifacts/pajang-discovery/friend-messages
+        run: node tests/friend-messages-ui.test.cjs
+      - name: Check profile masking and editable drafts
+        env:
+          WORLD_PROFILE_QA_DIR: tests/artifacts/pajang-discovery/profile-masking
+        run: node tests/world-profile-draft-ui.test.cjs
+      - name: Check guest account buttons and member settings
+        env:
+          MY_MENU_QA_DIR: tests/artifacts/pajang-discovery/guest-settings
+        run: node tests/my-menu-ui.test.cjs
+      - name: Check automatic invitation referrals and signup recovery
+        env:
+          REFERRAL_PROOF_DIR: tests/artifacts/pajang-discovery/signup-referrals
+        run: node tests/signup-referrals-ui.test.cjs
+      - name: Check public entrances and account return routes
+        env:
+          PUBLIC_ENTRY_PROOF_DIR: tests/artifacts/pajang-discovery/entrances
+        run: node tests/public-entry-design-browser.cjs
+      - name: Check Agit and Park automatic theme rendering
+        env:
+          WORLD_DESIGN_PROOF_DIR: tests/artifacts/pajang-discovery/world-themes
+        run: node tests/world-design-ui.test.cjs
+      - name: Check current location and weather transitions
+        run: node tests/weather-current-browser.cjs
       - name: Fetch previous release for opening comparisons
         run: git fetch --depth=1 origin 71785aabf407ca239a27b4811e252a962a725717
+      - run: node tests/pajang-question-suggestion.test.cjs
+      - run: node tests/pajang-profile-preferences-ui.test.cjs
+      - name: Check past answer editing and return navigation
+        run: node tests/pajang-answer-edit-browser.cjs
+      - name: Check answer likes and past question navigation
+        run: node tests/pajang-answer-interactions-browser.cjs
+      - name: Check question swiping and matching answers
+        run: node tests/pajang-question-swipe-browser.cjs
       - run: node tests/pajang-discovery-browser.cjs
       - run: node tests/park-entry-browser.cjs
       - if: always()
@@ -74,6 +300,57 @@ jobs:
 
           digest = hashlib.sha256(Path("features/pajang/assets/station.js").read_bytes()).hexdigest()
           source = Path("supabase/functions/pajang-assets/index.ts").read_text()
+          print("Built member program SHA256", digest)
           assert re.search(r'"station.js": "' + digest + '"', source), "Program differs from the release manifest"
           print("Verified member program", digest)
           PYVERIFY
+
+  deploy:
+    name: Stage protected member program
+    if: github.repository == 'ojjuda-note/ojjuda-note.github.io' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    needs: browser
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: ojjuda-pajang-member-release
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - run: npm --prefix features/pajang ci --ignore-scripts --no-audit --no-fund
+      - run: npm --prefix features/pajang run build
+      - name: Install the pinned Storage client
+        run: python -m pip install --disable-pip-version-check 'boto3==1.39.0'
+      - name: Stage and verify the private program without activating it
+        env:
+          SUPABASE_S3_ACCESS_KEY: ${{ secrets.BACKUP_SUPABASE_S3_ACCESS_KEY }}
+          SUPABASE_S3_SECRET_KEY: ${{ secrets.BACKUP_SUPABASE_S3_SECRET_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          manifest='supabase/functions/pajang-assets/index.ts'
+          latest_manifest="$RUNNER_TEMP/pajang-latest-manifest.ts"
+          # Queue order is not guaranteed. Stage only the current main manifest.
+          # Compare the manifest so unrelated main commits do not suppress this release.
+          require_current_release() {
+            git fetch --depth=1 origin main
+            git show "FETCH_HEAD:$manifest" > "$latest_manifest"
+            if ! cmp -s "$manifest" "$latest_manifest"; then
+              echo 'A newer member release is on main; leaving its manifest unchanged.'
+              printf '%s\n' 'This run is older than main. It did not activate any live manifest.' >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+          }
+          require_current_release
+          python ops/publish-pajang-program.py
+          require_current_release
+          # Live activation is a separate action after reviewing this verified digest.
+          printf '%s\n' '### Private member program staged' \
+            'Storage bytes have been verified. This job has not activated the live Edge manifest.' >> "$GITHUB_STEP_SUMMARY"

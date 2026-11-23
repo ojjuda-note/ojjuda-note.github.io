@@ -74,8 +74,8 @@ for (const topicId of ['overall', 'love', 'money', 'work']) {
     const introductions = report.groups.find(group => group.id === 'cards').sections;
     for (const [index, intro] of introductions.entries()) {
       assert.equal(intro.cardId, cards[index].id);
-      assert.equal(intro.summaryLines[0], firstSentence(readings[index].meaning), 'the card introduction keeps the actual symbolic meaning');
-      assert.equal(intro.summaryLines[1], firstSentence(readings[index].positionMeaning), 'the introduction explains the actual ordered role');
+      assert.equal(intro.summaryLines[0], firstSentence(readings[index].summary), 'the card introduction starts with the actual topic conclusion');
+      assert.equal(intro.summaryLines[1], firstSentence(index === 2 ? readings[index].action : readings[index].positionMeaning), 'the introduction explains the actual ordered role or final action');
     }
     for (const section of Object.values(byId)) {
       const visible = [section.title, ...section.summaryLines, ...section.paragraphs].join(' ');
@@ -84,12 +84,17 @@ for (const topicId of ['overall', 'love', 'money', 'work']) {
       for (const card of cards) assert.ok(!visible.includes(`‘${card.name}’`));
     }
 
-    // Past and future keep both authored sentences, including any condition.
+    // Past and future summaries keep complete authored sentences and conditions;
+    // newly split detail sentences remain in the full explanation.
     for (const [id, source] of [
       ['past-flow', readings[0].lifeTheme.past],
       ['past-achievements', readings[0].lifeTheme.achievement],
       ['future-change', readings[2].lifeTheme.change]
-    ]) assert.equal(byId[id].summaryLines.map(content).join(' '), source, `${id}: no invented biography or unconditional future`);
+    ]) {
+      assert.equal(byId[id].summaryLines.map(content).join(' '), splitSummarySentences(source).slice(0, 2).join(' '),
+        `${id}: no invented biography or unconditional future`);
+      assert.ok(byId[id].paragraphs.join(' ').includes(source), `${id}: shorter sentences never remove the rest of the authored explanation`);
+    }
     const people = cards.map(card => getPersonStory(card.id));
     const outcome = interpretCard(cards[2].id, 'outcome', MAIN_CONTEXTS[topicId]);
     assert.equal(content(byId['possible-outcome'].summaryLines[0]), firstSentence(outcome),
@@ -152,14 +157,14 @@ for (const context of PERSONAL_CONTEXTS) {
       assert.equal(section.paragraphs[0], advice[0], 'the full personal insight is not preceded by a symbolic card definition');
     }
     checkLines(report.connection.summaryLines, `${context.id}/connection`);
-    for (const card of cards) assert.ok(report.connection.paragraphs.join(' ').includes(firstSentence(context.cards[card.id])),
+    for (const card of cards) assert.ok(report.connection.paragraphs.join(' ').includes(firstSentence(directInterpretation(context.cards[card.id]))),
       'the developed story applies all three actual cards, including the middle card, without a name-only substitution');
     for (const section of [...report.primary, report.connection]) {
       const visible = [section.title, ...section.summaryLines, ...section.paragraphs].join(' ');
       assert.doesNotMatch(visible, /이 카드|카드(?:가|는|의|로|를|에서)|카드야/u);
       for (const card of cards) assert.ok(!visible.includes(`‘${card.name}’`));
     }
-    assert.equal(content(report.connection.summaryLines[1]), splitSummarySentences(context.cards[cards[2].id]).at(-1),
+    assert.equal(content(report.connection.summaryLines[1]), splitSummarySentences(directCardAdvice(context.cards[cards[2].id])).at(-1),
       'the final summary uses the actual situation action instead of an action from another topic');
     checkLines(report.comparison.basisSummaryLines, `${context.id}/choice-basis`);
     const solution = splitSummarySentences(getPersonStory(cards[2].id)[context.topicId]);
@@ -173,7 +178,7 @@ for (const context of PERSONAL_CONTEXTS) {
     }
     for (const [index, question] of report.followUps.entries()) {
       checkLines(question.summaryLines, `${context.id}/${question.id}`);
-      assert.equal(question.summaryLines[0], firstSentence(context.followUps[index].paragraphs[0]),
+      assert.equal(question.summaryLines[0], firstSentence(directInterpretation(context.followUps[index].paragraphs[0])),
         'practical answers retain their authored meaning without a card-interpretation ending');
       assert.equal(question.summaryLines[1], firstSentence(directAction(context.followUps[index].paragraphs[1])),
         'both authored answer paragraphs contribute, before the card reflection prompt');

@@ -1,4 +1,4 @@
-"""Delete only tombstoned Note photos through Storage's S3 API; never edit storage metadata."""
+"""Delete only tombstoned Note media through Storage's S3 API; never edit storage metadata."""
 import os
 import re
 import sys
@@ -6,16 +6,19 @@ from urllib.parse import quote, urlparse
 
 PROJECT = 'ziezbdjofcugznowiuda'
 REGION = 'ap-northeast-2'
-BUCKETS = ('note-card-photos', 'note-event-photos')
+BUCKETS = ('note-card-photos', 'note-event-photos', 'note-card-videos')
 # Tombstones are created only when the corresponding photo row is removed.
 # The joins additionally protect any currently referenced photo, including archived cards.
 PENDING = """
 select t.bucket_id,t.photo_path
 from ojjuda_note_internal.note_photo_tombstones t
 join storage.objects o on o.bucket_id=t.bucket_id and o.name=t.photo_path
-where t.bucket_id in ('note-card-photos','note-event-photos')
+where t.bucket_id in ('note-card-photos','note-event-photos','note-card-videos')
   and not exists(select 1 from ojjuda_note_internal.card_photos p where p.photo_path=t.photo_path)
   and not exists(select 1 from ojjuda_note_internal.event_ads e where e.photo_path=t.photo_path)
+  and not exists(select 1 from ojjuda_note_internal.card_video_uploads v
+    join ojjuda_note_internal.card_photos p on p.photo_path=v.photo_path
+    where t.bucket_id='note-card-videos' and v.video_path=t.photo_path)
 order by t.purged_at,t.bucket_id,t.photo_path limit 500
 """
 
@@ -43,6 +46,8 @@ def configuration(env):
 def valid_path(bucket, key):
     return (bucket in BUCKETS and isinstance(key, str) and len(key) <= 1024
             and bool(re.match(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/', key))
+            and (bucket != 'note-card-videos' or bool(re.fullmatch(
+                r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}[.]mp4', key)))
             and not any(part in ('', '.', '..') for part in key.split('/'))
             and not any(ord(c) < 32 or c == '\\' for c in key))
 
@@ -63,6 +68,9 @@ def clean(conn, storage, apply=False):
           where t.bucket_id=%s and t.photo_path=%s
           and not exists(select 1 from ojjuda_note_internal.card_photos p where p.photo_path=t.photo_path)
           and not exists(select 1 from ojjuda_note_internal.event_ads e where e.photo_path=t.photo_path)
+          and not exists(select 1 from ojjuda_note_internal.card_video_uploads v
+            join ojjuda_note_internal.card_photos p on p.photo_path=v.photo_path
+            where t.bucket_id='note-card-videos' and v.video_path=t.photo_path)
         )""", (bucket, key)).fetchone()[0]
         if not eligible:
             continue

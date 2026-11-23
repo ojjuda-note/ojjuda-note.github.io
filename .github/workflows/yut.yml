@@ -1,0 +1,32 @@
+name: Yut rooms, rules and controls
+
+on:
+  push:
+    paths: ['games/yut/**', 'features/arcade/arcade-rooms.*', 'world.html', 'supabase/migrations/*_yut_*.sql', 'tests/yut-*', '.github/workflows/yut.yml']
+  pull_request:
+    paths: ['games/yut/**', 'features/arcade/arcade-rooms.*', 'world.html', 'supabase/migrations/*_yut_*.sql', 'tests/yut-*', '.github/workflows/yut.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: yut-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  yut:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm --prefix tests ci --ignore-scripts --no-audit --no-fund
+      - name: Check signed rooms, public lobby, member permissions and game controls
+        run: node --test tests/yut-island.test.mjs tests/yut-island-controls.test.mjs tests/yut-public-lobby.test.mjs tests/yut-public-lobby-ui.test.mjs tests/yut-public-rooms-db.test.cjs tests/yut-sound.test.mjs tests/yut-wobble.test.mjs
+      - name: Check shared room routes and independent releases
+        run: node --test tests/onecard-native-rooms.test.cjs tests/game-release-refresh.test.cjs tests/world-section-releases.test.cjs

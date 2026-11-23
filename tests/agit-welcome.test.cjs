@@ -2,6 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const vm = require('node:vm');
 const hello = require('../features/home/agit-welcome.js');
 
 const DAY = 86400000;
@@ -16,6 +17,204 @@ function sequence(start, count, options = {}) {
 function greeting(history, other = {}) {
   return hello.chooseGreeting(history.state, history.info, context(history.today, other));
 }
+
+const welcomeSource = fs.readFileSync(path.join(__dirname, '../features/home/agit-welcome.js'), 'utf8');
+function welcomeFixture(t, navigator = {}) {
+  let now = Date.parse('2026-11-19T00:00:00Z'), timerId = 0;
+  const timers = new Map(), storage = new Map(), classes = new Set(), attached = new Set();
+  const shown = [], settings = {};
+  class ClockDate extends Date {
+    constructor(...args) { super(...(args.length ? args : [now])); }
+    static now() { return now; }
+  }
+  function element() {
+    const listeners = new Map(), children = new Map();
+    return {
+      open: false,
+      setAttribute() {},
+      addEventListener(type, callback) { listeners.set(type, callback); },
+      querySelector(selector) {
+        if (!children.has(selector)) children.set(selector, element());
+        return children.get(selector);
+      },
+      focus() {},
+      showModal() { this.open = true; shown.push(this); },
+      close() { this.open = false; listeners.get('close')?.(); },
+      remove() { attached.delete(this); },
+      getClientRects() { return this.open ? [{ width: 320, height: 200 }] : []; }
+    };
+  }
+  const scope = vm.createContext({
+    Date: ClockDate,
+    navigator,
+    document: {
+      hidden: false,
+      documentElement: { classList: { contains: name => classes.has(name) } },
+      body: { classList: { contains: () => false }, append: dialog => attached.add(dialog) },
+      querySelector: selector => selector === '#app .shell' ? {} : null,
+      querySelectorAll: () => [...attached],
+      createElement: element
+    },
+    localStorage: {
+      getItem: key => storage.get(key) ?? null,
+      setItem: (key, value) => storage.set(key, String(value))
+    },
+    setTimeout(callback, delay = 0) {
+      const id = ++timerId;
+      timers.set(id, { at: now + delay, callback });
+      return id;
+    },
+    clearTimeout: id => timers.delete(id)
+  });
+  scope.window = scope;
+  vm.runInContext(welcomeSource, scope, { filename: 'agit-welcome.js' });
+  const api = scope.OjjudaAgitWelcome;
+  t.after(() => { api.revoke(); timers.clear(); });
+  async function flush() {
+    // Drain the async greeting and Web Locks continuations after each fake timer.
+    for (let i = 0; i < 8; i++) await Promise.resolve();
+  }
+  return {
+    api, scope, shown, attached, storage, settings,
+    setPark(value) { value ? classes.add('world-park-active') : classes.delete('world-park-active'); },
+    enter(member, options = {}) { api.enter({ member, owner: 'member-a', settings, ...options }); },
+    async advance(ms) {
+      await flush();
+      const end = now + ms;
+      for (;;) {
+        const next = [...timers].filter(([, timer]) => timer.at <= end)
+          .sort((a, b) => a[1].at - b[1].at)[0];
+        if (!next) break;
+        const [id, timer] = next;
+        timers.delete(id);
+        now = timer.at;
+        timer.callback();
+        await flush();
+      }
+      now = end;
+      await flush();
+    }
+  };
+}
+
+function assertUnshownMember(fixture) {
+  assert.equal(fixture.settings.agitWelcome.visitCounts['2026-11-19'], 1, 'the visit is recorded once');
+  assert.equal(fixture.settings.agitWelcome.shownDay, null, 'a blocked greeting is not consumed');
+  assert.equal(fixture.storage.has('ojjuda.agit-welcome.v1:shown-day'), false);
+}
+
+test('signed-in standalone Agit opens its hub without a member greeting modal', async t => {
+  const f = welcomeFixture(t);
+  f.scope.matchMedia = query => ({ matches: query === '(display-mode: standalone)' });
+  f.enter(true);
+  await f.advance(4000);
+  assert.equal(f.shown.length, 0, 'installed member app never covers the hub with an opening dialog');
+  assertUnshownMember(f);
+});
+
+test('signed-out standalone Agit still shows its public invitation', async t => {
+  const f = welcomeFixture(t);
+  f.scope.matchMedia = query => ({ matches: query === '(display-mode: standalone)' });
+  f.enter(false);
+  await f.advance(2000);
+  assert.equal(f.shown.length, 1, 'public invitation is preserved for guests');
+});
+
+for (const member of [false, true]) {
+  const kind = member ? 'member greeting' : 'guest signup prompt';
+  test(`${kind} waits during direct Park entry and appears after returning to Agit`, async t => {
+    const fixture = welcomeFixture(t);
+    fixture.setPark(true);
+    fixture.enter(member);
+    await fixture.advance(2500);
+    assert.equal(fixture.shown.length, 0);
+    assert.equal(fixture.api.isOpen(), false);
+    if (member) assertUnshownMember(fixture);
+
+    fixture.setPark(false);
+    await fixture.advance(1000);
+    assert.equal(fixture.shown.length, 1);
+    assert.equal(fixture.api.isOpen(), true);
+    assert.equal(fixture.shown[0].className.includes('agit-join-dialog'), !member);
+    if (member) {
+      assert.equal(fixture.settings.agitWelcome.shownDay, '2026-11-19');
+      assert.equal(fixture.settings.agitWelcome.visitCounts['2026-11-19'], 1);
+    }
+  });
+
+  test(`${kind} rechecks Park after the 450ms opening delay`, async t => {
+    const fixture = welcomeFixture(t);
+    fixture.enter(member);
+    await fixture.advance(449);
+    assert.equal(fixture.shown.length, 0);
+    fixture.setPark(true);
+    await fixture.advance(2001);
+    assert.equal(fixture.shown.length, 0);
+    if (member) assertUnshownMember(fixture);
+  });
+}
+
+test('a member lookup completed after entering Park cannot show or consume a greeting', async t => {
+  const fixture = welcomeFixture(t);
+  let resolveIdentity, calls = 0;
+  const client = { rpc(name) {
+    assert.equal(name, 'get_my_member_identity');
+    calls++;
+    return new Promise(resolve => { resolveIdentity = resolve; });
+  } };
+  fixture.enter(true, { client });
+  fixture.setPark(true);
+  resolveIdentity({ data: { birth_date: '1990-11-19' }, error: null });
+  await fixture.advance(2000);
+  assert.equal(fixture.shown.length, 0);
+  assertUnshownMember(fixture);
+
+  fixture.setPark(false);
+  await fixture.advance(1000);
+  assert.equal(fixture.shown.length, 1);
+  assert.equal(fixture.settings.agitWelcome.shownType, 'birthday');
+  assert.equal(fixture.settings.agitWelcome.visitCounts['2026-11-19'], 1);
+  assert.equal(calls, 1, 'moving between Park and Agit does not restart the member lookup');
+});
+
+test('a member waiting for the daily Web Lock rechecks Park before drawing', async t => {
+  let releaseLock;
+  const fixture = welcomeFixture(t, { locks: { request(name, work) {
+    assert.equal(name, 'ojjuda.agit-welcome.v1:day:2026-11-19');
+    return new Promise(resolve => { releaseLock = () => resolve(work()); });
+  } } });
+  fixture.enter(true);
+  await fixture.advance(450);
+  assert.equal(typeof releaseLock, 'function', 'the greeting reached the shared daily lock');
+  assert.equal(fixture.shown.length, 0);
+  fixture.setPark(true);
+  releaseLock();
+  await fixture.advance(0);
+  assert.equal(fixture.shown.length, 0);
+  assertUnshownMember(fixture);
+});
+
+test('World rendering closes an already open Agit popup only when entering Park', async t => {
+  const fixture = welcomeFixture(t);
+  fixture.enter(false);
+  await fixture.advance(450);
+  assert.equal(fixture.api.isOpen(), true, 'Agit still opens the signup prompt after its delay');
+
+  const world = fs.readFileSync(path.join(__dirname, '../world.html'), 'utf8');
+  const start = world.indexOf('function H(){'), end = world.indexOf('function ni(', start);
+  assert.ok(start >= 0 && end > start, 'the actual World render function is available');
+  // Stop at the release renderer: only the popup lifecycle at the render entrance is under test.
+  const stopRendering = new Error('release renderer reached');
+  fixture.scope.enterReleaseSection = () => { throw stopRendering; };
+  vm.runInContext(world.slice(start, end), fixture.scope);
+  for (const tab of ['hub', 'park']) {
+    fixture.scope.g = tab === 'park' ? { tab: 'place', place: { id: 'park' } } : { tab };
+    fixture.scope.worldMainTab = () => tab;
+    assert.throws(() => fixture.scope.H(), error => error === stopRendering);
+    assert.equal(fixture.api.isOpen(), tab !== 'park');
+    assert.equal(fixture.attached.size, tab === 'park' ? 0 : 1);
+  }
+});
 
 test('Korean dates and hours cross midnight at 15:00 UTC', () => {
   assert.equal(hello.koreaDay(new Date('2026-11-10T14:59:59Z')), '2026-11-10');

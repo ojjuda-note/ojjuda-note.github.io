@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#f7f5ef">
+  <meta name="theme-color" content="#101820">
   <meta name="description" content="별빛 서고에서 펼치는 나의 사주팔자. 타고난 성향과 평생운부터 한 해의 운세, 열두 달의 흐름까지 자세히 읽어 보세요.">
   <title>별빛 사주팔자 · 오쭈다</title>
   <link rel="icon" href="../moonlit-tarot/assets/favicon.svg" type="image/svg+xml">
@@ -16,8 +16,9 @@
   <link rel="stylesheet" href="./reading-detail.css?v=20261114-saju-correction1">
   <link rel="stylesheet" href="./almanac.css?v=20261115-saju-reading-map1">
   <link rel="stylesheet" href="./directory.css?v=20261115-saju-menus1">
+  <link rel="stylesheet" href="./clean-reader.css?v=20261123-saju-readable3">
 </head>
-<body class="saju-readable saju-flow saju-edition saju-directory">
+<body class="saju-readable saju-flow saju-edition saju-directory saju-clean">
   <a class="skip-link" href="#catalog-title">풀이 목록으로 바로가기</a>
   <svg class="svg-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
     <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 2.6 7.4L22 12l-7.4 2.6L12 22l-2.6-7.4L2 12l7.4-2.6Z"/></symbol>
@@ -41,8 +42,14 @@
   <main>
     <section id="saju-catalog" aria-labelledby="catalog-title">
       <div class="catalog-cover">
+        <svg class="catalog-constellation" viewBox="0 0 100 58" aria-hidden="true">
+          <path d="M14 39 36 17 65 31 87 12" opacity=".45"/>
+          <path d="m36 8 2.4 6.6L45 17l-6.6 2.4L36 26l-2.4-6.6L27 17l6.6-2.4Z" fill="currentColor" stroke="none"/>
+          <circle cx="14" cy="39" r="2.5" fill="currentColor"/><circle cx="65" cy="31" r="3" fill="currentColor"/><circle cx="87" cy="12" r="2" fill="currentColor"/>
+          <path d="M24 48h52" opacity=".25"/>
+        </svg>
         <h1 id="catalog-title" tabindex="-1">별빛 사주</h1>
-        <img class="cover-art" src="/features/home/theme-illustrations/newyear.webp" alt="" width="960" height="640" fetchpriority="high">
+        <p class="catalog-subtitle">나를 읽는 고요한 시간</p>
       </div>
       <div class="catalog-index">
         <h2>풀이 고르기</h2>
@@ -104,7 +111,7 @@
 
     <noscript><p class="form-error">사주 풀이에는 자바스크립트가 필요해요.</p></noscript>
     <section id="result" class="result" aria-labelledby="result-title" hidden>
-      <header class="result-heading reading-result-heading"><h2 id="result-title" tabindex="-1">나의 <em>운세</em></h2><div class="reading-size-control" role="group" aria-label="본문 글자 크기"><span aria-hidden="true">글자 크기</span><button type="button" data-reading-size="normal" aria-pressed="true" aria-controls="report-content">보통</button><button type="button" data-reading-size="large" aria-pressed="false" aria-controls="report-content">크게</button></div></header>
+      <header class="result-heading reading-result-heading"><a class="reader-close" href="./" aria-label="풀이 목록으로 돌아가기">‹</a><h2 id="result-title" tabindex="-1">나의 <em>운세</em></h2><button type="button" class="reader-tools-open" data-reader-tools="reading-tools" aria-controls="reading-tools" aria-haspopup="dialog" aria-expanded="false" aria-label="읽기 설정과 복사">···</button></header>
 
 
       <section id="detailed-reading" class="detailed-reading" data-reading-size="normal" aria-labelledby="detailed-title">
@@ -113,16 +120,13 @@
         <div id="report-error" class="report-error" role="alert" hidden><p id="report-error-text"></p><button id="retry-report" class="secondary-button" type="button">구매 내역 다시 확인하기</button></div>
         <div id="report-content"></div>
 
+        <dialog id="reading-tools" class="reader-tools-dialog" aria-labelledby="reading-tools-title"><header class="reader-tools-heading"><h3 id="reading-tools-title">읽기 설정</h3><button type="button" data-reader-tools-close aria-label="읽기 설정 닫기">×</button></header><div class="reading-size-control" role="group" aria-label="본문 글자 크기"><span aria-hidden="true">글자 크기</span><button type="button" data-reading-size="normal" aria-pressed="true" aria-controls="report-content">보통</button><button type="button" data-reading-size="large" aria-pressed="false" aria-controls="report-content">크게</button></div>
         <details class="reader-settings">
           <summary>출생 정보 · 이용 시간</summary>
         <div id="reading-controls" class="reading-controls" hidden>
           <div class="current-reading"><p id="current-reading-title"></p><p id="current-reading-note"></p></div>
           <div class="reading-tools"><a class="other-reading-link" href="#other-reading-options">다른 풀이</a></div>
         </div>
-        <nav id="report-toc" class="report-toc" aria-label="사주 상세 풀이 목차" hidden>
-          <a id="current-report-link" href="#reading-summary"><span id="current-report-label">핵심 운세</span></a>
-          <a href="#reading-topics"><span>항목별 풀이</span></a>
-        </nav>
         <details class="reading-birth-info"><summary>내 출생 정보</summary><p id="birth-summary" class="birth-summary"></p><p id="lunar-summary" class="lunar-summary"></p><p id="result-zodiac" class="zodiac-preview zodiac-result" hidden></p><div id="result-warnings" class="result-warnings" hidden></div></details>
         </details>
         <details id="other-reading-options" class="other-reading-options">
@@ -145,12 +149,14 @@
           <a class="secondary-button" href="./compatibility.html">궁합 따로 보기 · 20쭈</a>
         </section>
         </details>
-      </section>
       <div class="result-actions"><button id="edit-birth" class="primary-button" type="button"><svg><use href="#i-back"/></svg>생일 다시 입력하기</button><button id="copy-reading" class="secondary-button" type="button" disabled><svg><use href="#i-copy"/></svg>현재 풀이 복사하기</button></div>
+        </dialog>
+      </section>
     </section>
   </main>
   <div id="status" class="toast" role="status" aria-live="polite"></div>
-  <script src="/shared/analytics/site-usage.js?v=20261113-fortune-visits1"></script>
-  <script type="module" src="./app.js?v=20261115-saju-reopen1"></script>
+  <script src="/shared/analytics/growth-attribution.js?v=20261121-campaign1" defer></script>
+<script src="/shared/analytics/site-usage.js?v=20261121-pajang-visits1"></script>
+  <script type="module" src="./app.js?v=20261120-saju-voice1"></script>
 </body>
 </html>

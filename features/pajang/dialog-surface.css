@@ -1,5 +1,7 @@
-dialog.agit-pajang-dialog{background:#fffcf7;color:#362a29;border:1px solid #dfcfc4;box-shadow:0 24px 90px #452e3340}
-dialog.agit-pajang-dialog::backdrop{background:#4d353d77;backdrop-filter:blur(4px)}
-.agit-pajang-dialog .agit-pajang-toolbar{background:#fff8f2;border-color:#e5d7ce}
-.agit-pajang-dialog .agit-pajang-toolbar button{background:#f4e3e2;color:#783d4a}
-dialog.agit-pajang-dialog iframe{background:#fbf8f2}
+/* The embedded frame and its Agit toolbar use the host's current automatic theme. */
+dialog.agit-pajang-dialog{background:var(--surface);color:var(--ink);border:1px solid var(--line);box-shadow:0 24px 90px color-mix(in srgb,var(--ink) 25%,transparent)}
+dialog.agit-pajang-dialog::backdrop{background:color-mix(in srgb,var(--ink) 47%,transparent);backdrop-filter:blur(4px)}
+.agit-pajang-dialog .agit-pajang-toolbar{background:var(--surface-2);border-color:var(--line)}
+.agit-pajang-dialog .agit-pajang-toolbar button{background:var(--accent-soft);color:var(--accent-ink)}
+dialog.agit-pajang-dialog iframe{background:var(--bg)}
+:root[data-theme=dark] dialog.agit-pajang-dialog::backdrop{background:#0009}

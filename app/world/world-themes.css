@@ -1,25 +1,51 @@
-/* Original seasonal color systems; date changes never mutate user content. */
-:root[data-world-theme="classic"]{--bg:#f7f8f4;--hero-bg:#eef1e6;--hero-art:url("/assets/design/welcome.svg");}
-:root[data-world-theme="spring"]{--bg:#fbf8f7;--accent:#865668;--accent-ink:#865668;--accent-soft:#f5e7ed;--hero-bg:#f6e9eb;--hero-art:url("/assets/design/themes/spring.svg");}
-:root[data-world-theme="summer"]{--bg:#f5f9fa;--accent:#2d6775;--accent-ink:#2d6775;--accent-soft:#e2f0f2;--hero-bg:#e3f0f1;--hero-art:url("/assets/design/themes/summer.svg");}
-:root[data-world-theme="autumn"]{--bg:#faf8f3;--accent:#805a38;--accent-ink:#805a38;--accent-soft:#f0e8da;--hero-bg:#f1e8d6;--hero-art:url("/assets/design/themes/autumn.svg");}
-:root[data-world-theme="winter"]{--bg:#f6f8fa;--accent:#476d82;--accent-ink:#476d82;--accent-soft:#e7edf2;--hero-bg:#e4edf1;--hero-art:url("/assets/design/themes/winter.svg");}
-:root[data-world-theme="newyear"]{--bg:#faf9f4;--accent:#626b43;--accent-ink:#626b43;--accent-soft:#ebeedf;--hero-bg:#f1ecd9;--hero-art:url("/assets/design/themes/newyear.svg");}
-:root[data-world-theme="seollal"]{--bg:#faf7f2;--accent:#496f75;--accent-ink:#496f75;--accent-soft:#e4ecea;--hero-bg:#f2e9de;--hero-art:url("/assets/design/themes/seollal.svg");}
-:root[data-world-theme="valentine"]{--bg:#fcf7f7;--accent:#985b6d;--accent-ink:#985b6d;--accent-soft:#f6e5eb;--hero-bg:#f3e4e5;--hero-art:url("/assets/design/themes/valentine.svg");}
-:root[data-world-theme="white"]{--bg:#f6fafa;--accent:#54777e;--accent-ink:#54777e;--accent-soft:#e4eff0;--hero-bg:#eaf2ef;--hero-art:url("/assets/design/themes/white.svg");}
-:root[data-world-theme="children"]{--bg:#fafaf3;--accent:#65712f;--accent-ink:#65712f;--accent-soft:#eef0db;--hero-bg:#f2edcf;--hero-art:url("/assets/design/themes/children.svg");}
-:root[data-world-theme="parents"]{--bg:#fbf7f7;--accent:#8a5261;--accent-ink:#8a5261;--accent-soft:#f4e5e9;--hero-bg:#f1e6e4;--hero-art:url("/assets/design/themes/parents.svg");}
-:root[data-world-theme="teachers"]{--bg:#faf9f3;--accent:#766644;--accent-ink:#766644;--accent-soft:#efeddd;--hero-bg:#f0e9d9;--hero-art:url("/assets/design/themes/teachers.svg");}
-:root[data-world-theme="buddha"]{--bg:#faf8f7;--accent:#865c72;--accent-ink:#865c72;--accent-soft:#f0e6ee;--hero-bg:#f1e8e6;--hero-art:url("/assets/design/themes/buddha.svg");}
-:root[data-world-theme="liberation"]{--bg:#f6f8fb;--accent:#385d80;--accent-ink:#385d80;--accent-soft:#e5ecf5;--hero-bg:#e8eef3;--hero-art:url("/assets/design/themes/liberation.svg");}
-:root[data-world-theme="chuseok"]{--bg:#faf8f2;--accent:#746536;--accent-ink:#746536;--accent-soft:#f1ecd9;--hero-bg:#f2e8cb;--hero-art:url("/assets/design/themes/chuseok.svg");}
-:root[data-world-theme="hangeul"]{--bg:#f8f9fb;--accent:#506780;--accent-ink:#506780;--accent-soft:#e7ecf3;--hero-bg:#e8edf1;--hero-art:url("/assets/design/themes/hangeul.svg");}
-:root[data-world-theme="halloween"]{--bg:#faf8f5;--accent:#735578;--accent-ink:#735578;--accent-soft:#ede7ef;--hero-bg:#ede3d5;--hero-art:url("/assets/design/themes/halloween.svg");}
-:root[data-world-theme="pepero"]{--bg:#faf7f2;--accent:#7b5847;--accent-ink:#7b5847;--accent-soft:#f1e7df;--hero-bg:#eee2d4;--hero-art:url("/assets/design/themes/pepero.svg?v=20261110-pepero-clean1");}
-:root[data-world-theme="christmas"]{--bg:#f7f9f5;--accent:#35624a;--accent-ink:#35624a;--accent-soft:#e4ece3;--hero-bg:#e7ece1;--hero-art:url("/assets/design/themes/christmas.svg");}
+/* Shared automatic palette for Agit, Park and Pajang. Artwork and drafts stay intact. */
+:root{--season-bg:#f7f8f4;--season-accent:#245a48;--season-soft:#e7eee4;--season-hero:#eef1e6}
+:root[data-world-theme="classic"]{--season-bg:#f7f8f4;--season-hero:#eef1e6;--hero-art:url("/assets/design/welcome.svg");}
+:root[data-world-theme="spring"]{--season-bg:#fbf8f7;--season-accent:#865668;--season-soft:#f5e7ed;--season-hero:#f6e9eb;--hero-art:url("/assets/design/themes/spring.svg");}
+:root[data-world-theme="summer"]{--season-bg:#f5f9fa;--season-accent:#2d6775;--season-soft:#e2f0f2;--season-hero:#e3f0f1;--hero-art:url("/assets/design/themes/summer.svg");}
+:root[data-world-theme="autumn"]{--season-bg:#faf8f3;--season-accent:#805a38;--season-soft:#f0e8da;--season-hero:#f1e8d6;--hero-art:url("/assets/design/themes/autumn.svg");}
+:root[data-world-theme="winter"]{--season-bg:#f6f8fa;--season-accent:#476d82;--season-soft:#e7edf2;--season-hero:#e4edf1;--hero-art:url("/assets/design/themes/winter.svg");}
+:root[data-world-theme="newyear"]{--season-bg:#faf9f4;--season-accent:#626b43;--season-soft:#ebeedf;--season-hero:#f1ecd9;--hero-art:url("/assets/design/themes/newyear.svg");}
+:root[data-world-theme="seollal"]{--season-bg:#faf7f2;--season-accent:#496f75;--season-soft:#e4ecea;--season-hero:#f2e9de;--hero-art:url("/assets/design/themes/seollal.svg");}
+:root[data-world-theme="valentine"]{--season-bg:#fcf7f7;--season-accent:#985b6d;--season-soft:#f6e5eb;--season-hero:#f3e4e5;--hero-art:url("/assets/design/themes/valentine.svg");}
+:root[data-world-theme="white"]{--season-bg:#f6fafa;--season-accent:#54777e;--season-soft:#e4eff0;--season-hero:#eaf2ef;--hero-art:url("/assets/design/themes/white.svg");}
+:root[data-world-theme="children"]{--season-bg:#fafaf3;--season-accent:#65712f;--season-soft:#eef0db;--season-hero:#f2edcf;--hero-art:url("/assets/design/themes/children.svg");}
+:root[data-world-theme="parents"]{--season-bg:#fbf7f7;--season-accent:#8a5261;--season-soft:#f4e5e9;--season-hero:#f1e6e4;--hero-art:url("/assets/design/themes/parents.svg");}
+:root[data-world-theme="teachers"]{--season-bg:#faf9f3;--season-accent:#766644;--season-soft:#efeddd;--season-hero:#f0e9d9;--hero-art:url("/assets/design/themes/teachers.svg");}
+:root[data-world-theme="buddha"]{--season-bg:#faf8f7;--season-accent:#865c72;--season-soft:#f0e6ee;--season-hero:#f1e8e6;--hero-art:url("/assets/design/themes/buddha.svg");}
+:root[data-world-theme="liberation"]{--season-bg:#f6f8fb;--season-accent:#385d80;--season-soft:#e5ecf5;--season-hero:#e8eef3;--hero-art:url("/assets/design/themes/liberation.svg");}
+:root[data-world-theme="chuseok"]{--season-bg:#faf8f2;--season-accent:#746536;--season-soft:#f1ecd9;--season-hero:#f2e8cb;--hero-art:url("/assets/design/themes/chuseok.svg");}
+:root[data-world-theme="hangeul"]{--season-bg:#f8f9fb;--season-accent:#506780;--season-soft:#e7ecf3;--season-hero:#e8edf1;--hero-art:url("/assets/design/themes/hangeul.svg");}
+:root[data-world-theme="halloween"]{--season-bg:#faf8f5;--season-accent:#735578;--season-soft:#ede7ef;--season-hero:#ede3d5;--hero-art:url("/assets/design/themes/halloween.svg");}
+:root[data-world-theme="pepero"]{--season-bg:#faf7f2;--season-accent:#7b5847;--season-soft:#f1e7df;--season-hero:#eee2d4;--hero-art:url("/assets/design/themes/pepero.svg?v=20261110-pepero-clean1");}
+:root[data-world-theme="christmas"]{--season-bg:#f7f9f5;--season-accent:#35624a;--season-soft:#e4ece3;--season-hero:#e7ece1;--hero-art:url("/assets/design/themes/christmas.svg");}
 
-:root[data-theme=dark][data-world-theme]{--bg:#19241f;--surface:#24322b;--surface-2:#2c3c33;--ink:#eef2e9;--ink-2:#b5c2b7;--line:#435248;--accent:#b4c9ac;--accent-ink:#c7dcbc;--accent-soft:#354b3e;--on-accent:#203125;--hero-bg:#34483b}
+/* Weather changes the palette only when the calendar engine enables it. */
+:root[data-world-weather="rain"]{--season-bg:#f3f6f8;--season-accent:#526b7d;--season-soft:#e3ebf1;--season-hero:#dfe8ed}
+:root[data-world-weather="snow"]{--season-bg:#f7fafc;--season-accent:#496e82;--season-soft:#e7f0f5;--season-hero:#edf4f8}
+:root[data-world-theme]{
+  --bg:var(--season-bg);--surface:#fff;
+  --accent:var(--season-accent);--accent-ink:var(--season-accent);--accent-soft:var(--season-soft);
+  --surface-2:color-mix(in srgb,var(--accent-soft) 58%,var(--surface));
+  --ink:#2d302d;--ink-2:#646861;--line:color-mix(in srgb,var(--accent) 17%,var(--surface));
+  --on-accent:#fff;--accent-hover:color-mix(in srgb,var(--accent) 87%,#18241d);
+  --hero-bg:var(--season-hero);--paper:var(--surface);--muted:var(--ink-2);
+  --pink:var(--accent);--pink-ink:var(--accent-ink);--pink-hover:var(--accent-hover);
+  color-scheme:light;background-color:var(--bg);
+}
+/* Keep each season's hue in dark mode instead of replacing every theme with green. */
+:root[data-theme=dark][data-world-theme]{
+  --bg:color-mix(in srgb,var(--season-accent) 12%,#17191c);
+  --surface:color-mix(in srgb,var(--season-accent) 15%,#22252a);
+  --surface-2:color-mix(in srgb,var(--season-accent) 23%,#292d32);
+  --ink:#f2f3ee;--ink-2:#bfc6c2;--line:color-mix(in srgb,var(--season-accent) 35%,#484c51);
+  --accent:color-mix(in srgb,var(--season-accent) 42%,#f6f4ee);
+  --accent-ink:color-mix(in srgb,var(--season-accent) 30%,#f6f4ee);
+  --accent-soft:color-mix(in srgb,var(--season-accent) 28%,#2a3035);
+  --on-accent:#18242a;--accent-hover:color-mix(in srgb,var(--accent) 85%,#fff);
+  --hero-bg:color-mix(in srgb,var(--season-accent) 30%,#272c31);color-scheme:dark;
+}
+
 :root[data-theme=dark] .arcade-welcome:before,:root[data-theme=dark] .park-heading:after{opacity:.65}
 .world-theme-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border:1px solid var(--line);border-radius:6px;color:var(--accent-ink);background:var(--surface);font-size:10px;margin-top:10px}
 

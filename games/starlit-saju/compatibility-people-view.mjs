@@ -1,8 +1,6 @@
-import {connectReadingMap,indexPages} from './reading-map.mjs?v=20261115-saju-menus1';
+import {createStoryReader} from './story-reader.mjs?v=20261120-saju-prune1';
 import {appendReadingDetail,readingDetailText} from './reading-detail.mjs?v=20261114-saju-depth1';
-import {attachReadingSwipe} from './reading-swipe.mjs?v=20261114-saju-slide1';
-import {createReadingMotion} from './reading-motion.mjs?v=20261114-saju-slide1';
-import {createReadingNavigator} from './reading-navigator.mjs?v=20261114-saju-almanac1';
+import {keepCompatibilityPersonTopic} from './reading-selection.mjs?v=20261120-saju-prune1';
 
 const PERSON_KEYS=['self','partner'];
 const TOPIC_IDS=['decisions','relationships','work','pressure','adjustment'];
@@ -97,99 +95,15 @@ export function createCompatibilityPeoplePages(value,{names=[],appendParagraphs}
 }
 
 /** Share the visible domain/item navigation with the ordinary saju reading. */
-export function createCompatibilityPager(section,pages,map) {
-  const navigation=node('nav','reading-pager compatibility-reading-pager');
-  navigation.id='compatibility-reading-pager';navigation.tabIndex=-1;
-  navigation.setAttribute('aria-label','궁합 읽을 내용');
-  const label=node('label','reading-pager-label','읽을 내용');label.htmlFor='compatibility-page-select';
-  const select=node('select','reading-page-select');select.id='compatibility-page-select';
-  const groups=new Map();
+export function createCompatibilityPager(section,pages) {
   for(const page of pages) {
-    if(!page.element.id)throw new Error('궁합 읽기 목록을 준비하지 못했어요.');
-    page.element.dataset.compatibilityPage=page.element.id;
-    page.focus=page.element.querySelector('h4,h5,h6,summary')||page.element;
-    page.focus.tabIndex=-1;page.element.tabIndex=-1;
-    if(!groups.has(page.group)) {
-      const group=node('optgroup');group.label=page.group;groups.set(page.group,group);select.append(group);
-    }
-    const option=node('option','',page.label);option.value=page.element.id;groups.get(page.group).append(option);
+    page.id=page.element.id;
+    page.domain=page.kind==='information'?'information':page.id==='compatibility-synthesis'?'synthesis'
+      :page.id.startsWith('compatibility-score')?'scores':page.element.classList.contains('compatibility-people-page')?'people':'details';
   }
-  const domainForPage=page=>page.element.id==='compatibility-synthesis'?'synthesis'
-    :page.element.id.startsWith('compatibility-score')?'scores'
-    :page.element.classList.contains('compatibility-people-page')?'people':'details';
-  const picker=createReadingNavigator({select,pages,domainForPage,
-    domains:[{id:'synthesis',label:'종합'},{id:'people',label:'A·B 성격'},{id:'scores',label:'점수'},{id:'details',label:'자세히'}],
-    groupForPage:page=>({synthesis:'두 사람의 종합',people:'같은 항목으로 비교',scores:'점수와 막대',details:'항목별 궁합'})[domainForPage(page)]});
-  label.hidden=true;
-  const controls=node('div','reading-pager-controls');
-  const previous=node('button','reading-pager-step','이전');previous.type='button';previous.dataset.compatibilityStep='previous';
-  const position=node('p','reading-page-position');position.id='compatibility-page-position';
-  position.setAttribute('role','status');position.setAttribute('aria-live','polite');
-  const next=node('button','reading-pager-step','다음');next.type='button';next.dataset.compatibilityStep='next';
-  controls.append(previous,position,next);
-  navigation.append(label,select,picker.element,controls);
-  select.setAttribute('aria-describedby',position.id);
-  picker.toggle.setAttribute('aria-describedby',position.id);
-
-  const managed=new Set();
-  for(const page of pages) {
-    let element=page.element;managed.add(element);
-    while(element.parentElement&&element.parentElement!==section) {
-      for(const sibling of element.parentElement.children)managed.add(sibling);
-      element=element.parentElement;managed.add(element);
-    }
-  }
-  const back=node('a','reader-detail-link reading-back-to-picker','다른 내용 고르기');back.href=`#${navigation.id}`;
-  back.addEventListener('click',event=>{
-    if(event.button||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
-    event.preventDefault();picker.focus({open:true});
-    navigation.scrollIntoView({block:'start',behavior:document.documentElement.dataset.reducedMotion==='true'?'instant':'smooth'});
-  });
-  const readable=pages.filter(page=>!page.support);let current,lastReading,motion=null,mapView=null;
-  function show(page,{move=false}={}) {
-    if(!page)return false;
-    mapView?.revealDetail();
-    let transition=null;
-    if(move&&current&&current!==page)transition=motion?.prepare(Math.sign(pages.indexOf(page)-pages.indexOf(current)));
-    else motion?.cancel();
-    for(const element of managed)element.hidden=!(element===page.element||element.contains(page.element)||page.element.contains(element));
-    if(current)current.element.removeAttribute('data-compatibility-current');
-    current=page;page.element.dataset.compatibilityCurrent='true';
-    if(!page.support)lastReading=page;
-    if(page.element.tagName==='DETAILS')page.element.open=true;
-    select.value=page.element.id;
-    picker.sync();
-    const index=readable.indexOf(page);
-    previous.textContent=page.support?'풀이로':'이전';previous.disabled=page.support?!lastReading:index===0;
-    next.disabled=page.support||index===readable.length-1;
-    position.textContent=page.support?page.label:`${index+1} / ${readable.length} · ${page.label}`;
-    page.element.append(back);
-    if(move) {
-      // Keep focus on the control so arrows and repeated steps keep working.
-      navigation.scrollIntoView({block:'start',behavior:transition||document.documentElement.dataset.reducedMotion==='true'?'instant':'smooth'});
-    }
-    motion?.finish(transition,page.element);
-    return true;
-  }
-  select.addEventListener('change',()=>show(pages.find(page=>page.element.id===select.value),{move:true}));
-  previous.addEventListener('click',()=>show(current.support?lastReading:readable[readable.indexOf(current)-1],{move:true}));
-  next.addEventListener('click',()=>show(readable[readable.indexOf(current)+1],{move:true}));
-  section.querySelector(':scope > .report-section-heading').after(navigation);
-  show(readable.find(page=>page.element.id==='compatibility-synthesis')||readable[0]);
-  indexPages(map,pages,page=>page.group);
-  mapView=connectReadingMap(section,map);
-  motion=createReadingMotion(section,{getCurrentPage:()=>current?.element});
-  attachReadingSwipe(section,{previous,next,motion});
-  return {reveal(target) {
-    if(navigation.contains(target)||mapView.contains(target))return false;
-    let page;
-    for(let element=target;element&&element!==section;element=element.parentElement) {
-      page=pages.find(item=>item.element===element);if(page)break;
-    }
-    if(!show(page))return false;
-    for(let element=target;element&&element!==section;element=element.parentElement)if(element.tagName==='DETAILS')element.open=true;
-    return true;
-  }};
+  const initialPage=pages.find(page=>page.id==='compatibility-synthesis')||pages[0];
+  section.className='compatibility-reading';
+  return createStoryReader(section,{pages,initialPage,mode:'compatibility'});
 }
 
 /** Copy follows A's complete story, B's complete story, then their synthesis. */
@@ -198,7 +112,7 @@ export function compatibilityPeopleText(value,names=[]) {
   for(const [index,person] of reading.people.entries()) {
     lines.push(labels[index]+' · 성격과 특징',...person.summaryLines,...readingDetailText(person));
     if(person.scopeNotice)lines.push(person.scopeNotice);
-    for(const card of person.cards)lines.push('',labels[index]+' · '+card.label,...card.summaryLines,...readingDetailText(card));
+    for(const card of person.cards)if(keepCompatibilityPersonTopic(card.topicId))lines.push('',labels[index]+' · '+card.label,...card.summaryLines,...readingDetailText(card));
     lines.push('');
   }
   const synthesis=reading.synthesis;

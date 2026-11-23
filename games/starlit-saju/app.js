@@ -1,9 +1,11 @@
+import {attachReaderTools} from './reader-tools.mjs?v=20261120-saju-story2';
 import {openCatalogChoice, showTickets} from './service-directory.mjs?v=20261115-saju-reopen1';
 import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
 import { SajuProfilePicker } from './profile-picker.mjs?v=20261114-saju-copy1';
 import { attachEntryFlow } from './entry-flow.mjs?v=20261115-saju-reopen1';
 
 const $ = id => document.getElementById(id);
+const readerTools=attachReaderTools(document,{resultId:'result',dialogId:'reading-tools'});
 const form = $('birth-form');
 const directory = openCatalogChoice(document);
 const entryFlow = attachEntryFlow(form);
@@ -279,10 +281,9 @@ function expireCurrentReading(force=false) {
   delete $('report-content').dataset.year;
   $('report-content').removeAttribute('aria-busy');
   $('reading-controls').hidden=true;
-  $('report-toc').hidden=true;
   $('copy-reading').disabled=true;
   $('result-warnings').hidden=true;
-  $('other-reading-options').open=true;
+  $('other-reading-options').open=true;readerTools.open();
   $('report-status').textContent='24시간 이용이 끝났어요. 다시 볼 풀이를 선택해 결제해 주세요.';
   return true;
 }
@@ -504,8 +505,8 @@ function scheduleReadingRefresh({retryChanged=true}={}) {
 async function prepareDetailedReading(chart,target,person=currentPerson||readPerson()) {
   detailModulesPromise ||= Promise.all([
     import('./fortune-data.mjs?v=20261114-saju-correction1'),
-    import('./readings.mjs?v=20261114-saju-final-review2'),
-    import('./report-view.mjs?v=20261115-saju-menus1'),
+    import('./readings.mjs?v=20261120-saju-voice1'),
+    import('./report-view.mjs?v=20261120-saju-prune1'),
     import('./daeun.mjs?v=20261114-saju-correction1'),
     zodiacModule()
   ]).catch(error=>{detailModulesPromise=null;throw error;});
@@ -534,15 +535,12 @@ function commitDetailedReading(chart,{fortune,reading,content,copyText,target,ti
   $('report-content').dataset.topic=target.topic;
   $('report-content').dataset.year=String(target.year);
   $('report-content').removeAttribute('aria-busy');
-  $('current-report-link').href='#reading-summary';
-  $('current-report-label').textContent='핵심 운세';
   $('current-reading-title').textContent=`${targetLabel(target)}${target.topic==='monthly'?' · 1~12월 전체':''}`;
   const end=accessEndLabel(access);
   $('current-reading-note').textContent=access.adminPreview?'관리자 미리보기 · 차감 없음'
     : `${target.topic==='all'?'각 항목 결제 후 24시간 · 가장 빠른 만료: ':''}${end} · 다시 보기 0쭈`;
   $('reading-controls').hidden=false;
-  $('other-reading-options').open=false;
-  $('report-toc').hidden=false;
+  $('other-reading-options').open=false;readerTools.close({restoreFocus:false});
   $('report-status').textContent='';
   $('report-status').classList.remove('is-loading');
   $('copy-reading').disabled=false;
@@ -665,7 +663,7 @@ async function openSelectedProduct() {
     currentAccess={chart,owner:payment.user,status:recordReceipt(status,receipt,target)};
     commitDetailedReading(chart,prepared,receipt);
     if (receipt.replayed) toast('구매한 항목을 추가 차감 없이 다시 펼쳤어요.');
-    $('report-content').querySelector('.map-title')?.focus();
+    $('report-content').querySelector('.story-title')?.focus();
   } catch (error) {
     if (generation!==reportGeneration || currentReading!==chart || $('result').hidden) return;
     if (!inspected) currentAccess=null;
@@ -708,7 +706,7 @@ function resetAfterAccountChange() {
   for(const id of ['birth-summary','lunar-summary','result-warnings'])$(id).replaceChildren();
   $('report-content').replaceChildren();
   $('report-content').removeAttribute('aria-busy');
-  $('report-toc').hidden=true;$('report-error').hidden=true;$('entry-check-error').hidden=true;
+  $('report-error').hidden=true;$('entry-check-error').hidden=true;
   $('reading-controls').hidden=true;$('other-reading-options').open=false;
   $('copy-reading').disabled=true;
   form.reset();
@@ -888,5 +886,4 @@ function revealReadingTarget(event) {
   }
   if (target.tagName==='SUMMARY') target.parentElement.open=true;
 }
-$('report-toc').addEventListener('click',revealReadingTarget);
 document.querySelector('.other-reading-link').addEventListener('click',revealReadingTarget);

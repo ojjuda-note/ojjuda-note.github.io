@@ -38,6 +38,22 @@ const checkPageNavigationRestored=async(page,label)=>{
  await page.waitForFunction(()=>!document.documentElement.classList.contains('world-park-composing'));
  assert.equal(await page.locator('.bottomnav:visible,.sidenav:visible').count(),1,label+': page navigation returns after writing closes');
 };
+const returnToAgit=async(page,frame)=>{
+ await page.locator('.bottomnav:visible [data-park-action="settings"],.sidenav:visible [data-park-action="settings"]').click();
+ await frame.locator('[data-park-settings-root]').waitFor();
+ await frame.locator('[data-park-settings="world"]').click();
+ await page.locator('.agit-hub').waitFor();
+ await page.locator('[data-park-app] iframe').waitFor({state:'hidden'});
+};
+const enterParkFromAgit=async page=>{
+ // The real Agit banner opens standalone Park. Enter the retained iframe
+ // deliberately here to test legacy embedded Back and composer behavior.
+ await page.evaluate(()=>parkFixture.enter('park'));
+ const iframe=page.locator('[data-park-app] iframe');await iframe.waitFor();
+ const frame=await (await iframe.elementHandle()).contentFrame();
+ await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
+ return frame;
+};
 const checkWritingCopy=async frame=>{
  const input=frame.locator('#compose-text');
  assert.equal(await input.getAttribute('placeholder'),copy.replace('? ','?\n'));assert.equal(await input.isVisible(),true);
@@ -46,16 +62,21 @@ const checkWritingCopy=async frame=>{
  assert.equal(await input.evaluate(el=>el.matches(':placeholder-shown')&&el.scrollHeight<=el.clientHeight+1),true,'the complete greeting fits the empty input');
  assert.equal(await input.evaluate(el=>{const p=el.getBoundingClientRect(),photo=el.closest('.compose-photo').getBoundingClientRect(),body=el.closest('.composer-body').getBoundingClientRect();return p.top>=photo.top&&p.bottom<=photo.bottom&&p.left>=photo.left&&p.right<=photo.right&&p.top>=body.top&&p.bottom<=body.bottom; }),true,'the greeting appears inside the visible photo card before writing');
 };
-// Old bookmarks, direct feature URLs and authenticated returns share one World entry.
+// Legacy Note bookmarks now enter Park directly, without the 590 KB World document.
 for(const [from,to] of [
- ['/note/?card=abc&keep=memo','/world.html?place=park&card=abc&keep=memo'],
- ['/note/glasses.html','/world.html?place=park&view=glasses'],
- ['/park/?compose=memo','/world.html?place=park&compose=memo']]){
+ ['/note/?card=abc&keep=memo','/park/?card=abc&keep=memo'],
+ ['/note/glasses.html','/park/glasses.html']]){
  let result;const url=new URL(from,'https://fixture.test');const scope={URL,location:{href:url.href,origin:url.origin,replace:href=>result=href}};scope.window=scope;scope.parent=scope;
  vm.runInNewContext(read('park/route.js'),scope);assert.equal(result,'https://fixture.test'+to);
 }
+{
+ let result;const url=new URL('/park/?compose=memo','https://fixture.test');const scope={URL,location:{href:url.href,origin:url.origin,replace:href=>result=href}};scope.window=scope;scope.parent=scope;
+ vm.runInNewContext(read('park/route.js'),scope);assert.equal(result,undefined,'Park renders itself without reloading World');
+}
 let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
-world=world.replace('<script type="module">',`<script>${['app/world/world-themes.js','app/world/world-navigation.js','app/world/world-pull-refresh.js','shared/viewport/mobile-viewport.js','park/world-park-notes.js'].map(read).join('\n')}</script><script type="module">`);
+ // Keep this fixture on the legacy iframe path to test compatibility separately.
+ world=world.replace(/<script>\s*\/\/ Old Park URLs[\s\S]*?<\/script>/,'');
+world=world.replace('<script type="module">',`<script>${['app/world/world-themes.js','app/world/world-navigation.js','app/world/world-pull-refresh.js','shared/viewport/mobile-viewport.js','features/home/agit-hub.js','shared/brand/service-banners.js','park/world-park-notes.js'].map(read).join('\n')}</script><script type="module">`);
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
  window.parkFixture={state:g,enter(id){xf(id,1);clearInterval(g.placeT);g.placeT=null;},
@@ -69,11 +90,11 @@ OjjudaDecorations.install({getUserId:()=>session?.user?.id,client:{auth:{onAuthS
 window.populateParkFixture=()=>{feed.hidden=false;detail.hidden=true;document.getElementById('connection-status').hidden=true;
  document.getElementById('feed-list').replaceChildren(...Array.from({length:9},(_,i)=>cardElement({id:'00000000-0000-4000-8000-'+String(i+1).padStart(12,'0'),kind:'memo',body:'공원에서 나누는 오늘의 이야기 '+(i+1),tags:['일상'],background_key:'plain',created_at:new Date().toISOString()})));
 };`;
-const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace('</body>',()=>'<script>'+['app/world/world-themes.js','park/route.js','shared/viewport/mobile-viewport.js','features/wallet/ju-decorations.js','note/feed-swipe.js','note/composer-tools.js','note/preview.js','note/navigation.js'].map(read).join('\n')+'\n'+identity+'\n'+read('park/integration.js')+'</script></body>');
+const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace('<head>','<head><script>document.documentElement.dataset.parkEmbedded="true"</script>').replace('</body>',()=>'<script>'+['app/world/world-themes.js','park/route.js','shared/viewport/mobile-viewport.js','shared/brand/service-banners.js','features/wallet/ju-decorations.js','note/feed-swipe.js','note/composer-tools.js','note/preview.js','note/navigation.js'].map(read).join('\n')+'\n'+identity+'\n'+read('park/integration.js')+'</script></body>');
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox','--disable-dev-shm-usage']});
  try{
- const context=await browser.newContext({viewport:{width:390,height:850}});
+ const context=await browser.newContext({viewport:{width:390,height:850},hasTouch:true});
  await context.route('**/*',route=>{
    const url=new URL(route.request().url());if(url.hostname!=='fixture.test')return route.abort();
    if(url.pathname==='/world.html')return route.fulfill({contentType:'text/html',body:world});
@@ -89,7 +110,7 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  await checkComposerTools(frame,'390 initial');
  if(process.env.OJJUDA_COPY_PROOF_DIR){fs.mkdirSync(process.env.OJJUDA_COPY_PROOF_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.OJJUDA_COPY_PROOF_DIR,'composer-initial-390.png')});}
  await checkWritingCopy(frame);
- assert.equal(await frame.evaluate(()=>document.activeElement===document.querySelector('.composer')),true,'opening the writer leaves the phone keyboard closed');
+ assert.equal(await frame.locator('#compose-text').evaluate(node=>document.activeElement===node),true,'opening the writer focuses its native writing input');
  assert.equal(await frame.locator('[data-compose-panel]:visible').count(),0,'options start collapsed');
  await frame.evaluate(()=>window.fixtureToken='kept');
  await frame.locator('#compose-text').fill('아직 작성 중인 공원의 이야기');
@@ -108,7 +129,8 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  assert.equal(await frame.locator('#card-photo-file,#event-photo-file,#compose-effect,#compose-box-transparency').count(),4,'all photo and styling controls migrated');
  assert.equal(await frame.locator('[data-sort]').count()>2,true,'latest, popular and nearby sorting migrated');
  assert.equal(await frame.locator('#note-account-menu #event-start').count(),1,'event authoring migrated');
- assert.equal(await frame.locator('#note-change-nickname,#note-change-password,#note-logout,#note-delete-account').count(),4,'account tools migrated');
+ assert.equal(await frame.locator('#note-change-nickname,#note-change-password,#note-logout').count(),3,'account tools remain available');
+ assert.equal(await frame.locator('#note-delete-account').count(),0,'withdrawal is available through support, not the legacy account menu');
  assert.equal(await frame.locator('[data-collection]').count()>=2,true,'saved and owned cards migrated');
  await page.evaluate(()=>{parkFixture.repaint();parkFixture.render();});
  assert.equal(await frame.evaluate(()=>fixtureToken),'kept','world/presence rendering retains browsing context');
@@ -120,18 +142,22 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  assert.equal(await frame.locator('#compose-text').inputValue(),'아직 작성 중인 공원의 이야기');
  await frame.evaluate(()=>backdrop.dispatchEvent(new MouseEvent('click',{bubbles:true})));
  assert.equal(await frame.locator('#composer-backdrop').isVisible(),true,'canceling backdrop close preserves the draft');
- await page.locator('.bottomnav [data-tab="my"]').evaluate(button=>button.click());
- assert.equal(await iframe.count(),1,'unsaved content blocks leaving through the World menu');
+ await page.locator('.bottomnav [data-park-action="settings"]').evaluate(button=>button.click());
+ assert.equal(await iframe.count(),1,'unsaved content blocks changing the Park menu');
+ assert.equal(await frame.locator('[data-park-settings-root]').count(),0,'settings cannot replace an unfinished card after discard is cancelled');
  assert.equal(await frame.locator('#compose-text').inputValue(),'아직 작성 중인 공원의 이야기','a programmatic page-navigation event keeps the unsaved writing');
  await page.evaluate(()=>parkFixture.close());
  assert.equal(await frame.locator('#composer-backdrop').isVisible(),true,'Back protects unsaved text too');
  await frame.evaluate(()=>window.confirm=()=>true);
  await page.evaluate(()=>parkFixture.close());
+ await frame.locator('#composer-backdrop').waitFor({state:'hidden'});
  assert.equal(await frame.locator('#composer-backdrop').isVisible(),false);
  await checkPageNavigationRestored(page,'390 initial close');
- await page.evaluate(()=>parkFixture.open('compose'));
+ await page.locator('.park-compose-fab').tap();
  await frame.locator('#composer-backdrop').waitFor({state:'visible'});
- await frame.locator('#compose-text').fill('직접 닫기를 확인한 글');
+ assert.equal(await frame.locator('#compose-text').evaluate(node=>document.activeElement===node),true,'tapping the writing button focuses the input directly');
+ await page.keyboard.insertText('직접 닫기를 확인한 글');
+ assert.equal(await frame.locator('#compose-text').inputValue(),'직접 닫기를 확인한 글','Korean typing works without another tap on the writing area');
  await frame.evaluate(()=>{window.discardConfirmCount=0;window.confirm=()=>{window.discardConfirmCount++;return true;};});
  await frame.locator('#close-composer').click();
  assert.equal(await frame.locator('#composer-backdrop').isVisible(),false,'accepting direct close discards the draft');
@@ -162,9 +188,8 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  await frame.evaluate(()=>{feed.hidden=true;detail.hidden=false;document.querySelector('[data-compose="reply"]').hidden=false;});
  await page.locator('.park-compose-fab').waitFor({state:'hidden'});
  assert.equal(await frame.locator('[data-compose="reply"]').isVisible(),true);
- await page.locator('.bottomnav [data-tab="my"]').click();
- await page.locator('.my-hub').waitFor();
- await page.locator('.bottomnav [data-tab="park"]').click();
+ await returnToAgit(page,frame);
+ frame=await enterParkFromAgit(page);
  await frame.locator('#feed').waitFor({state:'visible'});
  assert.equal(await frame.locator('#detail').isVisible(),false,'leaving a card and returning opens the Park main feed');
  assert.equal(await frame.locator('[data-sort="latest"]').getAttribute('aria-pressed'),'true');
@@ -191,17 +216,17 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
    const controls=[...element.querySelectorAll('.card-actions button')];
    return {
     edgeToEdge:Math.abs(box(element).height-photo.height)<1,
-    contentClear:author.bottom<=quote.top&&quote.bottom<=tags.top&&tags.bottom<=photo.bottom-43,
+    contentClear:author.bottom<=quote.top&&quote.bottom<=tags.top&&tags.bottom<=photo.bottom-37,
     buttons:controls.map(button=>{
      const b=box(button);
      return b.width>=44&&b.height>=44&&b.left>=photo.left&&b.right<=photo.right+1&&
-      (b.bottom<=quote.top||b.top>=tags.bottom);
+      (b.bottom<=quote.top||b.top>=tags.bottom-6);
     })
    };
   });
   assert.equal(layout.edgeToEdge,true,width+': feed photo has no footer or outer border');
   assert.equal(layout.contentClear,true,width+': author, quote and tags have their own space');
-  assert.deepEqual(layout.buttons,[true,true,true,true,true],width+': all five controls fit the card with separate 44px targets');
+  assert.deepEqual(layout.buttons,[true,true,true,true,true],width+': all five 44px controls fit alongside the lowered tags');
   // A 750px square can exceed the embedded viewport. Check the hit target
   // after scrolling each control into view, as a member would on a tablet.
   for (const control of await card.locator('.card-actions button').all()) {
@@ -271,25 +296,28 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  if(process.env.OJJUDA_COPY_PROOF_DIR)await page.screenshot({path:path.join(process.env.OJJUDA_COPY_PROOF_DIR,'park-mobile.png'),fullPage:true});
  // Short menu visits keep the embedded app connected without showing its UI.
  await page.evaluate(()=>{window.parkInitialFrame=document.querySelector('[data-park-app] iframe');});
- // Collections remain available in Park; the shared menu no longer lists Park shortcuts.
+ // The Park settings return and Agit banner keep the cached document connected.
  for(const action of ['saved','mine','events']){
-  await page.locator('.bottomnav [data-tab="my"]').click();
-  assert.equal(await iframe.count(),1,'World menu keeps the cached Park frame');
+  await returnToAgit(page,frame);
+  assert.equal(await iframe.count(),1,'returning to Agit keeps the cached Park frame');
   assert.equal(await iframe.isVisible(),false,'the cached Park is hidden outside its menu');
   assert.equal(await page.locator('[data-my-group=park],[data-park-action]:visible').count(),0);
-  await page.evaluate(action=>parkFixture.open(action),action);
-  await iframe.waitFor();frame=await (await iframe.elementHandle()).contentFrame();
+  frame=await enterParkFromAgit(page);
   assert.equal(await page.evaluate(()=>document.querySelector('[data-park-app] iframe')===window.parkInitialFrame),true,'returning to Park reuses the loaded iframe');
+  if(action==='events')await page.evaluate(()=>parkFixture.open('events'));
+  else await page.locator(`.bottomnav [data-park-action="${action}"]`).click();
   await frame.waitForFunction(mode=>typeof feedMode!=='undefined'&&feedMode===mode,action);
-  assert.equal(await frame.locator('#feed').isVisible(),true,action+': queued action opens its real collection');
+  assert.equal(await frame.locator('#feed').isVisible(),true,action+': Park action opens its real collection');
   assert.equal(await frame.locator('#note-my-screen').isVisible(),false,action+': collection does not expose a second app menu');
  }
  await frame.evaluate(()=>OjjudaParkFull.navigate('menu'));
- await page.locator('.my-hub').waitFor();
- assert.equal(await iframe.isVisible(),false,'child menu action hides the cached Park');
+ await frame.locator('[data-park-settings-root]').waitFor();
+ assert.equal(await iframe.isVisible(),true,'the legacy child menu action now opens Park settings in place');
+ await page.locator('.bottomnav [data-park-action="settings"][aria-current="page"]').waitFor();
+ await page.evaluate(()=>parkFixture.close());
  await page.evaluate(()=>parkFixture.open('event-new'));await iframe.waitFor();frame=await (await iframe.elementHandle()).contentFrame();
  await frame.locator('#composer-backdrop').waitFor({state:'visible'});
- assert.equal(await frame.evaluate(()=>kind),'event','World menu opens the complete event composer');
+ assert.equal(await frame.evaluate(()=>kind),'event','Park action opens the complete event composer');
  await page.evaluate(()=>parkFixture.close());
  await frame.evaluate(()=>shareCard('00000000-0000-4000-8000-000000000001'));
  assert.match(await frame.locator('#note-share-url').inputValue(),/\/world.html\?place=park&card=/,'new share links use World');
@@ -308,12 +336,13 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  await frame.locator('#note-inquiry-body').fill('저장 중 화면을 이동해도 사라지면 안 되는 문의');
  await frame.getByRole('button',{name:'문의 보내기',exact:true}).click();
  await frame.waitForFunction(()=>typeof finishInquiry==='function');
- await page.locator('.bottomnav [data-tab="my"]').click();
- assert.equal(await iframe.count(),1,'World navigation cannot destroy a submitting inquiry');
+ await page.locator('.bottomnav [data-park-action="settings"]').click();
+ assert.equal(await iframe.count(),1,'Park navigation cannot destroy a submitting inquiry');
  assert.equal(await frame.locator('#note-inquiry-body').inputValue(),'저장 중 화면을 이동해도 사라지면 안 되는 문의');
  await frame.evaluate(()=>finishInquiry());
  await frame.getByText('보내지 못했어요. 작성한 내용은 유지됩니다. 다시 시도해 주세요.').waitFor();
  await frame.evaluate(()=>OjjudaNoteSupport.close());
+ await frame.waitForFunction(()=>!OjjudaNoteSupport.isOpen()&&history.state?.ojjudaParkRoute?.view!=='support');
  // Closing a charge dialog does not cancel its server request. Keep the host
  // alive until the response has updated the shared balance.
  await frame.addScriptTag({content:read('features/wallet/ju-charge.js')});
@@ -327,47 +356,58 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
    }});
    OjjudaCharge.open();
  });
+ await frame.waitForFunction(()=>history.state?.ojjudaParkRoute?.view==='charge');
+ const chargeIndex=await frame.evaluate(()=>history.state.ojjudaParkRoute.index);
  await frame.getByRole('button',{name:'10 ZU 무료 충전',exact:true}).click();
  await frame.waitForFunction(()=>typeof finishCharge==='function');
  await frame.getByRole('button',{name:'충전창 닫기',exact:true}).click();
- await page.locator('.bottomnav [data-tab="my"]').click();
- assert.equal(await iframe.count(),1,'World navigation cannot interrupt a pending charge after its dialog closes');
+ await frame.waitForFunction(index=>!OjjudaCharge.isOpen()&&history.state?.ojjudaParkRoute?.index===index-1&&history.state.ojjudaParkRoute.view!=='charge',chargeIndex);
+ await page.locator('.bottomnav [data-park-action="settings"]').click();
+ assert.equal(await iframe.count(),1,'Park navigation cannot interrupt a pending charge after its dialog closes');
  await frame.evaluate(()=>finishCharge());
  await frame.waitForFunction(()=>chargeBalance===110);
  assert.equal(await frame.evaluate(()=>chargeCalls),1,'one click sends one charge');
  assert.equal(await frame.evaluate(()=>canCloseParkNote()),true,'navigation resumes after the charge finishes');
  await page.evaluate(()=>parkFixture.user('another-user'));
  await page.waitForFunction(()=>document.querySelector('[data-park-app] iframe').contentWindow.fixtureToken===undefined);
- await page.evaluate(()=>parkFixture.enter('arcade'));
+ frame=await (await iframe.elementHandle()).contentFrame();await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
+ await returnToAgit(page,frame);
+ await page.locator('.bottomnav [data-tab="arcade"]').click();
  assert.equal(await page.locator('[data-park-app]:visible').count(),0,'leaving hides the old account app');
  assert.equal(await page.locator('#plog,#pmsg,[data-act="pl-send"],[data-act="pl-react"]').count(),0,'returning to Arcade does not restore public chat');
  assert.equal(await page.locator('.arcade-social').count(),1,'the room section remains available');
  // Exercise the real child -> postMessage -> parent navigation path.
- await page.evaluate(()=>parkFixture.enter('park'));await iframe.waitFor();
- frame=await (await iframe.elementHandle()).contentFrame();await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
+ await page.locator('.bottomnav [data-tab="hub"]').click();
+ frame=await enterParkFromAgit(page);
  assert.equal(await frame.evaluate(()=>OjjudaParkFull.embedded),true);
  await frame.evaluate(()=>OjjudaParkFull.navigate('library'));
  await page.waitForFunction(()=>parkFixture.state.tab==='place'&&parkFixture.state.place?.id==='arcade');
  assert.equal(await iframe.isVisible(),false,'a retired Park library message returns to the arcade');
- // Embedded feed gestures follow Park's position in the main menu.
- await page.evaluate(()=>parkFixture.enter('park'));await iframe.waitFor();
- frame=await (await iframe.elementHandle()).contentFrame();await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
+ // Park gestures stay inside the Park section, independent of the main menu.
+ await page.locator('.bottomnav [data-tab="hub"]').click();
+ frame=await enterParkFromAgit(page);
  await frame.evaluate(()=>{populateParkFixture();window.scrollTo({top:0,behavior:'instant'});});
  const activeSort=await frame.locator('.feed-sort-tabs .selected').getAttribute('data-sort');
+ assert.equal(activeSort,'latest','banner reentry opens the main feed');
  const dragPark=async dx=>{
   const box=await frame.locator('.note-feed-viewport').boundingBox(),x=box.x+box.width*(dx<0?.75:.25),y=box.y+80;
   await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x+dx,y,{steps:8});await page.mouse.up();
+  await frame.waitForFunction(()=>!document.getElementById('feed').matches('.note-feed-dragging,.note-feed-settling'));
  };
  await dragPark(-150);
- await page.waitForFunction(()=>parkFixture.state.tab==='my');
- assert.equal(await iframe.isVisible(),false,'a left swipe from Park reaches the main menu');
- await page.locator('.bottomnav [data-tab="park"]').click();await iframe.waitFor();
- frame=await (await iframe.elementHandle()).contentFrame();await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
- await frame.evaluate(()=>{populateParkFixture();window.scrollTo({top:0,behavior:'instant'});});
- assert.equal(await page.locator('.bottomnav [aria-current="page"]').getAttribute('data-tab'),'park');
+ assert.equal(await frame.locator('.feed-sort-tabs .selected').getAttribute('data-sort'),'popular','a left swipe opens the next Park filter');
+ assert.equal(await iframe.isVisible(),true,'filter swipes retain the visible Park frame');
  await dragPark(150);
- await page.waitForFunction(()=>parkFixture.state.tab==='place'&&parkFixture.state.place?.id==='arcade');
- assert.equal(await iframe.isVisible(),false,'a right swipe from Park reaches the arcade');
+ assert.equal(await frame.locator('.feed-sort-tabs .selected').getAttribute('data-sort'),'latest');
+ await dragPark(150);
+ assert.equal(await frame.locator('.feed-sort-tabs .selected').getAttribute('data-sort'),'latest','the first Park filter stops at its boundary');
+ await frame.locator('[data-sort="tag"]').click();
+ await frame.waitForFunction(()=>!document.getElementById('feed').matches('.note-feed-dragging,.note-feed-settling'));
+ await dragPark(-150);
+ assert.equal(await frame.locator('.feed-sort-tabs .selected').getAttribute('data-sort'),'tag','the last Park filter stops at its boundary');
+ assert.equal(await page.evaluate(()=>parkFixture.state.tab==='place'&&parkFixture.state.place?.id==='park'),true,'neither edge leaves Park');
+ assert.equal(await page.locator('.bottomnav [aria-current="page"]').getAttribute('data-park-action'),'feed');
+ assert.equal(await page.locator('.bottomnav [data-tab]').count(),0,'Park keeps its dedicated menus through every swipe');
  assert.deepEqual(errors,[]);
  console.log('PASS: real Park feed swipes and postMessage library navigation, single World chrome/scroller, cached Park frame on menu reentry, account reset, sharing, responsive composer, room-only Arcade, pending inquiry/charge navigation guards, and preserved drafts/scroll across render/back/leave');
  }finally{await browser.close();}

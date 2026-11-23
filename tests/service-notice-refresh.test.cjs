@@ -25,6 +25,10 @@ function fixture(place = 'arcade') {
     window: dom.window, document: dom.window.document, S: client,
     D: { online: true, user: { id: 'member-a' } }, g: { tab: 'place', place: { id: place } },
     $: {}, Date, URL, console, requestAnimationFrame: fn => fn(),
+    // This fixture has no pending section update. The version/refresh behavior
+    // has its own world-section-releases tests; keep the real notice renderer.
+    releaseSection() { return place === 'park' ? 'park' : 'arcade'; },
+    sectionCheck() { return { dismissedVersion: null, applying: false }; },
     w: value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])),
     Ts() { ticks++; }, H() { redraws++; }
   });

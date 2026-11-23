@@ -33,7 +33,15 @@ try{
  now=Date.parse('2026-10-09T15:00:01Z');w.dispatchEvent(new w.Event('pageshow'));assert.equal(t.getCurrent(),'autumn','resuming a suspended tab recalculates its date');
  w.localStorage.setItem('ojjuda-world-theme-v1','summer');t.sync();assert.equal(t.getCurrent(),'autumn','later legacy storage is ignored');
  assert.deepEqual(changes,['autumn','hangeul','autumn'],'ticker listeners are informed once for each actual theme change');
+ t.setWeather('rain');assert.equal(t.getWeather(),'rain');assert.equal(t.getCurrent(),'autumn','weather preserves the seasonal artwork');
+ const rainChanges=changes.length;t.setWeather('rain');assert.equal(changes.length,rainChanges,'unchanged weather does not notify listeners again');
+ t.setWeather('snow');assert.equal(t.getWeather(),'snow');
+ now=Date.parse('2026-12-25T03:00:00Z');t.sync();assert.equal(t.getCurrent(),'christmas');assert.equal(t.getWeather(),null,'a holiday takes priority over snow');
+ now=Date.parse('2027-01-10T03:00:00Z');t.sync();assert.equal(t.getCurrent(),'winter');assert.equal(t.getWeather(),'snow','current weather resumes after the holiday window');
+ t.setWeather(null);assert.equal(t.getWeather(),null,'unavailable weather restores the calendar palette');
+ t.setWeather('sunny');assert.equal(t.getWeather(),null,'only rain and snow override a seasonal palette');
+ assert.equal(draft.value,'작성 중인 내용');assert.equal(w.document.getElementById('draft'),draft,'weather and calendar changes preserve the input node');
  for(const key of t.order){assert.ok(fs.existsSync(path.join(root,'assets/design',key==='classic'?'welcome.svg':'themes/'+key+'.svg')),key+' has its own artwork');}
  assert.equal(t.scheduleFor(2027).find(e=>e.key==='buddha').date,'2027-05-13');
- console.log('PASS: all 19 designs, KST midnight, lunar holidays through 2050, holiday priority, season fallback, automatic-only mode, legacy choice ignored, midnight and resume updates and draft preservation');
+ console.log('PASS: all 19 designs, KST midnight, lunar holidays through 2050, holiday priority, season fallback, rain/snow accents, automatic-only mode, legacy choice ignored, midnight and resume updates and draft preservation');
 }finally{dom.window.close();}

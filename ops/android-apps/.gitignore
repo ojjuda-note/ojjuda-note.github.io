@@ -1,0 +1,13 @@
+.gradle/
+__pycache__/
+*.py[cod]
+**/build/
+local.properties
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+*.key
+signing.properties
+toolchain/

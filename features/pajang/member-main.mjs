@@ -1,11 +1,13 @@
-import {requireMember} from './member.mjs?v=entry3';
-import {mountStation,prepareProgram} from './load-station.mjs?v=entry3';
+import {requireMember} from './member.mjs?v=20261119-guest-account1';
+import {mountStation,prepareProgram} from './load-station.mjs?v=20261123-fast-start1';
+import {enhanceGuestGate} from './entry-design.mjs?v=20261122-org-display-only1';
 let program;
 const station=await requireMember('state',db=>{
   program=prepareProgram(db);
   // A guest or a new participant can leave this branch before using the program.
   program.catch(()=>{});
 });
+if(!station)enhanceGuestGate();
 const url=new URL(location.href);
 if(url.searchParams.get('entry')==='agit' && station && !station.me?.body){
   location.replace('./');

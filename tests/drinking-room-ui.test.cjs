@@ -41,6 +41,7 @@ test('random start draws from every multiplayer game the joined players can play
     const f=await screen({rpc:(_name,args)=>args.p_action==='mine'?{room:{...current}}:{...current}});
     t.after(()=>f.close());
     await until(()=>!f.find('#lobby').hidden);
+    assert.deepEqual([...f.find('.room-actions').querySelectorAll('button')].map(button=>button.id), ['leave','start'], 'room exit stays before host start');
     const all=Array.from(f.find('#games').children,tile=>tile.dataset.game);
     assert.ok(all.includes('partyroulette'));
     const pool=size<2?[]:all.filter(kind=>size>=3||!threeRequired.includes(kind));
@@ -640,21 +641,45 @@ test('participant storage errors are visible and edits remain usable',async t=>{
 test('local roulette opens from its link without a target picker and keeps saved participants',async t=>{
   const key='oj.party.member-a.players',saved='["하나","둘","셋"]';
   const f=await screen({url:'/games/drinking/local/#partyroulette',prepare(w){
-    w.scrollTo=()=>{};w.localStorage.setItem(key,saved);
+    w.scrollTo=()=>{};w.localStorage.setItem(key,saved);w.Math.random=()=>.9999;
   }});
   t.after(()=>f.close());
   assert.equal(f.w.location.hash,'#partyroulette');
   f.click('[data-action="start"]');
   assert.equal(f.find('.roulette-table').dataset.step,'load');
   assert.equal(f.find('.pr-target'),null);
-  assert.equal(f.find('.pr-wheel').children.length,3);
+  assert.equal(f.find('.pr-wheel').children.length,4);
+  assert.equal(f.find('.pr-wheel').querySelectorAll('.loaded').length,1);
+  assert.equal(f.find('.pr-status').textContent,'4칸 중 한 칸에 한 발이 들어가요.');
   f.click('.pr-next');
   assert.equal(f.find('.roulette-table').dataset.step,'spin');
   f.click('.pr-next');
   assert.equal(f.find('.roulette-table').dataset.step,'play');
   assert.ok(!f.find('.pr-trigger').hidden);
+  const shots=[];f.w.PartyFX.play=cue=>shots.push(cue);
+  for(let i=0;i<3;i++){
+    f.click('.pr-trigger');
+    assert.match(f.find('.pr-status').textContent,/불발/);
+    await f.advance(650);
+  }
+  f.click('.pr-trigger');
+  assert.equal(f.find('.pr-status').textContent,'팡!');
+  assert.deepEqual(shots,['dry','dry','dry','shot'],'the extra fourth chamber can contain the shot');
   assert.equal(f.w.localStorage.getItem(key),saved);
   assert.deepEqual(f.errors,[]);
+});
+
+test('online roulette preserves legacy chambers and uses the server count for new rounds',async t=>{
+  for(const chambers of [undefined,3,4]){
+    const state={code:'ROUL01',title:'친구들 방',players:['1번','2번','3번'],me:0,capacity:3,
+      phase:'prepare',revision:1,round:1,game:{phase:'prepare',count:0,mine:false,...(chambers===undefined?{}:{chambers})}};
+    const f=await screen({url:'/games/partyroulette/?room=ROUL01',rpc:()=>state});
+    t.after(()=>f.close());
+    await until(()=>!!f.find('.pr-wheel'),'roulette loading screen');
+    assert.equal(f.find('.pr-wheel').children.length,chambers??3);
+    assert.equal(f.find('.pr-wheel').querySelectorAll('.loaded').length,1);
+    assert.deepEqual(f.errors,[]);
+  }
 });
 
 test('previous roulette selection can be replaced in an existing lobby',async t=>{
@@ -670,4 +695,28 @@ test('previous roulette selection can be replaced in an existing lobby',async t=
   f.click('[data-game="bottle"]');
   await until(()=>!f.find('#start').disabled);
   assert.match(f.find('#selected-game').textContent,/술병/);
+});
+
+
+// Run each native footer through its real renderer. A changed round host must
+// retain replay authority while both host and guests see exit first.
+test('native drinking result footers keep exit before replay and preserve host authority', async t => {
+  for(const kind of ['croc','liar','king','minority','bomb'])for(const me of [0,1]){
+    const state={code:'NATIVE',title:'같이 한 판',players:['친구','이번 방장','참가자'],me,hostSeat:1,capacity:3,
+      phase:'done',revision:2,round:1,turn:0,hints:[],totals:[0,3,0],liar:0,word:'사과',
+      pressed:[2],trap:2,loser:0,king:1,number:1,recipient:0,mission:'손뼉 치기',accepted:[],
+      choices:['아침','저녁'],votes:[0,1,1],game:{}};
+    const scripts=kind==='bomb'?['/games/party-live/room.js']:
+      kind==='minority'?['/games/party-vote/room.js']:[`/games/${kind}/room.js`];
+    const f=await screen({url:`/games/${kind}/?room=NATIVE`,scripts,
+      prepare(w){w.PartyFX={quiet(){},play(){},startBite(){}};w.PartyLiveGame={view:()=>'<h1>라운드 결과</h1>'};},
+      rpc(){return state;}});
+    try{
+      await until(()=>f.find('.drinking-round-actions'),'result footer');
+      const buttons=[...f.find('.drinking-round-actions').querySelectorAll('button')];
+      assert.deepEqual(buttons.map(button=>button.dataset.do),me===1?['leave','again']:['leave'],`${kind} member ${me}`);
+      if(me===1){buttons.at(-1).click();await until(()=>f.calls.some(call=>call.args.p_action==='again'&&call.settled),'existing replay request');}
+      assert.deepEqual(f.errors,[]);
+    }finally{f.close();}
+  }
 });

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "timezone": "Asia/Seoul",
+  "theme": "autumn",
+  "date": "2026-11-20",
+  "reason": "season",
+  "eventId": null,
+  "revision": "seasonal-v1-autumn-d0c431c01ed9",
+  "scriptRevision": "app-icons-a6a612391e00",
+  "geometry": {
+    "source": "1024x1024",
+    "regular": "center 800x800",
+    "maskable": "full 1024x1024"
+  },
+  "apps": {
+    "agit": {
+      "source": "brand/app-icons/seasonal/agit/autumn.png",
+      "sha256": "35f076d8cb9f843fd8a019969960cfb7bb11d7c8b3048b40410e803545bd3e06",
+      "icon": "/icon-192.png?v=seasonal-v1-autumn-d0c431c01ed9"
+    },
+    "park": {
+      "source": "brand/app-icons/seasonal/park/autumn.png",
+      "sha256": "b4893dc4edc8a6bad6d7c3bf00728be8f5ed9fecdc274b4d9b6f272af1f383fa",
+      "icon": "/park/assets/icon-192.png?v=seasonal-v1-autumn-d0c431c01ed9"
+    },
+    "pajang": {
+      "source": "brand/app-icons/seasonal/pajang/autumn.png",
+      "sha256": "05df0b884b489eecff458033309969c8d27335c629df486b6af9e8d5482b06c8",
+      "icon": "/features/pajang/assets/icon-192.png?v=seasonal-v1-autumn-d0c431c01ed9"
+    }
+  }
+}

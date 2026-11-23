@@ -22,6 +22,7 @@
 | 바람의 궁수 | `games/forest-archer/` | `game-action` |
 | 나사 풀기 | `games/screw/` | `flat-drill-clear* (운영 보정 도구)` |
 | 맞고 | `games/matgo/` | `matgo` |
+| 원카드 | `games/onecard/` | `onecard` Edge Function + 비공개 `ojjuda_onecard_internal` 방·결과 저장소. 파스텔 캠핑장 배경과 방향 바꾸기 8장을 포함한 4색 전용 카드 58장, 항상 5명. `orbit.mjs` 큼직한 아이보리 빛띠 두 개가 현재 진행 방향을 따라 플레이어 바깥 둘레를 도는 모션(위치를 유지해 반전, 화면 숨김·메뉴·동작 줄이기 시 정지). `hand.mjs` 손패 가로 드래그·숫자순/색상순 정렬, `campsite-pastel.webp`·`campsite-pastel-portrait.webp` 가로·세로 전용 정적 장면. 로그인 컴퓨터 대전·온라인 대전의 월 최고 연승을 공통 게임순위에 연결. 비로그인·기존 로컬 저장은 연습. 함께하는 플레이·공통 대전방·3D 그림 `assets/design/games/onecard.webp`·`guide.html#game-onecard` 사용법 연동 |
 | 포커 | `games/poker/` | `poker` |
 | 탱크 | `games/tank/` | `tank` |
 | 뱅 | `games/bang/` | `bang` |
@@ -43,6 +44,8 @@
 | 팬페이지 (리센느·아이돌) | `features/fanpages/` | `정적 공식 출처 링크` |
 | 별천지 빈방 (2026-11-10 운영 종료) | `byeolcheonji/`, `star/` 종료 안내 화면 | `byeolcheonji` 서버·기록은 보관, 정기 작업은 중단 |
 | 공통 게임 월간 순위 화면 | `features/arcade/monthly-ranking.html`, `.css`, `.js` | `community_game_monthly_personal` RPC |
+| 공개 조직도 | `features/organization/` (`index.html`, `page.js`, `chart.js`, `style.css`, `organization.json`) | 아지트·공원·파장 설정 → 도움말에서 로그인 없이 보는 AI 업무 조직. 공개 JSON에는 이름·등급·일반 역할·조직 구조만 포함하며 내부 점검·평가·실적·자동화 자료는 제외 |
+| 운영본부 내부 조직도 | `admin/operations.html`, `operations.js` 및 `features/organization/chart.js`, `style.css` | 관리자 전용 `admin_organization_read` RPC와 `admin_organization_documents`의 RLS 유지. AI 배정 기능 없이 운영본부 조직과 담당 업무를 관리자 화면에서 조회 |
 | 공통 게임 입장·결과 순위 링크 | `shared/games/game-results.js`, `.css` | 게임별 최고 기록은 기존 RPC 유지 |
 | 회원 정지·영구정지 | `admin/` | `admin-ban` |
 | 계정 복구 | `shared/auth/` | `member-recovery` |
@@ -70,3 +73,9 @@
 - 10위 밖 이용자가 없으면 추가 정렬을 하지 않습니다. 자기 기록이 있는 경우에만 앞선 사람 수를 계산합니다.
 - Supabase의 보호된 내부 원본 테이블과 사용 중인 게임·계정·게시판 기능은 검증 없이 삭제하지 않습니다. 비활성 소스 후보는 테스트·운영 참조가 없는 것을 확인한 뒤 별도 작업으로 정리합니다.
 
+
+## 공원 짧은 영상
+
+- 작성·피드·재생: `note/preview.js`, `note/card-video.js`, `note/card-video-worker.js`, `note/card-video-upload.js`
+- 검증·비공개 저장소: `supabase/functions/park-video/`, 공원 영상 마이그레이션
+- 영상 라이브러리: `note/vendor/package-lock.json`과 `note/vendor/build.mjs`로 고정 버전을 빌드합니다. 생성 모듈은 Git에 넣지 않고 Pages·검증 워크플로에서 만들며, `note/vendor/manifest.json`의 크기·해시로 확인합니다.

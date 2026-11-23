@@ -10,7 +10,7 @@ let world = read('world.html')
   .replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";', 'const screwGame={};');
 // This fixture supplies preloaded synthetic admin modules; provide their real styles too.
 world = world.replace('</head>', '<link rel="stylesheet" href="/note/admin.css"></head>');
-world = world.replace('<script type="module">', `<script>${read('admin/navigation.js')}</script><script>${read('app/world/world-navigation.js')}</script><script>${read('note/admin.js')}\nwindow.actualNoteAdmin=window.OjjudaNoteAdmin;</script><script type="module">`);
+world = world.replace('<script type="module">', `<script>${read('admin/service-scope.js')}</script><script>${read('admin/navigation.js')}</script><script>${read('app/world/world-navigation.js')}</script><script>${read('note/admin.js')}\nwindow.actualNoteAdmin=window.OjjudaNoteAdmin;</script><script type="module">`);
 const boot = world.indexOf('j1(()=>H());gm(');
 assert.ok(boot > 0, 'replace only the live boot with a synthetic service fixture');
 
@@ -43,6 +43,7 @@ function fixtureBoot() {
   window.OjjudaAdminDrinkingPrompts = { mount: options => mount('drinking-prompts', options) };
   window.OjjudaPhotoStageAdmin = { mount: options => mount('photo-stages', options) };
   window.OjjudaAdminFriendMessages = { mount: options => mount('messages', options) };
+  window.OjjudaAdminPajang = { mount: options => mount('pajang-' + options.view, options) };
   window.OjjudaAdminAssetLibrary = { mount: options => mount('asset-library', options) };
   window.OjjudaConnections = { mount: options => mount('connections', options) };
   window.OjjudaOperations = {
@@ -107,7 +108,7 @@ function fixtureBoot() {
     fixture.edits.push({ kind, id, title, body });
     return new Promise(resolve => { fixture.editResult = resolve; });
   };
-  window.worldTest = { state: g, auth: D, admin: L, adminApi: U, config: wt, actions: sr, render: H, clear: clearWorldAdminView };
+  window.worldTest = { service:()=>worldAdminService, state: g, auth: D, admin: L, adminApi: U, config: wt, actions: sr, render: H, clear: clearWorldAdminView };
   gm(() => { g.tab = 'friends'; H(); });
   H(); D.online = true; D.user = { id: 'synthetic-admin' }; D.isAdmin = true;
   restoreWorldAdminView(new URL(location.href).searchParams.get('admin')); H();
@@ -139,13 +140,37 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     const loaded = () => page.waitForFunction(() => window.worldTest?.auth.online);
     const current = () => page.evaluate(() => ({ area: worldTest.admin.area, tab: worldTest.admin.tab }));
     const area = id => page.evaluate(id => worldTest.actions['adm-area']({v:id}), id);
-    const tab = id => page.evaluate(id => worldTest.actions['adm-tab']({v:id}), id);
+    const service = id => page.locator('[data-act="adm-service"][data-v="'+id+'"]').click();
+    const tab = id => page.evaluate(id => {
+      const owner=window.OjjudaAdminScope.owner(id);
+      if(owner&&worldTest.service()!==owner){
+        worldTest.actions['adm-service']({v:owner});
+        if(worldTest.service()!==owner)return;
+      }
+      worldTest.actions['adm-tab']({v:id});
+    }, id);
     const mounted = name => page.waitForFunction(name => !!fixture.controllers[name], name);
 
     await page.goto('https://fixture.test/world.html?admin=overview'); await loaded();
     await page.locator('.adm-stat').filter({ hasText: '정지 계정' }).waitFor();
     assert.deepEqual(await page.locator('.adm-menu-group > h3').allTextContents(),
-      ['운영 현황','회원·ZU','콘텐츠 관리','신고·안전','운영·보관']);
+      ['운영 현황','회원·ZU','아지트 관리','신고·안전','운영·보관']);
+    for(const [id,title,home] of [['park','공원','cards'],['pajang','파장','pajang-answers'],['agit','아지트','overview']]){
+      await service(id);
+      await page.getByRole('heading',{name:title+' 관리자모드',exact:true}).waitFor();
+      assert.equal((await current()).tab,home);
+      assert.equal(await page.locator('[data-act="adm-service"][aria-pressed="true"]').getAttribute('data-v'),id);
+      for(const [owner,tabs] of Object.entries(await page.evaluate(()=>OjjudaAdminScope.dedicated))){
+        for(const target of tabs)assert.equal(await page.locator('.adm-menu-group .adm-menu-link[data-v="'+target+'"]').count(),owner===id?1:0,'dedicated menu '+target+' only belongs to '+owner);
+      }
+      for(const target of ['users','settings','reports','feedback','notice','activity'])assert.ok(await page.locator('.adm-menu-group .adm-menu-link[data-v="'+target+'"]').count()>0,'shared operation '+target+' remains in '+id);
+      assert.equal(await page.locator('.adm-menu-group[data-group="headquarters"]').count(),0,
+        'organization is available through public service help');
+      if(id==='pajang'){
+        await mounted('pajang-answers');assert.equal(await page.evaluate(()=>fixture.options['pajang-answers'].view),'answers');
+        await tab('pajang-chats');await mounted('pajang-chats');assert.equal(await page.evaluate(()=>fixture.options['pajang-chats'].view),'chats');
+      }
+    }
     assert.equal(await page.locator('[data-admin-folder]').count(),6,'all category folders are visible without expansion');
     assert.equal(await page.locator('.adm-navigation').evaluate(node => node.scrollWidth <= node.clientWidth), true,
       'file folders fit the mobile width');
@@ -216,7 +241,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     assert.equal(await page.getByLabel('accounts 합성 입력', { exact: true }).inputValue(), '저장되지 않은 변경');
     acceptDialogs = true;
     await area('content');
-    assert.deepEqual(await current(), { area: 'content', tab: 'cards' }, 'accepting discard permits the requested group');
+    assert.deepEqual(await current(), { area: 'content', tab: 'messages' }, 'accepting discard opens the first Agit content tool');
     assert.equal(await page.evaluate(() => fixture.controllers.accounts.destroyed), true);
     for (const width of [320, 390, 1280]) {
       await page.setViewportSize({ width, height: 844 });
@@ -264,7 +289,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     });
     assert.ok(selectedTab.left >= selectedTab.start && selectedTab.right <= selectedTab.end,
       'selected submenu stays visible after the containing view redraws');
-    await area('payment');
+    await service('agit');await area('payment');
     assert.deepEqual(await current(), { area: 'payment', tab: 'settings' });
     assert.equal(await page.locator('#adm-free').count(), 1);
     await page.locator('#adm-limit').fill('0');
@@ -289,7 +314,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     assert.deepEqual(await current(), { area: 'payment', tab: 'fortune-purchases' });
     assert.equal(await page.evaluate(() => fixture.controllers['fortune-purchases'] !== previousFortuneController), true);
     await area('content');
-    assert.deepEqual(await page.locator('.adm-menu-group[data-group="content"] .adm-menu-link').allTextContents(), ['카드','쪽지 관리','그룹 관리','포토땅따먹기','술게임 질문·단어 관리','위치 지도','자료 모아보기']);
+    assert.deepEqual(await page.locator('.adm-menu-group[data-group="content"] .adm-menu-link').allTextContents(), ['쪽지 관리','그룹 관리','포토땅따먹기','술게임 질문·단어 관리','자료 모아보기']);
     await page.locator('.adm-menu-group[data-group="content"] .adm-menu-link[data-area="content"][data-v="drinking-prompts"]').click();
     await mounted('drinking-prompts');
     assert.deepEqual(await current(), { area: 'content', tab: 'drinking-prompts' });
@@ -301,7 +326,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     assert.equal(await page.evaluate(() => previousDrinkingController.destroyed), true, 'leaving prompt review releases its controller');
     assert.equal(await page.evaluate(() => fixture.options['drinking-prompts'].isCurrent()), false, 'detached prompt review cannot consume stale results');
     await page.locator('[data-admin-folder="members"]').click();
-    assert.equal(await page.getByRole('link',{name:'상품권 등록'}).getAttribute('href'),'/admin/rewards.html');
+    assert.equal(await page.getByRole('link',{name:'상품권 등록'}).getAttribute('href'),'/admin/rewards.html?from=park');
     await tab('messages'); await assertRefreshPreservesHost('messages');
     for (const id of ['cards','risk','map']) { await tab(id); assert.equal(await page.evaluate(() => fixture.options.note.initialTab), id); }
     await area('support'); await tab('note-users'); assert.equal(await page.evaluate(() => fixture.options.note.initialTab), 'users');
@@ -311,7 +336,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
 
     await area('trash'); await tab('trash-cards'); await assertRefreshPreservesHost('trash');
     assert.equal(await page.evaluate(() => fixture.options.trash.category), 'cards');
-    assert.deepEqual(await page.locator('.adm-menu-group[data-group="system"] [data-area="trash"].adm-menu-link').allTextContents(),['휴지통 전체','삭제한 카드','삭제한 쪽지','기타 보관']);
+    assert.deepEqual(await page.locator('.adm-menu-group[data-group="system"] [data-area="trash"].adm-menu-link').allTextContents(),['휴지통 전체','삭제한 카드','기타 보관']);
     assert.equal(await page.locator('[data-act="adm-content-kind"]').count(), 0);
 
     await page.goto('https://fixture.test/world.html?admin=drinking-prompts'); await loaded(); await mounted('drinking-prompts');
@@ -358,23 +383,21 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
       assert.equal((await current()).tab, saved.tab==='events'?'cards':saved.tab==='chats'?'messages':saved.tab);
       assert.equal(await page.locator('[data-act="adm-cr"], [data-act="adm-chatlim"], [data-act="adm-content-kind"]').count(), 0);
     }
-    assert.deepEqual(await page.locator('.adm-site-links [data-act="adm-back"]').allTextContents(), ['← 관리자 메인']);
+    assert.deepEqual(await page.locator('.adm-site-links [data-act="adm-back"]').allTextContents(), ['← 뒤로']);
     assert.equal(await page.locator('.adm-menu-external a').last().textContent(), '원고실');
     assert.equal(await page.locator('.adm-site-links [data-act="adm-back"]').getAttribute('type'), 'button');
-    // Each administrator section goes straight to the dashboard; its Back stays in Admin.
-    await area('operations'); await tab('errors');
+    // Both Back controls restore the actual visited administrator view.
+    await area('operations'); const previousOperation=await current(); await tab('errors');
     await page.locator('[data-act="adm-back"]').click();
-    assert.deepEqual(await current(), {area:'account',tab:'overview'});
-    assert.equal(await page.locator('[data-act="adm-back"]').count(), 0, 'the admin dashboard has no leave-admin Back');
-    assert.equal(await page.evaluate(() => worldTest.state.tab), 'admin');
-    await page.evaluate(() => worldTest.actions.tab({tab:'admin'}));
-    assert.deepEqual(await current(), {area:'account',tab:'overview'}, 'reopening admin starts at its dashboard');
-    await area('content'); await tab('risk');
+    await page.waitForFunction(expected=>worldTest.admin.area===expected.area&&worldTest.admin.tab===expected.tab,previousOperation);
+    assert.deepEqual(await current(),previousOperation);
+    assert.equal(await page.locator('[data-act="adm-back"]').count(),1,'every administrator view retains a history Back control');
+    await area('account');await tab('overview');
+    await area('content');const previousContent=await current();await tab('risk');
     await page.evaluate(() => history.back());
-    await page.waitForFunction(() => worldTest.admin.area === 'account' && worldTest.admin.tab === 'overview');
-    await page.evaluate(() => history.back());
-    await page.waitForTimeout(100);
-    assert.equal(await page.evaluate(() => worldTest.state.tab), 'admin', 'Back at the dashboard stays in administrator mode');
+    await page.waitForFunction(expected=>worldTest.admin.area===expected.area&&worldTest.admin.tab===expected.tab,previousContent);
+    await page.evaluate(() => history.forward());
+    await page.waitForFunction(()=>worldTest.admin.area==='content'&&worldTest.admin.tab==='risk');
     // Exercise the real embedded editor with the host guard: discard is asked once.
     await page.goto('https://fixture.test/world.html?admin=notice&actualNote=1'); await loaded();
     await page.getByLabel(/^서비스 공지/).waitFor();

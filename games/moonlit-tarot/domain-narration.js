@@ -1,10 +1,11 @@
-import { CARD_INTERPRETATIONS } from './interpretation-engine.js?v=20261114-tarot-first-person1';
-import { CASE_GUIDES, getCaseGuide } from './case-guides.js?v=20261114-tarot-first-person1';
+import { CARD_INTERPRETATIONS } from './interpretation-engine.js?v=20261120-tarot-voice2';
+import { CASE_GUIDES, getCaseGuide } from './case-guides.js?v=20261120-tarot-voice2';
 import { LIFE_TOPICS } from './topic-catalog-life.js?v=20261114-tarot-first-person1';
 import { RELATIONSHIP_TOPICS } from './topic-catalog-relations.js?v=20261114-tarot-first-person1';
 import { PRACTICAL_TOPICS } from './topic-catalog-practical.js?v=20261114-tarot-first-person1';
 import { WELLBEING_TOPICS } from './topic-catalog-wellbeing.js?v=20261114-tarot-first-person1';
 import { summaryLinesFrom } from './reading-summary.js?v=20261113-tarot-summary1';
+import { directInterpretation, directAction } from './reading-voice.js?v=20261120-tarot-voice2';
 
 // Fifty editorial lenses on the same three cards, not extra draws or predictions.
 // Every card/topic pair has an authored application and action. The selected
@@ -26,7 +27,7 @@ export const READING_CATEGORIES = Object.freeze([
   { id: 'opportunities', label: '행운·도움·주의할 흐름', count: 5 }
 ]);
 
-export const DOMAIN_READING_BASIS = '같은 세 장을 50가지 주제로 풀이한다. 카드의 기본 뜻과 전통 자료는 여러 풀이에서 함께 참고하며, 이해를 돕는 가상 장면과 생활 제안을 담고 있다. 예시는 실제로 겪은 일이나 앞으로 생길 일, 상대의 속마음을 확인한 내용은 아니다.';
+export const DOMAIN_READING_BASIS = '같은 세 장을 여러 생활 주제로 풀어 썼어요. 카드의 기본 뜻과 전통 자료를 함께 참고하고, 이해를 돕는 가상 예시와 실천 방법을 담았어요. 실제로 겪은 일이나 미래의 사건, 상대의 속마음을 알아낸 내용은 아니에요.';
 
 /** Independent of the initially selected topic: each domain has its own prose. */
 export function buildDomainGroup({ cards, readings } = {}) {
@@ -40,10 +41,10 @@ export function buildDomainGroup({ cards, readings } = {}) {
     const situation = CASE_GUIDES[topic.id];
     const guides = cards.map(card => getCaseGuide(topic.id, card.id));
     const interpretation = {
-      cause: `${guides[0].insight} ${situation.prompt}`,
+      cause: `${guides[0].insight} ${directAction(situation.prompt)}`,
       scene: `${guides[1].insight} ${guides[1].action}`,
       response: `${guides[2].insight} ${guides[2].action}`,
-      outcome: situation.check
+      outcome: directAction(situation.check)
     };
     const summaryLines = summaryLinesFrom(guides[0].insight, guides[2].action,
       [guides[2].insight, guides[1].insight, guides[1].action]);
@@ -53,22 +54,24 @@ export function buildDomainGroup({ cards, readings } = {}) {
       categoryId: topic.category,
       title: topic.title,
       subtitle: topic.subtitle,
-      example: situation.example,
+      example: directInterpretation(situation.example),
       interpretation,
       guideIds: guides.map(guide => guide.id),
       summaryLines,
       paragraphs: [
-        situation.example,
+        // Keep an insight and its action together: "that action" and "those
+        // words" must still have their actual antecedent when moved first.
+        interpretation.response,
         interpretation.cause,
         interpretation.scene,
-        `${interpretation.response} ${interpretation.outcome}`
+        `${directInterpretation(situation.example)} ${interpretation.outcome}`
       ]
     };
   });
   return {
     id: 'domains',
     label: '분야별 풀이',
-    description: '지금 궁금한 분야를 골라 내 상황과 연결해 읽어 본다.',
+    description: '궁금한 분야를 고르면 핵심 풀이와 지금 할 일을 먼저 읽을 수 있어요.',
     categories: READING_CATEGORIES,
     sections
   };

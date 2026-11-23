@@ -1,0 +1,8 @@
+.arcade-overview{margin:0 0 10px;min-width:0}
+.arcade-ranking-entry{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;padding:8px 12px;border:1px solid var(--line,#e0e6ee);border-radius:13px;background:color-mix(in srgb,var(--surface,#fff) 93%,#d6ddf5);color:var(--ink,#29364b);text-decoration:none;box-sizing:border-box}
+.arcade-ranking-entry:hover{border-color:color-mix(in srgb,var(--accent,#ec8aaa) 35%,var(--line,#e0e6ee));background:var(--surface,#fff)}
+.arcade-ranking-entry:focus-visible{outline:2px solid var(--accent-ink,#577c5c);outline-offset:3px}
+.arcade-ranking-entry-icon{display:grid;place-items:center;flex:none;width:29px;height:29px;border-radius:9px;background:color-mix(in srgb,var(--accent,#ec8aaa) 13%,var(--surface,#fff));font-size:17px}
+.arcade-ranking-entry strong{font-size:14px;letter-spacing:-.035em;font-weight:800}
+.arcade-ranking-entry small{margin-left:auto;font-size:11px;font-weight:500;color:var(--ink-2,#66758a)}
+.arcade-ranking-entry-arrow{font-size:23px;line-height:1;color:var(--accent-ink,#8a5b9b);margin-left:1px}

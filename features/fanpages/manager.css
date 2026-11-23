@@ -1,3 +1,4 @@
+#fan-manage[hidden]{display:none!important}
 .fan-tools{display:flex;justify-content:flex-end;align-items:center;gap:12px;font-size:.88rem}
 .fan-tools:has(> [hidden]:first-child + [hidden]){display:none}
 .fan-tools button,.fan-admin button{background:#f5f0fa;color:#51376c;border:1px solid #d9cce6;border-radius:10px;padding:.65rem 1rem;cursor:pointer;font:inherit;font-weight:700}

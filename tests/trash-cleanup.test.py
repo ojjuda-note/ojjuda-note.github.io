@@ -45,6 +45,15 @@ class CleanupTests(unittest.TestCase):
         self.storage.silent=True
         with self.assertRaisesRegex(RuntimeError,'not confirmed'): cleanup.clean(self.conn,self.storage,True)
         self.assertEqual(len(self.conn.objects),2)
+    def test_private_video_retirement_and_reference_guard(self):
+        video=('note-card-videos',owner+'/00000000-0000-4000-8000-000000000002.mp4')
+        self.conn=Connection([video]);self.storage=Storage(self.conn)
+        self.conn.protected.add(video)
+        self.assertEqual(cleanup.clean(self.conn,self.storage,True)['deleted'],0)
+        self.conn.protected.clear()
+        self.assertEqual(cleanup.clean(self.conn,self.storage,True)['deleted'],1)
+        for path in [owner+'/bad.mp4',owner+'/nested/00000000-0000-4000-8000-000000000002.mp4',owner+'/00000000-0000-4000-8000-000000000002.jpg']:
+            self.assertFalse(cleanup.valid_path('note-card-videos',path))
     def test_unsafe_queue_fails_before_any_delete(self):
         for row in [('media',owner+'/avatar.jpg'),('note-card-photos','../foreign.jpg'),('note-card-photos',owner+'/../foreign.jpg'),('note-card-photos',owner+'//bad.jpg')]:
             self.conn=Connection(self.rows+[row]);self.storage=Storage(self.conn)

@@ -26,7 +26,16 @@
   const date = value => new Date(value).toLocaleString('ko-KR');
   let client, getUserId=()=>null, panel, layer, content, message, focus, run=0, busy=false;
   let inertState=[],previousOverflow='',targetInquiry=null,source='note',getScreen=()=>source,getAppVersion=()=>'',tabs,title,view='inquiries';
+  let onWithdrawal=null,withdrawalFooter,withdrawalDetails,withdrawalSummary,withdrawalButton,withdrawalOwner=null;
   const validId=value=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+  const maskedTextLength=value=>[...String(value??'').replaceAll('❤️❤️','♥')].length;
+  function limitText(field,limit) {
+    const sync=()=>{
+      field.maxLength=limit+field.value.length-maskedTextLength(field.value);
+      field.setCustomValidity(maskedTextLength(field.value)>limit?`${limit.toLocaleString('ko-KR')}자 이내로 적어 주세요.`:'');
+    };
+    field.addEventListener('input',sync);sync();
+  }
   function bugDiagnostics(kind) {
     if(kind!=='bug')return {};
     try { const diagnostics=window.OjjudaDiagnostics?.snapshot(source);return diagnostics?{diagnostics}:{}; }
@@ -37,11 +46,26 @@
   function keepFocus(epoch,user) {
     if(!valid(epoch,user))return;
     const active=document.activeElement;
-    if(!panel.contains(active)||active?.disabled)panel.querySelector('button:not(:disabled)')?.focus({preventScroll:true});
+    if(!panel.contains(active)||active?.disabled||!active?.getClientRects().length)panel.querySelector('button:not(:disabled)')?.focus({preventScroll:true});
+  }
+  function setBusy(value) {
+    busy=value;
+    if(withdrawalButton)withdrawalButton.disabled=value;
+    if(withdrawalSummary)withdrawalSummary.setAttribute('aria-disabled',String(value));
+    if(value&&withdrawalDetails)withdrawalDetails.open=false;
+  }
+  function syncWithdrawal() {
+    if(!withdrawalFooter)return;
+    withdrawalOwner=getUserId();
+    withdrawalDetails.open=false;
+    withdrawalFooter.hidden=layer.hidden||view==='report'||!withdrawalOwner||!onWithdrawal;
+    withdrawalButton.disabled=busy;
   }
   function close(force=false) {
     if(!layer||layer.hidden||(busy&&force!==true))return;
-    run++;busy=false;targetInquiry=null;layer.hidden=true;content.replaceChildren();message.textContent='';
+    run++;setBusy(false);targetInquiry=null;layer.hidden=true;content.replaceChildren();message.textContent='';
+    withdrawalOwner=null;if(withdrawalFooter)withdrawalFooter.hidden=true;
+    if(withdrawalDetails)withdrawalDetails.open=false;
     for(const [element,prior]of inertState)if(element.isConnected)element.inert=prior;
     inertState=[];document.body.style.overflow=previousOverflow;
     const restoreFocus=focus;focus=null;
@@ -66,7 +90,7 @@
     return row;
   }
   async function home() {
-    const epoch=++run,user=getUserId(),requested=targetInquiry;busy=false;message.textContent='';content.replaceChildren(el('p','불러오는 중이에요.'));
+    const epoch=++run,user=getUserId(),requested=targetInquiry;setBusy(false);message.textContent='';content.replaceChildren(el('p','불러오는 중이에요.'));
     keepFocus(epoch,user);
     try {
       // Account inquiries remain usable when the public guidance request fails.
@@ -90,13 +114,13 @@
       content.append(el('h3','내 문의'),el('p','아지트 문의함이에요. 문의는 본인과 운영팀만 볼 수 있어요.','support-help'));
       if(!user){const link=el('a','대문에서 로그인','button');link.href='/';content.append(link);return;}
       const form=el('form',undefined,'support-form'),label=el('label','문의 내용'),field=el('textarea');
-      field.id='note-inquiry-body';field.maxLength=2000;field.required=true;field.rows=5;label.htmlFor=field.id;
+      field.id='note-inquiry-body';limitText(field,2000);field.required=true;field.rows=5;label.htmlFor=field.id;
       const send=el('button','문의 보내기','button primary');send.type='submit';
       form.append(label,field,el('small','2,000자 이내 · 24시간 동안 최대 3건'),send);content.append(form);
       const requestId=crypto.randomUUID();
       form.addEventListener('submit',async event=>{
         event.preventDefault();if(busy||!field.value.trim()||!valid(epoch,user))return;
-        busy=true;send.disabled=true;field.disabled=true;message.textContent='문의를 보내는 중이에요.';
+        setBusy(true);send.disabled=true;field.disabled=true;message.textContent='문의를 보내는 중이에요.';
         keepFocus(epoch,user);
         try {
           await rpc('submit_inquiry',{p_request_id:requestId,p_body:field.value.trim()});
@@ -105,7 +129,7 @@
         } catch(error) {
           if(!valid(epoch,user))return;
           message.textContent=error.code==='22023'?'24시간 동안 문의는 3건까지 보낼 수 있어요.':'보내지 못했어요. 작성한 내용은 유지됩니다. 다시 시도해 주세요.';
-        } finally {if(valid(epoch,user)){busy=false;send.disabled=false;field.disabled=false;}}
+        } finally {if(valid(epoch,user)){setBusy(false);send.disabled=false;field.disabled=false;}}
       });
       const rows=el('div');content.append(rows);
       const inquiries=await rpc('list_my_inquiries')||[];if(!valid(epoch,user))return;
@@ -125,11 +149,12 @@
   }
   function renderView() {
     title.textContent='문의·의견';tabs.hidden=false;
+    syncWithdrawal();
     for(const tab of tabs.children)tab.setAttribute('aria-pressed',String(tab.dataset.supportView===view));
     if(view==='report')return;return view==='feedback'?feedbackView():home();
   }
   function feedbackView() {
-    const epoch=++run,user=getUserId();busy=false;message.textContent='';content.replaceChildren();
+    const epoch=++run,user=getUserId();setBusy(false);message.textContent='';content.replaceChildren();
     content.append(el('p','고장 난 곳, 불편한 점, 있었으면 하는 기능을 알려주세요. 아지트 운영팀이 확인해요.','support-help'));
     if(!user){const login=el('a','대문에서 로그인','btn button');login.href='/';content.append(login);return;}
     const form=el('form',undefined,'support-form'),choices=el('fieldset',undefined,'support-choices');
@@ -137,7 +162,7 @@
     for(const [code,label]of[['bug','고장 났어요'],['idea','이런 기능이 있으면 좋겠어요'],['other','기타']]){
       const row=el('label'),input=el('input');input.type='radio';input.name='support-feedback-kind';input.value=code;input.checked=code==='bug';row.append(input,el('span',label));choices.append(row);
     }
-    const label=el('label','의견 내용'),field=el('textarea');field.id='support-feedback-body';label.htmlFor=field.id;field.maxLength=2000;field.required=true;field.rows=5;
+    const label=el('label','의견 내용'),field=el('textarea');field.id='support-feedback-body';label.htmlFor=field.id;limitText(field,2000);field.required=true;field.rows=5;
     field.placeholder='어느 화면에서 무엇을 했을 때 어떻게 됐는지 적어 주세요.';
     const diagnosticNotice=el('p','고장 신고에는 최근 5분의 오류 기록이 함께 전달돼요. 비밀번호와 입력 내용은 포함하지 않아요.','support-help');
     diagnosticNotice.id='support-diagnostics-notice';
@@ -146,18 +171,18 @@
     form.addEventListener('submit',async event=>{
       event.preventDefault();if(busy||!valid(epoch,user)||!field.value.trim())return;
       const kind=choices.querySelector('input:checked')?.value||'other';
-      busy=true;send.disabled=true;field.disabled=true;choices.disabled=true;message.textContent='의견을 보내는 중이에요.';keepFocus(epoch,user);
+      setBusy(true);send.disabled=true;field.disabled=true;choices.disabled=true;message.textContent='의견을 보내는 중이에요.';keepFocus(epoch,user);
       try{
         const {error}=await client.from('feedback').insert({user_id:user,kind,body:field.value.trim(),screen:(source+':'+String(getScreen()||'')).slice(0,40),app_version:getAppVersion(),user_agent:navigator.userAgent.slice(0,400),...bugDiagnostics(kind)});
         if(error)throw error;if(!valid(epoch,user))return;
         content.replaceChildren(el('p','고마워요! 의견을 잘 받았어요.'),button('닫기',close));message.textContent='아지트 운영팀이 의견을 확인합니다.';keepFocus(epoch,user);
       }catch{if(valid(epoch,user))message.textContent='보내지 못했어요. 작성한 내용은 유지됩니다. 다시 시도해 주세요.';}
-      finally{if(valid(epoch,user)){busy=false;send.disabled=false;field.disabled=false;choices.disabled=false;}}
+      finally{if(valid(epoch,user)){setBusy(false);send.disabled=false;field.disabled=false;choices.disabled=false;}}
     });
   }
   function showReport(options) {
     if(busy)return;
-    show(null,'report');const epoch=++run,user=getUserId();view='report';tabs.hidden=true;title.textContent='신고하기';busy=false;message.textContent='';content.replaceChildren();
+    show(null,'report');const epoch=++run,user=getUserId();view='report';tabs.hidden=true;title.textContent='신고하기';setBusy(false);message.textContent='';content.replaceChildren();
     if(!user){content.append(el('p','신고하려면 로그인해 주세요.'));return;}
     content.append(el('p','신고 내용은 운영팀만 볼 수 있고, 상대에게 알려지지 않아요.','support-help'));
     if(options.help)content.append(el('p',options.help,'support-help'));
@@ -172,18 +197,19 @@
     form.addEventListener('submit',async event=>{
       event.preventDefault();if(busy||!valid(epoch,user))return;
       const reason=choices.querySelector('input:checked').value,detail=field.value.trim(),reasonText=reasons.find(item=>item[0]===reason)[1]+(detail?' · '+detail:'');
-      busy=true;send.disabled=true;cancel.disabled=true;choices.disabled=true;field.disabled=true;if(block)block.disabled=true;message.textContent='신고를 접수하는 중이에요.';keepFocus(epoch,user);
+      setBusy(true);send.disabled=true;cancel.disabled=true;choices.disabled=true;field.disabled=true;if(block)block.disabled=true;message.textContent='신고를 접수하는 중이에요.';keepFocus(epoch,user);
       try{
         const result=await options.onSubmit({reason,detail,reasonText,block:!!block?.checked,isCurrent:()=>valid(epoch,user)});
         if(!valid(epoch,user))return;
         title.textContent='신고를 접수했어요';content.replaceChildren(el('p',result||'운영팀이 내용을 확인합니다.'),button('닫기',close));message.textContent='';keepFocus(epoch,user);
       }catch(error){if(valid(epoch,user))message.textContent=error?.userMessage||'신고하지 못했어요. 작성한 내용은 유지됩니다. 다시 시도해 주세요.';}
-      finally{if(valid(epoch,user)){busy=false;send.disabled=false;cancel.disabled=false;choices.disabled=false;field.disabled=false;if(block)block.disabled=false;}}
+      finally{if(valid(epoch,user)){setBusy(false);send.disabled=false;cancel.disabled=false;choices.disabled=false;field.disabled=false;if(block)block.disabled=false;}}
     });
   }
   function install(options) {
     if(layer||!options.client)return;
-    client=options.client;getUserId=options.getUserId;source=options.source==='world'?'world':'note';getScreen=options.getScreen||(()=>source);getAppVersion=options.getAppVersion||(()=>options.appVersion||'');
+    client=options.client;getUserId=options.getUserId;source=['world','pajang'].includes(options.source)?options.source:'note';getScreen=options.getScreen||(()=>source);getAppVersion=options.getAppVersion||(()=>options.appVersion||'');
+    onWithdrawal=typeof options.onWithdrawal==='function'?options.onWithdrawal:null;
     try { window.OjjudaDiagnostics?.bindAuth(client,getUserId); } catch { /* Reporting remains available without diagnostics. */ }
     layer=el('div',undefined,'dialog-backdrop note-support-layer');layer.hidden=true;
     panel=el('section',undefined,'management-dialog');panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-labelledby','note-support-title');
@@ -191,7 +217,22 @@
     head.append(title,button('닫기',close));content=el('div',undefined,'management-body note-support-content');message=el('p','','management-message');message.setAttribute('role','status');
     tabs=el('nav',undefined,'support-tabs');tabs.setAttribute('aria-label','문의·의견 메뉴');
     for(const [key,label] of [['feedback','의견 보내기'],['inquiries','문의·답변']]) {const tab=button(label,()=>{if(!busy){view=key;void renderView();}});tab.dataset.supportView=key;tabs.append(tab);}
-    panel.append(head,tabs,content,message);layer.append(panel);document.body.append(layer);
+    withdrawalFooter=el('footer',undefined,'support-account-footer');withdrawalFooter.hidden=true;
+    withdrawalDetails=el('details',undefined,'support-account-disclosure');
+    withdrawalDetails.setAttribute('data-support-account','');
+    withdrawalSummary=el('summary','계정 관리','support-account-toggle');
+    withdrawalSummary.setAttribute('data-support-account-toggle','');
+    withdrawalSummary.addEventListener('click',event=>{if(busy)event.preventDefault();});
+    withdrawalButton=button('회원 탈퇴 안내',()=>{
+      const owner=withdrawalOwner;
+      if(busy||layer.hidden||view==='report'||!withdrawalDetails.open||!owner||owner!==getUserId()||!onWithdrawal)return;
+      close();
+      if(owner===getUserId())onWithdrawal();
+    });
+    withdrawalButton.setAttribute('data-support-withdrawal','');
+    withdrawalDetails.append(withdrawalSummary,withdrawalButton);
+    withdrawalFooter.append(withdrawalDetails);
+    panel.append(head,tabs,content,message,withdrawalFooter);layer.append(panel);document.body.append(layer);
     const entry=button('문의·의견',()=>show());entry.classList.add('support-entry');(document.querySelector('#note-help-actions')||document.querySelector('.note-tools'))?.append(entry);
     document.addEventListener('click',event=>{if(event.target.closest('[data-note-feedback]')){event.preventDefault();show(null,'feedback');}});
     layer.addEventListener('click',event=>{if(event.target===layer&&!busy)close();});
@@ -240,7 +281,7 @@
         for(const item of data||[]){
           const row=inquiryRow(item),form=el('form',undefined,'support-form'),label=el('label','답변'),field=el('textarea');
           const draft=drafts.get(item.id),expectedUpdatedAt=draft?draft.expectedUpdatedAt:item.updated_at;
-          field.id=`reply-${item.id}`;label.htmlFor=field.id;field.defaultValue=item.reply||'';field.value=draft?draft.value:field.defaultValue;field.rows=4;field.maxLength=2000;field.required=true;
+          field.id=`reply-${item.id}`;label.htmlFor=field.id;field.defaultValue=item.reply||'';field.value=draft?draft.value:field.defaultValue;field.rows=4;limitText(field,2000);field.required=true;
           replyFields.set(item.id,{field,expectedUpdatedAt});
           const send=el('button',item.reply?'답변 수정':'답변 등록','button primary');send.type='submit';const feedback=el('p','');feedback.setAttribute('role','status');
           form.append(label,field,send,feedback);row.append(form);rows.append(row);
@@ -252,12 +293,16 @@
             try {
               await adminRpc('admin_reply_inquiry',{p_id:item.id,p_reply:reply,p_expected_updated_at:expectedUpdatedAt});
               if(!current(n))return;
-              saved=true;field.defaultValue=reply;field.value=reply;
+              // The server may mask parts of the reply. A void save response is
+              // not a canonical copy: show only the reply read back below.
+              saved=true;field.defaultValue='';field.value='';
+              field.placeholder='저장된 답변을 다시 불러오는 중이에요.';
+              feedback.textContent='답변을 저장했어요. 저장된 내용을 불러오는 중이에요.';
               // A host refresh failure must not turn a committed reply into a save error.
               try {await onChanged();} catch {/* The reply has already been saved. */}
             }
             catch(error){if(current(n))feedback.textContent=error?.code==='40001'?'다른 관리자가 답변을 바꿨어요. 문의를 다시 불러와 주세요.':'답변을 저장하지 못했어요. 입력은 유지됩니다.';}
-            finally {pending=false;if(current(n)){lock(false);if(saved)await load(true);}}
+            finally {pending=false;if(current(n)){lock(false);if(saved){field.disabled=true;send.disabled=true;await load(true);}}}
           });
         }
         const pagination=el('div',undefined,'support-filter');

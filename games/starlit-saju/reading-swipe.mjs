@@ -1,5 +1,5 @@
 const bindings=new WeakMap();
-const INTERACTIVE='a,button,input,select,textarea,label,summary,[contenteditable]:not([contenteditable="false"]),[role="button"],[role="link"],[role="slider"],[role="combobox"],[role="textbox"],[draggable="true"],img,video,audio,canvas,.reading-pager,.reading-controls,.reading-tools';
+const INTERACTIVE='a,button,input,select,textarea,label,summary,dialog,[contenteditable]:not([contenteditable="false"]),[role="button"],[role="link"],[role="slider"],[role="combobox"],[role="textbox"],[draggable="true"],img,video,audio,canvas,.reading-pager,.reading-controls,.reading-tools';
 const AXIS_DISTANCE=12,MIN_DISTANCE=56,HORIZONTAL_RATIO=1.5,HOLD_LIMIT=500;
 
 /** A swipe follows the existing entitled reading's previous/next controls. */

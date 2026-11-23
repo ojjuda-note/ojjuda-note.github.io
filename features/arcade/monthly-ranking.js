@@ -6,7 +6,7 @@
   ['saetbyeol','샛별 키우기','점'],['mole','두더지 잡기','점'],['runner','쭈 달리기','점'],
   ['stacker','탑 쌓기','층'],['breakout','벽돌깨기','점'],['screw_box','나사 풀기 · 박스','점'],
   ['screw_flat','나사 풀기 · 평면','점'],['spot','틀린그림 찾기','장'],['archery','바람의 궁수','점'],
-  ['chacha_rush','차차 러시!','점'],['bang','뱅','연승'],['tank','탱크','연승'],
+  ['chacha_rush','차차 러시!','점'],['onecard','원카드','연승'],['bang','뱅','연승'],['tank','탱크','연승'],
   ['tour','오쭈다 투어','연승'],['yut','윷놀이','연승'],['ttang','땅따먹기','연승'],['janggi','장기','연승'],
   ['chess','체스','연승'],['billiards','당구','연승'],['matgo','맞고','G'],
   ['poker','포커','G'],['roulette','룰렛','G'],['photo_ttang','포토 땅따먹기','장']
@@ -41,6 +41,8 @@
   return ((unit==='점'||unit==='G')&&window.OjjudaScoreFormat?window.OjjudaScoreFormat(score):number(record.score))+unit;
  }
  function describe(record,id){
+  const shared=window.OjjudaRankingDetails?.describe?.(id,record);
+  if(typeof shared==='string'&&shared)return shared;
   const detail=[];
   if(id==='sacheonseong'||id==='archery'){
    if(Number.isInteger(Number(record.stage))&&Number(record.stage)>0)detail.push(number(record.stage)+'단계');
@@ -57,7 +59,7 @@
   else if(['chess','janggi','billiards'].includes(id)){
    const variant={carom4:'4구',carom3:'3쿠션',pool8:'포켓볼'}[record.variant];
    const labels={online:'회원대결',hard:'어려움',normal:'보통',easy:'쉬움'};
-   if(id==='janggi')Object.assign(labels,{hard:'기존 통합',hard_exact:'어려움',pro:'프로',master:'마스터',grandmaster:'그랜드마스터'});
+   if(id==='janggi')Object.assign(labels,{hard:'과거 고난도 · 어려움급',hard_exact:'어려움',pro:'프로',master:'마스터',grandmaster:'그랜드마스터'});
    const level=labels[record.difficulty];
    if(variant)detail.push(variant);if(level)detail.push(level);
   }

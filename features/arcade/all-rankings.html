@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f2f5f9">
+<meta name="description" content="오쭈다 오락실 모든 게임의 이번 달 순위를 한 페이지에서 확인하세요.">
+<title>게임순위 · 오쭈다 오락실</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/app/world/world-themes.css?v=20261119-auto-theme1">
+<link rel="stylesheet" href="./all-rankings.css?v=20261122-guide-only1">
+<script src="/app/world/world-themes.js?v=20261119-auto-theme1" defer></script>
+<script src="/config.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js" defer></script>
+<script src="/games/sacheonseong/ranking.js?v=20261108-sacheonseong-200-stacks1" defer></script>
+<script src="/games/mines/rules.js?v=20261117-arcade-score-repair1" defer></script>
+<script src="/games/solitaire/rules.js?v=20261106-solitaire-ranking1" defer></script>
+<script src="/games/mole/ranking.js?v=20261117-arcade-score-repair1" defer></script>
+<script src="/shared/games/score-format.js?v=20261117-saetbyeol-growth1" defer></script>
+<script src="/shared/games/ranking-details.js?v=20261122-janggi-priority1" defer></script>
+<script src="./all-rankings.js?v=20261122-guide-only1" defer></script>
+<script src="/shared/navigation/section-back.js?v=20261119-history1" data-return-to="arcade" defer></script>
+</head>
+<body>
+<header class="rank-top">
+ <a class="rank-back" href="/world.html?tab=arcade" aria-label="오락실로 돌아가기">‹ <span>오락실</span></a>
+ <h1>게임순위</h1>
+ <button id="all-rankings-refresh" type="button" class="rank-refresh" aria-label="순위 새로고침">↻ <span>새로고침</span></button>
+</header>
+<main class="rank-main">
+ <div class="rank-heading">
+  <div><span class="rank-eyebrow">MONTHLY RANKING</span><h2>이번 달 기록</h2></div>
+  <span id="all-rankings-month" class="rank-month"></span>
+ </div>
+ <p id="all-rankings-status" class="rank-status" role="status" aria-live="polite"></p>
+ <div id="all-rankings-groups" class="rank-groups" aria-label="게임별 순위 목록"></div>
+</main>
+</body>
+</html>

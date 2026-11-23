@@ -10,7 +10,7 @@
     location: '<path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2.5"/>',
     settings: '<path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3"/><circle cx="15" cy="17" r="3"/>'
   };
-  const labels = { photo: '사진·배경', font: '글꼴·크기', color: '글씨 색', box: '글상자 색·불투명도', effect: '꾸미기 효과', location: '위치', settings: '표시 설정' };
+  const labels = { photo: '사진·영상·배경', font: '글꼴·크기', color: '글씨 색', box: '글상자 색·불투명도', effect: '꾸미기 효과', location: '위치', settings: '표시 설정' };
   const make = (tag, className, text) => {
     const element = document.createElement(tag);
     if (className) element.className = className;
@@ -61,6 +61,7 @@
     move('#card-photo-attach', attachment);
     move('#card-photo-remove', attachment);
     panels.photo.append(attachment);
+    move('#card-media-status', panels.photo);
     move('#event-photo-choice', panels.photo);
     move('#note-photo-pick', panels.photo);
     const photoBrowse = panels.photo.querySelector('#photo-gallery-toggle');

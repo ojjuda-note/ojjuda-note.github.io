@@ -4,7 +4,10 @@ const id='00000000-0000-4000-8000-000000000001',room='10000000-0000-4000-8000-00
 const tick=()=>new Promise(r=>setTimeout(r,10));
 function fixture({empty=false,guest=false,member=false,publicGroups=true,hash='',deleting=false,invited=false,respond,coldReads=false}={}){
   const dom=new JSDOM('<main id="app"></main><div id="toast"></div>',{url:'https://ojjuda.kr/groups/'+hash,runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,calls=[];
-  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};
+  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
+  // Native close events are queued; actions can replace the closing dialog's
+  // history entry before its close listener runs.
+  w.HTMLDialogElement.prototype.close=function(){if(!this.open)return;this.open=false;w.setTimeout(()=>this.dispatchEvent(new w.Event('close')),0);};
   w.IntersectionObserver=class{observe(){}disconnect(){}};w.URL.createObjectURL=()=> 'blob:fixture';w.URL.revokeObjectURL=()=>{};w.OJJUDA_CONFIG={supabaseUrl:'https://example.supabase.co',supabaseKey:'public'};
   let pendingInvite=invited;
   let list=empty?[]:[{id:room,name:'주말 여행단',description:'우리의 다음 여행',owner_id:member?other:id,member_count:2,created_at:'2026-11-01T00:00:00Z',deleting}],saved,requested=false;
@@ -40,11 +43,20 @@ function fixture({empty=false,guest=false,member=false,publicGroups=true,hash=''
   w.eval(fs.readFileSync(path.join(root,'shared/art/cozy-scenes.js'),'utf8'));
   w.eval(fs.readFileSync(path.join(root,'groups/activities.js'),'utf8'));
   w.eval(fs.readFileSync(path.join(root,'groups/composer.js'),'utf8'));
-  w.eval(fs.readFileSync(path.join(root,'groups/app.js'),'utf8'));return {dom,w,calls,saved:()=>saved};
+  w.eval(fs.readFileSync(path.join(root,'groups/app.js'),'utf8'));
+  async function settleDialogs(){
+    for(let i=0;i<100;i++){
+      await tick();
+      const dialogs=[...w.document.querySelectorAll('dialog')],open=dialogs.filter(d=>d.open),marker=w.history.state?.ojjudaGroupDialog;
+      if(dialogs.length===open.length&&(!marker||Number(open.at(-1)?.dataset.groupDialog)===marker))return;
+    }
+    throw Error('Group dialog history did not settle');
+  }
+  return {dom,w,calls,saved:()=>saved,settleDialogs};
 }
 test('writing tools preserve the same body, selection and draft while options open and close',async()=>{
   const f=fixture({hash:'#room='+room});try{
-    await tick();const d=f.w.document;d.querySelector('[data-action=compose]').click();
+    await tick();const d=f.w.document,opener=d.querySelector('[data-action=compose]');opener.focus();opener.click();
     const form=d.querySelector('#composer'),dialog=form.closest('dialog'),body=form.elements.body;
     assert.ok(dialog.classList.contains('group-writing-dialog'));
     assert.ok(form.querySelector('.group-compose-head [type=submit]'));
@@ -54,7 +66,8 @@ test('writing tools preserve the same body, selection and draft while options op
       ['post','photo','plan','poll','bet'],'the five writing categories stay in the requested order');
     assert.ok([...form.querySelectorAll('.group-compose-toolbar [data-group-tool]')].every(button=>button.querySelector('svg')),
       'each category has a picture icon');
-    assert.notEqual(d.activeElement,body,'opening the composer does not open the native keyboard');
+    assert.equal(d.activeElement,form.elements.title,'the initiating click synchronously focuses the title for writing');
+    assert.deepEqual([form.elements.title.selectionStart,form.elements.title.selectionEnd],[0,0]);
     assert.equal(form.querySelector('[data-group-tool=room]').disabled,true,'one available group needs no picker');
     assert.equal(form.querySelector('[data-group-tool=room]').closest('.group-compose-toolbar'),null,'group context stays outside the five categories');
     assert.equal(form.querySelector('[data-group-tool=plan]').hidden,false,'plans remain directly available for an ordinary post');
@@ -92,8 +105,11 @@ test('writing tools preserve the same body, selection and draft while options op
     assert.equal(escape.defaultPrevented,true);assert.equal(d.querySelectorAll('dialog').length,1);
     assert.ok([...form.querySelectorAll('[data-group-panel]')].every(panel=>panel.hidden));
     assert.deepEqual(selected(),before,'closing an option does not discard or replace writing');
-    dialog.querySelector('[data-close]').click();assert.ok(d.querySelector('[data-no]'));d.querySelector('[data-no]').click();
+    dialog.querySelector('[data-close]').click();assert.ok(d.querySelector('[data-no]'));d.querySelector('[data-no]').click();await f.settleDialogs();
     assert.equal(form.elements.body,body);assert.deepEqual(selected(),before);
+    dialog.querySelector('[data-close]').click();d.querySelector('[data-yes]').click();await f.settleDialogs();
+    assert.equal(d.querySelector('#composer'),null);
+    assert.equal(d.activeElement,opener,'closing the writing screen restores its original opener');
   }finally{f.dom.window.close();}
 });
 test('plans open directly and save complete new schedules while existing trips retain their dates and kind',async()=>{
@@ -123,8 +139,11 @@ test('plans open directly and save complete new schedules while existing trips r
     assert.ok([...fresh.querySelectorAll('[data-group-panel]')].every(panel=>panel.hidden));
     assert.equal(fresh.querySelector('[data-group-tool=plan]').hidden,false);
     assert.equal(fresh.querySelector('#schedule-fields').hidden,true);
-    fresh.closest('dialog').querySelector('[data-close]').click();
+    fresh.closest('dialog').querySelector('[data-close]').click();await f.settleDialogs();
     d.querySelector('[data-edit]').click();const edit=d.querySelector('#composer');
+    assert.equal(d.activeElement,edit.elements.title,'editing synchronously focuses the existing title');
+    assert.deepEqual([edit.elements.title.selectionStart,edit.elements.title.selectionEnd],
+      [edit.elements.title.value.length,edit.elements.title.value.length],'editing starts at the end of the existing title');
     assert.equal(edit.elements.room_id.disabled,true);assert.equal(edit.querySelector('[data-group-tool=room]').disabled,true);
     assert.equal(edit.querySelector('[data-group-tool=plan]').dataset.selected,'true');
     assert.equal(edit.elements.kind.value,'trip');assert.equal(edit.elements.title.value,'부산에서 보내는 주말');
@@ -211,11 +230,11 @@ test('Back, close and Escape preserve a group draft until discard is confirmed',
     f.w.history.back();await tick();await tick();
     assert.equal(f.w.location.hash,'#room='+room);assert.equal(d.querySelector('#composer'),form);
     assert.match(d.querySelector('dialog:last-of-type').textContent,/작성 중인 내용을 지울까요/);
-    d.querySelector('[data-no]').click();assert.equal(form.elements.body.value,'뒤로 가도 사라지면 안 되는 내용');
-    editor.querySelector('[data-close]').click();d.querySelector('[data-no]').click();
-    const escape=new f.w.Event('cancel',{cancelable:true});editor.dispatchEvent(escape);assert.equal(escape.defaultPrevented,true);d.querySelector('[data-no]').click();
+    d.querySelector('[data-no]').click();await f.settleDialogs();assert.equal(form.elements.body.value,'뒤로 가도 사라지면 안 되는 내용');
+    editor.querySelector('[data-close]').click();d.querySelector('[data-no]').click();await f.settleDialogs();
+    const escape=new f.w.Event('cancel',{cancelable:true});editor.dispatchEvent(escape);assert.equal(escape.defaultPrevented,true);d.querySelector('[data-no]').click();await f.settleDialogs();
     const unload=new f.w.Event('beforeunload',{cancelable:true});f.w.dispatchEvent(unload);assert.equal(unload.defaultPrevented,true);
-    editor.querySelector('[data-close]').click();d.querySelector('[data-yes]').click();await tick();
+    editor.querySelector('[data-close]').click();d.querySelector('[data-yes]').click();await f.settleDialogs();
     assert.equal(d.querySelector('dialog'),null);assert.equal(f.calls.some(([a])=>a==='save'),false);
     const cleanUnload=new f.w.Event('beforeunload',{cancelable:true});f.w.dispatchEvent(cleanUnload);assert.equal(cleanUnload.defaultPrevented,false);
     f.w.history.back();await tick();await tick();assert.ok(d.querySelector('#directory'));
@@ -246,7 +265,7 @@ test('owner sends a member notification and shares an invitation through the nat
     d.querySelector('[data-action=manage]').click();await tick();d.querySelector('[data-invite]').click();await tick();
     const form=d.querySelector('#invite-search');form.elements.query.value='수빈';form.dispatchEvent(new f.w.Event('submit',{bubbles:true,cancelable:true}));await tick();
     d.querySelector('[data-send-invite]').click();await tick();assert.equal(f.calls.find(([a])=>a==='send')[1].user_id,other);assert.equal(d.querySelector('[data-send-invite]').disabled,true);
-    d.querySelector('dialog[aria-label="회원 초대"] [data-close]').click();d.querySelector('[data-share]').click();await tick();
+    d.querySelector('dialog[aria-label="회원 초대"] [data-close]').click();await f.settleDialogs();d.querySelector('[data-share]').click();await tick();
     d.querySelector('[data-share-link]').click();await tick();assert.equal(shared[0].url,'https://ojjuda.kr/groups/#invite='+entry);
     f.w.navigator.share=undefined;d.querySelector('[data-share-link]').click();await tick();assert.equal(copied[0],shared[0].url,'clipboard fallback keeps a usable invitation');
   }finally{f.dom.window.close();}
@@ -612,7 +631,7 @@ for (const kind of ['poll','ladder','wheel']) {
         }
         assert.equal(f.calls.filter(([action])=>action==='activity_draw').length,1,'replaying does not draw again');
       }
-      d.querySelector('[data-close]').click();d.querySelector('[data-edit]').click();
+      d.querySelector('[data-close]').click();await f.settleDialogs();d.querySelector('[data-edit]').click();
       const edit=d.querySelector('#composer');
       assert.equal(edit.elements.kind.value,kind);assert.equal(edit.elements.kind.disabled,true);
       for(const key of ['post','plan','poll','bet'])assert.equal(edit.querySelector('[data-group-tool='+key+']').disabled,true,

@@ -346,5 +346,83 @@
     };
   }
 
-  window.OjjudaOperations = { renderReports, renderSupport };
+  async function renderPajangQuestionSuggestions(options = {}) {
+    const { client, container } = options;
+    if (!container || !client?.schema || !client?.auth) return;
+    const scope = await scopeFor(options); if (!scope) return;
+    const prefix = '[파장 · 오늘의 질문 제안]\n', pageSize = 30;
+    let run = 0, loading = false, status = 'all', offset = 0, rows = [], failure = '';
+    const view = el('section', undefined, 'ops-section'); view.dataset.pajangQuestionSuggestions = '';
+    const heading = el('div', undefined, 'ops-heading');
+    heading.append(el('h3', '파장 질문 제안'), button('새로고침', () => void load()));
+    const filters = el('div', undefined, 'ops-controls'), summary = el('p', '', 'ops-summary');
+    const message = el('p', '', 'ops-message'), list = el('div', undefined, 'ops-list');
+    const pagination = el('div', undefined, 'ops-actions');
+    message.setAttribute('role', 'status'); message.setAttribute('aria-live', 'polite');
+    list.setAttribute('aria-label', '질문 제안 목록');
+    pagination.setAttribute('aria-label', '질문 제안 페이지');
+    view.append(heading, filters, summary, message, list, pagination);
+    container.replaceChildren(view);
+
+    function navigate(nextStatus, nextOffset) {
+      if (!scope.current() || loading) return;
+      status = nextStatus; offset = nextOffset; void load();
+    }
+    function render() {
+      if (!scope.current()) return;
+      filters.replaceChildren();
+      choices(filters, [['all', '전체'], ['open', '답변 대기'], ['resolved', '답변 완료']], status,
+        value => navigate(value, 0), '질문 제안 답변 상태');
+      summary.textContent = loading || failure ? '' : `${Math.floor(offset / pageSize) + 1}쪽 · 현재 ${rows.length}건`;
+      message.textContent = loading ? '질문 제안을 불러오는 중이에요.' : failure;
+      list.replaceChildren(); pagination.replaceChildren();
+      if (failure) list.append(button('다시 시도', () => void load()));
+      else if (!loading) {
+        if (!rows.length) empty(list, status === 'open' ? '답변 대기 중인 질문 제안이 없어요.'
+          : status === 'resolved' ? '답변을 완료한 질문 제안이 없어요.' : '접수된 질문 제안이 없어요.');
+        for (const value of rows) {
+          const item = el('article', undefined, 'adm-card ops-card');
+          item.dataset.questionSuggestionId = value.id;
+          const meta = el('div', undefined, 'ops-meta');
+          const nickname = typeof value.nickname === 'string' && value.nickname.trim() ? value.nickname.trim() : '회원';
+          const received = el('time', `접수 ${date(value.created_at)}`);
+          if (Number.isFinite(Date.parse(value.created_at))) received.dateTime = new Date(value.created_at).toISOString();
+          meta.append(badge(value.status === 'resolved' ? '답변 완료' : '답변 대기'), el('strong', nickname), received);
+          const body = typeof value.body === 'string' ? value.body : '';
+          const question = el('p', body.startsWith(prefix) ? body.slice(prefix.length) : body, 'ops-content');
+          question.dataset.questionBody = '';
+          item.append(meta, question);
+          if (typeof value.reply === 'string' && value.reply.trim()) {
+            const reply = el('section', undefined, 'ops-section');
+            reply.append(el('strong', '관리자 답변'), el('p', value.reply, 'ops-content')); item.append(reply);
+          }
+          list.append(item);
+        }
+        if (offset) pagination.append(button('이전', () => navigate(status, Math.max(0, offset - pageSize))));
+        if (rows.length === pageSize) pagination.append(button('다음', () => navigate(status, offset + pageSize)));
+      }
+      lock(view, loading);
+    }
+    async function load() {
+      if (!scope.current() || loading) return false;
+      const epoch = ++run; loading = true; failure = ''; rows = []; render();
+      try {
+        const data = await rpc(client, 'ojjuda_note', 'admin_pajang_question_suggestions', {
+          p_status: status, p_limit: pageSize, p_offset: offset
+        });
+        if (!scope.current() || epoch !== run) return false;
+        rows = data; return true;
+      } catch {
+        if (scope.current() && epoch === run) failure = errorText('질문 제안');
+        return false;
+      } finally {
+        if (scope.current() && epoch === run) { loading = false; render(); }
+      }
+    }
+    await load();
+    return { refresh: load, canLeave: () => true, hasDraft: () => false,
+      destroy() { run++; scope.destroy(); } };
+  }
+
+  window.OjjudaOperations = { renderReports, renderSupport, renderPajangQuestionSuggestions };
 })();

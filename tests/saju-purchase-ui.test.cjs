@@ -3,6 +3,22 @@ const assert = require('node:assert/strict');
 const {
   harness, fixedNow, PROFILE_USER_A, PROFILE_USER_B, pause, deferred, waitFor, selectReadingItem, assertNoReadingScores, assertNoCalculationUI, assertReadingScores, assertReadingScoreCopy
 } = require('./helpers/saju-ui-harness.cjs');
+const {currentStory,chooseStory,followStory,collectStories}=require('./helpers/saju-story-ui.cjs');
+const {isRemovedGeneralStory}=require('./helpers/saju-selected-readings.cjs');
+
+const choices=h=>[...h.$('report-content').querySelectorAll('.reading-item-button')];
+const monthChoices=h=>choices(h).filter(button=>/^reading-month-\d+$/.test(button.dataset.readingTarget));
+async function model(h) {
+  const [{analyzeFortune},{buildDetailedReading},{analyzeDaeun}]=await Promise.all([
+    import('../games/starlit-saju/fortune-data.mjs'),import('../games/starlit-saju/readings.mjs'),import('../games/starlit-saju/daeun.mjs')]);
+  const chart=h.state.starts.at(-1).chart,now=new Date(fixedNow),year=Number(h.$('report-content').dataset.year)||2026;
+  const topic=h.$('report-content').dataset.topic,daeun=['lifelong','all'].includes(topic)?analyzeDaeun(chart,{gender:h.$('person-gender').value,now}):null;
+  return buildDetailedReading(chart,analyzeFortune(chart,{year,now}),{daeun});
+}
+async function copy(h) {
+  h.openTools();const count=h.state.copies.length;h.$('copy-reading').click();
+  await waitFor(()=>h.state.copies.length===count+1);return h.state.copies.at(-1);
+}
 
 // Purchase, authorization and failed request handling.
 // Separate files give Node a process boundary for fresh jsdom/VM app
@@ -73,7 +89,7 @@ test('account changes invalidate late payment receipts and erase the previous bi
 
 test('solar and lunar representations reopen the same purchased product without an extra charge', async t => {
   const h=await harness();t.after(h.close);h.fill();h.submit();await h.ready();
-  const chart=h.state.starts[0].chart;h.$('edit-birth').click();
+  const chart=h.state.starts[0].chart;h.openTools();h.$('edit-birth').click();
   h.fill({calendar:'lunar',year:chart.lunar.year,month:chart.lunar.month,day:chart.lunar.day,leap:chart.lunar.leapMonth});
   h.submit();await h.ready();assert.equal(h.state.starts.length,2);assert.equal(h.state.charges,1);
   assert.equal(h.state.starts[1].chart.solar.iso,chart.solar.iso);assert.match(h.$('status').textContent,/추가 차감 없이/);
@@ -86,7 +102,8 @@ test('legacy bundle recovery and verified admin preview do not create new produc
     h.$('open-product').click();await h.ready('monthly',2027);
     h.pickReport('all',2026);assert.match(h.$('open-product').textContent,/0쭈|미리보기/);
     h.$('open-product').click();await h.ready('all',2026);
-    assert.equal(h.state.charges,0);assert.equal(h.$('report-content').querySelectorAll('.month-reading').length,12);
+    assert.equal(h.state.charges,0);assert.equal(monthChoices(h).length,12);
+    for(const button of monthChoices(h))assert.equal(chooseStory(h.$('reading-page-select'),button.dataset.readingTarget).dataset.storySource,button.dataset.readingTarget);
   }
 });
 
@@ -105,37 +122,54 @@ test('the explicit thirty-ju full purchase opens all three readings and each can
   assert.deepEqual(h.state.chargedAmounts,[30]);assert.equal(h.state.coins,0);
   assert.equal(h.state.starts.length,1);assert.equal(h.state.starts[0].topic,'all');
   assert.equal(h.state.receipts.size,3);
-  assert.ok(h.$('reading-lifelong'));assert.ok(h.$('reading-annual'));
-  assert.equal(h.$('report-content').querySelectorAll('.month-reading').length,12);
-  assert.equal(h.$('reading-all').querySelectorAll('a').length,3);
-  for (const link of [...h.$('reading-all').querySelectorAll('a'),...h.$('report-toc').querySelectorAll('a')]) assert.ok(h.$(link.hash.slice(1)));
+  const host=h.$('report-content'),domains=[...host.querySelectorAll('.reading-domain-button')].map(button=>button.dataset.readingDomain);
+  for(const topic of ['lifelong','annual','monthly'])assert.ok(domains.includes(topic),'all three purchased categories remain available');
+  assert.equal(monthChoices(h).length,12);
+  for(const id of ['reading-lifelong','reading-annual','reading-months'])assert.equal(followStory(host,id),currentStory(host));
+  assert.equal(h.$('report-toc'),null,'the legacy outer contents is replaced by the story menu');
   const ids=[...h.$('report-content').querySelectorAll('[id]')].map(item=>item.id);
   assert.equal(new Set(ids).size,ids.length,'the combined view has no duplicate section IDs');
-  const scores=assertReadingScores(h.$('report-content'));
-  assert.ok(scores.some(score=>score.status==='available'&&score.tailwind+score.headwind!==100),'the real fixture exercises independent values, not a complementary total');
+  const scenes=collectStories(host),scores=scenes.flatMap(scene=>scene.scores);
+  assert.ok(scenes.every(scene=>!isRemovedGeneralStory(scene)),'full payment never restores the deliberately removed overlapping readings');
+  assert.equal(host.querySelector('dialog.story-menu details'),null,'purchased choices do not require expanding a topic group');
+  assert.ok(scores.length>0);
+  for(const score of scores) {
+    if(score.status==='unavailable') {
+      assert.equal(score.meters.length,0,'unsupported items never become zero scores');assert.ok(score.reason.trim());continue;
+    }
+    assert.equal(score.status,'available');assert.equal(score.meters.length,2);
+    assert.deepEqual(score.meters.map(meter=>meter.wind),['tailwind','headwind']);
+    for(const meter of score.meters) {
+      const label=meter.wind==='tailwind'?'순풍':'역풍';
+      assert.ok(Number.isInteger(meter.value)&&meter.value>=0&&meter.value<=100);
+      assert.equal(meter.min,'0');assert.equal(meter.max,'100');assert.equal(meter.width,`${meter.value}%`);
+      assert.ok(meter.name.includes(label));assert.ok(meter.text.includes(label)&&meter.text.includes(`${meter.value}점`));
+    }
+  }
+  assert.ok(scores.some(score=>score.status==='available'&&score.meters.reduce((sum,meter)=>sum+meter.value,0)!==100),'the real fixture exercises independent values, not a complementary total');
+  assert.equal(new Set(scenes.map(scene=>scene.id)).size,scenes.length,'every purchased scene has a unique identifier');
   assertNoCalculationUI(h);
-  h.$('copy-reading').click();await waitFor(()=>h.state.copies.length===1);
+  await copy(h);
   assert.match(h.state.copies[0],/평생운/);assert.match(h.state.copies[0],/2026년/);assert.match(h.state.copies[0],/12월/);
   assert.doesNotMatch(h.state.copies[0],/1990-05-17|1990년\s*5월\s*17일/);
   assertReadingScoreCopy(h.state.copies[0],h.$('report-content'));
+  assert.ok(h.state.copies[0].endsWith((await model(h)).copyByCategory.all),'copy retains the complete authored combined reading');
   for (const topic of ['lifelong','annual','monthly','all']) {
     h.pickReport(topic,2026);
     assert.match(h.$('open-product').textContent,/0쭈/);
     h.$('open-product').click();await h.ready(topic,topic==='lifelong'?0:2026);
     const includesPortrait=topic==='lifelong'||topic==='all';
-    assert.equal(h.$('report-content').querySelectorAll('.person-portrait').length,includesPortrait?1:0,'the personal portrait belongs only to lifelong and full readings');
-    assert.equal(h.$('report-content').querySelectorAll('.portrait-summary-table').length,includesPortrait?1:0);
-    assert.equal(h.$('report-content').querySelectorAll('.timing-summary-table').length,topic==='monthly'||topic==='all'?1:0,
-      'the monthly overview stays inside the opened monthly or full product');
+    const reading=await model(h),portraitChoices=choices(h).filter(button=>reading.personPortrait.cards.some(card=>card.title===button.textContent||card.label===button.textContent));
+    assert.equal(portraitChoices.length,includesPortrait?5:0,'the five personal topics belong only to lifelong and full readings');
+    assert.equal(monthChoices(h).length,topic==='monthly'||topic==='all'?12:0,'all monthly overviews stay inside the opened monthly or full product');
     if(includesPortrait) {
-      assert.equal(h.$('report-content').querySelectorAll('.portrait-card').length,5);
-      assert.equal(h.$('reading-summary').parentElement,h.$('reading-person-portrait'));
-      assert.equal(h.$('reading-topics').parentElement,h.$('reading-person-portrait'));
+      for(const [index,card] of reading.personPortrait.cards.entries())assert.equal(followStory(host,`person-portrait-topic-${index+1}`).dataset.portraitCard,card.id);
+      followStory(host,'reading-summary');
     }
     assertReadingScores(h.$('report-content'));assertNoCalculationUI(h);
-    const count=h.state.copies.length;
-    h.$('copy-reading').click();await waitFor(()=>h.state.copies.length===count+1);
+    await copy(h);
     assertReadingScoreCopy(h.state.copies.at(-1),h.$('report-content'));
+    assert.ok(h.state.copies.at(-1).endsWith(reading.copyByCategory[topic]),`${topic} retains exactly the complete copy of its purchased scope`);
   }
   assert.deepEqual(h.state.chargedAmounts,[30]);assert.equal(h.state.coins,0);
 });
@@ -148,7 +182,7 @@ test('full purchase deducts only missing products and another year keeps lifelon
   assert.match(h.$('open-product').textContent,/남은 20쭈로/);
   assert.equal(h.window.document.querySelector('[data-report-price="all"]').textContent,'남은 20쭈');
   assert.equal(h.state.starts.length,1);assert.equal(h.$('report-content').textContent,before);
-  h.$('copy-reading').click();await waitFor(()=>h.state.copies.length===1);
+  await copy(h);
   assert.doesNotMatch(h.state.copies[0],/2026년 12월/,'the old purchased copy remains active before full purchase');
   h.$('open-product').click();await h.ready('all',2026);
   assert.deepEqual(h.state.chargedAmounts,[10,20]);assert.equal(h.state.coins,0);
@@ -160,7 +194,10 @@ test('full purchase deducts only missing products and another year keeps lifelon
   h.$('open-product').click();await h.ready('all',2027);
   assert.deepEqual(h.state.chargedAmounts,[10,20,20]);assert.equal(h.state.coins,0);
   assert.equal(h.state.receipts.size,5,'lifelong has one entitlement across years');
-  assert.equal(h.$('reading-months-title').textContent,'2027년, 열두 달의 이야기');
+  assert.equal(monthChoices(h).length,12);
+  chooseStory(h.$('reading-page-select'),'reading-month-12');
+  assert.match(currentStory(h.$('report-content')).querySelector('.story-context').textContent,/2027/);
+  assert.match(await copy(h),/2027년 12월/);
 });
 
 test('three separate purchases unlock the combined reading at zero extra ju', async t => {
@@ -171,7 +208,7 @@ test('three separate purchases unlock the combined reading at zero extra ju', as
   assert.equal(h.window.document.querySelector('[data-report-price="all"]').textContent,'이용 가능');
   h.$('open-product').click();await h.ready('all',2026);
   assert.deepEqual(h.state.chargedAmounts,[10,10,10]);assert.equal(h.state.coins,0);
-  h.$('edit-birth').click();h.fill({topic:'all'});
+  h.openTools();h.$('edit-birth').click();h.fill({topic:'all'});
   await waitFor(()=>!h.$('open-story').disabled&&/0쭈/.test(h.$('open-story').textContent));
   h.submit();await h.ready('all',2026);
   assert.deepEqual(h.state.chargedAmounts,[10,10,10]);

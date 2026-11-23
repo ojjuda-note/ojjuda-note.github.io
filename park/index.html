@@ -1,59 +1,76 @@
 <!doctype html>
 <html lang="ko">
 <head>
+  <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'">
+  <script>
+  // Preserve the legacy World iframe only when that exact same-origin host owns us.
+  try {
+    if (parent !== window && parent.location.origin === location.origin && parent.location.pathname === '/world.html')
+      document.documentElement.dataset.parkEmbedded = 'true';
+  } catch {}
+  </script>
   <script src="/config.js?v=20261111-shared-member-auth1" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2" defer></script>
-  <script src="/park/opening.js?v=20261118-fast-entry1" async></script>
-<script src="/shared/location/location.js?v=shared1" defer></script>
-  <script src="/park/route.js?v=20261004-full1"></script>
+  <script src="/park/opening.js?v=20261123-park-first-paint1" async></script>
+<script src="/shared/location/location.js?v=20261119-kma-current1" defer></script>
+  <script src="/park/route.js?v=20261123-independent-park1"></script>
+  <script src="/shared/auth/invite-referral.js?v=20261119-invite-referral1" defer></script>
 <script src="/shared/diagnostics/diagnostics.js?v=20261106-source-folders1" defer></script>
-  <link rel="stylesheet" href="/shared/auth/signup-identity.css?v=20261106-source-folders1">
+  <link rel="stylesheet" href="/shared/auth/signup-identity.css?v=20261106-source-folders1" media="print" onload="this.media='all'">
   <script src="/shared/auth/signup-identity.js?v=20261116-signup-focus1" defer></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-  <meta name="theme-color" content="#245A48">
+  <meta name="theme-color" content="#2674c5">
   <title>오쭈다 아지트 · 공원 | 오늘 하루 어땠나요? 괜찮았나요</title>
   <meta name="description" content="오늘 하루 어땠나요? 괜찮았나요. 오늘의 마음을 익명카드로 나누고 서로 공감해 보세요. 오쭈다 아지트 · 공원은 개발 중입니다.">
-  <link rel="canonical" href="https://ojjuda.kr/world.html?place=park">
-  <link rel="icon" href="/favicon.svg?v=20261022-agit-logo2" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261022-agit-logo2">
+  <link rel="canonical" href="https://ojjuda.kr/park/">
+  <link rel="icon" href="/park/assets/icon-192.png?v=seasonal-v1-autumn-d0c431c01ed9" type="image/png">
+  <link rel="apple-touch-icon" href="/park/assets/apple-touch-icon.png?v=seasonal-v1-autumn-d0c431c01ed9">
+  <link rel="manifest" href="/park/manifest.webmanifest?v=20261123-independent-park1">
+  <meta name="apple-mobile-web-app-title" content="오쭈다 공원">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Nanum+Gothic+Coding:wght@400;700&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Nanum+Gothic+Coding:wght@400;700&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="/note/style.css?v=20261004-home2">
-  <link rel="stylesheet" href="/note/features.css?v=20261117-park-wash-rhythm1">
-  <link rel="stylesheet" href="/note/event-photo.css?v=20261004-design1">
+  <link rel="stylesheet" href="/note/features.css?v=20261120-video1">
+  <link rel="stylesheet" href="/park/fonts.css?v=20261120-nanum-myeongjo1">
+  <link rel="stylesheet" href="/note/event-photo.css?v=20261004-design1" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="/note/effects.css?v=0.45.28-beta">
-  <link rel="stylesheet" href="/note/support.css?v=20261004-design1">
-  <link rel="stylesheet" href="/note/notifications.css?v=20261116-guest-inbox1">
-  <link rel="stylesheet" href="/note/map.css?v=20261004-design1">
-  <link rel="stylesheet" href="/note/pull-refresh.css?v=0.45.10-beta">
+  <link rel="stylesheet" href="/note/support.css?v=20261119-support-layout1" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="/note/notifications.css?v=20261116-guest-inbox1" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="/note/map.css?v=20261004-design1" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="/note/pull-refresh.css?v=0.45.10-beta" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="/note/feed-swipe.css?v=20260929-swipe1">
   <link rel="stylesheet" href="/note/world-navigation.css?v=20260929-logo1">
-  <link rel="stylesheet" href="/note/account.css?v=20260929-account1">
-<link rel="stylesheet" href="/features/guide/guide-entry.css?v=20261106-source-folders1">
+  <link rel="stylesheet" href="/note/account.css?v=20260929-account1" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="/features/guide/guide-entry.css?v=20261106-source-folders1" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="/shared/media/photo-protection.css?v=20261106-source-folders1">
 <link rel="stylesheet" href="/features/profile/my-menu.css?v=20261106-source-folders1">
-<link rel="stylesheet" href="/features/wallet/ju-charge.css?v=20261106-source-folders1">
-<link rel="stylesheet" href="/ju-coins/ju-coins.css?v=20261106-source-folders1">
-<link rel="stylesheet" href="/features/wallet/ju-decorations.css?v=20261106-source-folders1">
+<link rel="stylesheet" href="/features/wallet/ju-charge.css?v=20261106-source-folders1" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="/ju-coins/ju-coins.css?v=20261106-source-folders1" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="/features/wallet/ju-decorations.css?v=20261106-source-folders1" media="print" onload="this.media='all'">
 <script src="/features/wallet/ju-decorations.js?v=20261106-source-folders1" defer></script>
-<script src="/features/wallet/ju-charge.js?v=20261106-source-folders1" defer></script>
+<script src="/features/wallet/ju-charge.js?v=20261119-pajang-toolbar1" defer></script>
 <script src="/shared/media/photo-protection.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/shared/viewport/mobile-viewport.css?v=20261106-source-folders1">
 <script src="/shared/viewport/mobile-viewport.js?v=20261106-source-folders1" defer></script>
-<link rel="stylesheet" href="/park/embedded.css?v=20261004-world1">
+<link rel="stylesheet" href="/park/embedded.css?v=20261123-park-share1">
+<link rel="stylesheet" href="/features/account/settings-list.css?v=20261119-guest-account1" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="/shared/brand/service-banners.css?v=20261122-settings-banners1">
+<script src="/shared/brand/service-banners.js?v=20261123-independent-park1" defer></script>
 <link rel="stylesheet" href="/shared/brand/brand-copy.css?v=20261106-source-folders1">
 <link rel="stylesheet" href="/features/wallet/paid-ui.css?v=20261106-source-folders1">
 <link rel="stylesheet" href="/app/world/world-design.css?v=20261106-source-folders1">
-<link rel="stylesheet" href="/park/design.css?v=20261118-inline-ink1">
-<link rel="stylesheet" href="/note/composer-tools.css?v=20261118-writing-options7">
-<link rel="stylesheet" href="/park/card-grid.css?v=20261117-park-750">
-<link rel="stylesheet" href="/app/world/world-themes.css?v=20261110-themes3">
-<script src="/app/world/world-themes.js?v=20261110-theme-copy1" defer></script>
+<link rel="stylesheet" href="/park/design.css?v=20261123-park-card-layout1">
+<link rel="stylesheet" href="/note/composer-tools.css?v=20261120-video1" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="/park/card-grid.css?v=20261119-park-600">
+<link rel="stylesheet" href="/app/world/world-themes.css?v=20261119-auto-theme1">
+<link rel="stylesheet" href="/park/entry-design.css?v=20261119-park-entry1">
+<script src="/app/world/world-themes.js?v=20261119-auto-theme1" defer></script>
+<script src="/app/world/world-weather.js?v=20261119-kma-current1" defer></script>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="오쭈다 아지트">
-<meta property="og:url" content="https://ojjuda.kr/world.html?place=park">
+<meta property="og:url" content="https://ojjuda.kr/park/">
 <meta property="og:title" content="오쭈다 아지트 · 공원 | 오늘 하루 어땠나요? 괜찮았나요">
 <meta property="og:description" content="오늘 하루 어땠나요? 괜찮았나요. 오늘의 마음을 익명카드로 나누고 서로 공감해 보세요. 오쭈다 아지트 · 공원은 개발 중입니다.">
 <meta property="og:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
@@ -66,6 +83,9 @@
 <meta name="twitter:description" content="오늘 하루 어땠나요? 괜찮았나요. 오늘의 마음을 익명카드로 나누고 서로 공감해 보세요. 오쭈다 아지트 · 공원은 개발 중입니다.">
 <meta name="twitter:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
+<link rel="stylesheet" href="/shared/brand/service-header.css?v=20261119-main-invite1">
+<link rel="stylesheet" href="/shared/share/page-share.css?v=20261123-park-share1" media="print" onload="this.media='all'">
+<script src="/shared/share/page-share.js?v=20261123-park-share1" defer></script>
 </head>
 <body>
   <svg class="icons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -84,7 +104,12 @@
   <a class="skip" href="#main">본문으로 건너뛰기</a>
   <div class="shell">
     <aside class="side" id="note-sidebar" aria-label="공원 메뉴">
-      <div class="note-side-header"><div class="note-brand-row"><a class="brand" href="/world.html?place=park" aria-label="오쭈다 아지트 · 공원 홈"><svg class="brand-icon ojjuda-theme-logo" viewBox="-16 -16 544 544" width="32" height="32" aria-hidden="true" focusable="false"><path fill="currentColor" d="M100 0H354Q369 0 381 12L499 130Q512 143 512 165V428Q512 512 428 512H84Q0 512 0 428V100Q0 0 100 0Z"/>  <path fill="#FFF" d="M346 37Q346 22 358 31L476 149Q485 161 470 161H395Q346 161 346 112Z"/>  <path d="M108 290Q256 420 404 290" fill="none" stroke="#FFF" stroke-width="60" stroke-linecap="round"/></svg><span>오쭈다<b>공원</b></span></a><button class="note-dev-badge" type="button" data-note-feedback title="의견 보내기">베타</button></div></div>
+      <div class="note-side-header"><div class="note-brand-row ojjuda-service-brand"><a class="brand ojjuda-service-home" href="/park/" aria-label="오쭈다 공원 홈"><svg class="brand-icon ojjuda-theme-logo ojjuda-service-logo" viewBox="-16 -16 544 544" width="32" height="32" aria-hidden="true" focusable="false"><path fill="currentColor" d="M100 0H354Q369 0 381 12L499 130Q512 143 512 165V428Q512 512 428 512H84Q0 512 0 428V100Q0 0 100 0Z"/>  <path fill="#FFF" d="M346 37Q346 22 358 31L476 149Q485 161 470 161H395Q346 161 346 112Z"/>  <path d="M108 290Q256 420 404 290" fill="none" stroke="#FFF" stroke-width="60" stroke-linecap="round"/></svg><span class="ojjuda-service-word">오쭈다<span class="ojjuda-service-name">공원</span></span></a><button class="note-dev-badge ojjuda-service-beta" type="button" data-note-feedback title="의견 보내기">베타</button></div></div>
+      <div class="nn-top-actions ojjuda-service-actions park-desktop-actions">
+        <button class="ojjuda-service-invite" type="button" data-share-page="park" aria-label="공원 초대 링크 공유"><span>초대</span></button>
+        <button class="nn-bell" type="button" data-notifications-open aria-label="알림" aria-haspopup="dialog" aria-controls="note-notification-dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg></button>
+        <button class="note-coinpill ojjuda-service-balance" type="button" data-ju-charge-open aria-label="보유 ZU 확인, 충전 열기" aria-haspopup="dialog" aria-controls="ju-charge-dialog"><span class="note-cz" aria-hidden="true"><i>ZU</i></span><span data-note-balance aria-live="polite">—</span></button>
+      </div>
       <div class="side-section-label">공원에서 나누는 이야기</div>
       <nav class="side-nav" aria-label="카드 탐색">
         <button class="nav-button on" type="button" data-show="feed"><svg><use href="#cards"/></svg>카드</button>
@@ -116,18 +141,18 @@
                   <button class="nav-button" type="button" id="note-change-nickname">닉네임 변경</button>
                   <button class="nav-button" type="button" id="note-change-password">비밀번호 변경</button>
                   <button class="nav-button" type="button" id="note-logout">로그아웃</button>
-                  <button class="nav-button note-account-danger" type="button" id="note-delete-account">회원 탈퇴</button>
                 </div>
               </div>
             </details>
           </section>
 
-  <div class="my-menu-group"><button class="my-menu-summary ju-charge-entry" type="button" data-ju-charge-open aria-haspopup="dialog" aria-controls="ju-charge-dialog"><span class="my-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M15 12h6v5h-6z"/><path d="M17 14.5h1"/></svg></span><span class="my-menu-copy"><span class="my-menu-title">충전</span><span class="my-menu-caption">ZU 충전 · 베타 기간 하루 5회 무료</span></span></button></div>
+  <div class="my-menu-group"><button class="my-menu-summary ju-charge-entry" type="button" data-ju-charge-open aria-haspopup="dialog" aria-controls="ju-charge-dialog"><span class="my-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M15 12h6v5h-6z"/><path d="M17 14.5h1"/></svg></span><span class="my-menu-copy"><span class="my-menu-title">쭈 충전</span><span class="my-menu-caption">ZU 충전 · 베타 기간 하루 5회 무료</span></span></button></div>
           <details class="my-menu-group">
             <summary class="my-menu-summary"><span class="my-menu-icon" aria-hidden="true"><svg><use href="#reply"/></svg></span><span class="my-menu-copy"><span class="my-menu-title">도움말</span><span class="my-menu-caption">문의·의견 · 사용 안내</span></span></summary>
             <div class="my-menu-body">
               <div id="note-help-actions"></div>
               <a class="my-menu-link" href="/guide.html?from=park" target="_top">오쭈다 사용 안내 <span aria-hidden="true">→</span></a>
+              <a class="my-menu-link" href="/features/organization/?from=park" target="_top">조직도 <span aria-hidden="true">→</span></a>
             </div>
           </details>
           <p class="side-caption" id="account-status" role="status">계정 확인 중</p>
@@ -139,9 +164,9 @@
     </aside>
 
     <div class="col">
-      <header class="mobile-top">
-        <div class="note-brand-row"><a class="brand" href="/world.html?place=park" aria-label="오쭈다 아지트 · 공원 홈"><svg class="brand-icon ojjuda-theme-logo" viewBox="-16 -16 544 544" width="32" height="32" aria-hidden="true" focusable="false"><path fill="currentColor" d="M100 0H354Q369 0 381 12L499 130Q512 143 512 165V428Q512 512 428 512H84Q0 512 0 428V100Q0 0 100 0Z"/>  <path fill="#FFF" d="M346 37Q346 22 358 31L476 149Q485 161 470 161H395Q346 161 346 112Z"/>  <path d="M108 290Q256 420 404 290" fill="none" stroke="#FFF" stroke-width="60" stroke-linecap="round"/></svg><span>오쭈다<b>공원</b></span></a><button class="note-dev-badge" type="button" data-note-feedback title="의견 보내기">베타</button></div>
-        <div class="nn-top-actions"><button class="nn-bell" type="button" data-notifications-open aria-label="알림" aria-haspopup="dialog" aria-controls="note-notification-dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg><span class="nn-dot" data-notification-dot hidden aria-hidden="true"></span></button><a class="note-coinpill" href="#ju-charge-dialog" data-ju-charge-open aria-label="보유 ZU 확인, 충전 열기" aria-haspopup="dialog" aria-controls="ju-charge-dialog"><span class="note-cz" aria-hidden="true"><i>ZU</i></span><span id="note-top-balance" data-note-balance aria-live="polite" aria-atomic="true">—</span></a></div>
+      <header class="mobile-top ojjuda-service-header">
+        <div class="note-brand-row ojjuda-service-brand"><a class="brand ojjuda-service-home" href="/park/" aria-label="오쭈다 공원 홈"><svg class="brand-icon ojjuda-theme-logo ojjuda-service-logo" viewBox="-16 -16 544 544" width="32" height="32" aria-hidden="true" focusable="false"><path fill="currentColor" d="M100 0H354Q369 0 381 12L499 130Q512 143 512 165V428Q512 512 428 512H84Q0 512 0 428V100Q0 0 100 0Z"/>  <path fill="#FFF" d="M346 37Q346 22 358 31L476 149Q485 161 470 161H395Q346 161 346 112Z"/>  <path d="M108 290Q256 420 404 290" fill="none" stroke="#FFF" stroke-width="60" stroke-linecap="round"/></svg><span class="ojjuda-service-word">오쭈다<span class="ojjuda-service-name">공원</span></span></a><button class="note-dev-badge ojjuda-service-beta" type="button" data-note-feedback title="의견 보내기">베타</button></div>
+        <div class="nn-top-actions ojjuda-service-actions"><button class="ojjuda-service-invite" type="button" data-share-page="park" aria-label="공원 초대 링크 공유"><span>초대</span></button><button class="nn-bell" type="button" data-notifications-open aria-label="알림" aria-haspopup="dialog" aria-controls="note-notification-dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg><span class="nn-dot" data-notification-dot hidden aria-hidden="true"></span></button><a class="note-coinpill ojjuda-service-balance" href="#ju-charge-dialog" data-ju-charge-open aria-label="보유 ZU 확인, 충전 열기" aria-haspopup="dialog" aria-controls="ju-charge-dialog"><span class="note-cz" aria-hidden="true"><i>ZU</i></span><span id="note-top-balance" data-note-balance aria-live="polite" aria-atomic="true">—</span></a></div>
       </header>
 
       <main id="main" class="main">
@@ -149,6 +174,30 @@
 
         <section id="feed" class="screen park-feed" aria-labelledby="feed-title">
           <h1 id="feed-title" class="park-feed-title">공원 카드</h1>
+          <section id="park-guest-entry" class="park-guest-entry" aria-labelledby="park-entry-title" hidden>
+            <div class="park-entry-main">
+              <div class="park-entry-copy">
+                <p class="park-entry-eyebrow"><span aria-hidden="true"></span>누구나 머물 수 있는 곳</p>
+                <h2 id="park-entry-title" class="park-entry-title">마음이 쉬어가는 <em>공원</em></h2>
+                <p class="park-entry-description">이름 없이 나누는 오늘의 이야기.</p>
+              </div>
+              <div class="park-entry-still-life" aria-hidden="true">
+                <span class="park-entry-paper-back"></span>
+                <span class="park-entry-paper-front">
+                  <span class="park-entry-paper-art"></span>
+                  <span class="park-entry-paper-text"><small>오늘의 한 장</small><strong>오늘 하루,<br>어땠나요?</strong></span>
+                </span>
+                <span class="park-entry-paper-tag">잠시 쉬어가요.</span>
+              </div>
+            </div>
+            <div class="park-entry-footer">
+              <div class="park-entry-actions">
+                <a class="park-entry-signup" href="/?auth=signup&amp;next=note" target="_top">회원가입<span aria-hidden="true">↗</span></a>
+                <a class="park-entry-login" href="/?auth=login&amp;next=note" target="_top">로그인</a>
+              </div>
+              <button id="park-entry-browse" class="park-entry-browse" type="button" aria-controls="feed-list">카드 둘러보기<span aria-hidden="true">↓</span></button>
+            </div>
+          </section>
           <div class="feed-layout">
             <div class="feed-column">
               <div class="feed-sort-tabs tabs" role="group" aria-label="카드 정렬"></div>
@@ -196,25 +245,26 @@
         <div class="compose-photo image-lake">
           <span class="compose-shade"></span>
           <canvas class="park-ink-art" id="compose-ink-art" aria-hidden="true" hidden></canvas>
-          <label class="compose-photo-attach" id="card-photo-attach" role="button" tabindex="0" hidden title="사진 첨부"><input id="card-photo-file" type="file" accept="image/jpeg,image/png,image/webp" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 4 7.6 6H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-2.6L15 4H9Zm3 5a4 4 0 1 1 0 8 4 4 0 0 1 0-8Zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/></svg><span class="visually-hidden">내 사진 첨부 · 무료</span></label><button class="compose-photo-remove" id="card-photo-remove" type="button" hidden aria-label="사진 빼기">×</button>
+          <label class="compose-photo-attach" id="card-photo-attach" role="button" tabindex="0" hidden title="사진·영상 첨부"><input id="card-photo-file" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm,.mp4,.mov,.m4v,.webm" aria-describedby="card-media-status" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 4 7.6 6H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-2.6L15 4H9Zm3 5a4 4 0 1 1 0 8 4 4 0 0 1 0-8Zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/></svg><span class="visually-hidden">사진·영상 첨부 · 무료</span></label><button class="compose-photo-remove" id="card-photo-remove" type="button" hidden aria-label="첨부 빼기">×</button>
           <textarea id="compose-text" aria-label="카드 글" maxlength="200" placeholder="오늘 하루 어땠나요?&#10;괜찮았나요" rows="2"></textarea>
           <div class="compose-tag-display" id="compose-tag-display" aria-live="polite" aria-label="카드 태그 미리보기"></div>
           <input id="compose-tags" type="text" placeholder="#태그 · 공백이나 쉼표로 나눠요 (최대 5개)" maxlength="120" autocomplete="off" aria-label="카드 태그 (최대 5개, 공백이나 쉼표로 나눠요)">
         </div>
+        <p class="compose-media-status" id="card-media-status" role="status" aria-live="polite" hidden></p>
         <div class="event-photo-choice" id="event-photo-choice" hidden>
           <label class="event-photo-select">이벤트 배경 사진 선택<input id="event-photo-file" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="event-photo-status"></label>
           <button class="event-photo-clear" id="event-photo-clear" type="button" hidden>기본 사진으로</button>
           <span id="event-photo-status" role="status" aria-live="polite">JPG·PNG·WebP · 10MB 이하 · 추가 ZU 없음</span>
         </div>
         <div class="compose-status"><span id="compose-count">0 / 200자</span></div>
-        <button type="button" class="button" id="convert-calligraphy" aria-pressed="false">캘리그라피로 변환</button>
+        <button type="button" class="button" id="convert-calligraphy" aria-pressed="false">캘리그라피로 변환 · 10쭈 / 1개월</button>
         <a class="button guest-compose-login" id="guest-compose-login" href="/?auth=login&amp;next=note" target="_top" hidden>로그인하고 글꼴·옵션 바꾸기</a>
         <details class="compose-more" id="compose-more">
           <summary>꾸미기 · 추가 설정</summary>
           <div class="compose-more-content" id="compose-more-content">
             <div class="note-style-controls" id="note-style-controls">
               <input id="compose-theme" type="hidden" value="plain">
-              <label>글꼴<select id="compose-font"><option value="default">고운돋움</option><option value="round">둥근 글씨</option><option value="serif">명조</option><option value="handwriting">손글씨</option><option value="calligraphy">캘리그라피 · 먹빛 붓글씨</option><option value="mono">고정폭</option></select></label>
+              <label>글꼴<select id="compose-font"><optgroup label="기본 무료 글꼴"><option value="default">고운돋움</option><option value="round">둥근 글씨</option><option value="serif">명조</option></optgroup><optgroup label="글꼴별 10쭈 / 1개월"><option value="nanum-myeongjo">나눔명조 · 10쭈 / 1개월</option><option value="handwriting">손글씨 · 10쭈 / 1개월</option><option value="heart">하트 손글씨 · 싱글데이 · 10쭈 / 1개월</option><option value="calligraphy">캘리그라피 · 먹빛 붓글씨 · 10쭈 / 1개월</option><option value="mono">고정폭 · 10쭈 / 1개월</option></optgroup></select></label>
               <label>글씨 크기<select id="compose-size"><option value="normal">보통</option><option value="large">크게</option><option value="small">작게</option></select></label>
               <label>꾸미기 효과<select id="compose-effect"><option value="none">없음</option><optgroup label="움직이는 효과"><option value="rain">비 내리기</option><option value="shimmer">빛 스치기</option><option value="rainbow">무지개</option><option value="snow">눈 내리기</option><option value="starlight">별빛</option><option value="fireflies">반딧불이</option><option value="petals">꽃잎</option><option value="bubbles">비눗방울</option><option value="aurora">오로라</option><option value="confetti">색종이</option><option value="sunbeams">햇살</option><option value="mist">안개</option><option value="ocean">물결</option><option value="heartbeat">빛의 파동</option><option value="orbit">궤도</option><option value="glitter">반짝이</option><option value="meteor">별똥별</option><option value="leaves">나뭇잎</option><option value="neon">네온</option><option value="dawn">새벽빛</option></optgroup><optgroup label="고정 효과"><option value="sparkle">반짝임</option><option value="frame">테두리</option></optgroup></select></label>
             </div>
@@ -224,7 +274,7 @@
               <div class="note-opacity-control"><label for="compose-box-transparency">글상자 불투명도</label><input id="compose-box-transparency" type="range" min="0" max="100" step="1" value="25" aria-describedby="compose-box-opacity-hint"><input id="compose-box-transparency-value" type="number" min="0" max="100" step="1" value="25" inputmode="numeric" aria-label="글상자 불투명도 숫자 입력" aria-describedby="compose-box-opacity-hint"><span aria-hidden="true">%</span></div>
               <p class="note-opacity-hint" id="compose-box-opacity-hint">0% 투명 · 100% 불투명</p>
             </div>
-            <p class="note-setting-help">글씨 꾸미기는 카드에 1개월간 적용돼요. 기본 배경은 미리보기 그대로 등록돼요.</p>
+            <p class="note-setting-help">기본 3종 무료 · 나머지는 글꼴별 10쭈 / 1개월. 기간 내 재사용 무료 · 자동 갱신 없음.</p>
             <fieldset class="note-photo-pick" id="note-photo-pick">
               <legend>사진·수묵 배경</legend>
               <p class="note-photo-intro">기본 배경과 내 사진 첨부는 무료예요. 같은 제공 배경은 10 ZU에 구매한 뒤 1개월 동안 다른 카드에도 무료로 쓸 수 있어요.</p>
@@ -252,19 +302,21 @@
     </section>
   </div>
   <script src="/note/map.js?v=20260929-pinch" defer></script>
-  <script src="/note/support.js?v=20261117-section-releases" defer></script>
+  <script src="/note/support.js?v=20261119-content-rules1" defer></script>
   <script src="/note/drafts.js?v=20261117-park-wash-rhythm1" defer></script>
   <script src="/note/notifications.js?v=20261117-inbox-keyboard1" defer></script>
-  <script src="/note/feed-swipe.js?v=20261022-1" defer></script>
-  <script src="/features/account/account-deletion.js?v=20261106-source-folders1" defer></script>
+  <script src="/note/feed-swipe.js?v=20261119-park-navigation1" defer></script>
+  <script src="/features/account/account-deletion.js?v=20261120-park-video1" defer></script>
   <script src="/note/share-image.js?v=20261117-park-wash-rhythm1" defer></script>
   <script src="/note/share-kakao.js?v=20261031-kakao-card-share1" defer></script>
-  <script src="/note/calligraphy-motifs.js?v=20261117-park-phrase1" defer></script>
-  <script src="/note/calligraphy.js?v=20261117-park-brush-symbols1" defer></script>
-  <script src="/note/composer-tools.js?v=20261118-writing-options7" defer></script>
-  <script src="/note/preview.js?v=20261118-fast-entry1" defer></script>
+  <script src="/note/composer-tools.js?v=20261120-video1" defer></script>
+  <script src="/note/preview.js?v=20261123-park-deferred-ink-rpc3" defer></script>
   <script src="/note/pull-refresh.js?v=20261004-refresh1" defer></script>
-  <script src="/note/navigation.js?v=20260929-my1" defer></script>
-  <script src="/park/integration.js?v=20261118-composer-tools2" defer></script>
+  <script src="/note/navigation.js?v=20261119-history1" defer></script>
+  <script src="/park/integration.js?v=20261123-independent-park1" defer></script>
+  <!-- The brush renderer is optional for the first cards and initializes after Park is usable. -->
+  <script src="/note/calligraphy-motifs.js?v=20261117-park-phrase1" defer></script>
+  <script src="/note/calligraphy.js?v=20261123-park-deferred-ink1" defer></script>
 </body>
 </html>
+

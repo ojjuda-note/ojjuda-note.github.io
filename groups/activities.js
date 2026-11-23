@@ -1,5 +1,6 @@
 (() => {
   'use strict';
+  const textLength=value=>[...String(value??'').replaceAll('❤️❤️','♥')].length;
   const labels = {poll:'투표', ladder:'사다리 타기', wheel:'돌림판'};
   const colors = ['#963b51','#236963','#3a518c','#905517','#674680','#166077','#923b35','#4e548e','#5b652d','#833c68'];
 
@@ -13,7 +14,7 @@
     const meta = fields[kind], n = index + 1, locked = activity ? 'readonly' : '';
     const input = (name, label, value) => `<label class="field">
       <span class="entry-label" data-row-label="${label}">${label} ${n}</span>
-      <input type="text" name="${name}" placeholder="${label} ${n}" maxlength="80" required value="${esc(value)}" ${locked}>
+      <input type="text" name="${name}" placeholder="${label} ${n}" maxlength="40" required value="${esc(value)}" ${locked}>
     </label>`;
     return `<div class="activity-row" data-entry-row><span class="entry-index" aria-hidden="true">${n}</span>
       ${kind==='ladder' ? input('activity_name','참가자',activity?.names[index]) : ''}
@@ -67,7 +68,7 @@
     event.preventDefault();
     const feedback=group.querySelector('[data-paste-status]');
     const lines=text.split(/\r\n|[\r\n]/).map(s=>s.trim()).filter(Boolean);
-    if (lines.some(s=>[...s].length>40 || /[\u0000-\u001f]/.test(s))) {
+    if (lines.some(s=>textLength(s)>40 || /[\u0000-\u001f]/.test(s))) {
       feedback.textContent='한 줄에 항목 하나씩, 40자 이내로 붙여넣어 주세요.';return;
     }
     const list=group.querySelector('[data-entry-list]');
@@ -114,7 +115,7 @@
           if(!name || listed.has(name))continue;
           listed.add(name);
           const label=document.createElement('label'),check=document.createElement('input');
-          check.type='checkbox';check.value=name;check.disabled=taken.has(name)||[...name].length>40;
+          check.type='checkbox';check.value=name;check.disabled=taken.has(name)||textLength(name)>40;
           label.append(check,document.createTextNode(name));choices.append(label);
         }
         status.textContent=listed.size?'':'선택할 그룹원이 없어요.';
@@ -186,8 +187,9 @@
     function read(name, label, unique) {
       const values = Array.from(group.querySelectorAll(`[name="${name}"]`),input=>input.value.trim());
       if (values.length<2 || values.length>10 || values.some(v=>!v)) throw Error(label+' 입력칸을 모두 채워 주세요.');
-      if (values.some(v=>[...v].length>40)) throw Error('각 항목은 40자까지 쓸 수 있어요.');
-      if (unique && new Set(values).size!==values.length) throw Error('같은 이름의 '+label+' 항목을 구분해 주세요.');
+      if (values.some(v=>textLength(v)>40)) throw Error('각 항목은 40자까지 쓸 수 있어요.');
+      const unchangedLabels=values.filter(value=>!value.includes('❤️❤️'));
+      if (unique && new Set(unchangedLabels).size!==unchangedLabels.length) throw Error('같은 이름의 '+label+' 항목을 구분해 주세요.');
       return values;
     }
     const options = read('activity_option',fields[kind].item,kind!=='ladder');

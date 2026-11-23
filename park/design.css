@@ -85,7 +85,6 @@ html body .shell > .col > .main { width: min(100%, calc(2 * var(--park-card-max-
 /* Keep the quote, tags and edge controls in separate parts of the photo. */
 #main .park-photo-cards :is(.photo-card, .reply-card) {
   --top-tools: 0px;
-  --attachment: 0px;
   display: grid;
   grid-template: "face" auto "body" auto / minmax(0, 1fr);
   border: 0;
@@ -95,7 +94,6 @@ html body .shell > .col > .main { width: min(100%, calc(2 * var(--park-card-max-
 }
 #main .park-photo-cards article:has(.save, .card-manage) { --top-tools: 44px; }
 #main .park-photo-cards article:has(.save):has(.card-manage) { --top-tools: 88px; }
-#main .park-photo-cards article:has(.has-card-photo) { --attachment: 46px; }
 /* Expanded text can grow below the face without moving the overlaid controls. */
 #main .park-photo-cards :is(.card-photo-frame, .card-meta, .card-actions) { grid-area: face; }
 #main .park-photo-cards .note-full-body { grid-area: body; }
@@ -103,12 +101,14 @@ html body .shell > .col > .main { width: min(100%, calc(2 * var(--park-card-max-
   display: grid;
   grid-template: minmax(0, 1fr) fit-content(45%) / minmax(0, 1fr);
   align-items: center;
-  row-gap: 8px;
+  /* Preserve content height while reserving a real gap above the 44px
+     bottom action buttons at narrow widths and on reply faces. */
+  row-gap: 3px;
   width: 100%;
   height: auto;
   min-height: 0;
   aspect-ratio: var(--park-card-ratio);
-  padding: 44px 12px;
+  padding: 41px 12px 52px;
 }
 .park-card-background {
   position: absolute;
@@ -134,6 +134,7 @@ html body .shell > .col > .main { width: min(100%, calc(2 * var(--park-card-max-
 #main .park-photo-cards .card-tags {
   position: static;
   grid-row: 2;
+  transform: translateY(6px);
   justify-self: stretch;
   min-height: 0;
   max-height: 100%;
@@ -152,7 +153,7 @@ html body .shell > .col > .main { width: min(100%, calc(2 * var(--park-card-max-
 #main .park-photo-cards .card-meta {
   position: absolute;
   z-index: 2;
-  inset: 6px calc(14px + var(--top-tools) + var(--attachment)) auto 12px;
+  inset: 6px calc(14px + var(--top-tools)) auto 12px;
   display: grid;
   grid-template-columns: 23px auto minmax(0, 1fr);
   align-items: center;
@@ -232,9 +233,11 @@ html body .shell > .col > .main { width: min(100%, calc(2 * var(--park-card-max-
 #main .park-photo-cards :is(.photo-open, .card-actions button):focus-visible { outline: 2px solid white; outline-offset: -3px; }
 #main .park-photo-cards .card-photo-thumb {
   --card-thumb-size: 42px;
-  top: 3px;
-  right: calc(6px + var(--top-tools));
-  bottom: auto;
+  /* Leave room below the photo and keep it above any overlapping tags. */
+  top: auto;
+  right: 54px;
+  bottom: 12px;
+  z-index: 4;
   border-width: 1px;
 }
 #main .park-photo-cards .note-event-badge { top: auto; bottom: 10px; left: 12px; border: 0; }
