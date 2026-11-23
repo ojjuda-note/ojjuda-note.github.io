@@ -29,7 +29,11 @@ const keys = [
   answer('key-day',questionC,'다른 날짜 답변'),
   answer('key-wording',{...questionC,question:'같은 날짜라도 질문이 바뀌면 어떤가요?'},'다른 질문 답변')
 ];
-const sample = {owner,a1,b1,aOwn,a2,b2,c1,keys,initial:[a1,b1,aOwn],more:[a1,a2,b2,c1]};
+const archive=Array.from({length:730},(_,i)=>answer('archive-'+i,{
+  day:new Date(Date.UTC(2026,10,23)-Math.floor(i/2)*86400000).toISOString().slice(0,10),
+  slot:i%2?'am':'pm',question:'질문 '+(i+1)
+},'답변 '+(i+1)));
+const sample = {owner,a1,b1,aOwn,a2,b2,c1,keys,archive,initial:[a1,b1,aOwn],more:[a1,a2,b2,c1]};
 
 // Only account data and the RPC transport are fixtures. The component, grouping,
 // gesture handlers, pagination controller and every stylesheet are production code.
@@ -59,6 +63,13 @@ function installFixture(data) {
           if(signal?.aborted)throw new DOMException('Aborted','AbortError');
           const scenario=new URL(location.href).searchParams.get('fixture');
           if(scenario==='keys')return ok(data.keys);
+          if(scenario==='archive'){
+            const page=Number(args.p_cursor?.page??0),start=page*24;
+            const result=ok(data.archive.slice(start,start+24));
+            result.data.total=data.archive.length;
+            result.data.nextCursor=start+24<data.archive.length?{page:page+1}:null;
+            return result;
+          }
           if(scenario==='closed')return ok(data.initial);
           if(scenario==='single')return ok([data.a1,data.aOwn]);
           if(args.p_cursor&&control.failMore)return {data:null,error:{message:'Could not load the next fixture page'}};
@@ -432,6 +443,16 @@ async function swipe(page,direction,{short=false,vertical=false,target='heading'
       if(i<keys.length-1)await next().click();
     }
 
+    checkpoint='all 730 available question slots can be reached and loop in both directions';
+    await reset('?fixture=archive');await shown([archive[0]],1,24);
+    await swipe(page,'right',{target:'body'});
+    await page.waitForFunction(()=>document.querySelector('#answers .question-position')?.textContent?.trim()==='730 / 730',null,{timeout:45000});
+    await shown([archive[729]],730,730);
+    assert.equal(await page.evaluate(()=>questionSwipeFixture.calls.filter(call=>call.p_cursor).length),30,
+      '730 question cards are reached through all 31 24-answer pages, without an eight-card cap');
+    await next().click();await shown([archive[0]],1,730);
+    await previous().click();await shown([archive[729]],730,730);
+
     checkpoint='320 390 and 750 pixel layouts';
     await reset();
     for(const width of [320,390,750]){
@@ -478,7 +499,7 @@ async function swipe(page,direction,{short=false,vertical=false,target='heading'
     assert.equal(await viewport().getAttribute('data-moving'),'false','the last-to-first loop also respects reduced motion');
     assert.deepEqual(await page.evaluate(()=>questionSwipeFixture.unexpected),[]);
     assert.deepEqual(errors,[],'no browser runtime errors');
-    console.log('PASS pajang question swipe: both edge directions, swipe-to-load pagination, full-panel drag, body touch, scroll, keyboard, callbacks, filters, reduced motion, 320/390/750px');
+    console.log('PASS pajang question swipe: all 730 question slots, both edge directions, swipe-to-load pagination, full-panel drag, body touch, scroll, keyboard, callbacks, filters, reduced motion, 320/390/750px');
     await context.close();
   } catch(error) {
     error.message='['+checkpoint+'] '+error.message;
