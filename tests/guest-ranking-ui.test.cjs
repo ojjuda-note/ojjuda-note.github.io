@@ -28,8 +28,12 @@ world=world.slice(0,boot)+`window.guestFixture={submit:tf,ranking:ef,open:Al,log
     }};
    }};
   });
-  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(origin+'/world.html?place=park&guest=1');await page.waitForFunction(()=>window.guestFixture);
+  const page=await context.newPage(),errors=[];page.on('pageerror',e=>{errors.push(e.message);console.error('[guest-ranking boot] browser exception:',e.stack||e.message);});
+  await page.goto(origin+'/world.html?place=park&guest=1');
+  try {await page.waitForFunction(()=>window.guestFixture);} catch(error) {
+    console.error('[guest-ranking boot] fixture missing:',JSON.stringify({url:page.url(),errors,loaded:await page.evaluate(()=>({ready:document.readyState,main:!!document.querySelector('main'),app:!!document.querySelector('#app'),guestScores:!!window.OjjudaGuestScores,supabase:!!window.supabase,config:!!window.OJJUDA_CONFIG})).catch(e=>({evaluateError:String(e)}))}));
+    throw error;
+  }
   const ranking=await page.evaluate(()=>guestFixture.ranking('breakout'));
   assert.deepEqual(ranking,[{nick:'손님',score:20,me:true,source:'guest_record'}],'the World ranking reader preserves the guest identity');
   const daily=await page.evaluate(()=>calls.find(c=>c.name==='guest_game_ranking'));
