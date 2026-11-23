@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'">
 <script>
 // Old Park URLs and installed shortcuts must exit before heavy Agit scripts start.
 (() => {
@@ -23,7 +24,6 @@
   location.replace(target.href);
 })();
 </script>
-<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",

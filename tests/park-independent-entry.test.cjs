@@ -78,3 +78,12 @@ test('standalone keeps its navigation, old embedded iframe still hides duplicate
   assert.doesNotMatch(read('shared/brand/service-banners.js'),/link\.dataset\.act = 'agit-park'/);
   assert.match(world,/function Wf\(t\)\{return `<a class="note-link/);
 });
+
+test('World and independent Park apply their browser protection before executing scripts',()=>{
+  const policy = "<meta http-equiv=\"Content-Security-Policy\" content=\"object-src 'none'; base-uri 'self'\">";
+  for(const page of ['world.html','park/index.html','park/glasses.html']){
+    const head=read(page).split('</head>')[0];
+    const at=head.indexOf(policy),firstScript=head.indexOf('<script');
+    assert.ok(at>=0 && (firstScript<0||at<firstScript),page+' requires early CSP');
+  }
+});
