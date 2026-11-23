@@ -157,8 +157,9 @@ if (nmixxProfile) {
 const babymonsterProfile = window.OJJUDA_FAN_PROFILES.babymonster;
 if (babymonsterProfile) {
   babymonsterProfile.expanded = true;
-  babymonsterProfile.checkedAt = '2026.11.18';
+  babymonsterProfile.checkedAt = '2026.11.23';
   babymonsterProfile.records = [
+    { year: '2026.11', title: 'MAMA Fans’ Choice 여성 TOP 10', detail: '11.20 교세라 돔 시상 · 발표일과 공연일 동일', href: 'https://en.yna.co.kr/view/AEN20261121001851315' },
     { year: '2024.04', title: '7인조 정식 데뷔', detail: '미니 1집 BABYMONS7ER · SHEESH', href: 'https://ygfamily.com/ko/artists/babymonster/profile' },
     { year: '2026', title: '두 번째 월드투어', detail: '2026–27 춤 (CHOOM) · 아시아·오세아니아 공연', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
     { year: '2026.09', title: '일본 오사카 돔 공연 9만 명', detail: '9.22~23 교세라 돔 2회 · YG 공식 집계', href: 'https://www.ygfamily.com/en/news/report/7581' },
@@ -180,6 +181,7 @@ if (babymonsterProfile) {
   }
   babymonsterProfile.sources.unshift({ label: 'YG 공식 프로필 · 멤버 생일·정식 데뷔', href: 'https://ygfamily.com/ko/artists/babymonster/profile' });
   babymonsterProfile.sources.push({ label: 'YG 공식 디스코그래피 · 첫 디지털 싱글', href: 'https://www.ygfamily.com/en/artists/babymonster/discography/1578' });
+  babymonsterProfile.sources.push({ label: 'Mnet Plus · 2026.11.20 MAMA 공식 4K 무대', href: 'https://mnetplus.world/media/en/videos/6b00200a4c0c30085e2fb1b9' });
 }
 
 /* Hearts2Hearts: 8 birthdays and group achievements confirmed by Japanese official profile.
