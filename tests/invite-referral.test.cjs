@@ -183,12 +183,12 @@ test('loading the helper twice preserves one listener and its pending invitation
 
 test('legacy Park entries forward only a valid invitation and their public route', () => {
   for (const query of ['ref=' + first, 'ref=invalid', 'ref=' + first + '&ref=' + second]) {
-    const location = { href: 'https://ojjuda.kr/park/?' + query + '&access_token=private&card=abc#reply', origin: 'https://ojjuda.kr', replace(value) { this.result = value; } };
+    const location = { href: 'https://ojjuda.kr/note/?' + query + '&access_token=private&card=abc#reply', origin: 'https://ojjuda.kr', replace(value) { this.result = value; } };
     const context = { URL, location }; context.window = context; context.parent = context;
     vm.runInNewContext(routeSource, context);
     const destination = new URL(location.result);
-    assert.equal(destination.pathname, '/world.html');
-    assert.equal(destination.searchParams.get('place'), 'park');
+    assert.equal(destination.pathname, '/park/');
+    assert.equal(destination.searchParams.has('place'), false);
     assert.equal(destination.searchParams.get('card'), 'abc');
     assert.equal(destination.hash, '#reply');
     assert.equal(destination.searchParams.has('access_token'), false);

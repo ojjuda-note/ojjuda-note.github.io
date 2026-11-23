@@ -3,8 +3,18 @@
   const source = new URL(location.href);
   let hosted = false;
   try { hosted = parent !== window && parent.location.origin === location.origin && parent.location.pathname === '/world.html'; } catch {}
-  // Direct Park and its embedded compatibility view both render their own cards.
-  if (source.pathname.startsWith('/park/')) return;
+  // Direct Park and legacy iframes render without a second navigation.
+  // Strip secret callback values from a copied URL without losing the page.
+  if (source.pathname.startsWith('/park/')) {
+    const clean = new URL(source);
+    for (const key of ['access_token','refresh_token','id_token','token','code','password','session_token']) {
+      clean.searchParams.delete(key);
+    }
+    if (clean.href !== source.href) {
+      try { window.history?.replaceState(window.history.state, '', clean.pathname + clean.search + clean.hash); } catch {}
+    }
+    return;
+  }
   const target = new URL('/park/', location.origin); target.hash=source.hash;
   for (const key of ['card','keep','compose','view']) if (source.searchParams.has(key)) target.searchParams.set(key,source.searchParams.get(key));
   // Preserve bounded campaign labels through the legacy park redirect; never carry arbitrary URLs.

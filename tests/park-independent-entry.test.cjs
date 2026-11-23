@@ -45,6 +45,16 @@ test('Park and Note legacy entry files do not bounce back into World',()=>{
     'https://fixture.test/park/glasses.html');
 });
 
+test('direct Park removes secret callback parameters without redirecting to World',()=>{
+  const url=new URL('https://fixture.test/park/?card=abc&access_token=secret&refresh_token=secret#reply');
+  let replaced=null;
+  const scope={URL,location:{href:url.href,origin:url.origin,replace(){throw Error('no redirect');}}};
+  scope.window=scope;scope.parent=scope;
+  scope.history={state:{original:true},replaceState(_state,_title,path){replaced=path;}};
+  vm.runInNewContext(route,scope);
+  assert.equal(replaced,'/park/?card=abc#reply');
+});
+
 test('standalone keeps its navigation, old embedded iframe still hides duplicate chrome',()=>{
   const css=read('park/embedded.css');
   assert.match(park,/dataset\.parkEmbedded = 'true'/);
