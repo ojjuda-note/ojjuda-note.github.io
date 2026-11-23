@@ -311,18 +311,31 @@
 .draw-stage svg ellipse{fill:#f4fff6;stroke:#4fcfae;stroke-width:2;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 4px #72fbd4)}
 .draw-stage svg ellipse:not([cx]){visibility:hidden}
 .draw-stage .ladder-labels>*{margin:3px}
-.draw-stage .ladder-labels button,.draw-stage .ladder-finish span{
+.ladder-toolbar{display:flex;justify-content:flex-end;align-items:center;min-height:32px;margin:-3px -2px -5px}
+.ladder-toolbar button{
+  min-height:30px;padding:5px 12px;border:1px solid #b9ecd3;border-radius:9px;
+  background:linear-gradient(#edfff2,#9fdabd);color:#163c30;
+  font-size:.82rem;font-weight:750;box-shadow:0 2px 0 #0005;
+}
+.ladder-toolbar button[aria-pressed=true]{background:linear-gradient(#f8dca1,#ddb76d);border-color:#ffedd0;color:#503511}
+.draw-stage .ladder-labels button{
   border:1px solid #8dcabc61;border-radius:8px;
   background:linear-gradient(#285851,#183a3a);color:#effaf6;
 }
-.draw-stage .ladder-labels button[aria-pressed=true],.draw-stage .ladder-finish .chosen{
+.draw-stage .ladder-labels button[aria-pressed=true],.draw-stage .ladder-labels button.chosen,.draw-stage .ladder-finish .chosen,.draw-stage .ladder-finish button[aria-pressed=true]{
   background:linear-gradient(#dcfadd,#84caab);border-color:#edfdf3;color:#16352c;
   box-shadow:0 0 12px #7fffd570;
 }
 .draw-stage .ladder-labels button:disabled{opacity:1}
-.draw-stage .ladder-finish span{padding:5px;display:flex;align-items:center;justify-content:center;gap:5px}
-.draw-stage .ladder-finish i{width:7px;height:7px;transform:rotate(45deg);border:1px solid currentColor;border-radius:1px}
-.draw-stage .ladder-finish .chosen i{background:currentColor}
+.draw-stage .ladder-finish button{
+  display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px;
+  min-width:0;min-height:50px;padding:4px 2px;
+}
+.draw-stage .ladder-finish button span{font-size:.78rem;line-height:1.1;font-weight:750}
+.draw-stage .ladder-finish button small{
+  display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-size:.68rem;line-height:1.35;
+}
 .draw-display{
   position:relative;overflow:hidden;min-height:63px;
   display:grid;place-items:center;text-align:center;
