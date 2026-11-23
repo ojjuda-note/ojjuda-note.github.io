@@ -54,6 +54,8 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'qEW5IPfGLUI', title: 'EASY', kind: '안무 영상', source: 'LE SSERAFIM / HYBE LABELS' }
   ],
   twice: [
+    { id: 'WuPCu-d35gY', title: '나연 · BABY ANGEL M/V Teaser 2', kind: '뮤직비디오 티저', source: 'JYP Entertainment · 2026.11.19' },
+    { id: 'KOZ_7ZSO470', title: '나연 · BABY ANGEL M/V Teaser 1', kind: '뮤직비디오 티저', source: 'JYP Entertainment · 2026.11.17' },
     { id: 'LFE1pgcdc18', title: 'MISAMO × ReFa MUSE · Hair Couture / Heart 메이킹', kind: '메이킹', source: 'ReFa 공식 채널 · 2026.11.16' },
     { id: 'ufBI2lYiuKU', title: '쯔위 × OWNDAYS · 브랜드 홍보대사 공식 영상', kind: '공식 광고 영상', source: 'OWNDAYS Singapore · 2026.11.16' },
     { id: 'x64Vby_D3Ps', title: '나연 · NA-sty SNEAK PEEK', kind: '공식 음반 프리뷰', source: 'JYP Entertainment · 2026.11.13' },
