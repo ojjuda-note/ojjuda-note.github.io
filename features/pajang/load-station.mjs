@@ -19,6 +19,19 @@ async function verifiedBytes(data,hash){
   return bytes;
 }
 
+// Large member-only styles can download in parallel with Auth and the private
+// program. Never reveal React content until both sheets have actually loaded.
+async function waitForStationStyles(){
+  await Promise.all([...document.querySelectorAll('link[data-pajang-station-style]')].map(link=>{
+    if(link.dataset.pajangStyleError==='true')return Promise.reject(Error('missing_style'));
+    if(link.sheet){link.media='all';return Promise.resolve();}
+    return new Promise((resolve,reject)=>{
+      link.addEventListener('load',()=>{link.media='all';resolve();},{once:true});
+      link.addEventListener('error',()=>reject(Error('missing_style')),{once:true});
+    });
+  }));
+}
+
 function startFeed(db,station){
     const controller=new AbortController();
     const scope=JSON.stringify([station.me.id,station.day,station.slot]);
@@ -95,6 +108,7 @@ export async function mountStation(beforeMount,savedStation,prepared,destination
     };
     window.pajangState=station;
     await import(script);
+    await waitForStationStyles();
     await new Promise(resolve => requestAnimationFrame(resolve));
     const welcome=document.getElementById('welcome');
     if(welcome)welcome.hidden=true;
