@@ -46,8 +46,9 @@ const returnToAgit=async(page,frame)=>{
  await page.locator('[data-park-app] iframe').waitFor({state:'hidden'});
 };
 const enterParkFromAgit=async page=>{
- await page.locator('.bottomnav:visible [data-tab="my"],.sidenav:visible [data-tab="my"]').click();
- await page.locator('.ojjuda-service-banner[data-service="park"]').click();
+ // The real Agit banner opens standalone Park. Enter the retained iframe
+ // deliberately here to test legacy embedded Back and composer behavior.
+ await page.evaluate(()=>parkFixture.enter('park'));
  const iframe=page.locator('[data-park-app] iframe');await iframe.waitFor();
  const frame=await (await iframe.elementHandle()).contentFrame();
  await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
