@@ -196,6 +196,60 @@ test('Pajang standalone entry defers shared inbox and charging code until first 
   assert.match(shell,/if\(target\?\.isConnected\)target\.click\(\)/);
   for(const file of ['index.html','station.html']){
     const html=fs.readFileSync(path.join(root,'features/pajang',file),'utf8');
-    assert.match(html,/shell\.mjs\?v=20261123-independent-toolbar1/);
+    assert.match(html,/shell\.mjs\?v=20261123-toolbar-race1/);
   }
+});
+
+
+function deferredToolbarHarness(t){
+  const dom=new JSDOM('<button data-ju-charge-open>충전</button><button data-notifications-open>알림</button>',{
+    url:'https://ojjuda.kr/features/pajang/station.html',pretendToBeVisual:true
+  });
+  const w=dom.window;
+  t.after(()=>w.close());
+  let resolveImport, count=0, loads=0;
+  const requested=new Promise(resolve=>{resolveImport=resolve;});
+  const source=fs.readFileSync(path.join(root,'features/pajang/shell.mjs'),'utf8')
+    .split('// Optional measurement never delays')[0]
+    .replace("import('./account-toolbar.mjs?v=20261123-independent-toolbar1')",'loadToolbar()');
+  const run=new Function('window','document','location','requestAnimationFrame','setTimeout','loadToolbar',source);
+  run(w,w.document,w.location,()=>0,()=>0,()=>{loads++;return requested;});
+  return {
+    w,
+    charge:w.document.querySelector('[data-ju-charge-open]'),
+    bell:w.document.querySelector('[data-notifications-open]'),
+    count:()=>count,
+    loads:()=>loads,
+    async loaded(){
+      resolveImport({installPajangToolbar(){
+        w.document.addEventListener('click',event=>{
+          if(event.target.closest?.('[data-ju-charge-open],[data-notifications-open]'))count++;
+        });
+      }});
+      await settle();
+    }
+  };
+}
+
+test('deferred Pajang toolbar does not replay stale clicks after navigation or form locking',async t=>{
+  const successful=deferredToolbarHarness(t);
+  successful.charge.click();assert.equal(successful.count(),0);
+  await successful.loaded();assert.equal(successful.count(),1,'one valid early tap is replayed once');
+
+  const moved=deferredToolbarHarness(t);
+  moved.bell.click();moved.w.history.pushState({},'', '?tab=profile');
+  await moved.loaded();assert.equal(moved.count(),0,'the previous route cannot open a dialog');
+
+  const blockedBefore=deferredToolbarHarness(t);
+  blockedBefore.w.OjjudaPajangHistory={canLeave:()=>false};
+  blockedBefore.charge.click();assert.equal(blockedBefore.loads(),0,'an unsaved form blocks the early tap');
+
+  const blockedAfter=deferredToolbarHarness(t);
+  let locked=false;blockedAfter.w.OjjudaPajangHistory={canLeave:()=>!locked};
+  blockedAfter.charge.click();locked=true;
+  await blockedAfter.loaded();assert.equal(blockedAfter.count(),0,'a form locked during load stays closed');
+
+  const left=deferredToolbarHarness(t);
+  left.charge.click();left.w.dispatchEvent(new left.w.Event('pagehide'));
+  await left.loaded();assert.equal(left.count(),0,'leaving cancels a pending tap');
 });
