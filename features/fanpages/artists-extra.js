@@ -297,7 +297,7 @@
       id: 'hearts2hearts', name: 'Hearts2Hearts', korean: '하츠투하츠', category: 'girl', fan: 'S2U', agency: 'SM Entertainment',
       members: ['지우', '카르멘', '유하', '스텔라', '주은', '에이나', '이안', '예온'],
       debut: '2025.02.24', debutWork: 'The Chase', songs: ['The Chase', 'Butterflies'],
-      checkedAt: '2026.11.20',
+      checkedAt: '2026.11.23',
       concept: '서로 다른 마음을 이어 하나의 하모니를 만드는 여덟 멤버.',
       official: 'https://hearts2heartsofficial.jp/', youtube: 'https://www.youtube.com/@hearts2hearts.official',
       photo: '260221 HEARTS2HEARTS @ 2026 Fanmeeting HEARTS2HOUSE.jpg', photoLabel: 'HEARTS2HOUSE 팬미팅', photoYear: '2026', credit: 'sublimitas viii', license: 'CC BY-SA 4.0',
@@ -318,8 +318,6 @@
         { title: 'The Chase', date: '2025.02.24', type: '데뷔 싱글', songs: ['The Chase', 'Butterflies'], href: 'https://www.youtube.com/watch?v=kxUA2wwYiME' }
       ],
       appearances: [
-        { date: '2026-11-21', title: 'ANIMAX MUSIX 2026 DAY2 출연', sub: '일본 요코하마 아레나 · 13:00 입장 / 14:30 공연 · 주최 NTT도코모·ANIMAX, 협찬 도부철도', href: 'https://hearts2heartsofficial.jp/news/2026090802/' },
-        { date: '2026-11-22', title: '일본 첫 팬 이벤트 READY! S2U', sub: '도쿄 아리아케 아레나 · 18:00 시작 (17:00 입장)', href: 'https://hearts2heartsofficial.jp/news/2026081203/' },
         { date: '2026-11-23', title: '일본 첫 팬 이벤트 READY! S2U', sub: '도쿄 아리아케 아레나 · 16:00 시작 (15:00 입장)', href: 'https://hearts2heartsofficial.jp/news/2026081203/' },
         { date: '2026-11-25', title: 'ABEMA 일본 데뷔 기념 특집 방송', sub: '일본 ABEMA K WORLD 채널 · 21:00 JST 방송 · 8월 일본 데뷔 행사와 도쿄 버스 특별편', href: 'https://hearts2heartsofficial.jp/news/20261117/' },
         { date: '2026-11-28', title: 'Winter Special Live at UNIVERSAL STUDIOS JAPAN', sub: '오사카 USJ 그래머시 파크 · 11:00 시작 (09:45 입장) · 주최 USJ', href: 'https://hearts2heartsofficial.jp/news/20260925/' },
@@ -327,6 +325,9 @@
       ],
       schedules: [{ title: '일본 공식 일정·공지', sub: '팬 이벤트·공연·발매·변경 확인', href: 'https://hearts2heartsofficial.jp/news/' }],
       news: [
+        { date: '2026.11.21', tag: '수상', title: '2026 MAMA RUDE! 베스트 송 TOP10 수상 (11.21 발표)', href: 'https://en.yna.co.kr/view/AEN20261121001851315' },
+        { date: '2026.11.20', tag: '수상', title: '2026 MAMA 팬스 초이스 여성 TOP10 수상 (11.20 발표)', href: 'https://www.soompi.com/article/1889291wpp/winners-of-2026-mama-awards-chapter-1' },
+        { date: '2026.11.20', tag: '공식무대', title: '2026 MAMA ICONIC HEART + RUDE! 무대 · Mnet 공식 4K', href: 'https://www.mnetplus.world/media/ko/videos/6b002d222a041e9911feb962' },
         { date: '2026.11.20', tag: '예매', title: 'READY! S2U 11.22~23 팬 이벤트 잔여석 · 11.21 12:00부터 선착순 판매', href: 'https://hearts2heartsofficial.jp/news/20261120/' },
         { date: '2026.11.19', tag: '이벤트', title: '11.22~23 ICONIC HEART CD 현장 구매 · 한정 포토카드와 추첨회 공지', href: 'https://hearts2heartsofficial.jp/news/20261119/' },
         { date: '2026.11.19', tag: '팬클럽', title: 'READY! S2U 현장 팬클럽 추첨·디지털 스티커·포토스폿 안내', href: 'https://hearts2heartsofficial.jp/news/2026111903/' },
