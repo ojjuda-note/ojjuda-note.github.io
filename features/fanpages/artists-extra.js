@@ -407,7 +407,7 @@
       members: ['지유', '이솔', '수이', '하음', '키야'],
       debut: '2025.03.24', debutWork: 'UNCUT GEM', songs: ['I DO ME', 'BTG'],
       concept: '틀에 얽매이지 않는 감각과 자유로운 에너지.',
-      checkedAt: '2026.11.20',
+      checkedAt: '2026.11.23',
       official: 'https://www.starship-ent.com/musician/kiiikiii', youtube: 'https://www.youtube.com/@KiiiKiii_starship',
       photo: 'KiiiKiii in August 2026.png', photoLabel: '2026년 단체', photoYear: '2026', credit: 'K-POPIT 케이팝잇', license: 'CC BY 4.0',
       morePhotos: [
@@ -422,15 +422,14 @@
         { title: 'UNCUT GEM', date: '2025.03.24', type: '데뷔 미니 1집 · I DO ME / BTG 수록', songs: ['DEBUT SONG', 'GROUNDWORK', 'I DO ME', 'THERE THEY GO', 'BTG', '한 개뿐인 (ONE OFF)'], href: 'https://music.apple.com/us/album/uncut-gem-ep/1800872866' }
       ],
       appearances: [
-        { date: '2026-11-21', title: '2026 MAMA AWARDS · CHAPTER 2', sub: '일본 오사카 교세라돔 · CJ ENM 공식 출연 발표', href: 'https://www.cj.net/jp/press-release/view/1132' },
         { date: '2027-01-16', title: 'D AWARDS 2027 · 파리 DAY 2', sub: '프랑스 낭테르 Plenitude Arena · 1월 16일 · 주최사 공식 라인업', href: 'https://d-awards.world/' }
       ],
       schedules: [
         { title: '공식 활동·공지', sub: 'KiiiKiii 공식 사이트', href: 'https://kiiikiii.kr/' },
-        { title: '2026 MAMA 출연 공지', sub: '11.21 CHAPTER 2 · 주최사', href: 'https://www.cj.net/jp/press-release/view/1132' },
         { title: 'D AWARDS 2027 공식 라인업', sub: '2027.01.16 파리 DAY 2 · 주최사', href: 'https://d-awards.world/' }
       ],
       news: [
+        { date: '2026.11.21', tag: '무대', title: '2026 MAMA · KiiiKiii·izna·I.O.I 합동 무대 GIRLS NEVER STOP 공식 영상', href: 'https://www.mnetplus.world/media/ko/videos/6b01412b2ef17c7722dc6aba' },
         { date: '2026.11.16', tag: '영상', title: '2027학년도 수능 응원 메시지 공식 영상 공개', href: 'https://www.youtube.com/watch?v=nKYMwWde7g4' },
         { date: '2026.11.16', tag: '수상', title: 'MMA2026 · TOP10·베스트 퍼포먼스(여자)·베스트 뮤직스타일 3관왕', href: 'https://www.bntnews.co.kr/article/view/bnt202611160169' },
         { date: '2026.11.14', tag: '영상', title: '하음 · I Love You 3000 커버 공식 영상 공개', href: 'https://www.youtube.com/watch?v=kyzZ5uEzbsY' },
@@ -444,7 +443,7 @@
         { date: '2026.04.27', tag: '광고', title: 'PANDORA × 키키 · Be Your Lucky Charm 화보 공개', href: 'https://www.marieclairekorea.com/fashion/2026/04/pandora/' }
       ],
       merch: [
-        { title: '2026 MAMA FAN FESTA · WhyKiiiKiii 현장 한정 포토카드', sub: '오사카 난바광장 · 11.21 10:00~20:00 JST · 앨범 1장당 멤버별 5종 중 랜덤 1장 · 수량 한정, 실재고 확인 필요', href: 'https://www.universal-music.co.jp/kiiikiii/news/2026-11-09/' },
+        { title: '2026 MAMA FAN FESTA · WhyKiiiKiii 현장 한정 포토카드', sub: '11.19~21 현장 행사 종료 · 오사카 난바광장 · 앨범 구매 특전 5종 중 랜덤 1장 · 추가 판매·재고 미확인', href: 'https://www.universal-music.co.jp/kiiikiii/news/2026-11-09/' },
         { title: 'WhyKiiiKiii · PLANET SUNSET 한정반', sub: '스타쉽스퀘어 공식 앨범 · 판매·재고는 판매처 확인', href: 'https://starship-square.com/product/planet-sunset-ver-kiiikiii-ep-whykiiikiii-%ED%95%9C%EC%A0%95%EB%B0%98/2077/category/1/display/9/' },
         { title: 'WhyKiiiKiii · AMENITIES ver.', sub: '스타쉽스퀘어 공식 앨범 · 재고는 판매처에서 확인', href: 'https://starship-square.com/product/amenities-ver-kiiikiii-ep-whykiiikiii/2061/category/58/display/1/' },
         { title: 'Delulu Pack · Headphone ver.', sub: '스타쉽스퀘어 공식 앨범 · 재고는 판매처에서 확인', href: 'https://starship-square.com/product/headphone-ver-kiiikiii-the-2nd-ep-delulu-pack/1874/' },
