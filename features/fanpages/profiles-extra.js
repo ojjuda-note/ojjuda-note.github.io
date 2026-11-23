@@ -158,8 +158,8 @@ const babymonsterProfile = window.OJJUDA_FAN_PROFILES.babymonster;
 if (babymonsterProfile) {
   babymonsterProfile.expanded = true;
   babymonsterProfile.checkedAt = '2026.11.23';
+  babymonsterProfile.awards.unshift({ year: '2026.11', title: '2026 MAMA Fans’ Choice 여성 TOP 10', detail: '11.20 교세라 돔 공식 수상 · 연합뉴스 11.21 전체 수상 결과 확인', href: 'https://en.yna.co.kr/view/AEN20261121001851315' });
   babymonsterProfile.records = [
-    { year: '2026.11', title: 'MAMA Fans’ Choice 여성 TOP 10', detail: '11.20 교세라 돔 시상 · 발표일과 공연일 동일', href: 'https://en.yna.co.kr/view/AEN20261121001851315' },
     { year: '2024.04', title: '7인조 정식 데뷔', detail: '미니 1집 BABYMONS7ER · SHEESH', href: 'https://ygfamily.com/ko/artists/babymonster/profile' },
     { year: '2026', title: '두 번째 월드투어', detail: '2026–27 춤 (CHOOM) · 아시아·오세아니아 공연', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
     { year: '2026.09', title: '일본 오사카 돔 공연 9만 명', detail: '9.22~23 교세라 돔 2회 · YG 공식 집계', href: 'https://www.ygfamily.com/en/news/report/7581' },
