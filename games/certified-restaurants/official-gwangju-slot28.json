@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-10",
+  "updatedAt": "2026-11-23",
   "sourceName": "광주관광(전남광주통합특별시) 공식 추천식당 상세",
   "sourceUrls": [
     "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1183",
@@ -19,9 +19,10 @@
     "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=640",
     "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1193",
     "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1376",
-    "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1206"
+    "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1206",
+    "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=427"
   ],
-  "sourceScope": "기존 광주관광 공식 소개 10곳에 2순환28회차 8곳 추가(동구1·서구2·북구4·광산구1). 남구 기존 수록 업소 뜨락의아침 공식 선정·주소 대조. 광주5개구/전남 전체 전수 확인 아님.",
+  "sourceScope": "기존 광주관광 공식 소개 10곳에 2순환28회차 8곳 추가(동구1·서구2·북구4·광산구1). 남구 기존 수록 업소 뜨락의아침 공식 선정·주소 대조. 광주5개구/전남 전체 전수 확인 아님.; 2026-11-23 2순환54회차 광주관광 공식 2024년 선정 이력 1곳 추가(전수 아님)",
   "verificationLimit": "광주관광은 옛 광주광역시 관광정보를 제공하는 공공 페이지. 현재 영업·미쉐린/블루리본 정규 선정과 구분.",
   "coordinatePolicy": "라그로쏘 기존 본목록 1곳은 상호·지점·도로명주소 일치 공개 상가 좌표로 보강. 이번 신규 8곳은 개별 수치 좌표 미확보, lat/lng null 및 임의 근사값 금지.",
   "completeRegionalCollection": false,
@@ -529,6 +530,35 @@
       ],
       "addressSourceUrl": "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1206",
       "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gwangju-c2s54-427",
+      "name": "최다연샤브샤브",
+      "category": "한식",
+      "region": "광주",
+      "district": "서구",
+      "address": "전남광주통합특별시 서구 풍암1로21번길 3-16 1층(풍암동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "샤브샤브"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "광주관광 2024년 맛집 선정 이력",
+          "year": 2024,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=427",
+          "sourceName": "광주관광 오매광주 공식 추천식당",
+          "verifiedAt": "2026-11-23",
+          "status": "official_local_historical_selection",
+          "selectionCriteria": "관광 공식 2024년 맛집 표시; 현재 영업 또는 현행 블루리본·미쉐린 등급 확인 아님"
+        }
+      ],
+      "addressSourceUrl": "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=427",
+      "addressSourceCheckedAt": "2026-11-23",
+      "addressCurrentOperatingStatus": "unverified"
     }
   ],
   "provincialSlot54": {
@@ -591,5 +621,26 @@
     ],
     "coordinateSourceUrl": "https://acs.purpleo.kr/article/8258",
     "statusCaveat": "옛 관광기관 수록/과거 선정은 현재 영업을 보장하지 않음"
+  },
+  "cycle2Slot54": {
+    "cycle": 2,
+    "slot": 54,
+    "scheduledAtKST": "2026-11-23T06:00:00+09:00",
+    "checkedAt": "2026-11-23",
+    "addedRestaurantIds": [
+      "local-gwangju-c2s54-427"
+    ],
+    "newRestaurantCount": 1,
+    "modifiedRestaurantCount": 0,
+    "coordinatesAdded": 0,
+    "locationsExcluded": 0,
+    "duplicateExcluded": [
+      "local-gwangju-1411"
+    ],
+    "unverified": [
+      "current operation",
+      "coordinates",
+      "full regional coverage"
+    ]
   }
 }
