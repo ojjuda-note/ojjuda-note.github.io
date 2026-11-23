@@ -1,10 +1,11 @@
-/* Legacy shared links and direct app loads enter the single World service. */
+/* Legacy Note links enter the standalone Park; Park itself never redirects to World. */
 (() => {
   const source = new URL(location.href);
   let hosted = false;
   try { hosted = parent !== window && parent.location.origin === location.origin && parent.location.pathname === '/world.html'; } catch {}
-  if (source.pathname.startsWith('/park/') && hosted) return;
-  const target = new URL('/world.html', location.origin); target.searchParams.set('place','park'); target.hash=source.hash;
+  // Direct Park and its embedded compatibility view both render their own cards.
+  if (source.pathname.startsWith('/park/')) return;
+  const target = new URL('/park/', location.origin); target.hash=source.hash;
   for (const key of ['card','keep','compose','view']) if (source.searchParams.has(key)) target.searchParams.set(key,source.searchParams.get(key));
   // Preserve bounded campaign labels through the legacy park redirect; never carry arbitrary URLs.
   const campaignKeys=['utm_source','utm_medium','utm_campaign','utm_content'];
@@ -21,7 +22,7 @@
   }
   const refs=source.searchParams.getAll('ref');
   if(refs.length===1&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(refs[0]))target.searchParams.set('ref',refs[0].toLowerCase());
-  if (source.pathname.endsWith('/glasses.html')) target.searchParams.set('view','glasses');
+  if (source.pathname.endsWith('/glasses.html')) target.pathname='/park/glasses.html';
   if (parent !== window && hosted) parent.location.replace(target.href);
   else location.replace(target.href);
 })();

@@ -61,15 +61,20 @@ const checkWritingCopy=async frame=>{
  assert.equal(await input.evaluate(el=>el.matches(':placeholder-shown')&&el.scrollHeight<=el.clientHeight+1),true,'the complete greeting fits the empty input');
  assert.equal(await input.evaluate(el=>{const p=el.getBoundingClientRect(),photo=el.closest('.compose-photo').getBoundingClientRect(),body=el.closest('.composer-body').getBoundingClientRect();return p.top>=photo.top&&p.bottom<=photo.bottom&&p.left>=photo.left&&p.right<=photo.right&&p.top>=body.top&&p.bottom<=body.bottom; }),true,'the greeting appears inside the visible photo card before writing');
 };
-// Old bookmarks, direct feature URLs and authenticated returns share one World entry.
+// Legacy Note bookmarks now enter Park directly, without the 590 KB World document.
 for(const [from,to] of [
- ['/note/?card=abc&keep=memo','/world.html?place=park&card=abc&keep=memo'],
- ['/note/glasses.html','/world.html?place=park&view=glasses'],
- ['/park/?compose=memo','/world.html?place=park&compose=memo']]){
+ ['/note/?card=abc&keep=memo','/park/?card=abc&keep=memo'],
+ ['/note/glasses.html','/park/glasses.html']]){
  let result;const url=new URL(from,'https://fixture.test');const scope={URL,location:{href:url.href,origin:url.origin,replace:href=>result=href}};scope.window=scope;scope.parent=scope;
  vm.runInNewContext(read('park/route.js'),scope);assert.equal(result,'https://fixture.test'+to);
 }
+{
+ let result;const url=new URL('/park/?compose=memo','https://fixture.test');const scope={URL,location:{href:url.href,origin:url.origin,replace:href=>result=href}};scope.window=scope;scope.parent=scope;
+ vm.runInNewContext(read('park/route.js'),scope);assert.equal(result,undefined,'Park renders itself without reloading World');
+}
 let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
+ // Keep this fixture on the legacy iframe path to test compatibility separately.
+ world=world.replace(/<script>\s*\/\/ Old Park URLs[\s\S]*?<\/script>/,'');
 world=world.replace('<script type="module">',`<script>${['app/world/world-themes.js','app/world/world-navigation.js','app/world/world-pull-refresh.js','shared/viewport/mobile-viewport.js','features/home/agit-hub.js','shared/brand/service-banners.js','park/world-park-notes.js'].map(read).join('\n')}</script><script type="module">`);
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
@@ -84,7 +89,7 @@ OjjudaDecorations.install({getUserId:()=>session?.user?.id,client:{auth:{onAuthS
 window.populateParkFixture=()=>{feed.hidden=false;detail.hidden=true;document.getElementById('connection-status').hidden=true;
  document.getElementById('feed-list').replaceChildren(...Array.from({length:9},(_,i)=>cardElement({id:'00000000-0000-4000-8000-'+String(i+1).padStart(12,'0'),kind:'memo',body:'공원에서 나누는 오늘의 이야기 '+(i+1),tags:['일상'],background_key:'plain',created_at:new Date().toISOString()})));
 };`;
-const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace('</body>',()=>'<script>'+['app/world/world-themes.js','park/route.js','shared/viewport/mobile-viewport.js','shared/brand/service-banners.js','features/wallet/ju-decorations.js','note/feed-swipe.js','note/composer-tools.js','note/preview.js','note/navigation.js'].map(read).join('\n')+'\n'+identity+'\n'+read('park/integration.js')+'</script></body>');
+const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace('<head>','<head><script>document.documentElement.dataset.parkEmbedded="true"</script>').replace('</body>',()=>'<script>'+['app/world/world-themes.js','park/route.js','shared/viewport/mobile-viewport.js','shared/brand/service-banners.js','features/wallet/ju-decorations.js','note/feed-swipe.js','note/composer-tools.js','note/preview.js','note/navigation.js'].map(read).join('\n')+'\n'+identity+'\n'+read('park/integration.js')+'</script></body>');
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox','--disable-dev-shm-usage']});
  try{

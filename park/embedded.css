@@ -1,4 +1,4 @@
-/* World supplies the header; Park inherits the same automatic theme. */
+/* Standalone Park owns its own shell; only legacy World iframes hide Park chrome. */
 :root { --park-danger: #b13d4c; }
 :root[data-theme=dark] { --park-danger: #ff9faa; }
 html { overscroll-behavior-y: contain; scroll-padding-bottom: 24px; }
@@ -6,15 +6,15 @@ body { min-height: 0; background: var(--bg); }
 html body .park-skeleton-photo { background: linear-gradient(140deg, var(--accent-soft), color-mix(in srgb, var(--accent) 18%, var(--surface)) 60%, color-mix(in srgb, var(--accent) 28%, var(--surface))); }
 html body .button.primary:not(:disabled):hover { background: color-mix(in srgb, var(--accent) 88%, var(--ink)); border-color: color-mix(in srgb, var(--accent) 88%, var(--ink)); }
 html body .dialog-backdrop { background: color-mix(in srgb, var(--ink) 35%, transparent); }
-html body .shell { display: block; min-height: 0; grid-template-columns: minmax(0, 1fr); }
-html body .shell > .side,
-html body .shell > .col > .mobile-top,
-html body .shell .bottomnav,
-html body .shell .write-fab,
-html body #note-my-screen { display: none !important; }
-html body .shell > .col { min-width: 0; margin: 0; }
-html body .shell > .col > .main { width: min(100%, 1120px); margin: 0 auto; padding: 12px 14px 72px; }
-html body.note-my-open .main > :not(.note-my-screen):not([hidden]) { display: block !important; }
+html[data-park-embedded] body .shell { display: block; min-height: 0; grid-template-columns: minmax(0, 1fr); }
+html[data-park-embedded] body .shell > .side,
+html[data-park-embedded] body .shell > .col > .mobile-top,
+html[data-park-embedded] body .shell .bottomnav,
+html[data-park-embedded] body .shell .write-fab,
+html[data-park-embedded] body #note-my-screen { display: none !important; }
+html[data-park-embedded] body .shell > .col { min-width: 0; margin: 0; }
+html[data-park-embedded] body .shell > .col > .main { width: min(100%, 1120px); margin: 0 auto; padding: 12px 14px 72px; }
+html[data-park-embedded] body.note-my-open .main > :not(.note-my-screen):not([hidden]) { display: block !important; }
 html body .back-button { margin-top: 4px; }
 .park-settings { display: grid; gap: 18px; }
 .park-settings-group > h3 { margin: 0 0 8px; color: var(--ink-2); font: 600 12px var(--font-b); }
@@ -30,5 +30,5 @@ html body .back-button { margin-top: 4px; }
 .park-settings-back { width: 44px; height: 44px; padding: 11px; }
 .park-settings-back > svg { width: 22px; height: 22px; }
 @media (min-width: 900px) {
-  html body .shell > .col > .main { padding: 16px 24px 72px; }
+  html[data-park-embedded] body .shell > .col > .main { padding: 16px 24px 72px; }
 }

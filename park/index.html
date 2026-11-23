@@ -1,11 +1,18 @@
 <!doctype html>
 <html lang="ko">
 <head>
+  <script>
+  // Preserve the legacy World iframe only when that exact same-origin host owns us.
+  try {
+    if (parent !== window && parent.location.origin === location.origin && parent.location.pathname === '/world.html')
+      document.documentElement.dataset.parkEmbedded = 'true';
+  } catch {}
+  </script>
   <script src="/config.js?v=20261111-shared-member-auth1" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2" defer></script>
   <script src="/park/opening.js?v=20261123-park-first-paint1" async></script>
 <script src="/shared/location/location.js?v=20261119-kma-current1" defer></script>
-  <script src="/park/route.js?v=20261121-campaign1"></script>
+  <script src="/park/route.js?v=20261123-independent-park1"></script>
   <script src="/shared/auth/invite-referral.js?v=20261119-invite-referral1" defer></script>
 <script src="/shared/diagnostics/diagnostics.js?v=20261106-source-folders1" defer></script>
   <link rel="stylesheet" href="/shared/auth/signup-identity.css?v=20261106-source-folders1" media="print" onload="this.media='all'">
@@ -15,10 +22,10 @@
   <meta name="theme-color" content="#2674c5">
   <title>오쭈다 아지트 · 공원 | 오늘 하루 어땠나요? 괜찮았나요</title>
   <meta name="description" content="오늘 하루 어땠나요? 괜찮았나요. 오늘의 마음을 익명카드로 나누고 서로 공감해 보세요. 오쭈다 아지트 · 공원은 개발 중입니다.">
-  <link rel="canonical" href="https://ojjuda.kr/world.html?place=park">
+  <link rel="canonical" href="https://ojjuda.kr/park/">
   <link rel="icon" href="/park/assets/icon-192.png?v=seasonal-v1-autumn-d0c431c01ed9" type="image/png">
   <link rel="apple-touch-icon" href="/park/assets/apple-touch-icon.png?v=seasonal-v1-autumn-d0c431c01ed9">
-  <link rel="manifest" href="/park/manifest.webmanifest?v=20261119-illustrated-icons-1">
+  <link rel="manifest" href="/park/manifest.webmanifest?v=20261123-independent-park1">
   <meta name="apple-mobile-web-app-title" content="오쭈다 공원">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,10 +53,10 @@
 <script src="/shared/media/photo-protection.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/shared/viewport/mobile-viewport.css?v=20261106-source-folders1">
 <script src="/shared/viewport/mobile-viewport.js?v=20261106-source-folders1" defer></script>
-<link rel="stylesheet" href="/park/embedded.css?v=20261119-auto-theme1">
+<link rel="stylesheet" href="/park/embedded.css?v=20261123-independent-park1">
 <link rel="stylesheet" href="/features/account/settings-list.css?v=20261119-guest-account1" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="/shared/brand/service-banners.css?v=20261122-settings-banners1">
-<script src="/shared/brand/service-banners.js?v=20261122-settings-banners1" defer></script>
+<script src="/shared/brand/service-banners.js?v=20261123-independent-park1" defer></script>
 <link rel="stylesheet" href="/shared/brand/brand-copy.css?v=20261106-source-folders1">
 <link rel="stylesheet" href="/features/wallet/paid-ui.css?v=20261106-source-folders1">
 <link rel="stylesheet" href="/app/world/world-design.css?v=20261106-source-folders1">
@@ -62,7 +69,7 @@
 <script src="/app/world/world-weather.js?v=20261119-kma-current1" defer></script>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="오쭈다 아지트">
-<meta property="og:url" content="https://ojjuda.kr/world.html?place=park">
+<meta property="og:url" content="https://ojjuda.kr/park/">
 <meta property="og:title" content="오쭈다 아지트 · 공원 | 오늘 하루 어땠나요? 괜찮았나요">
 <meta property="og:description" content="오늘 하루 어땠나요? 괜찮았나요. 오늘의 마음을 익명카드로 나누고 서로 공감해 보세요. 오쭈다 아지트 · 공원은 개발 중입니다.">
 <meta property="og:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
@@ -94,7 +101,7 @@
   <a class="skip" href="#main">본문으로 건너뛰기</a>
   <div class="shell">
     <aside class="side" id="note-sidebar" aria-label="공원 메뉴">
-      <div class="note-side-header"><div class="note-brand-row ojjuda-service-brand"><a class="brand ojjuda-service-home" href="/world.html?place=park" aria-label="오쭈다 공원 홈"><svg class="brand-icon ojjuda-theme-logo ojjuda-service-logo" viewBox="-16 -16 544 544" width="32" height="32" aria-hidden="true" focusable="false"><path fill="currentColor" d="M100 0H354Q369 0 381 12L499 130Q512 143 512 165V428Q512 512 428 512H84Q0 512 0 428V100Q0 0 100 0Z"/>  <path fill="#FFF" d="M346 37Q346 22 358 31L476 149Q485 161 470 161H395Q346 161 346 112Z"/>  <path d="M108 290Q256 420 404 290" fill="none" stroke="#FFF" stroke-width="60" stroke-linecap="round"/></svg><span class="ojjuda-service-word">오쭈다<span class="ojjuda-service-name">공원</span></span></a><button class="note-dev-badge ojjuda-service-beta" type="button" data-note-feedback title="의견 보내기">베타</button></div></div>
+      <div class="note-side-header"><div class="note-brand-row ojjuda-service-brand"><a class="brand ojjuda-service-home" href="/park/" aria-label="오쭈다 공원 홈"><svg class="brand-icon ojjuda-theme-logo ojjuda-service-logo" viewBox="-16 -16 544 544" width="32" height="32" aria-hidden="true" focusable="false"><path fill="currentColor" d="M100 0H354Q369 0 381 12L499 130Q512 143 512 165V428Q512 512 428 512H84Q0 512 0 428V100Q0 0 100 0Z"/>  <path fill="#FFF" d="M346 37Q346 22 358 31L476 149Q485 161 470 161H395Q346 161 346 112Z"/>  <path d="M108 290Q256 420 404 290" fill="none" stroke="#FFF" stroke-width="60" stroke-linecap="round"/></svg><span class="ojjuda-service-word">오쭈다<span class="ojjuda-service-name">공원</span></span></a><button class="note-dev-badge ojjuda-service-beta" type="button" data-note-feedback title="의견 보내기">베타</button></div></div>
       <div class="side-section-label">공원에서 나누는 이야기</div>
       <nav class="side-nav" aria-label="카드 탐색">
         <button class="nav-button on" type="button" data-show="feed"><svg><use href="#cards"/></svg>카드</button>
@@ -150,7 +157,7 @@
 
     <div class="col">
       <header class="mobile-top ojjuda-service-header">
-        <div class="note-brand-row ojjuda-service-brand"><a class="brand ojjuda-service-home" href="/world.html?place=park" aria-label="오쭈다 공원 홈"><svg class="brand-icon ojjuda-theme-logo ojjuda-service-logo" viewBox="-16 -16 544 544" width="32" height="32" aria-hidden="true" focusable="false"><path fill="currentColor" d="M100 0H354Q369 0 381 12L499 130Q512 143 512 165V428Q512 512 428 512H84Q0 512 0 428V100Q0 0 100 0Z"/>  <path fill="#FFF" d="M346 37Q346 22 358 31L476 149Q485 161 470 161H395Q346 161 346 112Z"/>  <path d="M108 290Q256 420 404 290" fill="none" stroke="#FFF" stroke-width="60" stroke-linecap="round"/></svg><span class="ojjuda-service-word">오쭈다<span class="ojjuda-service-name">공원</span></span></a><button class="note-dev-badge ojjuda-service-beta" type="button" data-note-feedback title="의견 보내기">베타</button></div>
+        <div class="note-brand-row ojjuda-service-brand"><a class="brand ojjuda-service-home" href="/park/" aria-label="오쭈다 공원 홈"><svg class="brand-icon ojjuda-theme-logo ojjuda-service-logo" viewBox="-16 -16 544 544" width="32" height="32" aria-hidden="true" focusable="false"><path fill="currentColor" d="M100 0H354Q369 0 381 12L499 130Q512 143 512 165V428Q512 512 428 512H84Q0 512 0 428V100Q0 0 100 0Z"/>  <path fill="#FFF" d="M346 37Q346 22 358 31L476 149Q485 161 470 161H395Q346 161 346 112Z"/>  <path d="M108 290Q256 420 404 290" fill="none" stroke="#FFF" stroke-width="60" stroke-linecap="round"/></svg><span class="ojjuda-service-word">오쭈다<span class="ojjuda-service-name">공원</span></span></a><button class="note-dev-badge ojjuda-service-beta" type="button" data-note-feedback title="의견 보내기">베타</button></div>
         <div class="nn-top-actions ojjuda-service-actions"><button class="nn-bell" type="button" data-notifications-open aria-label="알림" aria-haspopup="dialog" aria-controls="note-notification-dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg><span class="nn-dot" data-notification-dot hidden aria-hidden="true"></span></button><a class="note-coinpill ojjuda-service-balance" href="#ju-charge-dialog" data-ju-charge-open aria-label="보유 ZU 확인, 충전 열기" aria-haspopup="dialog" aria-controls="ju-charge-dialog"><span class="note-cz" aria-hidden="true"><i>ZU</i></span><span id="note-top-balance" data-note-balance aria-live="polite" aria-atomic="true">—</span></a></div>
       </header>
 
@@ -294,13 +301,14 @@
   <script src="/features/account/account-deletion.js?v=20261120-park-video1" defer></script>
   <script src="/note/share-image.js?v=20261117-park-wash-rhythm1" defer></script>
   <script src="/note/share-kakao.js?v=20261031-kakao-card-share1" defer></script>
-  <script src="/note/calligraphy-motifs.js?v=20261117-park-phrase1" defer></script>
-  <script src="/note/calligraphy.js?v=20261120-park-brush-digits1" defer></script>
   <script src="/note/composer-tools.js?v=20261120-video1" defer></script>
-  <script src="/note/preview.js?v=20261123-park-first-paint1" defer></script>
+  <script src="/note/preview.js?v=20261123-park-deferred-ink1" defer></script>
   <script src="/note/pull-refresh.js?v=20261004-refresh1" defer></script>
   <script src="/note/navigation.js?v=20261119-history1" defer></script>
-  <script src="/park/integration.js?v=20261122-org-display-only1" defer></script>
+  <script src="/park/integration.js?v=20261123-independent-park1" defer></script>
+  <!-- The brush renderer is optional for the first cards and initializes after Park is usable. -->
+  <script src="/note/calligraphy-motifs.js?v=20261117-park-phrase1" defer></script>
+  <script src="/note/calligraphy.js?v=20261123-park-deferred-ink1" defer></script>
 </body>
 </html>
 

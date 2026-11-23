@@ -406,7 +406,7 @@
       else location.assign('/world.html');
       return true;
     }
-    if (action==='glasses') {pendingAction=null;location.assign('/park/glasses.html?embedded=1');return true;}
+    if (action==='glasses') {pendingAction=null;location.assign('/park/glasses.html'+(hosted?'?embedded=1':''));return true;}
     // Existing close methods retain their own saving guards.
     window.OjjudaNoteSupport?.close?.();
     if (window.OjjudaNoteSupport?.isOpen?.()) return false;
@@ -537,7 +537,17 @@
   // The parent Hub counts a mission only after the card RPC has succeeded.
   document.addEventListener('ojjuda:card-published', event => {
     const detail = event.detail;
-    if (!hosted || !detail || detail.userId !== session?.user?.id || typeof detail.cardId !== 'string') return;
+    if (!detail || detail.userId !== session?.user?.id || typeof detail.cardId !== 'string') return;
+    if (!hosted) {
+      // The standalone Park returns this one successful publication receipt to
+      // the member's Agit mission on the next visit, without another feed read.
+      try {
+        const date = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
+        sessionStorage.setItem('ojjuda:agit-park-card:' + detail.userId,
+          JSON.stringify({cardId: detail.cardId, date}));
+      } catch {}
+      return;
+    }
     send({ type: 'ojjuda:park-card-published', userId: detail.userId, cardId: detail.cardId });
   });
 
