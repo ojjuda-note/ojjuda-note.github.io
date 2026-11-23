@@ -100,8 +100,11 @@ async function checkSixLineCard(page, width) {
   if(!expectBug){
    assert.ok(before.every(card=>Math.abs(card.height-card.width)<1 && card.width<=600.5),width+'px: feed faces are square');
    if(width>=800)assert.ok(before.every(card=>Math.abs(card.width-600)<1),width+'px: full-size feed faces');
-   const columns=await page.locator('#feed-list').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length);
-   assert.equal(columns,width>=1280?2:1,width+'px: only add a column when both full-size cards fit');
+   const {columns,containerWidth}=await page.locator('#feed-list').evaluate(el=>({
+    columns:getComputedStyle(el).gridTemplateColumns.split(' ').length,
+    containerWidth:el.closest('.park-feed').getBoundingClientRect().width
+   }));
+   assert.equal(columns,containerWidth>=1220?2:1,`${width}px (${containerWidth}px available): only add a column when both full-size cards fit`);
   }
   if(proof&&width===390)await page.screenshot({path:path.join(proof,expectBug?'before-bug.png':'before-fixed.png'),fullPage:true});
   for(const route of expectBug?['button']:['button','browser','embedded']){
