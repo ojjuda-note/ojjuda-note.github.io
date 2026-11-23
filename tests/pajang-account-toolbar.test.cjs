@@ -192,7 +192,7 @@ test('Pajang standalone entry defers shared inbox and charging code until first 
     'entry must not eagerly download wallet and inbox scripts');
   assert.match(shell,/requestAnimationFrame\(\(\)=>setTimeout\(\(\)=>void prepareToolbar\(\),0\)\)/);
   assert.match(shell,/event\.target\.closest\?\.\('\[data-ju-charge-open\],\[data-notifications-open\]'\)/);
-  assert.match(shell,/earlyControl=control;/);
+  assert.match(shell,/earlyControl=\{node:control,href:location\.href\};/);
   assert.match(shell,/if\(pending\?\.node\.isConnected && pending\.href===location\.href/);
   assert.match(shell,/window\.OjjudaPajangHistory\?\.canLeave\?\.\(\)!==false/);
   for(const file of ['index.html','station.html']){
