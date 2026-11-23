@@ -42,6 +42,7 @@ function enterMain(destination = main, savedStation) {
   handoff=(async()=>{
     const style=document.createElement('link');
     style.rel='stylesheet';
+    style.dataset.pajangStationStyle='main';
     style.media='print';
     style.href='./station.css?v=20261122-light-controls1';
     const styled=new Promise((resolve,reject)=>{style.onload=resolve;style.onerror=reject;});
