@@ -683,7 +683,15 @@ async function scenario(name, fn) {
   await scenario('the nineteenth held card is accessible and receiving a twentieth removes active hand controls', async () => {
     const page = await pageFor({ width: 360, height: 640, saved: setup([handCases.hand]) }); await resume(page);
     assert.equal(await page.locator('#hand .hand-card').count(), 19);
-    await page.locator('#hand-scroll').focus(); await page.keyboard.press('End'); await settleHandScroll(page); handEndpoint(await handLayout(page), true, 'nineteenth card');
+    // On a phone, reach the last held card through genuine native swipes.
+    // Keyboard End is validated separately alongside Home and mouse dragging.
+    let nineteenthLayout = await handLayout(page);
+    assert.ok(nineteenthLayout.maximum > 0, 'nineteen cards need an internal scroller');
+    for (let swipe = 0; swipe < 8 && nineteenthLayout.maximum - nineteenthLayout.left > 2; swipe++) {
+      await touchHand(page, 1);
+      nineteenthLayout = await handLayout(page);
+    }
+    handEndpoint(nineteenthLayout, true, 'nineteenth card');
     await page.locator('#draw-button').click();
     await page.waitForFunction(key => !JSON.parse(localStorage.getItem(key)).state.players[0].active, STORAGE);
     const state = await stored(page); assert.equal(state.players[0].eliminatedReason, 'too-many-cards'); assert.equal(state.players[0].hand.length, 0);
