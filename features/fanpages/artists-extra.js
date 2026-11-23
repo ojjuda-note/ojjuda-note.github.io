@@ -560,7 +560,7 @@
       debut: '2018.05.02', debutWork: 'I am', songs: ['LATATA', '달라($$$)', 'MAZE', "DON'T TEXT ME", '알고 싶어 (What’s in your house?)', '들어줘요 (Hear me)'],
       concept: '2018년 LATATA로 데뷔한 다섯 멤버의 셀프 프로듀싱 그룹. 2025년부터 i-dle이라는 이름으로 활동.',
       official: 'https://i-dle.cubeent.co.jp/profile/', youtube: 'https://www.youtube.com/@official_i_dle',
-      photo: '(G)I-DLE Airport Departure 2024.png', photoLabel: '2024년 공항 단체', photoYear: '2024', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
+      photo: '(G)I-DLE Airport Departure 2024.png', photoLabel: '2024년 공항 단체', photoYear: '2024', credit: '티비텐 TV10', license: 'CC BY 3.0',
       morePhotos: [
         commonsPhoto('06072026 I-DLE SHOWCASE 1.png', 'We made 발매 쇼케이스 · 크롭 사진', '2026', 'K-POPIT 케이팝잇 · Wikimedia Commons에서 세로 6% 크롭', 'CC BY 4.0'),
         commonsPhoto('06072026 I-DLE SHOWCASE 4.png', 'We made 발매 쇼케이스 · 단체 무대', '2026', 'K-POPIT 케이팝잇 · Wikimedia Commons에서 세로 4% 크롭', 'CC BY 4.0')
