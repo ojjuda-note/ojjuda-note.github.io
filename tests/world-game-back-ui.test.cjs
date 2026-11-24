@@ -156,6 +156,18 @@ window.childReady=true;
         if(['festival','restaurants'].includes(game))await main();else await arcade(game);
       }
 
+      // Old game links must remain non-playable while existing games and rankings remain accessible.
+      await page.evaluate(()=>backFixture.actions.tab({tab:'arcade'}));
+      for(const game of ['poker','roulette']){
+        await page.evaluate(game=>backFixture.link(game),game);
+        assert.match(await page.locator('#toast').textContent(),/운영이 종료된 게임/);
+        assert.equal(await page.locator('.poker-game-dialog,.roulette-game-dialog').count(),0);
+        assert.equal(await page.locator('[data-act="game-open"][data-v="'+game+'"]').count(),0);
+        assert.equal(await page.locator('iframe[src*="/games/'+game+'/"]').count(),0);
+        await arcade('retired '+game);
+        assert.equal(await page.locator('a.arcade-ranking-entry').isVisible(),true,'historical rankings stay available');
+      }
+
       // Both public directories have a visible return and support the same browser/native Back.
       for(const game of ['festival','restaurants']){
         await page.evaluate(()=>backFixture.actions.tab({tab:'hub'}));

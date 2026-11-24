@@ -60,7 +60,8 @@ async function until(test, message, timeout = 2600) {
     w.eval(fs.readFileSync(path.join(root, 'features/home/agit-hub.js'), 'utf8'));
     const panel = w.document.querySelector('#ppanel');
     panel.innerHTML = w.Df() + '<input id="pmsg">';
-    const adultIds = [...Object.keys(adultGames), 'drinking'];
+    const adultIds = ['matgo','photo_ttang','drinking'];
+    const retiredIds = ['poker','roulette'];
     const buttonId = button => button.dataset.act === 'matgo-open' ? 'matgo' : button.dataset.v;
     const headings = host => [...host.querySelectorAll('h2')].map(heading => heading.textContent.trim());
     const adultSection = () => panel.querySelector('[data-arcade-adult]');
@@ -94,7 +95,8 @@ async function until(test, message, timeout = 2600) {
       const section = adultSection();
       assert.equal(section.getAttribute('aria-label'), '어른들 플레이');
       assert.notEqual(w.getComputedStyle(section).display, 'none');
-      assert.deepEqual([...section.querySelectorAll('.gbtn')].map(buttonId), adultIds, 'adult games keep their display order');
+      assert.deepEqual([...section.querySelectorAll('.gbtn')].map(buttonId), adultIds, 'active adult games keep their display order');
+      for(const id of retiredIds)assert.equal(panel.querySelectorAll('[data-v="'+id+'"]').length,0,id+' stays retired even for adults');
       for (const id of adultIds) {
         const buttons = [...panel.querySelectorAll('.gbtn')].filter(button => buttonId(button) === id);
         assert.equal(buttons.length, 1, id + ' has exactly one menu entry');
@@ -113,7 +115,7 @@ async function until(test, message, timeout = 2600) {
     identityError = false; await w.refreshWorldMatgoAccess();
     await until(() => Object.keys(adultGames).every(id => rankRows().includes(id)), 'successful retry restores all restricted ranking rows without navigation');
     assert.ok(matgo() && photoVisible());
-    assert.equal(matgo().nextElementSibling?.dataset.v,'poker','poker refreshes beside Matgo');
+    assert.equal(matgo().nextElementSibling?.dataset.v,'photo_ttang','active photo game refreshes beside Matgo');
     completeAdultMenu();
     assert.deepEqual([...new Set([...rankAdultSection().querySelectorAll('[data-game]')].map(row => row.dataset.game))],Object.keys(adultGames),'restored adult rankings share their own card');
     // A cached age grant alone cannot render an offline or missing-user entry.
@@ -151,8 +153,8 @@ async function until(test, message, timeout = 2600) {
     assert.equal(reads, beforeResume + 1, 'resume events share one check');
     completeAdultMenu();
     assert.ok(rankAdultSection(), 'resume restores the adult ranking card');
-    assert.equal(matgo().nextElementSibling?.dataset.v,'poker','resume preserves the card game order');
-    assert.equal(w.document.querySelectorAll('[data-v=poker]').length,1,'refresh cannot duplicate poker');
+    assert.equal(matgo().nextElementSibling?.dataset.v,'photo_ttang','resume preserves active game order');
+    assert.equal(w.document.querySelectorAll('[data-v=poker],[data-v=roulette]').length,0,'refresh cannot revive retired games');
     assert.equal(draft.value, '작성 중인 대화');
     assert.equal(w.document.activeElement, draft);
     assert.equal(draft.selectionStart, 2);
@@ -206,6 +208,6 @@ async function until(test, message, timeout = 2600) {
     await w.refreshWorldMatgoAccess();
     assert.equal(reads, beforeGuest, 'anonymous guests never fetch member identity');
     noAdultMenu();
-    console.log('PASS: actual arcade catalog, one adult section after multiplayer, all four 19+ games, guest/minor denial, revoke/reauth, app return, reconnect retry and draft/focus preservation');
+    console.log('PASS: actual arcade catalog, one adult section after multiplayer, active 19+ games and preserved historical rankings, guest/minor denial, revoke/reauth, app return, reconnect retry and draft/focus preservation');
   } finally { dom.window.OjjudaGameRankings?.mount(null); dom.window.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

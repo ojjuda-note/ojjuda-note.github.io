@@ -91,9 +91,9 @@ test('shared UI caches stay consistent while the game release revision updates i
     }
   }
   assert.ok(sharedReferences >= 25, 'the shared style covers many game entrances and outcomes');
-  assert.ok(multiplayerReferences >= 8, 'each multiplayer game loads the unified entrance styles');
+  assert.ok(multiplayerReferences >= 6, 'the remaining multiplayer games load the unified entrance styles');
   assert.ok(world.includes(`/shared/games/world-game-assets.js?v=${revision}`));
-  assert.ok(world.includes(`/shared/games/game-results.js?v=${releaseKeys.get('results')}`));
+  assert.ok(world.includes(`/shared/games/game-results.js?v=${releaseKeys.get('results-script')}`));
   assert.match(world, /\/shared\/games\/chacha-rush-portal\.js\?v=\d{8}-[a-z0-9-]+/,
     'the score portal keeps its own cache revision when updated independently of shared CSS');
   assert.ok(read('shared/games/world-game-assets.js').includes(`const revision='${revision}'`));

@@ -20,10 +20,12 @@ for (const id of sections) {
 const cards = [...guide.matchAll(/<details class="game-card" id="([^"]+)" data-game>/g)];
 assert.equal(cards.length, 24, 'all 24 current game guides, including One Card and drinking games');
 assert.equal(new Set(cards.map(match => match[1])).size, cards.length, 'unique game guide IDs');
-for (const id of ['game-chacha', 'game-solitaire', 'game-archery', 'game-sacheonseong', 'game-onecard', 'game-bang', 'game-yut', 'game-drinking']) {
+for (const id of ['game-chacha', 'game-solitaire', 'game-archery', 'game-sacheonseong', 'game-onecard', 'game-bang', 'game-yut', 'game-matgo', 'game-photo', 'game-drinking']) {
   assert.ok(cards.some(match => match[1] === id), id + ' help is present');
 }
 for (const id of ['game-poker','game-roulette']) assert.ok(!cards.some(match => match[1] === id));
+assert.match(guide, /24개 게임의 사용법/);
+assert.match(guide, /만 19세 이상 회원 · 3종/);
 for (const match of guide.matchAll(/<summary><img src="(\/assets\/design\/games\/[^"]+)"/g)) {
   const assetPath = new URL(match[1], 'https://ojjuda.test').pathname;
   assert.ok(fs.existsSync(path.join(root, assetPath)), match[1] + ' icon exists');
