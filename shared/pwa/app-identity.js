@@ -119,7 +119,7 @@
           control.getAttribute('aria-description'),
           control.dataset?.v
         ].filter(Boolean).join(' ');
-        if (/오락실|추천\\s*게임|게임\\s*(시작|플레이)/i.test(label) && !control.hidden) {
+        if (/오락실|추천\s*게임|게임\s*(시작|플레이)/i.test(label) && !control.hidden) {
           control.hidden = true;
           control.setAttribute('aria-hidden', 'true');
         }
@@ -147,7 +147,7 @@
         control.dataset?.place === 'arcade' ||
         control.dataset?.id === 'arcade' ||
         action === 'game-open' ||
-        /오락실|게임 시작|게임 플레이|추천 게임/i.test((control.innerText || control.getAttribute('aria-label') || '').trim());
+        /오락실|게임 시작|게임 플레이|추천\s*게임/i.test((control.innerText || control.getAttribute('aria-label') || '').trim());
       const href = control.getAttribute('href');
       if (!isArcadeControl && !(href && isPlaySafeBlockedUrl(href))) return;
       event.preventDefault();
