@@ -3211,8 +3211,8 @@ async function publishCard() {
   }
   // Confirm the exact text against the common server tagger before creating the card.
   // User-entered tags come first; dismissed automatic tags must never reappear.
-  if (!editId && publishKind !== 'event' && autoTagMode) {
-    let suggestions = suggestTags(body, 3);
+  if (!editId && publishKind !== 'event' && typeof autoTagMode !== 'undefined' && autoTagMode) {
+    let suggestions = typeof suggestTags === 'function' ? suggestTags(body, 3) : [];
     try {
       const authoritative = await noteRpc('suggest_card_tags', { p_body: body });
       if (Array.isArray(authoritative)) suggestions = authoritative;
@@ -3221,10 +3221,15 @@ async function publishCard() {
       || actionComposerRun !== composerRun || backdrop.hidden) {
       draftController?.cancelPublish(); busy = false; setComposerInputs(); updateComposer(); return;
     }
-    values = manualTags.slice(0, 5);
+    // Keep explicit tags from the input or restored draft, even if an input event
+    // has not yet synchronized the manual-tag state.
+    const existingAuto = typeof autoTagsNow !== 'undefined' && Array.isArray(autoTagsNow) ? autoTagsNow : [];
+    const chosenManual = typeof manualTags !== 'undefined' && Array.isArray(manualTags) ? manualTags : [];
+    const blockedAuto = typeof rejectedTags !== 'undefined' && rejectedTags instanceof Set ? rejectedTags : new Set();
+    values = [...new Set([...values.filter(tag => !existingAuto.includes(tag)), ...chosenManual])].slice(0, 5);
     for (const tag of suggestions) {
       if (typeof tag === 'string' && tag.length <= 20 && !values.includes(tag)
-        && !rejectedTags.has(tag) && values.length < 5) values.push(tag);
+        && !blockedAuto.has(tag) && values.length < 5) values.push(tag);
     }
   }
   let cardPhotoUploadPath = null;
