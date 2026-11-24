@@ -28,7 +28,7 @@ assert.match(source, /noteRpc\('suggest_card_tags', \{ p_body: body \}\)/,
   'the same backend context tagger must run for editing and publishing');
 assert.match(source, /if \(!editId && publishKind !== 'event' && typeof autoTagMode !== 'undefined' && autoTagMode\)/,
   'publishing must recheck tags for new member cards');
-assert.match(source, /!rejectedTags\.has\(tag\)/, 'removed automatic tags remain removed');
+assert.match(source, /!blockedAuto\.has\(tag\)/, 'removed automatic tags remain removed');
 const page = fs.readFileSync(path.join(root, 'park/index.html'), 'utf8');
 assert.match(page, /\/note\/preview\.js\?v=20261125-park-context-tags1/,
   'the park must load the updated composer, bypassing cached versions');
