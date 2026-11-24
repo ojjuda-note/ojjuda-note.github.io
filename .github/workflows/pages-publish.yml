@@ -49,6 +49,12 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  release_regression:
+    name: Required application regression before deployment
+    uses: ./.github/workflows/regression.yml
+    permissions:
+      contents: read
+
   package:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -189,7 +195,7 @@ jobs:
 
   deploy:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-    needs: package
+    needs: [package, release_regression]
     runs-on: ubuntu-latest
     timeout-minutes: 40
     permissions:

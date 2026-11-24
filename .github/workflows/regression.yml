@@ -29,12 +29,14 @@ on:
       - 'ops/**'
       - '.github/workflows/regression.yml'
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
 
 concurrency:
-  group: regression-${{ github.ref }}
+  # Keep the reusable deployment check separate from standalone CI.
+  group: regression-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
