@@ -9,9 +9,9 @@
   "/admin/activity.js?v=20261119-pajang-admin1","/admin/photo-stages.js?v=20261006-photo1",
   "/admin/drinking-prompts.js?v=20261114-drinking-plus3001",
   "/admin/fortune-purchases.js?v=20261113-biorhythm-paid1",
-  "/admin/groups.js?v=20261107-group-mod2","/admin/asset-library.js?v=20261111-asset-library1",
+  "/admin/groups.js?v=20261107-group-mod2","/admin/asset-library.js?v=20261124-service1",
   "/note/operations.js?v=20261119-question-admin1",
-  "note/admin.js?v=20261121-admin-media1"
+  "/note/admin.js?v=20261121-admin-media1"
  ],styles=[
   "/admin/visitors.css?v=20261121-campaign1",
   "/admin/visitors-charts.css?v=20261113-feature-chart2",
@@ -22,7 +22,7 @@
   "/admin/fortune-purchases.css?v=20261113-biorhythm-paid1",
   "/admin/groups.css?v=20261107-group-mod1","/admin/asset-library.css?v=20261111-asset-library1",
   "/note/operations.css?v=20261021-admin1",
-  "note/admin.css?v=20261121-admin-media1",
+  "/note/admin.css?v=20261121-admin-media1",
   "/park/fonts.css?v=20261120-nanum-myeongjo1"
  ],loaded=new Map();
  let pending=null;
@@ -35,7 +35,10 @@
    document.head.append(node);
   });loaded.set(url,promise);return promise;
  }
- window.OjjudaAdminAssets={ready:false,load(){
+ window.OjjudaAdminAssets={ready:false,async loadWorkspace(){
+  const [workspace]=await Promise.all([import('/admin/service-workspace.mjs?v=20261124-service1'),this.load()]);
+  return workspace;
+ },load(){
   if(this.ready)return Promise.resolve();
   if(!pending){
    // Styles (including optional web fonts) must not hold up the controls.

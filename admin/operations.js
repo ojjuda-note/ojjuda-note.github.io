@@ -5,6 +5,10 @@
   const from = new URLSearchParams(location.search).get('from');
   const service = ['agit', 'park', 'pajang'].includes(from) ? from : 'agit';
   $('admin-back').href = '/admin/?from=' + encodeURIComponent(service);
+  if (service !== 'agit') {
+    document.querySelector('.brand').href = $('admin-back').href;
+    login.href = '/?auth=login&next=' + (service === 'park' ? 'note' : 'pajang');
+  }
   const config = window.OJJUDA_CONFIG;
   let run = 0, activeOwner = null, chart = null, refreshTimer = 0;
   function clear() {

@@ -3,3 +3,8 @@
 .pajang-mast .ojjuda-service-actions {margin-left:auto}
 .pajang-mast [data-pajang-balance] {font-variant-numeric:tabular-nums}
 .pajang-mast .ojjuda-service-beta:not(button) {cursor:default}
+.pajang-inquiry-dialog {box-sizing:border-box;width:min(28rem,calc(100% - 2rem));max-height:85dvh;padding:1.5rem;border:1px solid #d8d5df;border-radius:1rem;color:#282634;background:#fff;font-family:var(--sans,system-ui,sans-serif)}
+.pajang-inquiry-dialog::backdrop {background:rgb(24 20 31 / 45%)}
+.pajang-inquiry-dialog h2 {margin:0 0 1rem;font-size:1.2rem}
+.pajang-inquiry-dialog p {overflow-wrap:anywhere;white-space:pre-wrap}
+.pajang-inquiry-dialog button {min-height:44px;padding:0 1rem;border:1px solid currentColor;border-radius:.6rem;color:inherit;background:transparent;font:inherit}

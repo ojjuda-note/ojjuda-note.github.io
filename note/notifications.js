@@ -56,7 +56,7 @@
   }
   let instance;
 
-  function install({ client, getUserId = () => null, refreshClosedBadge = true, onOpenCard, onOpenInquiry, onKeepCard, onOpenWorld, onGiftClaimed, onOpenGroup = id => location.assign('/groups/#room=' + encodeURIComponent(id)) } = {}) {
+  function install({ client, getUserId = () => null, refreshClosedBadge = true, onOpenCard, onOpenInquiry, onKeepCard, onOpenWorld, canOpenWorldTarget = () => true, allowInviteNavigation = true, onGiftClaimed, onOpenGroup = id => location.assign('/groups/#room=' + encodeURIComponent(id)) } = {}) {
     if (instance || !client?.schema || !client?.auth) return instance;
     let identity = getUserId() || null, identityRun = 0, viewRun = 0, listRun = 0, countRun = 0;
     let items = [], retentionItems = [], cursor = null, snapshotAt = null, hasMore = false;
@@ -222,7 +222,7 @@
       const world=item.source==='world';
       const target = world ? item.target_id : item.kind === 'inquiry_reply' ? item.inquiry_id : item.card_id;
       const action = world ? onOpenWorld : item.kind === 'inquiry_reply' ? onOpenInquiry : onOpenCard;
-      if ((world ? validNoticeId(target)&&['guestbook','friends','media','message'].includes(item.target_type) : UUID.test(target || '')) && typeof action === 'function') {
+      if ((world ? validNoticeId(target)&&['guestbook','friends','media','message'].includes(item.target_type)&&canOpenWorldTarget(item.target_type) : UUID.test(target || '')) && typeof action === 'function') {
         const openButton = button(world ? ({guestbook:'방명록 보기',friends:'친구 보기',media:'사진·댓글 보기',message:'쪽지 읽기'}[item.target_type]||'보기') : item.kind === 'inquiry_reply' ? '답변 보기' : '카드 보기', () => void openItem(item)); openButton.dataset.notificationOpen = item.id; actions.append(openButton);
       }
       if (retention && typeof onKeepCard === 'function') actions.append(button('10 ZU로 영구보관', () => void keepCard(item)));
@@ -418,7 +418,7 @@
       const run=identityRun,user=identity,view=viewRun,world=item.source==='world';
       const target=world?item.target_id:item.kind==='inquiry_reply'?item.inquiry_id:item.card_id;
       const action=world?onOpenWorld:item.kind==='inquiry_reply'?onOpenInquiry:onOpenCard;
-      if(typeof action!=='function'||!(world?validNoticeId(target)&&['guestbook','friends','media','message'].includes(item.target_type):UUID.test(target||'')))return;
+      if(typeof action!=='function'||!(world?validNoticeId(target)&&['guestbook','friends','media','message'].includes(item.target_type)&&canOpenWorldTarget(item.target_type):UUID.test(target||'')))return;
       saving=true;updateControls();keepFocus();await markSeenOnNavigate(item);
       if(!currentView(run,user,view))return;
       saving=false;close();
@@ -438,13 +438,13 @@
         announceRead(run,user);
         if(!currentView(run,user,view))return;
         saving=false;
-        if(drinking && action==='accept'){
+        if(allowInviteNavigation && drinking && action==='accept'){
           if(data?.kind!=='drinking' || !/^[A-Z0-9]{6}$/.test(data.code)) throw Error('room_unavailable');
           close();location.assign('/games/drinking/?room='+data.code);return;
         }
-        if(action==='accept' && UUID.test(data?.room_id||'')) {close();onOpenGroup(data.room_id);return;}
+        if(allowInviteNavigation && action==='accept' && UUID.test(data?.room_id||'')) {close();onOpenGroup(data.room_id);return;}
         await loadPage();
-        if(currentView(run,user,view))status.textContent=action==='decline'?'초대를 거절했어요.':'가입했어요.';
+        if(currentView(run,user,view))status.textContent=action==='decline'?'초대를 거절했어요.':'초대를 수락했어요.';
       } catch(error) {
         if(!currentView(run,user,view))return;
         saving=false;await loadPage();

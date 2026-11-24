@@ -116,14 +116,18 @@ test('a directly opened chat replaces itself with its list and legal pages stay 
   w.document.querySelector('.chatheader [aria-label="뒤로가기"]').click();
   await f.until(()=>new URL(w.location.href).searchParams.get('tab')==='inbox');
   assert.equal(w.history.length,1);
+  w.eval(fs.readFileSync(path.join(root,'shared/brand/service-banners.js'),'utf8'));
   await f.menu('내 파장');
+  const agitLinks=[...w.document.querySelectorAll('a[href]')].filter(link=>new URL(link.href).pathname==='/world.html');
+  assert.equal(agitLinks.length,1);
+  assert.ok(agitLinks[0].matches('ojjuda-service-banners[current="pajang"] [data-service="agit"]'));
   for(const name of ['이용약관','개인정보처리방침'])assert.equal(f.byText('.account-settings a .ojjuda-settings-label',name).closest('a').target,'');
   assert.deepEqual(f.errors,[]);
 });
 
 test('administrator access stays tied to the current account through popup and tab history',async t=>{
   const f=fixture(t,undefined,{admin:true}),{w}=f;
-  const adminEntry=()=>w.document.querySelector('.account-settings a[href="/world.html?admin=pajang-answers&from=pajang"]');
+  const adminEntry=()=>w.document.querySelector('.account-settings a[href="/admin/?from=pajang&admin=pajang-answers"]');
   await f.until(()=>f.byText('nav a','오늘')&&w.document.querySelector('.answer-like')?.disabled===false);
   // Likes watch the member for the lifetime of the app. Settings must add and
   // dispose its own permission watcher without replacing or leaking that one.

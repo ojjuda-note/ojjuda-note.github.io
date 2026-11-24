@@ -405,7 +405,7 @@ test('Navigation API entries recover same-origin history even without a referrer
 test('direct administrator tools retain the service that opened them', () => {
   for(const from of ['park','pajang']) {
     const f=fixture({section:'admin',from,returnLink:true});
-    const target='/world.html?admin=overview&from='+from;
+    const target='/admin/?from='+from;
     assert.equal(f.anchor.href,target);
     f.back();assert.deepEqual(f.replacements,[target]);
   }

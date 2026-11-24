@@ -113,7 +113,7 @@ export function AccountSettings({profileId,onOpen}:{profileId:string;onOpen:(act
     {admin.owner===profileId&&admin.allowed&&<section className="ojjuda-settings-group" aria-labelledby="account-admin-title">
       <h2 className="ojjuda-settings-heading" id="account-admin-title">운영 관리</h2>
       <div className="ojjuda-settings-list">
-        <a className="ojjuda-settings-row" href="/world.html?admin=pajang-answers&from=pajang" target="_top">
+        <a className="ojjuda-settings-row" href="/admin/?from=pajang&admin=pajang-answers" target="_top">
           <span className="ojjuda-settings-label">파장 관리자모드</span><span className="ojjuda-settings-arrow" aria-hidden="true">›</span>
         </a>
       </div>

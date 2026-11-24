@@ -1895,7 +1895,7 @@ async function toggleReaction(cardId, reaction) {
 }
 function shareCard(cardId) {
   if (!validCardId(cardId)) return;
-  const url = new URL('/world.html?place=park', location.origin); url.searchParams.set('card', cardId);
+  const url = new URL('/park/', location.origin); url.searchParams.set('card', cardId);
   const shareText = 'https://ojjuda.com';
   const run = showManagement('카드 공유'), epoch = identityEpoch, userId = session?.user?.id || null;
   let sharing = false, feedbackRun = 0;
@@ -4007,7 +4007,7 @@ function installManagement() {
   const blocks = managementButton('차단 목록', showBlocks); blocks.id = 'note-blocks'; blocks.hidden = true;
   const reports = managementButton('관리자 모드 열기', () => {
     if (!moderator || !session?.user) return;
-    (parkEmbedded ? window.parent : window).location.assign('/world.html?admin=note');
+    (parkEmbedded ? window.parent : window).location.assign('/admin/?from=park&admin=cards');
   }); reports.id = 'note-moderation'; reports.className = 'btn pri'; reports.hidden = true;
   $('#note-admin-entry').append(reports);
   const memberInfo = managementButton('내 회원정보', () => showMemberInfo()); memberInfo.id = 'note-member-info'; memberInfo.hidden = true;
@@ -4173,6 +4173,7 @@ function receiveAuth(current) {
   const firstSession = !authKnown;
   const changed = session?.user?.id !== current?.user?.id;
   session = current; authKnown = true;
+  window.OjjudaParkAccount?.syncIdentity();
   if (changed) {
     stopLocationPreference();writingLocationController?.abort();window.OjjudaLocation?.forget(previousUserId);
     accountNickname = null; accountProfileRun++;
@@ -4264,14 +4265,19 @@ notificationController = window.OjjudaNoteNotifications?.install({
   onGiftClaimed: userId => loadWorldBalance(userId),
   client, getUserId: () => session?.user?.id || null,
   onOpenCard: id => { window.OjjudaNoteNavigation?.leaveMy(); openCard(id); },
-  onOpenWorld: (type,id) => {const url=new URL('/world.html',location.origin);url.searchParams.set('notice',type);url.searchParams.set('target',id);(parkEmbedded ? window.parent : window).location.assign(url.href);},
+  canOpenWorldTarget: type => type === 'friends' || type === 'message',
+  allowInviteNavigation: false,
+  onOpenWorld: (type,id) => {
+    if (type === 'friends') window.OjjudaParkFull?.navigate('friends');
+    if (type === 'message') void window.OjjudaParkAccount?.messages()?.openMessage(id);
+  },
   onOpenInquiry: id => window.OjjudaNoteSupport?.open?.(id),
   onKeepCard: (id, cardKind) => confirmPermanent({ id, kind: cardKind })
 });
 if (client) {
   client.auth.onAuthStateChange((event, current) => {
     // Do not show a public guest entrance before the stored session is loaded.
-    if(event==='INITIAL_SESSION'&&!current?.user)return;
+    if (event === 'INITIAL_SESSION' && !current?.user) return;
     authEventVersion++;
     receiveAuth(current);
   });

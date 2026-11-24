@@ -1,0 +1,11 @@
+.service-admin .main{max-width:1200px;margin:24px auto 60px}
+.service-admin #workspace{display:grid;grid-template-columns:minmax(225px,30%) minmax(0,1fr);gap:20px;align-items:start}
+.service-admin #workspace[hidden]{display:none}
+.service-admin .adm-workspace{min-width:0;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--surface);overflow-wrap:anywhere}
+.service-admin .btn,.service-admin .adm-workspace button{min-height:36px;padding:6px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font:inherit}
+.service-admin input,.service-admin select,.service-admin textarea{max-width:100%;font:inherit}
+.service-admin .admin-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-block:12px}
+.service-admin .admin-controls label{display:grid;gap:4px}
+.service-admin #member-dialog{max-width:min(560px,94vw);max-height:85vh;border:1px solid var(--line);border-radius:14px}
+.service-admin #member-dialog::backdrop{background:#0006}
+@media(max-width:760px){.service-admin #workspace{grid-template-columns:minmax(0,1fr)}}

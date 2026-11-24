@@ -41,7 +41,7 @@ const checkPageNavigationRestored=async(page,label)=>{
 const returnToAgit=async(page,frame)=>{
  await page.locator('.bottomnav:visible [data-park-action="settings"],.sidenav:visible [data-park-action="settings"]').click();
  await frame.locator('[data-park-settings-root]').waitFor();
- await frame.locator('[data-park-settings="world"]').click();
+ await frame.locator('.ojjuda-service-banner[data-service="agit"]').click();
  await page.locator('.agit-hub').waitFor();
  await page.locator('[data-park-app] iframe').waitFor({state:'hidden'});
 };
@@ -320,7 +320,7 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  assert.equal(await frame.evaluate(()=>kind),'event','Park action opens the complete event composer');
  await page.evaluate(()=>parkFixture.close());
  await frame.evaluate(()=>shareCard('00000000-0000-4000-8000-000000000001'));
- assert.match(await frame.locator('#note-share-url').inputValue(),/\/world.html\?place=park&card=/,'new share links use World');
+ assert.match(await frame.locator('#note-share-url').inputValue(),/\/park\/\?card=/,'shared cards open directly in Park');
  await frame.evaluate(()=>{closeManagement();window.fixtureToken='old-account';});
  // A slow inquiry submission must retain its iframe when World navigation is used.
  await frame.addScriptTag({content:read('note/support.js')});

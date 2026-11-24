@@ -102,17 +102,20 @@
         section.append(summary);
         if(key==='terms'||key==='privacy'){
           const link=el('a',`${title} 보기`,'support-document-link');
-          link.href=key==='terms'?'/terms.html':'/privacy.html';section.append(link);
+          link.href = '/' + key + '.html' + (source === 'world' ? '' : '?from=' + (source === 'note' ? 'park' : 'pajang'));
+          section.append(link);
         }else if(value)section.append(el('p',value));
         else section.append(el('p',key==='contact_text'
-          ? '아지트 문의는 로그인 후 아래 문의함에 남겨 주세요.'
+          ? '문의는 로그인 후 아래 문의함에 남겨 주세요.'
           : '서로를 존중해 주세요. 신고는 해당 글·카드·프로필의 신고 버튼에서 접수할 수 있어요.'));
         content.append(section);
       }
-      const glass=el('a','스마트 글래스 미리보기','support-document-link');
-      glass.href='/park/glasses.html';content.append(glass);
-      content.append(el('h3','내 문의'),el('p','아지트 문의함이에요. 문의는 본인과 운영팀만 볼 수 있어요.','support-help'));
-      if(!user){const link=el('a','대문에서 로그인','button');link.href='/';content.append(link);return;}
+      if (source !== 'pajang') {
+        const glass=el('a','스마트 글래스 미리보기','support-document-link');
+        glass.href='/park/glasses.html';content.append(glass);
+      }
+      content.append(el('h3','내 문의'),el('p','문의는 본인과 운영팀만 볼 수 있어요.','support-help'));
+      if(!user){const link=el('a','대문에서 로그인','button');link.href='/?auth=login&next='+source;content.append(link);return;}
       const form=el('form',undefined,'support-form'),label=el('label','문의 내용'),field=el('textarea');
       field.id='note-inquiry-body';limitText(field,2000);field.required=true;field.rows=5;label.htmlFor=field.id;
       const send=el('button','문의 보내기','button primary');send.type='submit';
@@ -156,7 +159,7 @@
   function feedbackView() {
     const epoch=++run,user=getUserId();setBusy(false);message.textContent='';content.replaceChildren();
     content.append(el('p','고장 난 곳, 불편한 점, 있었으면 하는 기능을 알려주세요. 아지트 운영팀이 확인해요.','support-help'));
-    if(!user){const login=el('a','대문에서 로그인','btn button');login.href='/';content.append(login);return;}
+    if(!user){const login=el('a','대문에서 로그인','btn button');login.href='/?auth=login&next='+source;content.append(login);return;}
     const form=el('form',undefined,'support-form'),choices=el('fieldset',undefined,'support-choices');
     choices.append(el('legend','의견 종류'));
     for(const [code,label]of[['bug','고장 났어요'],['idea','이런 기능이 있으면 좋겠어요'],['other','기타']]){

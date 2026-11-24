@@ -108,8 +108,9 @@ function adminHtml() {
       .match(/\.\/shell\.mjs\?v=([^"]+)/)?.[1];
     assert.ok(currentShell && requested.has('/features/pajang/shell.mjs?v='+currentShell),
       'browser loaded the currently published Pajang shell');
+    const usageVersion=(await fs.readFile(path.join(root,'features/pajang/shell.mjs'),'utf8')).match(/usage\.mjs\?v=([\w-]+)/)[1];
     for (const request of [
-      '/features/pajang/usage.mjs?v=20261121-pajang-visits1',
+      '/features/pajang/usage.mjs?v='+usageVersion,
       '/shared/analytics/site-usage.js?v=20261121-pajang-visits1',
       '/features/pajang/member.mjs?v=20261119-guest-account1',
       '/config.js?v=20261121-pajang-visits1'

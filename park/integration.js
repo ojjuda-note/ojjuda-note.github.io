@@ -52,7 +52,7 @@
     if (!canLeave()) return;
     showManagement('공원 설정');
     settingsContext = true;
-    const owner = session?.user?.id || null;
+    const owner = session?.user?.is_anonymous ? null : session?.user?.id || null;
     const settings = node('div', 'park-settings ojjuda-settings');
     settings.setAttribute('data-park-settings-root', '');
     const serviceBanners = document.createElement('ojjuda-service-banners');
@@ -63,7 +63,7 @@
       if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) { event.stopPropagation(); return; }
       if (!canLeave()) { event.preventDefault(); event.stopPropagation(); return; }
       const url = new URL(anchor.href, location.href);
-      if (url.origin === location.origin && url.pathname === '/world.html' && url.searchParams.get('tab') === 'hub') {
+      if (hosted && url.origin === location.origin && url.pathname === '/world.html' && url.searchParams.get('tab') === 'hub') {
         event.preventDefault(); event.stopPropagation(); navigate('world');
       }
     });
@@ -76,13 +76,13 @@
       settings.insertBefore(section, serviceBanners.parentNode === settings ? serviceBanners : null);
       return list;
     };
-    const row = (container, id, label, action, className = '') => {
+    const row = (container, id, label, action) => {
       const button = managementButton('', () => {
         if (!canLeave()) return;
         if (owner !== (session?.user?.id || null)) { showParkSettings(); return; }
         historyTransition(action);
       });
-      button.className = `park-settings-row ${className === 'park-settings-home' ? '' : 'ojjuda-settings-row'} ${className}`.trim();
+      button.className = 'park-settings-row ojjuda-settings-row';
       button.dataset.parkSettings = id;
       const arrow = node('span', 'park-settings-arrow ojjuda-settings-arrow', '›'); arrow.setAttribute('aria-hidden', 'true');
       button.append(node('span', 'ojjuda-settings-label', label), arrow); container.append(button);
@@ -97,8 +97,6 @@
       anchor.append(node('span', 'ojjuda-settings-label', label), arrow); container.append(anchor);
       return anchor;
     };
-    const home = row(settings, 'world', '아지트 가기', () => navigate('world'), 'park-settings-home');
-    home.prepend(icon('home'));
     const disclosure = (container, title) => {
       const details = node('details', 'ojjuda-settings-details');
       const summary = node('summary', 'park-settings-row ojjuda-settings-row');
@@ -113,12 +111,12 @@
     const account = group('내 정보');
     if (owner) {
       const profile = disclosure(account, '프로필·계정정보');
-      link(profile, 'profile', '프로필 수정', '/world.html?tab=my&setting=profile');
+      row(profile, 'profile', '프로필 수정', () => void window.OjjudaParkAccount.profile());
       row(profile, 'member-info', '개인정보 관리', () => void showMemberInfo());
       row(profile, 'nickname', '닉네임 변경', () => void showNicknameChange());
       row(profile, 'password', '비밀번호 변경', showPasswordChange);
       row(profile, 'logout', '로그아웃', showAccountLogout);
-      link(account, 'friends', '친구 관리', '/world.html?tab=my&setting=friends');
+      row(account, 'friends', '친구 관리', () => void window.OjjudaParkFriends.open());
     } else {
       account.className = 'ojjuda-guest-account';
       account.dataset.guestAccount = 'park';
@@ -155,9 +153,7 @@
     apps.parentElement.append(appStoreNote);
     const preferences = group('이용 설정');
     if (owner) {
-      // Agit owns the member's saved notification preferences and friend list.
-      // Open the existing editor so both apps use the same account and save path.
-      link(preferences, 'friend-alert', '친구 신청 알림', '/world.html?tab=my&setting=notifications');
+      row(preferences, 'friend-alert', '친구 신청 알림', () => window.OjjudaParkAccount.alerts());
       row(preferences, 'blocked', '차단 관리', () => void showBlocks());
     } else {
       preferences.append(node('p', 'management-help', '로그인하면 친구 신청 알림과 차단 목록을 관리할 수 있어요.'));
@@ -169,7 +165,7 @@
     row(help, 'support', '문의·의견', () => navigate('support'));
     const helpBody = disclosure(help, '도움말');
     link(helpBody, 'guide', '사용법', '/guide.html?from=park');
-    link(helpBody, 'creator', '제작자 소개', '/features/guide/creator.html');
+    link(helpBody, 'creator', '제작자 소개', '/features/guide/creator.html?from=park');
     link(helpBody, 'organization', '조직도', '/features/organization/?from=park');
     link(help, 'terms', '이용약관', '/terms.html?from=park');
     link(help, 'privacy', '개인정보처리방침', '/privacy.html?from=park');
@@ -196,9 +192,9 @@
       if (adminGroup) return;
       const admin = group('관리자');
       adminGroup = admin.parentElement;
-      row(admin, 'admin', '공원 관리자모드', () => {
-        if (hosted) navigate('admin');
-        else if (moderator === true && session?.user?.id === owner) document.getElementById('note-moderation')?.click();
+      const entry = link(admin, 'admin', '공원 관리자모드', '/admin/?from=park&admin=cards');
+      entry.addEventListener('click', event => {
+        if (owner !== session?.user?.id || !(canOpenAdmin() || (!hosted && moderator === true)) || !canLeave()) event.preventDefault();
       });
     };
     settings.append(serviceBanners);
@@ -241,6 +237,7 @@
   }
 
   function back() {
+    if (window.OjjudaParkAccount?.dialogOpen()) { window.OjjudaParkAccount.closeDialog(); return true; }
     if (historyBack()) return true;
     if (closeTopOverlay()) return true;
     if (document.body.classList.contains('note-my-open')) { window.OjjudaNoteNavigation?.leaveMy(); return true; }
@@ -250,7 +247,7 @@
   }
 
   function returnHome() {
-    if (!authKnown || pendingAction || !canLeave()) return false;
+    if (!authKnown || pendingAction || !canLeave() || window.OjjudaParkAccount?.closeDialog() === false) return false;
     initialCardId = initialKeepId = null;
     initialParkCompose = false;
     composerRun++;
@@ -267,6 +264,7 @@
   let pendingHistoryRestore=history.state?.[historyKey] || null;
   const historyScope = pendingHistoryRestore?.scope || Math.random().toString(36).slice(2);
   const managementViews = {
+    '프로필 수정':'profile', '친구 관리':'friends', '친구 신청 알림':'friend-alert',
     '공원 설정':'settings', '내 회원정보':'member-info', '닉네임 변경':'nickname',
     '비밀번호 변경':'password', '공원 차단 목록':'blocked', '로그아웃':'logout', '회원 탈퇴':'delete-account'
   };
@@ -277,7 +275,7 @@
     mode:feedMode, sort:feedSort, term:feedTerm,
     card:!detail.hidden ? stack.at(-1) || null : null,
     my:document.body.classList.contains('note-my-open'),
-    view:window.OjjudaCharge?.isOpen?.() ? 'charge' : photoLightbox && !photoLightbox.hidden ? 'photo' :
+    view:window.OjjudaParkAccount?.dialogOpen() ? 'account-dialog' : window.OjjudaCharge?.isOpen?.() ? 'charge' : photoLightbox && !photoLightbox.hidden ? 'photo' :
       !management.hidden ? managementViews[managementTitle.textContent] || 'overlay' :
       !backdrop.hidden ? 'composer' : notificationController?.isOpen?.() ? 'notifications' :
       window.OjjudaNoteSupport?.isOpen?.() ? 'support' : visible('dialog[open]') ? 'dialog' : null,
@@ -318,11 +316,17 @@
     historyPending=true;historyAllowed=true;history.back();return true;
   }
   function restoreHistory(route) {
+    if (window.OjjudaParkAccount?.closeDialog() === false) return;
     // Old standalone history entries must not reopen the retired My dashboard.
     if (!hosted && route.my) route={...route,my:false,view:route.view || 'settings'};
     historyRestoring=true;
     try {
       const sameOwner=route.owner===(session?.user?.id || null);
+      // Returning from a photo or message dialog keeps the form and its unsaved text.
+      if (sameOwner && !management.hidden && route.view === managementViews[managementTitle.textContent] && route.index < historySequence) {
+        historySequence = route.index;
+        return;
+      }
       const preserveComposer=sameOwner && route.view==='composer' && !backdrop.hidden;
       notificationController?.close?.();window.OjjudaNoteSupport?.close?.();window.OjjudaCharge?.close?.();
       closePhotoLightbox();if (!backdrop.hidden && !preserveComposer) closeComposer();
@@ -338,17 +342,17 @@
       if (card) {stack.splice(0,stack.length,card);void renderDetail();}
       else returnToFeed(false,feedReturnPoint);
       window.OjjudaNoteNavigation?.showMy?.(sameOwner&&route.my===true);
-      settingsContext=sameOwner&&['settings','member-info','nickname','password','blocked','logout'].includes(route.view);
+      settingsContext=sameOwner&&['settings','profile','friends','friend-alert','member-info','nickname','password','blocked','logout'].includes(route.view);
       if (sameOwner) {
-        const views={settings:showParkSettings,'member-info':showMemberInfo,nickname:showNicknameChange,password:showPasswordChange,blocked:showBlocks,logout:showAccountLogout,'delete-account':showAccountDeletion};
-        if (Object.hasOwn(views,route.view)) void views[route.view]();
+        const views={settings:showParkSettings,profile:window.OjjudaParkAccount?.profile,friends:window.OjjudaParkFriends?.open,'friend-alert':window.OjjudaParkAccount?.alerts,'member-info':showMemberInfo,nickname:showNicknameChange,password:showPasswordChange,blocked:showBlocks,logout:showAccountLogout,'delete-account':showAccountDeletion};
+        if (Object.hasOwn(views,route.view) && typeof views[route.view] === 'function') void views[route.view]();
         else if (route.view==='notifications') notificationController?.open?.();
         else if (route.view==='support') window.OjjudaNoteSupport?.open?.();
         // Completed writes, payments and confirmations are never replayed.
       }
       historySequence=route.index;
       const restored={...route,scope:historyScope};
-      if (['overlay','photo','charge','dialog'].includes(restored.view) || (restored.view==='composer'&&!preserveComposer)) restored.view=null;
+      if (['overlay','photo','charge','dialog','account-dialog'].includes(restored.view) || (restored.view==='composer'&&!preserveComposer)) restored.view=null;
       if (preserveComposer) lockPage(true);
       const url=new URL(location.href);if(card)url.searchParams.set('card',card);else url.searchParams.delete('card');
       history.replaceState(historyState(restored),'',url);
@@ -382,7 +386,7 @@
     if (!allowed && route.index<historySequence && !backdrop.hidden && document.querySelector('.composer')?.ojjudaTools?.close()) {
       historyPending=true;historyReverting=true;history.go(historySequence-route.index);return;
     }
-    if (!allowed && !canLeave()) {
+    if ((!allowed && !canLeave()) || (window.OjjudaParkAccount?.dialogOpen() && !window.OjjudaParkAccount.closeDialog())) {
       historyPending=true;historyReverting=true;
       history.go(historySequence-route.index || 1);
       return;
@@ -394,7 +398,7 @@
 
   function restoreNavigation(route) {
     if (historyDeparting) return false;
-    if (!route || typeof route!=='object') return false;
+    if (!route || typeof route!=='object' || window.OjjudaParkAccount?.closeDialog() === false) return false;
     const sameFrame=route.scope===historyScope;
     const index=sameFrame&&Number.isSafeInteger(route.index)&&route.index>=0?route.index:0;
     const next={...route,scope:historyScope,index};
@@ -419,7 +423,9 @@
     }
     // Async account checks can open a composer after navigate() has returned.
     // Its entry is still recorded before Back may leave the iframe.
-    if (next.view && next.view!==previous.view) {
+    if (previous.view === 'account-dialog' && next.view !== previous.view) {
+      if (!historyBack(true)) history.replaceState(historyState(next),'',location.href);
+    } else if (next.view && next.view!==previous.view) {
       next.index=++historySequence;
       history.pushState(historyState(next),'',location.href);
     } else if (previous.view && !next.view && previous.card===next.card && previous.mode===next.mode) {
@@ -430,19 +436,24 @@
     } else history.replaceState(historyState(next),'',location.href);
   }
 
-  const actions = new Set(['feed', 'saved', 'mine', 'events', 'event-new', 'blocked', 'settings', 'member-info', 'compose', 'notifications', 'support', 'world', 'menu', 'board', 'library', 'glasses', 'admin']);
+  const actions = new Set(['feed', 'saved', 'mine', 'events', 'event-new', 'blocked', 'settings', 'friends', 'member-info', 'compose', 'notifications', 'support', 'world', 'menu', 'board', 'library', 'glasses', 'admin']);
   function navigate(action) { return historyTransition(() => performNavigate(action)); }
   function performNavigate(action) {
-    if (!actions.has(action)) return false;
-    if (action === 'admin' && !canOpenAdmin()) return false;
+    if (!actions.has(action) || window.OjjudaParkAccount?.closeDialog() === false) return false;
+    if (action === 'admin') {
+      if (!(canOpenAdmin() || (!hosted && session?.user && moderator === true)) || !canLeave()) return false;
+      (hosted ? parent : window).location.assign('/admin/?from=park&admin=cards');
+      return true;
+    }
+    if (['menu','board','library'].includes(action) && !hosted) action = 'feed';
     if (!authKnown && client && !['world', 'menu', 'board', 'library', 'glasses'].includes(action)) { pendingAction = action; return true; }
     if (!canLeave()) return false;
     // The host records the screen being left. Keep the child route intact until
     // the host hides it, so Back from Agit/admin restores these same settings.
-    if (['world','menu','board','library','admin'].includes(action)) {
+    if (['world','menu','board','library'].includes(action)) {
       pendingAction=null;
-      if (hosted) send({type:'ojjuda:park-navigate',action,...(action==='admin'?{userId:session.user.id}:{})});
-      else location.assign('/world.html');
+      if (hosted) send({type:'ojjuda:park-navigate',action});
+      else location.assign('/world.html?tab=hub');
       return true;
     }
     if (action==='glasses') {pendingAction=null;location.assign('/park/glasses.html'+(hosted?'?embedded=1':''));return true;}
@@ -460,6 +471,10 @@
     if (action === 'compose' || action === 'event-new') void openComposer(action === 'event-new' ? 'event' : 'new');
     else if (action === 'blocked') { selectCollection('all'); void showBlocks(); }
     else if (action === 'settings') showParkSettings();
+    else if (action === 'friends') {
+      if (session?.user) { settingsContext = true; void window.OjjudaParkFriends.open(); }
+      else showParkSettings();
+    }
     else if (action === 'member-info') {
       if (session?.user) { settingsContext = true; void showMemberInfo(); }
       else showParkSettings();
@@ -548,8 +563,8 @@
     const url = new URL(link.href, location.href);
     if (url.origin !== location.origin) return;
     if (link.matches('.brand')) { event.preventDefault(); navigate('feed'); return; }
-    if (url.pathname === '/world.html' && !url.search) { event.preventDefault(); navigate('world'); return; }
-    if (url.pathname === '/world.html' || url.pathname === '/' || url.pathname === '/guide.html' || url.pathname === '/features/organization/') {
+    if (event.defaultPrevented || link.closest('ojjuda-service-banners') || event.button !== 0 || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
+    if (url.pathname === '/' || url.pathname === '/guide.html' || url.pathname === '/features/organization/') {
       event.preventDefault();
       if (canLeave()) (hosted ? parent : window).location.assign(url.pathname + url.search + url.hash);
     }

@@ -326,10 +326,10 @@ async function noteFixture(context, mobile, errors) {
   assert.equal(await page.locator('#note-delete-account').count(), 0,
     'the legacy Note settings no longer have a direct withdrawal button');
   assert.equal(await page.locator('#event-start, #note-my-screen [data-show="events"]').count(), 0);
+  assert.equal(await page.locator('#note-my-screen a[href^="/world.html"]').count(), 0);
   // The Park menu keeps return/context parameters; assert real destinations, not bare hrefs.
   for (const [selector, destination] of [
-    ['#note-my-screen a[href^="/guide.html"]', '/guide.html'],
-    ['#note-my-screen a[href^="/world.html"]', '/world.html']
+    ['#note-my-screen a[href^="/guide.html"]', '/guide.html']
   ]) {
     const link = page.locator(selector).first();
     assert.equal(await link.isVisible(), true, `${destination} remains reachable`);
