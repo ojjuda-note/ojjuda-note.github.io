@@ -105,7 +105,12 @@
     previous.addEventListener('click', () => { if (!busy && offset > 0) { offset = Math.max(0, offset - PAGE_SIZE); void refresh(); } });
     next.addEventListener('click', () => { if (!busy && offset + PAGE_SIZE < total) { offset += PAGE_SIZE; void refresh(); } });
     pagination.append(previous, pageLabel, next); pagination.hidden = true;
-    section.append(heading, intro); if (!withdrawn && !referrals && !suspended) section.append(filterBar);
+    section.append(heading, intro);
+    if (!withdrawn && !referrals && !suspended) {
+      const consentLink = el('a', '공원 보호자 동의 관리');
+      consentLink.href = '/admin/park-guardian/';
+      section.append(consentLink, filterBar);
+    }
     section.append(form); if (!withdrawn && !referrals) section.append(sortBar);
     section.append(count, status, retry, list, pagination); container.replaceChildren(section);
 

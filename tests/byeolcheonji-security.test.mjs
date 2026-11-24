@@ -57,6 +57,16 @@ test('user metadata never authorizes an anonymous account', async () => {
   }), { status: 401 });
 });
 
+test('a Park-only account is rejected even when its editable metadata claims otherwise', async () => {
+  for (const marker of [{role:'park_junior'},{app_metadata:{park_guardian_account:true}}]) {
+    await assert.rejects(() => verifyIdentity(request({Authorization: `Bearer ${jwt()}`}), {
+      authUrl:'https://auth.example', key:'fixture', fetcher:async () => Response.json({
+        id:A, is_anonymous:false, ...marker, user_metadata:{role:'authenticated',park_guardian_account:false}
+      })
+    }),{status:403,code:'park_service_only'});
+  }
+});
+
 test('device capability is independent of Authorization and only canonical 256-bit tokens are accepted', () => {
   const capability = randomBytes(32).toString('base64url');
   const hash = deviceHash(request({ 'X-Device-Token': capability, Authorization: `Bearer ${jwt()}` }));

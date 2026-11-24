@@ -266,7 +266,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     assert.equal(app.element('nickname').readOnly, false, 'the automatic nickname remains editable');
     assert.equal(app.element('nickname').tabIndex, 0);
     assert.equal(app.element('nickname-auto-help').hidden, false);
-    assert.equal(app.focused, 'email', 'signup starts with the first editable field');
+    assert.equal(app.focused, destination === 'note' ? 'signup-birth' : 'email', 'signup starts with the first editable field');
     assert.equal(app.element('auth-dialog').open, true);
     assert.equal(app.element('signup-tab').attributes['aria-selected'], 'true');
     entryIdentity(app, destination);

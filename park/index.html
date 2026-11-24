@@ -12,12 +12,12 @@
   <script src="/config.js?v=20261111-shared-member-auth1" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2" defer></script>
   <script src="/park/opening.js?v=20261123-park-first-paint1" async></script>
-<script src="/shared/location/location.js?v=20261119-kma-current1" defer></script>
+<script src="/shared/location/location.js?v=20261125-park-guardian1" defer></script>
   <script src="/park/route.js?v=20261123-independent-park1"></script>
   <script src="/shared/auth/invite-referral.js?v=20261119-invite-referral1" defer></script>
 <script src="/shared/diagnostics/diagnostics.js?v=20261106-source-folders1" defer></script>
   <link rel="stylesheet" href="/shared/auth/signup-identity.css?v=20261106-source-folders1" media="print" onload="this.media='all'">
-  <script src="/shared/auth/signup-identity.js?v=20261116-signup-focus1" defer></script>
+  <script src="/shared/auth/signup-identity.js?v=20261125-park-guardian1" defer></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#2674c5">
@@ -234,6 +234,7 @@
       <header class="composer-head"><button class="icon-button" type="button" id="close-composer" aria-label="작성창 닫기"><svg><use href="#close"/></svg></button><h2 id="compose-title">새 카드 쓰기</h2><span></span></header>
       <div class="composer-body">
         <div class="compose-publish-settings" aria-label="공개 및 표시 설정"><span class="compose-public-scope">전체 공개</span><section class="note-location-consent" id="card-location-consent"><span class="note-location-name" id="card-location-label">위치</span><button class="note-location-switch" id="card-location-button" type="button" role="switch" aria-labelledby="card-location-label" aria-describedby="card-location-status" aria-checked="false"><span class="note-switch-track" aria-hidden="true"></span><span class="note-switch-state">꺼짐</span></button><span id="card-location-status" role="status" aria-live="polite" hidden>카드를 등록하려면 위치를 켜 주세요. 정확한 좌표는 비공개로 저장돼요.</span></section><div class="compose-quick"><label class="quick-choice"><span class="quick-label">성별</span><select id="quick-gender" aria-label="성별 표시"><option value="private">비공개</option></select></label></div></div>
+        <p class="compose-context" id="park-junior-writing-help" hidden>공개 카드에는 학교·주소·전화번호를 쓰지 마세요. <a href="/park/guardian/" target="_blank" rel="noopener">보호자 위치 동의 안내</a></p>
         <p class="compose-context" id="compose-context" hidden>마음을 카드에 적어 주세요. 태그는 글에서 자동으로 골라 드려요.</p>
         <div class="compose-photo image-lake">
           <span class="compose-shade"></span>
@@ -303,7 +304,7 @@
   <script src="/note/share-image.js?v=20261117-park-wash-rhythm1" defer></script>
   <script src="/note/share-kakao.js?v=20261031-kakao-card-share1" defer></script>
   <script src="/note/composer-tools.js?v=20261120-video1" defer></script>
-  <script src="/note/preview.js?v=20261125-classic-settings1" defer></script>
+  <script src="/note/preview.js?v=20261125-park-guardian1" defer></script>
   <script src="/note/pull-refresh.js?v=20261004-refresh1" defer></script>
   <script src="/note/navigation.js?v=20261125-classic-settings1" defer></script>
   <script src="/park/integration.js?v=20261125-classic-settings1" defer></script>

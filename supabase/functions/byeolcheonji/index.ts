@@ -17,6 +17,8 @@ async function member(request: Request) {
     join auth.sessions s on s.user_id=u.id and s.id=${identity.sessionId}
     left join public.user_private moderation on moderation.user_id=u.id
     where u.id=${identity.userId} and u.is_anonymous is not true and u.deleted_at is null
+      and u.role is distinct from 'park_junior'
+      and u.raw_app_meta_data->>'park_guardian_account' is distinct from 'true'
       and (u.banned_until is null or u.banned_until<=now())
       and (moderation.banned_until is null or moderation.banned_until<=now())
       and (s.not_after is null or s.not_after>now())`;
@@ -181,6 +183,8 @@ async function tick(request: Request) {
       join auth.users u on u.id=s.user_id join public.profiles p on p.id=u.id
       left join public.user_private moderation on moderation.user_id=u.id
       where s.enabled and u.is_anonymous is not true and u.deleted_at is null
+        and u.role is distinct from 'park_junior'
+        and u.raw_app_meta_data->>'park_guardian_account' is distinct from 'true'
         and (u.banned_until is null or u.banned_until<=now())
         and (moderation.banned_until is null or moderation.banned_until<=now())
       order by s.updated_at asc limit 2000`;
@@ -220,6 +224,8 @@ async function tick(request: Request) {
             and exists(select 1 from auth.users u join public.profiles p on p.id=u.id
               left join public.user_private moderation on moderation.user_id=u.id
               where u.id=s.user_id and u.is_anonymous is not true and u.deleted_at is null
+                and u.role is distinct from 'park_junior'
+                and u.raw_app_meta_data->>'park_guardian_account' is distinct from 'true'
                 and (u.banned_until is null or u.banned_until<=now())
                 and (moderation.banned_until is null or moderation.banned_until<=now())) returning s.id`;
         if (!current) continue;

@@ -26,7 +26,13 @@ let editingId = null, composerUserId = null, moderator = false, moderatorRun = 0
 let feedMode = 'all', feedSort = 'latest', feedTerm = '';
 let nearbyPosition = null, nearbyOffset = 0, writingPosition = null, eventPosition = null;
 let stopLocationPreference = () => {}, writingLocationController = null;
-function locationIsEnabled() { return window.OjjudaLocation?.current(session?.user?.id)?.enabled !== false; }
+function parkJunior() {
+  return session?.user?.app_metadata?.park_guardian_account === true || session?.user?.role === 'park_junior';
+}
+function locationIsEnabled() {
+  return Boolean(authKnown && session?.user?.id && !session.user.is_anonymous
+    && window.OjjudaLocation?.current(session.user.id)?.enabled !== false);
+}
 function watchLocationPreference(userId) {
   stopLocationPreference(); stopLocationPreference = () => {};
   if (!userId || !window.OjjudaLocation) return;
@@ -823,7 +829,7 @@ async function openCardVideo(thumb) {
   }
 }
 async function selectCardPhoto(file) {
-  if (!file || busy || !(kind === 'memo' || kind === 'comment') || (editingId && !cardPhotoEditPath)) return;
+  if (!file || busy || parkJunior() || !(kind === 'memo' || kind === 'comment') || (editingId && !cardPhotoEditPath)) return;
   cardMediaController?.abort();
   const controller = new AbortController(); cardMediaController = controller;
   const run = ++cardPhotoRun, composer = composerRun, epoch = identityEpoch;
@@ -871,7 +877,7 @@ function clearCardPhoto() {
 function syncCardPhotoAttach() {
   const attach = $('#card-photo-attach'), remove = $('#card-photo-remove');
   if (!attach || !remove) return;
-  const allowed = (!editingId || !!cardPhotoEditPath) && (kind === 'memo' || kind === 'comment');
+  const allowed = !parkJunior() && (!editingId || !!cardPhotoEditPath) && (kind === 'memo' || kind === 'comment');
   const previewUrl = cardPhotoUrl || (editingId && cardPhotoEditPath ? cardPhotoCache.get(editingId)?.url : null);
   const disabled = !allowed || busy || draftLoading;
   $('#card-photo-file').disabled = disabled;
@@ -1607,9 +1613,10 @@ async function refreshNearbyPosition(button, version) {
 }
 async function currentPosition(fresh = false, enable = false, signal) {
   const service = window.OjjudaLocation, userId = session?.user?.id;
-  if (!service) throw Error('위치 기능을 불러오지 못했어요. 새로고침해 주세요.');
+  if (!authKnown || !userId || session.user.is_anonymous) throw Error('로그인 후 위치를 이용해 주세요.');
+  if (!service?.authorizePosition) throw Error('위치 기능을 불러오지 못했어요. 새로고침해 주세요.');
   const choice = await service.preference(client, userId);
-  const position = await service.readPosition({db:client,accountId:userId,fresh,allowDisabled:enable,signal});
+  const position = await service.readPosition({db:client,accountId:userId,fresh,allowDisabled:enable,signal,park:true});
   if (userId && userId !== session?.user?.id) throw Error('회원 정보를 다시 확인해 주세요.');
   if (enable && userId && !choice.enabled) await service.setPreference(client,userId,true,choice.version);
   return position;
@@ -2883,6 +2890,10 @@ async function openComposer(mode, card = null, replyTo = null, pending = null) {
   if (busy || draftLoading) return;
   composeInkComposing = false;
   if (!authKnown && client) { message('계정을 확인하고 있어요. 잠시 후 다시 눌러 주세요.'); return; }
+  if (parkJunior() && (mode === 'event' || card?.kind === 'event')) {
+    message('공원 청소년 계정은 일반 카드와 답글을 쓸 수 있어요.');
+    return;
+  }
   fontBeforeConversion = 'default';
   const guest = !session?.user;
   if (guest && (card || !['new', 'memo', 'reply'].includes(mode))) {
@@ -3365,7 +3376,9 @@ async function publishCard() {
     busy = false; setComposerInputs();
     console.warn('Note publish:', error);
     updateComposer();
-    composeMessage.textContent = noteSpamMessage(error) || (/Invalid event (?:input|edit)/i.test(error?.message || '')
+    composeMessage.textContent = error?.code === 'guardian' || error?.message === 'park_guardian_location_required'
+      ? '보호자가 위치 이용에 동의한 뒤 다시 등록해 주세요.'
+      : noteSpamMessage(error) || (/Invalid event (?:input|edit)/i.test(error?.message || '')
       ? editId ? '이벤트 글·태그·사진을 확인해 주세요.' : '이벤트 글·태그·위치·반경·시간을 확인해 주세요.'
       : error?.code === 'EVENT_REJECTED' ? error.message
         : editId ? '수정하지 못했어요. 권한과 연결을 확인해 주세요' : '등록하지 못했어요. 다시 시도해 주세요');
@@ -3462,6 +3475,8 @@ async function publishCard() {
   }
 }
 function updateAuth() {
+  const juniorHelp = $('#park-junior-writing-help');
+  if (juniorHelp) juniorHelp.hidden = !parkJunior();
   const accountText = !authKnown ? '계정 확인 중'
     : session?.user ? (localStage ? '테스트 계정 연결됨' : `오쭈다 계정 연결됨${worldCoins === null ? '' : ` · ${worldCoins.toLocaleString('ko-KR')} ZU`}`)
       : (localStage ? '테스트 로그인 필요' : '대문에서 로그인해 주세요');
@@ -3764,6 +3779,20 @@ function noteSpamMessage(error) {
   return `${windowText}에 ${amount(details.max_posts, 2)}개까지만 쓸 수 있어요. ${amount(details.retry_after_seconds, 1)}초 뒤 다시 시도해 주세요.`;
 }
 async function noteRpc(name, parameters = {}, signal = null) {
+  if (parameters.p_lat != null || parameters.p_lon != null) {
+    const userId = session?.user?.id, epoch = identityEpoch;
+    try {
+      if (!authKnown || !userId || !window.OjjudaLocation?.authorizePosition)
+        throw Error('로그인 후 위치를 이용해 주세요.');
+      await window.OjjudaLocation.authorizePosition(client, userId, { park: true, signal });
+      if (epoch !== identityEpoch || userId !== session?.user?.id) throw Error('회원 정보를 다시 확인해 주세요.');
+    } catch (error) {
+      if (epoch !== identityEpoch || userId !== session?.user?.id) throw error;
+      nearbyPosition = null; writingPosition = null;
+      if (signal?.aborted || !['list_cards','get_card'].includes(name) || parameters.p_sort === 'nearby') throw error;
+      parameters = { ...parameters, p_lat: null, p_lon: null };
+    }
+  }
   const pending = query().rpc(name, parameters);
   const { data, error } = await (signal && typeof pending.abortSignal === 'function'
     ? pending.abortSignal(signal) : pending);
