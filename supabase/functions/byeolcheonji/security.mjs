@@ -32,6 +32,9 @@ export async function verifyIdentity(request, { authUrl, key, fetcher = fetch })
   try { user = await response.json(); } catch { throw denied(); }
   const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
   if (!uuid.test(user?.id || '') || user.is_anonymous !== false) throw denied();
+  if (user.role === 'park_junior' || user.app_metadata?.park_guardian_account === true) {
+    throw new ApiError(403, 'park_service_only', '공원 전용 계정이에요.');
+  }
   // Only inspect claims after Auth has verified this same token. Database checks the live session next.
   let claims;
   try { claims = JSON.parse(Buffer.from(match[1].split('.')[1], 'base64url').toString('utf8')); } catch { throw denied(); }

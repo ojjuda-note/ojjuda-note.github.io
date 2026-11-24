@@ -12,7 +12,7 @@
   function fieldError(field, message) {
     return Object.assign(new Error(message), { field });
   }
-  function parseBirth(birthSix, genderCode, today = todayKorea(), enforceAge = true) {
+  function parseBirth(birthSix, genderCode, today = todayKorea(), enforceAge = true, minimumAge = MIN_AGE) {
     if (!/^\d{6}$/.test(birthSix)) throw fieldError('birth', '생년월일을 숫자 6자리로 입력해 주세요.');
     if (!/^[1-4]$/.test(genderCode)) throw fieldError('code', '성별 숫자는 1·2·3·4 중 한 자리로 입력해 주세요.');
     const year = (Number(genderCode) <= 2 ? 1900 : 2000) + Number(birthSix.slice(0, 2));
@@ -22,7 +22,7 @@
     const birthDate = `${year}-${birthSix.slice(2, 4)}-${birthSix.slice(4, 6)}`;
     if (birthDate > today) throw fieldError('birth', '미래의 생년월일은 입력할 수 없어요.');
     const age = ageAt(birthDate, today);
-    if (enforceAge && age < MIN_AGE) throw fieldError('birth', '만 14세 이상만 가입할 수 있어요.');
+    if (enforceAge && age < minimumAge) throw fieldError('birth', `만 ${minimumAge}세 이상만 가입할 수 있어요.`);
     return { birthDate, gender: ['1', '3'].includes(genderCode) ? 'male' : 'female', age };
   }
   function normalizePhone(value) {
@@ -66,10 +66,10 @@
       <p class="identity-hint">회원정보는 비공개로 관리해요. 전화번호는 수정할 수 있고, 생년월일과 성별은 저장 후 직접 수정할 수 없어요. 입력 정보만으로 본인인증이 되지는 않아요.</p>
     </div>`;
   }
-  function read(form, prefix, enforceAge = true) {
+  function read(form, prefix, enforceAge = true, minimumAge = MIN_AGE) {
     const birthSix = form.querySelector(`#${prefix}-birth`).value.trim();
     const genderCode = form.querySelector(`#${prefix}-code`).value.trim();
-    const parsed = parseBirth(birthSix, genderCode, todayKorea(), enforceAge);
+    const parsed = parseBirth(birthSix, genderCode, todayKorea(), enforceAge, minimumAge);
     const phone = prefix === 'signup' ? normalizeSignupPhone(form.querySelector(`#${prefix}-phone`).value)
       : normalizePhone(form.querySelector(`#${prefix}-phone`).value);
     return { ...parsed, birthSix, genderCode, phone };
@@ -84,7 +84,7 @@
     const birth = group.querySelector(`#${prefix}-birth`).value, code = group.querySelector(`#${prefix}-code`).value;
     if (!birth || !code) { output.textContent = ''; return; }
     try {
-      const info = parseBirth(birth, code, todayKorea(), group.dataset.existingMember !== 'true');
+      const info = parseBirth(birth, code, todayKorea(), group.dataset.existingMember !== 'true', group.dataset.parkSignup === 'true' ? 12 : MIN_AGE);
       output.textContent = `${info.birthDate.replaceAll('-', '.')} · 만 ${info.age}세 · ${info.gender === 'male' ? '남성' : '여성'}`;
       output.dataset.invalid = 'false';
     } catch (error) { output.textContent = error.message; output.dataset.invalid = 'true'; }
