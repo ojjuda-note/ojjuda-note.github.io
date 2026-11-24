@@ -285,7 +285,21 @@ const cardId='00000000-0000-4000-8000-000000000001';
   assert.equal(await page.locator('#compose-text').inputValue(),'고쳐 쓴 붓글씨');
   assert.equal(await page.locator('#compose-ink-art').isVisible(),false);
   assert.equal(await page.locator('.compose-photo .park-ink-box').isVisible(),false);
+  // A nonempty draft intentionally asks for confirmation before closing.
+  // Playwright otherwise auto-dismisses the dialog and leaves the composer open.
+  const cancelledClose = page.waitForEvent('dialog').then(async dialog=>{
+   const prompt=dialog.message(); await dialog.dismiss(); return prompt;
+  });
   await page.locator('#close-composer').click();
+  assert.equal(await cancelledClose,'작성 중인 카드를 닫고 이동할까요?');
+  assert.equal(await page.locator('#composer-backdrop').isVisible(),true,'cancelling protects the draft');
+  assert.equal(await page.locator('#compose-text').inputValue(),'고쳐 쓴 붓글씨');
+  const confirmedClose = page.waitForEvent('dialog').then(async dialog=>{
+   const prompt=dialog.message(); await dialog.accept(); return prompt;
+  });
+  await page.locator('#close-composer').click();
+  assert.equal(await confirmedClose,'작성 중인 카드를 닫고 이동할까요?');
+  await page.locator('#composer-backdrop').waitFor({state:'hidden'});
   await page.locator('#feed-list .photo').first().scrollIntoViewIfNeeded();
   for(const [index,key] of [[1,'37'],[2,'13']]){
    const face='#feed-list article:nth-child('+index+') .photo',selector=face+' canvas.park-ink-art';
