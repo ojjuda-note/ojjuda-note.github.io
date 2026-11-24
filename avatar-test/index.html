@@ -12,7 +12,72 @@ const CORE=['top','bottom','shoes'],EXTRA=['hair','expression','accessory','bag'
 const CASUAL={...O,hair:'casual01-hair',accessory:'casual01-accessory',top:'casual01-top',bottom:'casual01-bottom',shoes:'casual01-shoes',bag:'casual01-bag'};
 let catalog=D.items.slice(),state={pose:'basic',bg:0,items:{...CASUAL}},category='hair',saved=[],draft={},review={},checks={},revision=0,buildRevision=0,toastTimer,registered=[],slot='top';
 const cache=new Map(),pixelCache=new Map();
-function image(url){if(!url)return Promise.resolve(null);if(!cache.has(url))cache.set(url,new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>{cache.delete(url);reject(Error('이미지 읽기 실패'))};im.src=url}));return cache.get(url)}
+const derivedSources=new Map(),derivedCache=new Map();
+function rawImage(url){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(Error('이미지 읽기 실패'));im.src=url})}
+function recolorPixels(data,w,h,palette,pattern){
+ let minX=w,minY=h,maxX=-1,maxY=-1;
+ if(pattern)for(let y=0;y<h;y++)for(let x=0;x<w;x++){if(data[(y*w+x)*4+3]>64){minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y)}}
+ const scale=Math.max(1,(maxY-minY+1)/85);
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+  const i=(y*w+x)*4;if(!data[i+3])continue;
+  const lum=(data[i]*.2126+data[i+1]*.7152+data[i+2]*.0722)/255;
+  const q=Math.max(0,Math.min(2,(lum-.08)/.42)),a=Math.min(1,Math.floor(q)),t=q-a;
+  let shade=1;
+  if(pattern&&maxX>=0){
+   const u=(x-minX)/scale,v=(y-minY)/scale;
+   if(pattern==='check'){const xx=((u%15)+15)%15,yy=((v%15)+15)%15;shade=(xx<4?.83:1)*(yy<4?.85:1);if(Math.abs(xx-6)<.65||Math.abs(yy-6)<.65)shade*=1.12;}
+   else if(pattern==='pinstripe'){const xx=((u%9)+9)%9;if(xx<.75)shade=1.22;}
+  }
+  for(let k=0;k<3;k++)data[i+k]=Math.max(0,Math.min(255,Math.round((palette[a][k]+(palette[a+1][k]-palette[a][k])*t)*shade)));
+ }
+ return data;
+}
+async function derivedImage(source){
+ const im=await image(source.url);
+ if(!im||im.width!==W||im.height!==H)throw Error('아이템 원화 크기 오류');
+ const c=canvas(),ctx=c.getContext('2d',{willReadFrequently:true});
+ ctx.drawImage(im,0,0);const pixels=ctx.getImageData(0,0,W,H);
+ recolorPixels(pixels.data,W,H,source.palette,source.pattern);
+ ctx.putImageData(pixels,0,0);
+ return rawImage(c.toDataURL('image/png'));
+}
+function image(url){
+ if(!url)return Promise.resolve(null);
+ if(derivedSources.has(url)){
+  if(derivedCache.has(url)){const p=derivedCache.get(url);derivedCache.delete(url);derivedCache.set(url,p);return p}
+  const p=derivedImage(derivedSources.get(url)).catch(e=>{derivedCache.delete(url);throw e});
+  derivedCache.set(url,p);
+  while(derivedCache.size>36)derivedCache.delete(derivedCache.keys().next().value);
+  return p;
+ }
+ if(!cache.has(url))cache.set(url,rawImage(url).catch(e=>{cache.delete(url);throw e}));
+ return cache.get(url);
+}
+function registerLocalPacks(manifest){
+ if(manifest?.template!==D.template||!Array.isArray(manifest.packs))return;
+ const slots=['hair','accessory','top','bottom','shoes','bag'];
+ for(const pack of manifest.packs){
+  if(!pack||typeof pack.id!=='string'||!/^[a-z0-9-]{1,40}$/.test(pack.id)||typeof pack.name!=='string'||!pack.name||pack.name.length>60||!Number.isInteger(pack.bg)||pack.bg<0||pack.bg>=D.backgrounds.length||!Array.isArray(pack.items)||pack.items.length!==slots.length)continue;
+  const entries=[],refs=[],look={name:pack.name,bg:pack.bg};
+  for(const k of slots){
+   const m=pack.items.filter(v=>v?.category===k),x=m[0],base=D.items.find(v=>v.id==='casual01-'+k&&v.category===k),id=pack.id+'-'+k;
+   if(m.length!==1||typeof x.name!=='string'||!x.name||x.name.length>60||catalog.some(v=>v.id===id)||!Array.isArray(x.palette)||x.palette.length!==3||!x.palette.every(c=>Array.isArray(c)&&c.length===3&&c.every(n=>Number.isInteger(n)&&n>=0&&n<=255))||(x.pattern&&!['check','pinstripe'].includes(x.pattern))||!base||!P.every(p=>typeof base.variants[p]==='string'))break;
+   const variants={};
+   for(const p of P){const key='derived:'+id+':'+p;variants[p]=key;refs.push([key,{url:base.variants[p],palette:x.palette,pattern:x.pattern}]);}
+   entries.push({id,name:x.name,category:k,kind:'color',concept:pack.id,variants});look[k]=id;
+  }
+  if(entries.length!==slots.length)continue;
+  for(const [key,source] of refs)derivedSources.set(key,source);
+  catalog.push(...entries);approvedLooks.push(look);
+ }
+}
+async function loadLocalPacks(){
+ if(!/^https?:$/.test(location.protocol))return;
+ const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),4000);
+ try{const response=await fetch('./wardrobe-packs.json',{cache:'no-store',signal:abort.signal});if(response.ok)registerLocalPacks(await response.json());}
+ catch(e){console.warn('의상 팩을 불러오지 못했습니다.',e);}
+ finally{clearTimeout(timer);}
+}
 function canvas(w=W,h=H){let c=document.createElement('canvas');c.width=w;c.height=h;return c}
 function item(id){return catalog.find(x=>x.id===id)}
 function spec(s,pose,replace){let urls=[D.base[pose]];let hair=item(s.items.hair)?.variants[pose];if(hair)urls.push(hair);for(let k of ['expression','top','bottom','shoes','outer','bag','accessory','headwear']){let a=replace?.slot===k?replace.url:item(s.items[k])?.variants[pose];if(a)urls.push(a)}return urls}
@@ -43,5 +108,5 @@ function validData(v){return typeof v==='string'&&v.length<3000000&&/^data:image
 function validShape(x){return x&&typeof x.id==='string'&&x.id.length<100&&typeof x.name==='string'&&x.name.length>0&&x.name.length<=60&&SLOTS.includes(x.category)&&x.variants&&P.every(p=>validData(x.variants[p]))&&Object.keys(x.variants).length===6}
 async function loadApproved(){if(!/^https?:$/.test(location.protocol))return;try{let r=await fetch('/api/catalog',{cache:'no-store'});if(!r.ok)return;let d=await r.json();if(d.template!==D.template||!Array.isArray(d.items))return;for(let x of d.items){if(x.reviewed===true&&validShape(x)&&!catalog.some(y=>y.id===x.id))catalog.push(x)};for(let l of (d.concepts||[])){if(l.reviewed===true&&typeof l.name==='string'&&['hair','expression','accessory','top','bottom','shoes','bag'].every(k=>item(l.items?.[k])?.category===k))approvedLooks.push({name:l.name,bg:0,...l.items})}}catch(e){console.warn('추가 아이템을 불러오지 못했습니다.',e)}}
 $('back').onclick=e=>{try{if(document.referrer&&new URL(document.referrer).origin===location.origin){e.preventDefault();history.back()}}catch{}};
-(async()=>{poseButtons();await loadApproved();await restore();update()})().catch(e=>toast(e.message));
+(async()=>{poseButtons();await loadLocalPacks();await loadApproved();await restore();update()})().catch(e=>toast(e.message));
 </script></body></html>
