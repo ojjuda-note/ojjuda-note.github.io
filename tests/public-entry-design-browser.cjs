@@ -354,7 +354,7 @@ async function openSpace(page, space) {
     await page.goto(origin + '/features/pajang/?member=1&blocked=1');
     await page.locator('#gate').waitFor({ state: 'visible' });
     assert.equal(await page.locator('#gate > .pajang-invitation').count(), 0, 'account restriction keeps its existing error gate');
-    assert.equal(await page.locator('#gate a').getAttribute('href'), '/world.html');
+    assert.equal(await page.locator('#gate a').getAttribute('href'), '/features/pajang/');
 
     for (const space of spaces) {
       for (const mode of ['signup', 'login']) {
@@ -380,8 +380,8 @@ async function openSpace(page, space) {
       await page.locator('#email').fill('entrance@example.invalid');
       await page.locator('#password').fill('fixture-password');
       await page.locator('#auth-submit').click();
-      await page.waitForURL(url => space.next === 'pajang' ? url.pathname === '/features/pajang/'
-        : url.pathname === '/world.html' && (space.next !== 'note' || url.searchParams.get('place') === 'park'));
+      const entryPath = {pajang:'/features/pajang/', note:'/park/', world:'/world.html'}[space.next];
+      await page.waitForURL(url => url.pathname === entryPath);
       console.log('PASS originating auth context, mode switch and login return:', space.id);
     }
     assert.deepEqual(errors, [], 'entrance scripts have no uncaught errors');
