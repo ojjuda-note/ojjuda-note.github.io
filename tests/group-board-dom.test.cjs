@@ -229,7 +229,9 @@ test('Back, close and Escape preserve a group draft until discard is confirmed',
     d.querySelector(`[data-room="${room}"]`).click();await tick();
     d.querySelector('[data-action=compose]').click();const form=d.querySelector('#composer'),editor=form.closest('dialog');
     form.elements.title.value='입력 보존 점검';form.elements.body.value='뒤로 가도 사라지면 안 되는 내용';
-    f.w.history.back();await tick();await tick();
+    f.w.history.back();
+    for(let i=0;i<100&&!d.querySelector('dialog[open] [data-no]');i++)await tick();
+    assert.ok(d.querySelector('dialog[open] [data-no]'),'Back and compensating Forward open the discard confirmation');
     assert.equal(f.w.location.hash,'#room='+room);assert.equal(d.querySelector('#composer'),form);
     assert.match(d.querySelector('dialog:last-of-type').textContent,/작성 중인 내용을 지울까요/);
     d.querySelector('[data-no]').click();await f.settleDialogs();assert.equal(form.elements.body.value,'뒤로 가도 사라지면 안 되는 내용');
@@ -239,7 +241,9 @@ test('Back, close and Escape preserve a group draft until discard is confirmed',
     editor.querySelector('[data-close]').click();d.querySelector('[data-yes]').click();await f.settleDialogs();
     assert.equal(d.querySelector('dialog'),null);assert.equal(f.calls.some(([a])=>a==='save'),false);
     const cleanUnload=new f.w.Event('beforeunload',{cancelable:true});f.w.dispatchEvent(cleanUnload);assert.equal(cleanUnload.defaultPrevented,false);
-    f.w.history.back();await tick();await tick();assert.ok(d.querySelector('#directory'));
+    f.w.history.back();
+    for(let i=0;i<100&&!d.querySelector('#directory');i++)await tick();
+    assert.ok(d.querySelector('#directory'));
   }finally{f.dom.window.close();}
 });
 test('Back cannot dismiss a saving group post; success releases the unload guard',async()=>{

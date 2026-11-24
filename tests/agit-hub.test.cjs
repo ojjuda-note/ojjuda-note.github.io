@@ -39,6 +39,12 @@ test('stamp records at most once a day and saves mission progress separately by 
   assert.equal(settings.agitHub.stamps.length,2);
 });
 
+function missionLifecycleFixture() {
+  const win=new Map(),doc=new Map();
+  return {win,doc, addWindow:(name,handler)=>win.set(name,handler),
+    document:{hidden:false,addEventListener:(name,handler)=>doc.set(name,handler)}};
+}
+
 test('real visits and all five missions persist independently of game preview',async()=>{
   const world=fs.readFileSync(path.join(__dirname,'../world.html'),'utf8');
   const progressStart=world.indexOf('function agitProgressKey(');
@@ -52,10 +58,12 @@ test('real visits and all five missions persist independently of game preview',a
     const model={settings:{agitHub:{stamps:[...priorDays],completed:{},guesses:{}}}};
     const staleCloud=JSON.stringify(model.settings),host={outerHTML:''},input={value:'',focus(){}};
     let instant='2026-11-13T03:03:00Z',localWrites=0,cloudWrites=0,savedCloud,parkOptions;
+    const lifecycle=missionLifecycleFixture();
     const context={
       sectionReleases:{park:JSON.parse(fs.readFileSync(path.join(__dirname,'../park/version.json'),'utf8'))},
       Date:class extends Date{constructor(...args){super(...(args.length?args:[instant]));}},
-      window:{OjjudaAdminPreview:{isEnabled:()=>preview},OjjudaParkNotes:{install(options){parkOptions=options;return{open:mode=>parkOpens.push(mode)};}}},
+      document:lifecycle.document,
+      window:{addEventListener:lifecycle.addWindow,OjjudaAdminPreview:{isEnabled:()=>preview},OjjudaParkNotes:{install(options){parkOptions=options;return{open:mode=>parkOpens.push(mode)};}}},
       D:{online:true,user:{id:'member-a'}},$:model,pi:model,g:{tab:'hub'},_r:{spot:{name:'틀린그림찾기'},group:{name:'그룹',test:true}},
       sr:{tab:action=>{context.g.tab=action.tab;}},
       localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value)},
@@ -71,6 +79,8 @@ test('real visits and all five missions persist independently of game preview',a
     };
     vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../features/home/agit-hub.js'),'utf8'),context);
     vm.runInNewContext(world.slice(renderStart,renderEnd)+world.slice(progressStart,actionEnd)+world.slice(parkStart,parkEnd),context);
+    assert.deepEqual([...lifecycle.win.keys()],['pageshow','online']);
+    assert.deepEqual([...lifecycle.doc.keys()],['visibilitychange']);
     const update=context.updateAgitProgress;
     context.updateAgitProgress=changed=>{const save=update(changed);if(save)pending.push(save);return save;};
     context.refreshAgitHub();
@@ -185,9 +195,11 @@ test('mission completion is backed up immediately and navigation waits for cloud
   const content=world.slice(start,end);
   const storage=new Map(),settings={agitHub:{}},model={settings},departures=[];
   let resolveSave,localWrites=0;
+  const lifecycle=missionLifecycleFixture();
   const context={
     D:{online:true,user:{id:'member-a'}},
-    window:{OjjudaAgitHub:{...hub,visitTarget:()=>({id:'group'}),complete:(state,id)=>hub.complete(state,id,date),mergeProgress:(a,b)=>hub.mergeProgress(a,b,date)}},
+    document:lifecycle.document,
+    window:{addEventListener:lifecycle.addWindow,OjjudaAgitHub:{...hub,visitTarget:()=>({id:'group'}),complete:(state,id)=>hub.complete(state,id,date),mergeProgress:(a,b)=>hub.mergeProgress(a,b,date)}},
     localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value)},
     ua:'member-a',de:{priv:'old-cloud'},pi:model,pc:false,no:JSON.stringify,
     mi:current=>({priv:{settings:current.settings}}),

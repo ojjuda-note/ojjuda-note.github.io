@@ -77,6 +77,16 @@ const cardId='00000000-0000-4000-8000-000000000001';
   // Run the actual card composer and its embedded navigation adapter.
   const preparePark=async frame=>{
    await frame.addScriptTag({content:read('note/calligraphy.js')});
+   // Record which inputs actually painted the raster, not merely the current form values.
+   await frame.evaluate(() => {
+    const renderer=window.ParkCalligraphy;
+    window.ParkCalligraphy={...renderer,render(canvas,body,options){
+     const rendered=renderer.render(canvas,body,options);
+     if(rendered&&canvas.id==='compose-ink-art')
+      canvas.dataset.fixtureInkInput=JSON.stringify([body,options.tags||[]]);
+     return rendered;
+    }};
+   });
    await frame.addScriptTag({content:read('note/composer-tools.js')});
    await frame.addScriptTag({content:note.slice(0,noteBoot)});
    await frame.evaluate(()=>{
@@ -84,6 +94,7 @@ const cardId='00000000-0000-4000-8000-000000000001';
     selectCollection=async()=>true;
     window.guestDraws=[];
     noteRpc=async(name,args)=>{
+      if(name==='suggest_card_tags')return suggestTags(args.p_body,3);
       if(name==='guest_card_background'){
         const key=window.guestDraws.length?'37':'297';
         window.guestDraws.push({id:args.p_request_id,key});
@@ -96,10 +107,11 @@ const cardId='00000000-0000-4000-8000-000000000001';
    await frame.addScriptTag({content:read('park/integration.js')});
   };
   // Inspect a small raster sample so styling a textarea or creating an empty canvas cannot pass.
-  const waitForInk=async(selector,previous=null,accent=null)=>{
-   const result=await page.waitForFunction(({selector,previous,accent})=>{
+  const waitForInk=async(selector,previous=null,accent=null,paintedInput=null)=>{
+   const result=await page.waitForFunction(({selector,previous,accent,paintedInput})=>{
     const art=document.querySelector(selector);
     if(art?.dataset.inkReady!=='true'||!art.getBoundingClientRect().width)return false;
+    if(paintedInput!==null&&art.dataset.fixtureInkInput!==JSON.stringify(paintedInput))return false;
     const style=getComputedStyle(art);
     if(style.display==='none'||style.visibility==='hidden'||Number(style.opacity)===0)return false;
     const sample=document.createElement('canvas');sample.width=80;sample.height=60;
@@ -115,7 +127,7 @@ const cardId='00000000-0000-4000-8000-000000000001';
     }
     return inkPixels>10&&clearPixels>sample.width*sample.height*.5&&hash!==previous
      &&(accent===null||hasGold===accent)?hash:false;
-   },{selector,previous,accent});
+   },{selector,previous,accent,paintedInput});
    return result.jsonValue();
   };
   const checkPhotoBehindInk=async(selector,key)=>{
@@ -243,19 +255,24 @@ const cardId='00000000-0000-4000-8000-000000000001';
   await checkInlineInput('writing');
   assert.deepEqual(await composeInput.evaluate(input=>[input.value,input.selectionStart,input.selectionEnd]),
    [composedText,composedText.length,composedText.length],'finishing Korean composition keeps the text and cursor');
-  await tagInput.focus();
-  await waitForInk('#compose-ink-art',multilineInk);
-  await checkInlineInput('preview');
-  await composeInput.fill('고쳐 쓴 붓글씨');
+  // New cards auto-suggest literal words, including after Korean IME commits.
+  // Clear them through the actual tag input before sampling the tag-free raster.
+  await page.waitForFunction(() => tags.value === '첫째, 둘째');
   await tagInput.fill('');
-  const editedInk=await waitForInk('#compose-ink-art',initialInk,false);
+  await waitForInk('#compose-ink-art',multilineInk,false,[composedText,[]]);
+  await checkInlineInput('preview');
+  const editedBody='고쳐 쓴 붓글씨';
+  await composeInput.fill(editedBody);
+  await page.waitForFunction(() => tags.value === '고쳐, 붓글씨');
+  await tagInput.fill('');
+  const editedInk=await waitForInk('#compose-ink-art',initialInk,false,[editedBody,[]]);
   assert.deepEqual(await page.evaluate(()=>[currentStyle().font,text.value]),['calligraphy','고쳐 쓴 붓글씨']);
   await tagInput.fill('#붓글씨');
-  const taggedInk=await waitForInk('#compose-ink-art',editedInk,true);
+  const taggedInk=await waitForInk('#compose-ink-art',editedInk,true,[editedBody,['붓글씨']]);
   await tagInput.fill('');
-  assert.equal(await waitForInk('#compose-ink-art',taggedInk),editedInk,'removing a tag restores the original lettering');
+  assert.equal(await waitForInk('#compose-ink-art',taggedInk,false,[editedBody,[]]),editedInk,'removing a tag restores the original lettering');
   await tagInput.fill('#붓글씨');
-  assert.equal(await waitForInk('#compose-ink-art',editedInk),taggedInk);
+  assert.equal(await waitForInk('#compose-ink-art',editedInk,true,[editedBody,['붓글씨']]),taggedInk);
   assert.equal(await page.locator('#compose-text').inputValue(),'고쳐 쓴 붓글씨');
   await page.locator('[data-compose-tool="box"]').click();
   const slider=page.locator('#compose-box-transparency'), number=page.locator('#compose-box-transparency-value');
@@ -285,7 +302,21 @@ const cardId='00000000-0000-4000-8000-000000000001';
   assert.equal(await page.locator('#compose-text').inputValue(),'고쳐 쓴 붓글씨');
   assert.equal(await page.locator('#compose-ink-art').isVisible(),false);
   assert.equal(await page.locator('.compose-photo .park-ink-box').isVisible(),false);
-  await page.locator('#close-composer').click();
+  const closeDirtyComposer = async accept => {
+   let seen;
+   page.once('dialog', async dialog => {
+    seen = [dialog.type(), dialog.message()];
+    if (accept) await dialog.accept(); else await dialog.dismiss();
+   });
+   await page.locator('#close-composer').click();
+   assert.deepEqual(seen,['confirm','작성 중인 카드를 닫고 이동할까요?']);
+  };
+  const composerBackdrop=page.locator('#composer-backdrop');
+  await closeDirtyComposer(false);
+  assert.equal(await composerBackdrop.isVisible(),true,'cancel keeps the dirty composer open');
+  assert.equal(await page.locator('#compose-text').inputValue(),'고쳐 쓴 붓글씨');
+  await closeDirtyComposer(true);
+  await composerBackdrop.waitFor({state:'hidden'});
   await page.locator('#feed-list .photo').first().scrollIntoViewIfNeeded();
   for(const [index,key] of [[1,'37'],[2,'13']]){
    const face='#feed-list article:nth-child('+index+') .photo',selector=face+' canvas.park-ink-art';

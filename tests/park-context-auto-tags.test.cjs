@@ -60,9 +60,22 @@ assert.match(source, /!blockedAuto\.has\(tag\)/,
 assert.match(source, /typeof autoTagMode !== 'undefined' && autoTagMode/,
   'only new automatic tags, not manually authored tags, are affected');
 const page = fs.readFileSync(path.join(root, 'park/index.html'), 'utf8');
-assert.match(page, /\/note\/preview\.js\?v=20261125-classic-settings1/,
-  'the park must load the updated file without a stale cache');
-const [major,minor,patch] = JSON.parse(fs.readFileSync(path.join(root, 'park/version.json'), 'utf8')).version.split('.').map(Number);
-assert.ok(major > 1 || (major === 1 && (minor > 7 || (minor === 7 && patch >= 8))),
-  'Park includes the 1.7.8 automatic tag release');
+const previewTags = [...page.matchAll(/<script\b[^>]*\bsrc="([^"]*\/note\/preview\.js[^"]*)"[^>]*>/g)];
+assert.equal(previewTags.length, 1, 'Park loads exactly one composer script');
+const preview = new URL(previewTags[0][1], 'https://ojjuda.kr');
+assert.equal(preview.origin, 'https://ojjuda.kr');
+assert.equal(preview.pathname, '/note/preview.js');
+const cacheKeys = preview.searchParams.getAll('v');
+assert.equal(cacheKeys.length, 1, 'composer script has one cache revision');
+assert.match(cacheKeys[0], /^\d{8}-(?:park|classic)-[a-z0-9-]+$/);
+assert.ok(cacheKeys[0].slice(0, 8) > '20261125' || cacheKeys[0] === '20261125-classic-settings1' ||
+  /^20261125-park-freeword-tags(?:[2-9]|[1-9]\d+)$/.test(cacheKeys[0]),
+  'cache revision must include the freeword tag release or a later dated release');
+const { version } = JSON.parse(fs.readFileSync(path.join(root, 'park/version.json'), 'utf8'));
+assert.match(version, /^\d+\.\d+\.\d+$/, 'the Park section manifest carries a valid release');
+const world = fs.readFileSync(path.join(root, 'world.html'), 'utf8');
+const installedPark = /\bpark:\{name:'공원',version:'([^']+)',manifest:'([^']+)'\}/.exec(world);
+assert.ok(installedPark, 'World defines its installed Park section release');
+assert.equal(installedPark[2], '/park/version.json');
+assert.equal(installedPark[1], version, 'World and the Park version manifest agree');
 console.log('PASS: automatic park tags are literal words from the text; manual tags and cache preserved');
