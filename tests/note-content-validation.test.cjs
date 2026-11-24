@@ -68,6 +68,14 @@ function composer(t, { kind = 'memo', edit = false, guest = false } = {}) {
   };
   window.OJJUDA_CONFIG = { supabaseUrl: 'https://fixture.invalid', supabaseKey: 'fixture' };
   window.supabase = { createClient: () => client };
+  window.OjjudaLocation = {
+    async authorizePosition(db, accountId, options) {
+      assert.equal(db, client);
+      assert.equal(accountId, USER);
+      assert.equal(options.park, true);
+      assert.equal(guest, false, 'guest writes have no location');
+    }
+  };
   window.console.warn = () => {};
   run(preview.slice(0, bootAt));
   window.__readFeed = value => {
