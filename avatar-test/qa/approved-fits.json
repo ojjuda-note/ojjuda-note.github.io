@@ -11,7 +11,7 @@
     "양쪽 무릎",
     "양쪽 발목"
   ],
-  "completeSnapshot": true,
+  "completeSnapshot": false,
   "sources": {
     "artwork/atelier-bottom-01.webp": "2f148396e391b243566cacd3ec5a53622b4af7bd558061a3979d491d961a42a5",
     "artwork/atelier-top-01.webp": "43d1589739c979a4addc053b6566674813447da48059ad68a5a0aa31389e5458",
@@ -138,14 +138,6 @@
       "발랄": "66bdc59e3069a02b23f797a7682bd43f3d5a73822118638760ac27daaac08b74",
       "미니미": "1a6eedde7cc5e389b37a7b4183103123a8ccaebb2d9cc96f9ea63aa31d6c36ee"
     },
-    "블랙 셔링 룩": {
-      "기본": "044f2a605642f0f549636b9382ca7ce4d7d219cff60bdc54cc54ce7647def639",
-      "청순": "925fd9b100dd279ac7803cf34e000cc6154f31fee639010be9dc6a4a4d63608c",
-      "귀염": "450cf4d34d2e71be74e4c45d869d7e2a3ecc760ebe5e0c6433581b249a226201",
-      "섹시": "36999e864b5297b7a3a2b2d0bab112ada042b9b3ad8f26233ad6a2d54d04853f",
-      "발랄": "a681454ad99c100ea473a585be088776e94788a79350ba42419d4dd934426a30",
-      "미니미": "26b6da0843aecb9d9cc267469193948fd9862f689ce2dba0292637c41b9ea08b"
-    },
     "트레이닝복": {
       "기본": "9a3da0e5d41d1d06631764a80770a4ee73d811263419a501366dc7635e4008cd",
       "청순": "6f10613a9f96b330b3b7dc6b9040fd7ae69825ff5f17beb78cfe05e71673da2b",
@@ -217,46 +209,6 @@
       "섹시": "e4f0e5f857a04fb99b932c9cbbf79697713d6cabb83ff6df396aa4ae5808a8b9",
       "발랄": "d5e9e02c9503532ea0834ae342487f8b86a43897b2e7228879e0b68069cfa94b",
       "미니미": "148e19869b524fd187734f5eefdec24703ae9cd7b6c6d30033397e79dc596d74"
-    },
-    "셔링 원피스 · 와인": {
-      "기본": "34b5b8a77c6426e77263695d8a4685ff25bc7a5e77b42f54e3bc7679dfdf3421",
-      "청순": "15191335006c54071612c71a3b425b1eb4f7757c3e38c990406b351643b2ab8e",
-      "귀염": "c0d1fa6cf3cc2a3c3fdd31aa51f794e6851004d0004eea521bfe4fc7e7acd55d",
-      "섹시": "dc4d76a3f91f26ae3fe107197ae8526015c2b4348d5ed95c15b7518aed7a9a78",
-      "발랄": "ae48414fd868d6ee470facc77f5d49293e89b6a055d12bc9a7905ba34e8efaec",
-      "미니미": "b77dc4909475fd72fd6edb9e57a6c6e5a002a9e4a79a6314c1c250c3e841e26f"
-    },
-    "셔링 원피스 · 미드나이트 블루": {
-      "기본": "8bb5e7393c0964a32d7923d880c153828786f23e2b0c9ff24093446974602299",
-      "청순": "c58bfcecb2be4c76306e581abf4552d7b34c8cfbcca81e01ee533a9f61572779",
-      "귀염": "a232ae82674ed9f61df263fa36fcc10a5e6d9a19f40636fa369b8fc66a661b6d",
-      "섹시": "387f91c9cf56b51acc8fd554b1316e5f1e03644b74b3159a68921c8e194b5108",
-      "발랄": "39fa79a8df2f1ec2265caf752b904a9d8efbe6f1d2c3b8be4aab90c59d7e76c0",
-      "미니미": "b28e9de748d9a2c1053e0e7773641e2ff68ab5d99cc1ba32932fec91ad336722"
-    },
-    "정장 · 니하이 부츠": {
-      "기본": "12dab3ba85b7ee6c41dc0cf1d71e532ebd127578081bf0b4aacb2f9cff82f949",
-      "청순": "94687ec46aef0ba681e3cb18ca081cec8bacc27a746a45d296f65a142b6fdb55",
-      "귀염": "af37eb7eae688a85597cccb7b1a5b286b3c8eceec047fec81e9d97d96db33586",
-      "섹시": "8d82cc578eec4debf4d3718d93e3e3d28e7019c6ab4d083479a79fb1fc36033c",
-      "발랄": "0ca60a81fbd4f347f2aa26e741c82e36c033af2e4fa0cf6c5d0592e31f714423",
-      "미니미": "fb18c021fbdfec1a64c1faeb89bb0436fb72b6c55e40f89ab9cbd621b8dfede1"
-    },
-    "트레이닝복 · 니하이 부츠": {
-      "기본": "4d5ffe1dccbc31d1291dc3bfbe4827028a7f942e7cc4a9d9048036d8e42696f8",
-      "청순": "98ffc6c2f263c70dc3d881af916cfd68ae6933e223c9829e2fc12ad84379cf84",
-      "귀염": "6c3aaf5af633e189a3d1bae43399a29d8e77be98379bcee79faf8069faace410",
-      "섹시": "d0e42657fc710408449caa9cc117c8344ad79972fef7563c4e9febbf9b92a34c",
-      "발랄": "d69a7dd1d27786711fe76604381195b7c96fea142ff67a4c82b639f146c54cee",
-      "미니미": "2e328585b62228357fcb7b3cbd548789041d631a70a7ea87aee31e96666b616e"
-    },
-    "셔링 원피스 · 기본 웨이브": {
-      "기본": "4509fbf1e0713072789798e670d127c64340c1302b5f7097f9b1d93039cb9f66",
-      "청순": "e5d5beb7c7771568bfe77ce6337eda7b76e39c1c5881449df402eeec6611c8ee",
-      "귀염": "21c6f1974a21d0ab33c98390f8f6aff182c524c760c2a8bc5e20f0680dd18ffc",
-      "섹시": "b8c3f15a4cfaab3d5bb3049e8d9fc4219815c19b9b5150a6dba6b6a9ed028246",
-      "발랄": "468e8b49b5e50763afeb4c608766315b955c27e19189f1678e56e2fcf00e4974",
-      "미니미": "0c4c95b2019bb0dde4c45bb2cf3168fd27152a1c2417044cb6f51996996c348d"
     },
     "셔링 원피스 · 앵클부츠": {
       "기본": "3bbb390e55b66f407733b2c06401bbe5f584a0926d2732db419b79174b6b7421",
