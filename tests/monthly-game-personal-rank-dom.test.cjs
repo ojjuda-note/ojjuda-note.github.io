@@ -209,7 +209,9 @@ test('standalone games and shared scripts point to the shipped monthly viewer',(
  assert.ok(read('world.html').includes('world-game-assets.js?v='+revision));
  const sharedUiRevision=(read('world.html').match(/\/shared\/games\/game-results\.css\?v=([\w-]+)/)||[])[1];
  assert.ok(sharedUiRevision,'shared results cache revision exists');
- assert.ok(read('world.html').includes('game-results.js?v='+sharedUiRevision));
+ const sharedScriptRevision=(read('world.html').match(/\/shared\/games\/game-results\.js\?v=([\w-]+)/)||[])[1];
+ assert.match(sharedScriptRevision,/^\d{8}-[\w-]+$/,'shared results script has its own cache revision');
+ for(const file of html){const key=(read(file).match(/\/shared\/games\/game-results\.js\?v=([\w-]+)/)||[])[1];if(key)assert.equal(key,sharedScriptRevision,file+' loads the same results script');}
 });
 
 test('arcade uses one compact ranking link instead of the embedded carousel',()=>{

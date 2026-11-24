@@ -69,23 +69,6 @@ test('tour zero-asset win, loss and draw results consume the guest round even wh
  }
 });
 
-test('poker uses settled net gold even when a hand received a positive gross payout',t=>{
- const w=fixture(t);w.eval(`
- const online={room:{id:'private-room',seat:0,ready:[false,false],departed:[false,false]}},wallet={gold:500};
- let game={_roomId:'private-room',_round:1,result:{net:[-75],payouts:[125]}};
- const fmt=n=>n.toLocaleString('ko-KR'),roundKey=()=>game._roomId+':'+game._round,refillButton=()=>'',startPopup=html=>html;
- ${section('games/poker/app.mjs',"function nextHandButton(extraClass=''){",'\nfunction refillButton()')}
- window.renderResult=net=>{game.result.net[0]=net;document.body.innerHTML=nextHandPopup();};
- window.setReady=(ready,departed)=>{online.room.ready[0]=ready;online.room.departed[1]=departed;};
- `);
- for(const [net,outcome] of [[-75,'gold-loss'],[0,'gold-even'],[75,'gold-gain']]){
-  w.renderResult(net);const card=w.document.querySelector('[data-game-result-card]');assert.equal(card.dataset.resultOutcome,outcome);assert.match(card.querySelector('.game-result-metric').textContent,new RegExp(String(net)));
-  assert.equal(new URL(w.OjjudaGameResults.shareData({game:'poker',outcome}).url).searchParams.get('room'),null);
- }
- w.setReady(true,false);w.renderResult(75);assert.equal(w.document.querySelector('[data-action="online-ready"]').disabled,true);
- w.setReady(false,true);w.renderResult(-75);assert.equal(w.document.querySelector('[data-action="online-ready"]').disabled,true);
-});
-
 test('matgo waits for settlement, ignores a duplicate finish, and preserves the next-hand action',async t=>{
  const w=fixture(t,'<button id="exit"></button>');let complete;w.settleCalls=0;w.nextCalls=0;w.bridgeCalls=0;
  w.wallet={settle:()=>{w.settleCalls++;return new Promise(resolve=>{complete=resolve;});}};
@@ -156,20 +139,6 @@ test('tank result polling does not rebuild action nodes or repeat its card',t=>{
  w.eval(`const $=id=>document.getElementById(id);${section('games/tank/index.html','function showTankResult(','\nconst stage=')}`);
  w.showTankResult('failure','내 탱크 탈락','same-match');const card=w.document.querySelector('[data-game-result-card]');w.showTankResult('failure','내 탱크 탈락','same-match');assert.equal(w.document.querySelector('[data-game-result-card]'),card);again.click();assert.equal(clicks,1);assert.equal(w.document.querySelector('#bAgain'),again);
  w.showTankResult('success','남은 체력 20','next-match');assert.equal(w.document.querySelector('#bAgain'),again);assert.equal(w.document.querySelector('[data-game-result-card]').dataset.resultOutcome,'success');
-});
-
-test('roulette exposes only acknowledged net gold and deduplicates repeated snapshots',t=>{
- const w=fixture(t);w.eval(`
- let closed=false,screen='game',room={id:'room-secret'},state={lastSettled:null,balance:1025},settledResultKey=null,settledResultPopup=null,waitingSettledResult=null;
- const fmt=n=>n.toLocaleString('ko-KR');
- ${section('games/roulette/app.js','function showSettledResult(','\nfunction showSpinResult(')}
- window.pending=()=>showSettledResult('spin-one',{number:7,total:125,net:-75},'room-secret');
- window.acknowledged=()=>{state.lastSettled='spin-one';window.pending();};
- `);
- w.pending();assert.equal(w.document.querySelector('[data-game-result-card]'),null);
- w.acknowledged();const card=w.document.querySelector('[data-game-result-card]');assert.equal(card.dataset.resultOutcome,'gold-loss');assert.equal(card.querySelector('.game-result-metric').textContent,'-75 G');
- w.acknowledged();assert.equal(w.document.querySelector('[data-game-result-card]'),card);
- const data=w.OjjudaGameResults.shareData({game:'roulette',outcome:'gold-loss'});assert.equal(data.url,'https://ojjuda.kr/world.html?game=roulette');assert.doesNotMatch(JSON.stringify(data),/room-secret|spin-one/);
 });
 
 test('tour elimination sharing does not resolve the watch action or advance the round',async t=>{

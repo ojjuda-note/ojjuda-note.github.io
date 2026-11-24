@@ -18,11 +18,14 @@ for (const id of sections) {
 }
 
 const cards = [...guide.matchAll(/<details class="game-card" id="([^"]+)" data-game>/g)];
-assert.equal(cards.length, 26, 'all 26 current game guides, including One Card and drinking games');
+assert.equal(cards.length, 24, 'all 24 active game guides, including One Card and drinking games');
 assert.equal(new Set(cards.map(match => match[1])).size, cards.length, 'unique game guide IDs');
-for (const id of ['game-chacha', 'game-solitaire', 'game-archery', 'game-sacheonseong', 'game-onecard', 'game-bang', 'game-yut', 'game-roulette', 'game-drinking']) {
+for (const id of ['game-chacha', 'game-solitaire', 'game-archery', 'game-sacheonseong', 'game-onecard', 'game-bang', 'game-yut', 'game-matgo', 'game-photo', 'game-drinking']) {
   assert.ok(cards.some(match => match[1] === id), id + ' help is present');
 }
+for (const id of ['game-poker','game-roulette']) assert.ok(!cards.some(match=>match[1]===id), id+' cannot advertise a retired game');
+assert.match(guide, /24개 게임의 사용법/);
+assert.match(guide, /만 19세 이상 회원 · 3종/);
 for (const match of guide.matchAll(/<summary><img src="(\/assets\/design\/games\/[^"]+)"/g)) {
   const assetPath = new URL(match[1], 'https://ojjuda.test').pathname;
   assert.ok(fs.existsSync(path.join(root, assetPath)), match[1] + ' icon exists');
@@ -42,4 +45,4 @@ assert.match(terms, /그룹의 글·일정·댓글·사진·동영상/, 'terms c
 assert.match(terms, /행사·맛집 안내/, 'terms cover event and restaurant guide');
 assert.match(terms, /datetime="2026-11-20"/, 'planned policy effective date is unchanged');
 
-console.log('PASS: 26 game guides, account and discovery links, guest signup CTA, cache/version sync and current policy scope');
+console.log('PASS: 24 active game guides, account and discovery links, guest signup CTA, cache/version sync and current policy scope');

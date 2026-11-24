@@ -34,7 +34,7 @@ async function fixture({migrate=true}={}){
   await db.exec(latestPoker.slice(0,latestPoker.indexOf('$$;')+3));
   if(migrate)await db.exec(read(fs.readdirSync(dir).find(name=>name.endsWith('_fresh_multiplayer_entries.sql'))));
   const handlers={};
-  for(const kind of ['marble','poker']){
+  for(const kind of ['marble']){
    const {createHandler}=await import(path.join(root,'supabase/functions',kind,'handler.mjs'));
    handlers[kind]=createHandler({env:key=>({SUPABASE_URL:'https://fixture.invalid',SUPABASE_ANON_KEY:'public',SUPABASE_SERVICE_ROLE_KEY:'server'})[key],random:()=>.42,fetchImpl:async(url,options)=>{
     if(url.endsWith('/auth/v1/user')){const actor=options.headers.authorization.slice(7);return Response.json({id:actor,is_anonymous:false},{status:ids.includes(actor)?200:401});}
