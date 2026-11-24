@@ -548,78 +548,24 @@ async function showMemberInfo(afterSave = null) {
     if (run === managementRun) state(managementBody, '회원정보를 불러오지 못했어요. 잠시 후 다시 열어 주세요.');
   }
 }
-// 자동 태그는 본문에 실제로 쓰인 단어만 그대로 가져와요.
-// 글에 없는 감정·주제어를 임의로 만들거나, 단어를 잘라 새 단어를 만들지 않아요.
-// 서버 추천이 도착하기 전에는 글에 포함된 안전한 단어만 미리 보여 줍니다.
-const TAG_LITERAL_WORDS = Object.freeze([
-  'NASA', '하늘다람쥐', '붉은사막', '게임대상', '반도체', '인공지능',
-  '40대', '30대', '20대', '50대', '10대', '60대',
-  '면접', '불합격', '합격', '이력서', '월세', '월급', '카드값', '통장',
-  '퇴근길', '출근길', '퇴근', '출근', '회의', '동료', '메일', '회사',
-  '비밀번호', '휴대폰', '답장', '메시지', '연락', '전화', '문자',
-  '고백', '짝사랑', '사랑', '설렘', '외로움', '친구', '가족', '부모님', '엄마', '아빠',
-  '세탁기', '운동화', '슬리퍼', '엘리베이터', '충전기', '냉장고',
-  '화분', '새잎', '강아지', '고양이', '산불', '지도', '로봇',
-  '빵집', '붕어빵', '카페', '커피', '과자', '라면', '국수', '김치', '국물',
-  '사진', '카메라', '노을', '하늘', '햇살', '이불', '알람', '우산',
-  '설거지', '빨래', '청소', '택배', '산책', '운동', '책방', '서점', '책',
-  '영화', '게임', '노래', '음악', '퍼즐', '동네', '시장', '구경',
-  '말투', '인사', '약속', '얘기', '대화', '질문', '고민', '실수',
-  '돈', '걱정', '생각', '마음', '사람', '시간', '친절', '기억',
-  '밤', '아침', '저녁', '주말', '내일', '오늘'
-]);
-// High-confidence fallback for words that are not yet in the vocabulary.
-// Korean particles are removed only when at least two literal syllables remain.
-const TAG_FALLBACK_STOP = new Set([
-  '오늘','내일','어제','지금','요즘','그냥','정말','진짜','너무','가끔','계속','다시','이제',
-  '그리고','하지만','그래서','그런데','근데','그래도','그래','그런','이런','저런','무슨',
-  '어떤','아무','아직','벌써','여기','저기','거기','누구','무엇','어디','언제','어떻게',
-  '아무도','아무것','나는','내가','너는','네가','우리','저는','제가','그거','이거','저거',
-  '없다','있다','없는','있는','없어','있어','없네','있네','없지만','있지만','모르','모르는',
-  '싶다','싶어','같다','좋다','좋아','좋네요','괜찮아','어땠어','아니라','아니다',
-  '한다','했다','하는','했던','해요','그래야지','모르겠다','것','거야','좀','다들',
-  '조금','많이','한참','잠깐','무리','만든','처음','만약','드디어','이렇게','저렇게',
-  '되나','될까','할까','해야지','했지','쉬고','아무것','지금은','여기에','좋지만'
-]);
-const TAG_FALLBACK_PARTICLE = /(에게서|으로는|에서는|에서도|에게도|에서|부터|까지|에게|한테|처럼|보다|으로|이라는|이란|이라|이나|에도|은|는|이|가|을|를|에|도|만|의|와|과|랑)$/u;
-const TAG_FALLBACK_PREDICATE = /(겠어|겠네|겠지|지만|으면|면|하고|해서|했다|한다|있다|없다|겠다고|거야|걸까|나요|어요|아요|래요|해요|었어|았어|였어|했어|했지|되네|하면서|하니까|해도|어야|이다|싶다|같다|좋다|이다|고|다|어|아|지)$/u;
-function suggestUnlistedTags(body, limit = 2) {
-  const originalText = String(body || '');
-  const found = [], seen = new Set();
-  for (const token of originalText.match(/[가-힣A-Za-z0-9]+/gu) || []) {
-    let word = token;
-    if (/^[가-힣]{3,}$/u.test(token)) {
-      const stem = token.replace(TAG_FALLBACK_PARTICLE, '');
-      if (stem.length >= 2) word = stem;
-    }
-    if (word.length < 2 || word.length > 14
-      || TAG_FALLBACK_STOP.has(token) || TAG_FALLBACK_STOP.has(word)
-      || TAG_FALLBACK_PREDICATE.test(token)
-      || !originalText.toLocaleLowerCase('ko-KR').includes(word.toLocaleLowerCase('ko-KR'))
-      || seen.has(word)) continue;
-    seen.add(word); found.push(word);
-    if (found.length >= limit) break;
-  }
-  return found;
-}
+// 자동 태그: 태그는 모두 5개까지. 내가 쓴 태그는 그대로 두고, 남은 자리만 글에서 고른 낱말로 채워요. 지운 자동 태그는 다시 붙이지 않아요
+const TAG_STOP = new Set(['오늘', '어제', '내일', '정말', '진짜', '너무', '그냥', '우리', '지금', '요즘', '항상', '조금', '많이', '같이', '다시', '아직', '이제',
+  '그래서', '그리고', '하지만', '근데', '그런데', '이런', '그런', '저런', '무슨', '어떤', '모든', '매일', '가끔', '계속', '나는', '내가', '저는', '제가', '너는', '네가',
+  '이거', '그거', '저거', '여기', '거기', '저기', '뭔가', '괜히', '역시', '벌써', '문득', '하루', '마음', '생각', '느낌', '기분', '사람', '시간', '때문',
+  '좋은', '예쁜', '멋진', '슬픈', '기쁜', '작은', '많은', '적은', '추운', '더운', '맛있는', '즐거운', '행복한', '소중한', '따뜻한', '같은', '다른', '새로운', '이상한', '특별한', '편한', '힘든', '어떤', '모든', '아무']);
+const TAG_SUFFIX = ['하면서', '하며', '하고', '해서', '하는', '했던', '에서는', '으로는', '에서', '으로', '에게', '한테', '께서', '이랑', '까지', '부터', '처럼',
+  '보다', '마다', '조차', '밖에', '이나', '이라', '은', '는', '이', '가', '을', '를', '에', '와', '과', '도', '만', '의', '로', '랑'];
+const TAG_VERB = /(었어요|았어요|였어요|했어요|어요|아요|해요|예요|이에요|에요|네요|군요|죠|습니다|니다|었다|았다|였다|했다|는다|한다|된다|하다|싶다|같다|좋다|있다|없다|었어|았어|했어|해|야|지|네|래|걸|구나|더라|면서|지만|는데|은데|니까|어서|아서|해도|어도|아도|으면|겠|싶|랑|요)$/;
+const TAG_FEEL = [[/(행복|기뻐|기쁘|신나|설레|좋았|좋아)/, '행복'], [/(슬프|슬퍼|우울|눈물|외로|쓸쓸)/, '위로'], [/(피곤|힘들|지쳐|지친|고단)/, '토닥토닥'],
+  [/사랑/, '사랑'], [/(고마|감사)/, '감사'], [/(화나|짜증|속상)/, '속상'], [/(그리워|그립|보고 싶)/, '그리움']];
 function suggestTags(body, limit = 5) {
-  const input = String(body || '').toLocaleLowerCase('ko-KR');
-  const out = [];
-  for (const word of TAG_LITERAL_WORDS) {
-    const term = word.toLocaleLowerCase('ko-KR');
-    if (!input.includes(term) || out.some(t => {
-      const prior = t.toLocaleLowerCase('ko-KR');
-      return prior.includes(term) || term.includes(prior);
-    })) continue;
-    out.push(word);
-    if (out.length >= Math.min(3, limit)) break;
-  }
-  // A pre-registered list is not a requirement for writing a new card.
-  // Prefer newly mentioned nouns over generic "오늘/마음" tags.
-  const generic = new Set(['오늘','내일','마음','생각','사람','시간','아침','저녁','밤']);
-  if (!out.length || out.every(tag => generic.has(tag))) {
-    const extracted = suggestUnlistedTags(body, Math.min(2, limit));
-    if (extracted.length) return extracted;
+  const out = [], seen = new Set(), add = t => { if (t && !seen.has(t) && out.length < limit) { seen.add(t); out.push(t); } };
+  for (const [re, tag] of TAG_FEEL) if (re.test(body)) { add(tag); break; }
+  for (const raw of String(body).split(/[^가-힣A-Za-z0-9]+/)) {
+    let t = raw; if (t.length < 2) continue;
+    for (const s2 of TAG_SUFFIX) if (t.endsWith(s2) && t.length - s2.length >= 2) { t = t.slice(0, -s2.length); break; }
+    if (t.length < 2 || t.length > 12 || TAG_STOP.has(t) || TAG_VERB.test(t) || /^\d+$/.test(t) || /(스러운|로운|다운|스런)$/.test(t)) continue;   // 꾸밈말(사랑스러운, 자유로운…)은 빼요
+    add(t);
   }
   return out;
 }
@@ -959,31 +905,10 @@ function initialComposerTags(raw = '') {
   if (!editingId && kind !== 'event' && tagList(feedTerm).includes('19금') && !values.includes('19금')) values.unshift('19금');
   return values.join(', ');
 }
-let serverTagResult = null, serverTagTimer = null, serverTagRequest = 0;
-function refreshAutoTags() { // 직접 쓴 태그와 삭제한 자동 태그는 사용자 선택을 유지해요.
+function refreshAutoTags() {   // 내가 쓴 태그 + 남은 자리에 자동 태그 (모두 5개까지)
   const mine = manualTags, room = Math.max(0, 5 - mine.length);
-  const body = String(text.value || '').trim();
-  const suggested = serverTagResult?.body === body ? serverTagResult.tags : suggestTags(body, 3);
-  autoTagsNow = room > 0 ? suggested.filter(t => !mine.includes(t) && !rejectedTags.has(t)).slice(0, room) : [];
+  autoTagsNow = room > 0 ? suggestTags(text.value, 12).filter(t => !mine.includes(t) && !rejectedTags.has(t)).slice(0, room) : [];
   tags.value = [...mine, ...autoTagsNow].join(', ');
-}
-function scheduleServerAutoTags() {
-  clearTimeout(serverTagTimer); serverTagTimer = null;
-  const request = ++serverTagRequest, body = String(text.value || '').trim();
-  serverTagResult = null;
-  if (!autoTagMode || !body || kind === 'event' || !client || !session?.user || backdrop.hidden) return;
-  const run = composerRun, epoch = identityEpoch, userId = session.user.id;
-  serverTagTimer = setTimeout(async () => {
-    let response;
-    try { response = await noteRpc('suggest_card_tags', { p_body: body }); }
-    catch { return; } // 연결이 끊겨도 잘린 낱말을 태그로 만들지는 않아요.
-    if (request !== serverTagRequest || run !== composerRun || epoch !== identityEpoch
-      || userId !== session?.user?.id || backdrop.hidden || body !== String(text.value || '').trim()) return;
-    if (!Array.isArray(response)) return;
-    serverTagResult = { body, tags: response.filter(t => typeof t === 'string' && t.length <= 20
-      && body.toLocaleLowerCase('ko-KR').includes(t.toLocaleLowerCase('ko-KR'))).slice(0, 3) };
-    if (document.activeElement !== tags && !busy) { refreshAutoTags(); updateComposer(); recordDraft(); }
-  }, 500);
 }
 function noteTagEdit() {   // 직접 쓴 태그를 우선하고, 다섯 자리를 넘으면 자동 태그부터 빼요
   const now = tagList(tags.value);
@@ -2660,7 +2585,7 @@ function restoreLocalComposer() {
     || !content.style || typeof content.style !== 'object') {
     clearLocalComposer(); return false;
   }
-  text.value = content.body; tags.value = initialComposerTags(content.tags); manualTags = tagList(tags.value); rejectedTags = new Set(); autoTagsNow = []; serverTagResult = null;
+  text.value = content.body; tags.value = initialComposerTags(content.tags); manualTags = tagList(tags.value); rejectedTags = new Set(); autoTagsNow = [];
   backgroundKey = photoAssetKey(content.backgroundKey) || backgroundKey;
   window.OjjudaDecorations?.setStyle(content.style);
   $('#compose-font').value = FONT_CODES.includes(content.style.font) ? content.style.font : 'default';
@@ -2713,7 +2638,7 @@ function restoreDraft(content) {
   applyComposeStyle();
   $('#compose-title').textContent = kind === 'comment' ? '답글 카드 쓰기' : '새 카드 쓰기';
   $('#compose-context').textContent = kind === 'comment' ? replyContext() : '사진 위에 마음을 적어 주세요.';
-  updateComposer(); scheduleServerAutoTags();
+  updateComposer();
   if (kind === 'comment') void refreshReplyArchiveNotice(parentId, composerRun);
 }
 function recordDraft() { /* 작성 중인 글은 저장하지 않아요. */ }
@@ -2988,8 +2913,7 @@ async function openComposer(mode, card = null, replyTo = null, pending = null) {
   const identityMode = editingId ? (card.identity_mode === 'nickname' ? 'nickname' : 'anonymous') : readComposerSettings().identity;
   $(`input[name="identity"][value="${identityMode}"]`).checked = true;
   setGenderInputs(true);
-  autoTagMode = !editingId && kind !== 'event'; manualTags = tagList(tags.value); rejectedTags = new Set(); autoTagsNow = [];
-  serverTagResult = null; ++serverTagRequest; clearTimeout(serverTagTimer);
+  autoTagMode = !guest && !editingId; manualTags = tagList(tags.value); rejectedTags = new Set(); autoTagsNow = [];
   clearLocalComposer();
   requestedDraftContent = draftContent();
   if (!guest && draftController && !requestedDraftContent.background_key)
@@ -2997,7 +2921,7 @@ async function openComposer(mode, card = null, replyTo = null, pending = null) {
   if (draftStatus) draftStatus.hidden = true;
   setComposerInputs();
   updateComposer(); backdrop.hidden = false; lockPage(true);
-  if (autoTagMode) { refreshAutoTags(); scheduleServerAutoTags(); }
+  if (autoTagMode) refreshAutoTags();
   updateComposer();
   $('.composer-body').scrollTop = 0;
   // Focus only while opening; later photo/location/render updates keep the
@@ -3085,7 +3009,6 @@ async function autoWritingLocation(run) {
 
 function closeComposer(saveDraft = true) {
   if (busy) return;
-  ++serverTagRequest; clearTimeout(serverTagTimer); serverTagResult = null;
   writingLocationController?.abort();
   composeInkComposing = false;
   composerTools?.close(false);
@@ -3261,29 +3184,6 @@ async function publishCard() {
   }
   if (identity.user.id !== actionUserId) {
     draftController?.cancelPublish(); busy = false; setComposerInputs(); updateComposer(); composeMessage.textContent = '계정이 변경됐어요. 작성창을 다시 열어 주세요'; return;
-  }
-  // Confirm the exact text against the common server tagger before creating the card.
-  // User-entered tags come first; dismissed automatic tags must never reappear.
-  if (!editId && publishKind !== 'event' && typeof autoTagMode !== 'undefined' && autoTagMode) {
-    let suggestions = typeof suggestTags === 'function' ? suggestTags(body, 3) : [];
-    try {
-      const authoritative = await noteRpc('suggest_card_tags', { p_body: body });
-      if (Array.isArray(authoritative)) suggestions = authoritative;
-    } catch { /* Use only the small, vetted offline list if the RPC is unreachable. */ }
-    if (session?.user?.id !== actionUserId || actionEpoch !== identityEpoch
-      || actionComposerRun !== composerRun || backdrop.hidden) {
-      draftController?.cancelPublish(); busy = false; setComposerInputs(); updateComposer(); return;
-    }
-    // Keep explicit tags from the input or restored draft, even if an input event
-    // has not yet synchronized the manual-tag state.
-    const existingAuto = typeof autoTagsNow !== 'undefined' && Array.isArray(autoTagsNow) ? autoTagsNow : [];
-    const chosenManual = typeof manualTags !== 'undefined' && Array.isArray(manualTags) ? manualTags : [];
-    const blockedAuto = typeof rejectedTags !== 'undefined' && rejectedTags instanceof Set ? rejectedTags : new Set();
-    values = [...new Set([...values.filter(tag => !existingAuto.includes(tag)), ...chosenManual])].slice(0, 5);
-    for (const tag of suggestions) {
-      if (typeof tag === 'string' && tag.length <= 20 && body.toLocaleLowerCase('ko-KR').includes(tag.toLocaleLowerCase('ko-KR'))
-        && !values.includes(tag) && !blockedAuto.has(tag) && values.length < 5) values.push(tag);
-    }
   }
   let cardPhotoUploadPath = null;
   if (selectedCardPhoto) {
@@ -4149,13 +4049,13 @@ document.addEventListener('keydown', event => {
   if (composerTools?.close()) { event.preventDefault(); return; }
   requestCloseComposer();
 });
-text.addEventListener('input', () => { if (autoTagMode && !composeInkComposing && document.activeElement !== tags) { refreshAutoTags(); scheduleServerAutoTags(); } updateComposer(); recordDraft(); });
+text.addEventListener('input', () => { if (autoTagMode && document.activeElement !== tags) refreshAutoTags(); updateComposer(); recordDraft(); });
 text.addEventListener('focus', syncComposeInkDisplay);
 text.addEventListener('blur', syncComposeInkDisplay);
 text.addEventListener('compositionstart', () => { composeInkComposing = true; syncComposeInkDisplay(); });
-text.addEventListener('compositionend', () => { composeInkComposing = false; if (autoTagMode) { refreshAutoTags(); scheduleServerAutoTags(); } updateComposer(); });
+text.addEventListener('compositionend', () => { composeInkComposing = false; if (autoTagMode) refreshAutoTags(); updateComposer(); });
 tags.addEventListener('input', () => { noteTagEdit(); updateComposer(); recordDraft(); });
-tags.addEventListener('focus', () => updateComposer()); tags.addEventListener('blur', () => { if (autoTagMode && serverTagResult?.body === String(text.value || '').trim()) refreshAutoTags(); updateComposer(); });
+tags.addEventListener('focus', () => updateComposer()); tags.addEventListener('blur', () => updateComposer());
 window.addEventListener('resize', () => { if (!backdrop.hidden) updateComposer(); requestTagFit(); });
 document.fonts?.addEventListener?.('loadingdone', () => { if (!backdrop.hidden) updateComposer(); requestTagFit(); });
 submit.addEventListener('click', publishCard);
