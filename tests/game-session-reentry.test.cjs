@@ -26,7 +26,7 @@ async function fixture(t,kind,initial,options={}){
   else if(body.action==='join')current=room(kind,{status:'waiting',code:body.code,game:null,state:null});
   const data=error?{ok:false,error}:{ok:true,room:current?structuredClone(current):null,coins:77,wallet:{coins:77}};
   return {data,error:null};
- }},rpc:async(name,{p_action,p_payload}={})=>({data:{ok:true},error:null})};
+ }},rpc:async()=>({data:{ok:true},error:null})};
  w.OjjudaMatgoAccess={check:async()=>({userId:'member-a',age:25}),visible:()=>allowed,subscribe:()=>()=>{},getClient:()=>client};
  w.eval(read('shared/games/game-session.js'));w.eval(read(meta.file));const api=w[meta.api];
  const open=async(params={})=>{
@@ -85,6 +85,12 @@ test('bang solo exit leaves the unfinished match unranked instead of surrenderin
  assert.deepEqual(f.calls.map(call=>call.action),['mine','leave']);
  assert.equal(f.room(),null);
  assert.equal(await f.api.close(),true);
+});
+
+test('retired games have no launch page or bridge',()=>{
+ for(const id of ['poker','roulette']){
+  for(const file of ['index.html','world-'+id+'-game.js'])assert.equal(fs.existsSync(path.join(root,'games',id,file)),false);
+ }
 });
 
 for(const kind of ['tank','marble'])test(kind+': a failed leave keeps the game and invitations usable instead of claiming a fresh start',async t=>{
