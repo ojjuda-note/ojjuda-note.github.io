@@ -22,7 +22,10 @@ const samples = [
   ['전화 걸어야지.', ['전화']],
   ['돈 걱정 없이 잠드는 밤이 좀 많았으면 좋겠다.', ['돈', '걱정', '밤']],
   ['친구랑 커피 마셨다.', ['친구', '커피']],
-  ['모르는 단어가 나오면 무리해서 태그 만들지 말자.', []],
+  ['완벽은 없다', ['완벽']],
+  ['오늘 완벽은 없다', ['완벽']],
+  ['완벽은 없지만 괜찮아', ['완벽']],
+  ['모르는 단어가 나오면 무리해서 태그 만들지 말자.', ['단어', '태그']],
 ];
 for (const [body, expected] of samples) {
   const found = suggest(body);
@@ -33,13 +36,21 @@ for (const [body, expected] of samples) {
 }
 assert.ok(!suggest('여기에도 40대 있나요?').includes('여기에'));
 assert.ok(!suggest('내일도 잘 될거야').includes('응원'));
+assert.ok(!suggest('완벽은 없다').includes('없다'));
+assert.ok(suggest('처음 만든 카레가 너무 묽다.').includes('카레'));
+assert.ok(suggest('매일 행복은 어디에 있을까').includes('행복'));
+
 assert.ok(!suggest('빵집에서 빵을 샀다.').includes('맛집'));
 assert.ok(!suggest('전화 걸어야지.').includes('산책'));
 assert.ok(suggest('퇴근하고 커피 마셨어.', 1).length <= 1);
 
 assert.match(source, /noteRpc\('suggest_card_tags', \{ p_body: body \}\)/,
   'the same server tagging function must run while writing and publishing');
-assert.match(source, /!input\.includes\(term\)/, 'fallback must never infer missing words');
+assert.match(source, /!input\.includes\(term\)/, 'candidate must occur in source');
+assert.match(source, /suggestUnlistedTags\(body, Math\.min\(2, limit\)\)/,
+  'new words must be extracted even when absent from the preselected vocabulary');
+assert.match(source, /autoTagMode = !editingId && kind !== 'event'/,
+  'guest and member composers must both show automatic tags');
 assert.match(source, /body\.toLocaleLowerCase\('ko-KR'\)\.includes\(t\.toLocaleLowerCase\('ko-KR'\)\)/,
   'server responses must be checked against the literal body');
 assert.match(source, /body\.toLocaleLowerCase\('ko-KR'\)\.includes\(tag\.toLocaleLowerCase\('ko-KR'\)\)/,
@@ -52,11 +63,14 @@ const page = fs.readFileSync(path.join(root, 'park/index.html'), 'utf8');
 const previewTags = [...page.matchAll(/<script\b[^>]*\bsrc="([^"]*\/note\/preview\.js[^"]*)"[^>]*>/g)];
 assert.equal(previewTags.length, 1, 'Park loads exactly one composer script');
 const preview = new URL(previewTags[0][1], 'https://ojjuda.kr');
-assert.equal(preview.href.startsWith('https://ojjuda.kr/note/preview.js?'), true);
+assert.equal(preview.origin, 'https://ojjuda.kr');
+assert.equal(preview.pathname, '/note/preview.js');
 const cacheKeys = preview.searchParams.getAll('v');
 assert.equal(cacheKeys.length, 1, 'composer script has one cache revision');
 assert.match(cacheKeys[0], /^\d{8}-park-[a-z0-9-]+$/);
-assert.ok(cacheKeys[0].slice(0, 8) >= '20261125', 'cache revision must not predate the literal-tag release');
+assert.ok(cacheKeys[0].slice(0, 8) > '20261125' ||
+  /^20261125-park-freeword-tags(?:[2-9]|[1-9]\d+)$/.test(cacheKeys[0]),
+  'cache revision must include the freeword tag release or a later dated release');
 const { version } = JSON.parse(fs.readFileSync(path.join(root, 'park/version.json'), 'utf8'));
 assert.match(version, /^\d+\.\d+\.\d+$/, 'the Park section manifest carries a valid release');
 const world = fs.readFileSync(path.join(root, 'world.html'), 'utf8');

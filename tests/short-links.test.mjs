@@ -34,7 +34,8 @@ test('every sitemap destination is a one-level address with an existing target',
     assert.ok(tracked.has(file), `${route.slug} points to missing ${file}`);
   }
   assert.equal(routes.get('arcade').target, '/world.html?tab=arcade');
-  for (const game of ['matgo', 'poker', 'roulette']) assert.equal(routes.get(game).target, `/world.html?game=${game}`);
+  assert.equal(routes.get('matgo').target, '/world.html?game=matgo');
+  for (const game of ['poker', 'roulette']) assert.equal(routes.has(game), false);
   assert.equal(routes.get('photo-territory').target, '/world.html?game=photo_ttang');
   assert.equal(routes.get('beta').target, '/features/guide/creator.html#beta-title');
   assert.equal(routes.get('pajang-story').target, '/features/guide/creator.html#pajang-title');
