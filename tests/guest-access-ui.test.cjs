@@ -154,9 +154,13 @@ const cardId='00000000-0000-4000-8000-000000000001';
   assert.equal(await frame.locator('#card-photo-attach').isVisible(),false);
   assert.equal(await frame.locator('#photo-gallery-toggle').isVisible(),false);
   await frame.waitForFunction(()=>document.querySelector('.compose-photo').style.backgroundImage.includes('/297.jpg'));
-  page.once('dialog', dialog=>dialog.accept());
+  // A guest post may complete without a confirmation dialog. Do not leave
+  // its once-handler alive to accept the next, unrelated member dialog twice.
+  const acceptGuestPublishDialog = dialog => dialog.accept();
+  page.once('dialog', acceptGuestPublishDialog);
   await frame.locator('#publish-card').click();
   await frame.locator('#composer-backdrop').waitFor({state:'hidden'});
+  page.off('dialog', acceptGuestPublishDialog);
   const posted=await frame.evaluate(()=>guestPublication);
   assert.equal(posted.p_body,'공원의 첫 글');assert.equal(posted.p_parent_id,null);
   assert.deepEqual(Object.keys(posted).sort(),['p_body','p_parent_id','p_request_id']);
