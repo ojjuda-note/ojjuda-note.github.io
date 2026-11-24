@@ -98,13 +98,13 @@ async function checkSixLineCard(page, width) {
   const sizes=()=>page.locator('#feed-list .card-quote').evaluateAll(nodes=>nodes.map(n=>({font:parseFloat(getComputedStyle(n).fontSize),height:n.closest('.photo').getBoundingClientRect().height,width:n.closest('.photo').getBoundingClientRect().width,body:n.textContent})));
   await settle();const before=await sizes();assert.equal(before.length,4);assert.ok(before[0].font>12);
   if(!expectBug){
-   assert.ok(before.every(card=>Math.abs(card.height-card.width)<1 && card.width<=600.5),width+'px: feed faces are square');
-   if(width>=800)assert.ok(before.every(card=>Math.abs(card.width-600)<1),width+'px: full-size feed faces');
+   assert.ok(before.every(card=>Math.abs(card.height-card.width)<1 && card.width<=750.5),width+'px: feed faces are square');
+   if(width>=800)assert.ok(before.every(card=>Math.abs(card.width-750)<1),width+'px: full-size feed faces');
    const {columns,containerWidth}=await page.locator('#feed-list').evaluate(el=>({
     columns:getComputedStyle(el).gridTemplateColumns.split(' ').length,
     containerWidth:el.closest('.park-feed').getBoundingClientRect().width
    }));
-   assert.equal(columns,containerWidth>=1220?2:1,`${width}px (${containerWidth}px available): only add a column when both full-size cards fit`);
+   assert.equal(columns,containerWidth >= 1520?2:1,`${width}px (${containerWidth}px available): only add a column when both full-size cards fit`);
   }
   if(proof&&width===390)await page.screenshot({path:path.join(proof,expectBug?'before-bug.png':'before-fixed.png'),fullPage:true});
   for(const route of expectBug?['button']:['button','browser','embedded']){
@@ -143,7 +143,7 @@ async function checkSixLineCard(page, width) {
    }));
    assert.equal(faces.length,2);
    assert.ok(faces.every(face=>Math.abs(face.height-face.width)<1),width+'px: original and reply are both square');
-   if(width>=800)assert.ok(Math.abs(faces[0].width-600)<1,'the detail card reaches 600×600');
+   if(width>=800)assert.ok(Math.abs(faces[0].width-750)<1,'the detail card reaches 750×750');
    assert.ok(Math.abs(faces[1].width-faces[0].width*2/3)<1,`${width}px: replies are two thirds of the parent card width`);
    assert.ok(faces.every(face=>Math.abs(face.footer)<1&&face.buttonsFit&&face.textFits),`${width}px: photo, text and controls fit without a footer ${JSON.stringify(faces)}`);
    if(width===390)await checkReplyBrowsing(page);
