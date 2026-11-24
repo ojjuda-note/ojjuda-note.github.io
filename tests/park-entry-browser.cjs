@@ -102,6 +102,12 @@ if(parent!==window){
       await page.locator('.bottomnav [data-note-my]').click();
       await page.locator('#note-my-screen').waitFor({state:'visible'});
       assert.equal(await page.locator('#note-my-screen').isVisible(),true,'independent Park member menu remains usable');
+      await page.locator('#note-my-screen [data-park-open-settings]').click();
+      await page.locator('[data-park-settings-root]').waitFor();
+      assert.equal(new URL(page.url()).search,'','the settings shortcut opens the existing dialog in place');
+      await page.keyboard.press('Escape');
+      await page.locator('[data-park-settings-root]').waitFor({state:'hidden'});
+      await page.locator('#note-my-screen').waitFor({state:'visible'});
       await page.goto(origin+'/park/?view=settings');
       await page.locator('[data-park-settings-root]').waitFor();
       assert.equal(await page.locator('[data-park-settings-root]').isVisible(),true,'legacy settings deep link opens in standalone Park');
