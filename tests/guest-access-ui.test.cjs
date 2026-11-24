@@ -303,7 +303,12 @@ const cardId='00000000-0000-4000-8000-000000000001';
   // Login is the automatic entry; a guest can still deliberately select signup
   // or password recovery without losing the card they were replying to.
   await page.locator('#signup-tab').click();assert.equal(await page.locator('#signup-tab').getAttribute('aria-selected'),'true');
-  assert.equal(await page.locator('#nickname').isVisible(),true);assert.equal(new URL(page.url()).searchParams.get('card'),cardId);
+  await page.locator('#signup-birth').waitFor();
+  assert.equal(await page.locator('#nickname').isVisible(),false);
+  await page.locator('#signup-birth').fill('000101');
+  await page.locator('#signup-code').fill('3');
+  await page.locator('#nickname').waitFor();
+  assert.equal(new URL(page.url()).searchParams.get('card'),cardId);
   await page.locator('#login-tab').click();await login('note');
   await page.locator('#forgot-trigger').click();assert.equal(await page.locator('#auth-title').textContent(),'비밀번호 찾기');
   assert.equal(await page.locator('#recovery-identity-slot').isVisible(),true);assert.equal(new URL(page.url()).searchParams.get('card'),cardId);
