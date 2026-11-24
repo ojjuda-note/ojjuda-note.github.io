@@ -100,6 +100,7 @@ function composer(t, { kind = 'memo', edit = false, guest = false } = {}) {
     writingPosition = eventPosition = { latitude: 37, longitude: 127 };
     backdrop.hidden = false;
     text.value = ${JSON.stringify(ORIGINAL)}; tags.value = ${guest ? "''" : "'검사태그'"};
+    autoTagMode = !isGuestComposer() && !editingId; manualTags = tagList(tags.value);
     document.querySelector('input[name="gender"][value="private"]').checked = true;
     setComposerInputs(); updateComposer();`);
   if (!guest && !edit && kind !== 'event') {
@@ -359,3 +360,28 @@ for (const view of ['inquiries', 'feedback']) {
     assert.equal(f.writes[0].args.p_body ?? f.writes[0].args.body, body);
   });
 }
+
+test('Park member compose input suggests intact compound tags and preserves manual and dismissed tags', async t => {
+  const f = composer(t);
+  const text = f.document.getElementById('compose-text'), tags = f.document.getElementById('compose-tags');
+  f.run("manualTags = ['사용자태그']; rejectedTags = new Set(); autoTagsNow = [];");
+  const inputBody = body => {
+    text.value = body;
+    text.dispatchEvent(new f.window.Event('input', { bubbles: true }));
+  };
+  for (const [body, expected] of [
+    ['완벽은 없다', '완벽'], ['목걸이 샀어', '목걸이'], ['목걸이를 샀어', '목걸이'],
+    ['돈가스 먹었다', '돈가스'], ['돈가스를 먹었다', '돈가스'],
+    ['돈까스 먹었다', '돈까스'], ['돈까스를 먹었다', '돈까스'],
+    ['떡볶이 먹었어', '떡볶이'], ['사랑니가 아파서 병원에 갔다', '사랑니, 병원']
+  ]) {
+    inputBody(body);
+    assert.equal(tags.value, '사용자태그, '+expected, body);
+  }
+  tags.value = '사용자태그, 병원';
+  tags.dispatchEvent(new f.window.Event('input', { bubbles: true }));
+  inputBody('사랑니가 아파서 병원에 갔다.');
+  assert.equal(tags.value, '사용자태그, 병원');
+  await f.send();
+  assert.deepEqual(f.writes.at(-1).args.p_tags, ['사용자태그','병원']);
+});
