@@ -133,12 +133,8 @@
       }
     };
     hidePlayStoreGameEntrances(document);
-    const gameEntranceObserver = new MutationObserver(records => {
-      for (const record of records) {
-        for (const node of record.addedNodes) {
-          if (node.nodeType === 1) hidePlayStoreGameEntrances(node);
-        }
-      }
+    const gameEntranceObserver = new MutationObserver(() => {
+      hidePlayStoreGameEntrances(document);
     });
     gameEntranceObserver.observe(document.documentElement, { childList: true, subtree: true });
 
