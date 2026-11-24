@@ -7,7 +7,7 @@
 .wardrobe-colors[hidden]{display:none}
 .wardrobe-colors button{display:inline-flex;align-items:center;gap:6px;min-height:36px}
 .wardrobe-swatch{display:inline-block;width:16px;height:16px;border-radius:50%;background:var(--swatch);border:1px solid #ffffff70}
-</style><script src="./wardrobe-designs.js?v=5.4-nocturne1"></script></head><body><div class="wrap"><header class="header"><a class="return" href="/world.html?tab=hub" id="back" aria-label="이전 화면">‹</a><div class="brand"><span class="logo">✦</span>Ojjuda<b>.</b></div><div class="heading"><div class="eyebrow">OJJUDA AVATAR ATELIER · V5.4.0</div><h1>오쭈다 아바타 스튜디오</h1></div><div class="headbuttons"><button id="random">⤨ 랜덤</button><button id="reset">↺ 초기화</button><button class="primary" id="save">♡ 코디 저장</button></div></header><main id="studio" class="layout" inert><section class="panel"><div class="stage" id="stage"><canvas class="main" id="hero" width="400" height="656" aria-label="메인 캐릭터"></canvas><canvas class="mini" id="mini" width="400" height="656" aria-label="미니미"></canvas><div class="stagehead"><span class="chip"><i class="dot"></i>LIVE FITTING</span><span class="chip" id="poseLabel">원화 불러오는 중…</span></div><div class="stagefoot"><div><small>OJJUDA · MY AVATAR</small><strong>나만의 코디</strong></div><button id="png" class="primary">↓ PNG</button></div></div><div class="panelbody"><div class="panelhead"><h2>내 코디함</h2><span class="sub">이 기기에 저장</span></div><div id="saved" class="saved"></div><div class="footnote"></div></div></section><div class="right"><section class="panel panelbody"><div class="panelhead"><h2>포즈 선택</h2><span class="sub">각각 별도로 그린 원화</span></div><div class="poses" id="poses"></div></section><section class="panel panelbody"><div class="panelhead"><h2>아이템 컬렉션</h2><span class="sub" id="count"></span></div><div class="category" id="cats"></div><div class="items" id="items"></div><div class="category wardrobe-colors" id="wardrobeColors" role="group" aria-label="색상 선택" hidden></div><p class="footnote" id="itemNote"></p></section><section class="panel panelbody"><div class="panelhead"><h2>추천 코디</h2><span class="sub">선택한 포즈 그대로 적용</span></div><div class="looks" id="looks"></div></section></div></main><div id="toast" class="toast" role="status" hidden></div><div class="footnote">V5.4 · 아바타 스튜디오</div></div><script>
+</style><script src="./wardrobe-designs.js?v=5.4-fit2"></script></head><body><div class="wrap"><header class="header"><a class="return" href="/world.html?tab=hub" id="back" aria-label="이전 화면">‹</a><div class="brand"><span class="logo">✦</span>Ojjuda<b>.</b></div><div class="heading"><div class="eyebrow">OJJUDA AVATAR ATELIER · V5.4.0</div><h1>오쭈다 아바타 스튜디오</h1></div><div class="headbuttons"><button id="random">⤨ 랜덤</button><button id="reset">↺ 초기화</button><button class="primary" id="save">♡ 코디 저장</button></div></header><main id="studio" class="layout" inert><section class="panel"><div class="stage" id="stage"><canvas class="main" id="hero" width="400" height="656" aria-label="메인 캐릭터"></canvas><canvas class="mini" id="mini" width="400" height="656" aria-label="미니미"></canvas><div class="stagehead"><span class="chip"><i class="dot"></i>LIVE FITTING</span><span class="chip" id="poseLabel">원화 불러오는 중…</span></div><div class="stagefoot"><div><small>OJJUDA · MY AVATAR</small><strong>나만의 코디</strong></div><button id="png" class="primary">↓ PNG</button></div></div><div class="panelbody"><div class="panelhead"><h2>내 코디함</h2><span class="sub">이 기기에 저장</span></div><div id="saved" class="saved"></div><div class="footnote"></div></div></section><div class="right"><section class="panel panelbody"><div class="panelhead"><h2>포즈 선택</h2><span class="sub">각각 별도로 그린 원화</span></div><div class="poses" id="poses"></div></section><section class="panel panelbody"><div class="panelhead"><h2>아이템 컬렉션</h2><span class="sub" id="count"></span></div><div class="category" id="cats"></div><div class="items" id="items"></div><div class="category wardrobe-colors" id="wardrobeColors" role="group" aria-label="색상 선택" hidden></div><p class="footnote" id="itemNote"></p></section><section class="panel panelbody"><div class="panelhead"><h2>추천 코디</h2><span class="sub">선택한 포즈 그대로 적용</span></div><div class="looks" id="looks"></div></section></div></main><div id="toast" class="toast" role="status" hidden></div><div class="footnote">V5.4 · 아바타 스튜디오</div></div><script>
 'use strict';
 async function startStudio(){
  // The immutable source keeps the original pose layers at their authored resolution.
@@ -51,7 +51,6 @@ async function derivedImage(source){
  ctx.putImageData(pixels,0,0);
  return rawImage(c.toDataURL('image/png'));
 }
-const livelySources=new Map();
 function image(url){
  if(!url)return Promise.resolve(null);
  if(derivedSources.has(url)){
@@ -62,15 +61,13 @@ function image(url){
   return p;
  }
  if(url.startsWith('fitted:')){
-  const target=(url.startsWith('fitted:garment:')||livelySources.has(url))?garmentCache:cache;
+  const target=(url.startsWith('fitted:garment:')||url.startsWith('fitted:tucked:'))?garmentCache:cache;
   if(target.has(url)){
     const layer=target.get(url);
     if(target===garmentCache){target.delete(url);target.set(url,layer);}
     return layer;
   }
-  const render=livelySources.has(url)
-    ?image(livelySources.get(url).url).then(layer=>fitLivelyLegs(layer,canvas,livelySources.get(url).part))
-    :wardrobeLayer(url,D,image,canvas);
+  const render=wardrobeLayer(url,D,image,canvas);
   const pending=render.catch(error=>{
     if(target.get(url)===pending)target.delete(url);
     throw error;
@@ -113,13 +110,17 @@ function spec(s,pose,replace){
  const top=item(s.items.top),bottom=item(s.items.bottom),dress=item(s.items.dress);
  const straight=s.items.hair==='nocturne-hair-front',boots=s.items.shoes==='nocturne-boots';
  const clean=Boolean(dress||bottom?.tailored);
- const flags=(straight?'h':'')+(dress?'d':'')+(boots?'b':'')+(clean?'c':'');
- const base=straight||dress||boots?'fitted:portrait:'+pose+':'+flags:
-   clean?'fitted:base:'+pose:pose==='lively'?'fitted:body:lively':D.base[pose];
+ const foldedPants=!dress&&pose==='lively'&&bottom?.tailored==='pants';
+ const flags=(straight?'h':'')+(dress?'d':'')+(boots?'b':'')+(clean?'c':'')+(foldedPants?'p':'');
+ const base=straight||dress||boots||foldedPants?'fitted:portrait:'+pose+':'+flags:
+   clean?'fitted:base:'+pose:D.base[pose];
  const urls=straight?['fitted:nocturne:hair-back:'+pose,base]:[base];
  const append=slot=>{
    const asset=replace?.slot===slot?replace.url:item(s.items[slot])?.variants[pose];
-   if(asset)urls.push(asset);
+   if(asset){
+     const tuck=slot==='bottom'&&boots&&bottom?.tailored==='pants'&&asset.startsWith('fitted:garment:');
+     urls.push(tuck?asset.replace('fitted:garment:','fitted:tucked:'):asset);
+   }
  };
  if(!straight)append('hair');
  append('expression');
@@ -127,9 +128,9 @@ function spec(s,pose,replace){
  append('shoes');
  append('outer');append('bag');append('accessory');
  if(straight)append('hair');
- if((dress||top?.tailored||bottom?.tailored)&&wardrobeArms[pose]){
-   const covered=dress||top?.tailored==='track'||top?.tailored==='suit';
-   urls.push('fitted:'+(covered?'hands':'arms')+':'+pose);
+ if((straight||dress||top?.tailored||bottom?.tailored)&&wardrobeArms[pose]){
+   const covered=dress||top?.tailored==='track'||top?.tailored==='suit'||(straight&&!top?.tailored&&!bottom?.tailored);
+   urls.push('fitted:'+(covered?'hands':'arms')+':'+pose+(straight?':straight':''));
  }
  append('headwear');
  return urls;
@@ -285,13 +286,6 @@ registerWardrobeDesigns(catalog,approvedLooks,CASUAL,P);
 const nocturneLook=registerNocturne(catalog,approvedLooks,CASUAL,P);
 await loadLocalPacks();
 await loadApproved();
-for(const entry of catalog){
- const part=entry.category==='shoes'?'shoes':entry.category==='bottom'&&!entry.tailored?'skirt':null;
- if(!part||!entry.variants?.chic||entry.id.startsWith('nocturne-'))continue;
- const key='fitted:lively-'+part+':'+entry.id;
- livelySources.set(key,{url:entry.variants[part==='skirt'?'basic':'chic'],part});
- entry.variants={...entry.variants,lively:key};
-}
 await restore();
 const link=new URLSearchParams(location.search);
 if(link.get('look')==='nocturne'){

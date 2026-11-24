@@ -118,76 +118,7 @@ function dyeWardrobe(context,width,height,style,index){
   }
   context.putImageData(pixels,0,0);
 }
-// Registration on the original 400 × 656 artwork. Each row gives the source
-// height, target height and sideways shift at a joint or shoe landmark.
-const livelyLegFit=[
-  [[198,202,-13],[302,306,-13],[350,354,-12],[414,416,-6],[477,474,1],[551,546,15],[656,651,15]],
-  [[198,202,-13],[302,306,-13],[346,347,-20],[380,377,-32],[411,401,-39],[432,416,-35],[471,441,-29],[516,469,-22],[552,492,-21],[656,591,-13]]
-];
-function fitLivelyLegs(source,newCanvas,part){
-  const result=newCanvas(),ctx=result.getContext('2d');
-  if(part==='skirt'){
-    ctx.drawImage(source,-15,-1);
-    return result;
-  }
-  if(part==='pants'){
-    // Feather the joint between the pelvis and thigh texture strips.
-    const cloth=newCanvas(),paint=cloth.getContext('2d',{willReadFrequently:true});
-    paint.drawImage(source,0,0);
-    const region=paint.getImageData(132,283,148,41),data=region.data,original=data.slice();
-    for(let x=5;x<143;x++){
-      const seam=Math.round(15+(x-6)*.058),lo=seam-7,hi=seam+7;
-      const a=(lo*148+x)*4,b=(hi*148+x)*4;
-      if(original[a+3]<245||original[b+3]<245)continue;
-      for(let y=lo+1;y<hi;y++){
-        const i=(y*148+x)*4,w=(y-lo)/(hi-lo);
-        if(original[i+3]<235)continue;
-        for(let k=0;k<3;k++)data[i+k]=original[a+k]*(1-w)+original[b+k]*w;
-      }
-    }
-    paint.putImageData(region,132,283);source=cloth;
-    // Keep the waistband and the fly in one piece before the legs diverge.
-    ctx.drawImage(source,0,194,400,109,-13,198,400,109);
-  }
-  for(const [side,anchors] of livelyLegFit.entries()){
-    for(let section=1;section<anchors.length;section++){
-      const [sy0,y0,dx0]=anchors[section-1],[sy1,y1,dx1]=anchors[section];
-      for(let y=y0;y<y1;y++){
-        if(part==='pants'&&y<307)continue;
-        const t=(y-y0)/(y1-y0);
-        let sy=sy0+(sy1-sy0)*t;
-        if(part==='skin'&&(y<284||sy>559))continue;
-        if(part==='shoes'&&sy<480)continue;
-        // The donor's skirt covers the upper thighs. Extend exposed thigh
-        // paint up beneath the lively skirt so every hem has full coverage.
-        const bareThigh=part==='skin'&&sy<350;
-        const growth=bareThigh?Math.min(1,(350-sy)/58):0;
-        const split=sy<330?205:Math.min(253,205+(sy-330)*.30);
-        const start=side?Math.round(split):100;
-        const end=side?(part==='skin'&&sy<338?274:375):Math.round(split);
-        // Cubic tangents keep the outside edge of the knee and calf continuous.
-        const prev=anchors[Math.max(0,section-2)],next=anchors[Math.min(anchors.length-1,section+1)];
-        const m0=(dx1-prev[2])*(y1-y0)/(y1-prev[1]);
-        const m1=(next[2]-dx0)*(y1-y0)/(next[1]-y0);
-        const dx=(1-t)*(1-t)*((1+2*t)*dx0+t*m0)+t*t*((3-2*t)*dx1+(t-1)*m1);
-        if(bareThigh){
-          const left=side?211:134, width=side?66:70;
-          const shift=side?-18:-11;
-          ctx.drawImage(source,left,350,width,1,left+dx+growth*shift,y,width+growth*8,1);
-        }else ctx.drawImage(source,start,sy,end-start,1,start+dx,y,end-start,1);
-      }
-    }
-  }
-  return result;
-}
-async function livelyBody(data,loadImage,newCanvas){
-  const [upper,donor]=await Promise.all([loadImage(data.base.lively),loadImage(data.base.chic)]);
-  const body=fitLivelyLegs(donor,newCanvas,'skin'),ctx=body.getContext('2d');
-  ctx.drawImage(upper,0,0,400,283,0,0,400,283);
-  // The hand extends below the old hem and stays in its original position.
-  ctx.drawImage(upper,265,283,68,50,265,283,68,50);
-  return body;
-}
+const wardrobeFitCrops={"dress":{"basic":[0,0,180,195,114,140],"pure":[184,0,134,199,139,140],"cute":[322,0,149,210,127,128],"chic":[475,0,193,208,87,124],"lively":[672,0,174,198,105,136],"mini":[850,0,129,125,140,383]},"boots":{"lively":[983,0,144,308,141,339]},"arm":{"lively":[1131,0,53,127,95,90],"cute":[1188,0,72,133,122,80],"chic":[1264,0,108,75,89,167],"pure":[0,312,131,173,127,164]}};
 const nocturneCrops={"dress":{"basic":[0,0,180,195,114,140],"pure":[184,0,125,199,139,140],"cute":[313,0,147,210,129,128],"chic":[464,0,193,208,87,124],"lively":[661,0,174,198,105,136],"mini":[839,0,129,125,140,383],"catalog":[244,280,122,190,0,0]},"boots":{"basic":[972,0,92,265,163,379],"pure":[1068,0,87,266,165,379],"cute":[1159,0,110,276,158,371],"chic":[1273,0,204,276,154,374],"mini":[1481,0,86,109,163,516],"catalog":[370,280,35,190,0,0]},"choker":{"basic":[0,280,38,66,186,105],"pure":[42,280,37,67,181,105],"cute":[83,280,37,67,179,105],"chic":[124,280,39,66,191,100],"lively":[167,280,37,67,179,104],"mini":[208,280,32,52,189,360],"catalog":[409,280,80,190,0,0]},"head":{"basic":[493,280,156,237,127,8],"pure":[928,280,120,236,135,9],"cute":[1327,280,138,238,129,7],"chic":[171,522,183,240,89,5],"lively":[636,522,171,240,97,5],"mini":[1089,522,239,355,86,148]},"hair-front":{"basic":[653,280,98,205,155,4],"pure":[1052,280,103,205,145,6],"cute":[1469,280,102,205,144,4],"chic":[358,522,103,205,155,2],"lively":[811,522,103,205,144,2],"mini":[1332,522,245,357,79,143],"catalog":[299,883,110,190,0,0]},"hair-back":{"basic":[755,280,103,205,155,4],"pure":[1159,280,103,206,145,6],"cute":[0,522,103,205,144,4],"chic":[465,522,103,206,155,2],"lively":[918,522,103,206,144,2],"mini":[0,883,248,357,79,143]},"bag":{"basic":[862,280,62,94,278,305],"pure":[1266,280,57,86,178,312],"cute":[107,522,60,92,257,309],"chic":[572,522,60,92,258,314],"lively":[1025,522,60,92,277,304],"mini":[252,883,43,64,251,463],"catalog":[413,883,85,190,0,0]}};
 function registerNocturne(catalog,looks,casual,poses){
   const collection=[
@@ -215,11 +146,9 @@ function registerNocturne(catalog,looks,casual,poses){
   return look;
 }
 async function nocturneLayer(part,pose,loadImage,newCanvas,tone){
-  if(part==='boots'&&pose==='lively'){
-    return fitLivelyLegs(await loadImage('fitted:nocturne:boots:chic'),newCanvas,'boots');
-  }
-  const [sx,sy,w,h,dx,dy]=nocturneCrops[part][pose];
-  const sheet=await loadImage('./artwork/nocturne-01.webp');
+  const revised=wardrobeFitCrops[part]?.[pose];
+  const [sx,sy,w,h,dx,dy]=revised||nocturneCrops[part][pose];
+  const sheet=await loadImage(revised?'./artwork/wardrobe-fit-02.webp':'./artwork/nocturne-01.webp');
   const out=pose==='catalog'?newCanvas(w,h):newCanvas();
   out.getContext('2d').drawImage(sheet,sx,sy,w,h,dx,dy,w,h);
   if(part==='dress'&&tone){
@@ -250,12 +179,21 @@ function paintShoulders(ctx,pose){
 }
 async function portraitLayer(pose,flags,data,loadImage,newCanvas){
   const straight=flags.includes('h'),dress=flags.includes('d'),boots=flags.includes('b');
-  const baseKey=flags.includes('c')?'fitted:base:'+pose:pose==='lively'?'fitted:body:lively':data.base[pose];
+  const baseKey=flags.includes('c')?'fitted:base:'+pose:data.base[pose];
   const original=await loadImage(baseKey),out=newCanvas(),ctx=out.getContext('2d');
   ctx.drawImage(original,0,0);
   if(straight){
     ctx.clearRect(0,0,out.width,pose==='mini'?514:245);
     ctx.drawImage(await loadImage('fitted:nocturne:head:'+pose),0,0);
+    // Only the side locks reach this far. Keep the thighs below the mini skirt.
+    if(pose==='mini'){
+      ctx.clearRect(166,497,81,17);
+      ctx.drawImage(original,166,497,81,17,166,497,81,17);
+    }
+    if(pose==='lively'){
+      ctx.clearRect(87,79,55,65);
+      ctx.drawImage(await loadImage('fitted:nocturne:arm:lively'),87,79,55,65,87,79,55,65);
+    }
   }
   ctx.globalCompositeOperation='destination-out';
   async function erase(item,offsets){
@@ -263,12 +201,13 @@ async function portraitLayer(pose,flags,data,loadImage,newCanvas){
     for(const [x,y] of offsets)ctx.drawImage(im,x,y);
   }
   if(straight&&flags.includes('c')){
-    ctx.save();ctx.beginPath();ctx.rect(0,0,out.width,pose==='mini'?514:245);ctx.clip();
+    ctx.save();ctx.beginPath();ctx.rect(0,0,out.width,pose==='mini'?497:245);ctx.clip();
     await erase('bottom-original',[[0,0],[2,0],[-2,0],[0,2],[0,-2]]);
     ctx.restore();
   }
   if(dress)await erase('top-original',[[0,0],[-1,0],[1,0],[0,1]]);
-  if(boots&&pose!=='lively')await erase('shoes-original',[[0,0],[-3,0],[3,0],[0,-3],[0,3]]);
+  if(flags.includes('p'))ctx.clearRect(132,344,111,58);
+  if(boots)await erase('shoes-original',[[0,0],[-3,0],[3,0],[0,-3],[0,3]]);
   ctx.globalCompositeOperation='destination-over';
   if(dress)paintShoulders(ctx,pose);
   return out;
@@ -279,12 +218,31 @@ async function wardrobeLayer(key,data,loadImage,newCanvas){
   if(type==='nocturne')return nocturneLayer(id,pose,loadImage,newCanvas,choice);
   if(type==='portrait')return portraitLayer(id,pose,data,loadImage,newCanvas);
   const layer=newCanvas(),ctx=layer.getContext('2d');
+  if(type==='tucked'){
+    const pants=await loadImage('fitted:garment:'+id+':'+pose+':'+choice);
+    // The shaft covers the pants below the cuff. Preserve the upper fabric
+    // and remove the second outline that would otherwise run down the calf.
+    const cuff={basic:383,pure:383,cute:378,chic:379,lively:383,mini:520}[pose];
+    ctx.drawImage(pants,0,0,layer.width,cuff,0,0,layer.width,cuff);
+    if(pose==='lively'){
+      // The raised calf is nearly horizontal. End the fabric at its angled cuff.
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(150,340);
+      ctx.lineTo(206,362);
+      ctx.lineTo(layer.width,362);
+      ctx.lineTo(layer.width,cuff);
+      ctx.lineTo(185,cuff);
+      ctx.lineTo(150,356);
+      ctx.closePath();
+      ctx.clip();
+      ctx.clearRect(150,340,layer.width-150,cuff-340);
+      ctx.restore();
+    }
+    return layer;
+  }
   if(type==='garment'){
     const [style,part]=id.split('-');
-    if(pose==='lively'&&part==='bottom'&&style!=='school'){
-      const pants=await loadImage('fitted:garment:'+id+':chic:'+choice);
-      return fitLivelyLegs(pants,newCanvas,'pants');
-    }
     const [sx,sy,width,height,dx,dy]=wardrobeCrops[id][pose];
     const sheet=await loadImage('./artwork/atelier-'+part+'-01.webp');
     const patch=newCanvas(width,height),paint=patch.getContext('2d',{willReadFrequently:true});
@@ -294,15 +252,12 @@ async function wardrobeLayer(key,data,loadImage,newCanvas){
     ctx.drawImage(patch,dx,dy);
     return layer;
   }
-  if(type==='body'&&id==='lively')return livelyBody(data,loadImage,newCanvas);
-  const base=type==='base'&&id==='lively'
-    ?await loadImage('fitted:body:lively'):await loadImage(data.base[id]);
+  const base=pose==='straight'?await loadImage('fitted:nocturne:arm:'+id):await loadImage(data.base[id]);
   if(type==='arms'||type==='hands'){
     ctx.clip(new Path2D((type==='arms'?wardrobeArms:wardrobeHands)[id]));
     ctx.drawImage(base,0,0);
   }else if(type==='base'){
     ctx.drawImage(base,0,0);
-    if(id==='lively'){ctx.beginPath();ctx.rect(0,0,layer.width,283);ctx.clip();}
     const skirt=await loadImage(data.items.find(x=>x.id==='bottom-original').variants[id]);
     ctx.globalCompositeOperation='destination-out';
     for(const [x,y] of [[0,0],[2,0],[-2,0],[0,2],[0,-2],[4,0],[-4,0],[0,4],[0,-4],[3,3],[-3,3],[3,-3],[-3,-3]])ctx.drawImage(skirt,x,y);
