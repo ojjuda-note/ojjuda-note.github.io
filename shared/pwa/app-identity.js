@@ -96,7 +96,8 @@
       html[data-play-store-agit="true"] a[href*="/games/"]:not([href*="/games/certified-restaurants/"]):not([href*="/games/festival-schedule/"]):not([href*="/games/moonlit-tarot/"]):not([href*="/games/starlit-saju/"]),
       html[data-play-store-agit="true"] [data-act="game-open"],
       html[data-play-store-agit="true"] [data-game],
-      html[data-play-store-agit="true"] [data-game-id] {
+      html[data-play-store-agit="true"] [data-game-id],
+      html[data-play-store-agit="true"] [data-v="recommend"] {
         display: none !important;
         visibility: hidden !important;
         pointer-events: none !important;
