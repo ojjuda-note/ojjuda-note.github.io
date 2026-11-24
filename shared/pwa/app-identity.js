@@ -97,7 +97,9 @@
       html[data-play-store-agit="true"] [data-act="game-open"],
       html[data-play-store-agit="true"] [data-game],
       html[data-play-store-agit="true"] [data-game-id],
-      html[data-play-store-agit="true"] [data-v="recommend"] {
+      html[data-play-store-agit="true"] [data-v="recommend"],
+      html[data-play-store-agit="true"] #agit-recommend,
+      html[data-play-store-agit="true"] #agit-missions [data-act="agit-task"][data-v="recommend"] {
         display: none !important;
         visibility: hidden !important;
         pointer-events: none !important;
