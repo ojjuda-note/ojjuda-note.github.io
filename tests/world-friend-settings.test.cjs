@@ -8,7 +8,7 @@ let source = html.match(/<script type="module">([\s\S]*?)<\/script>/)[1]
   .replaceAll('import.meta.env', '({})')
   .replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";', 'const screwGame={};');
 source = source.slice(0, source.indexOf('j1(()=>H());gm('));
-source += '\nwindow.friendTest={auth:D,state:g,model:P,actions:sr,render:H,load:ke,notice:openWorldNotification,setClient(client){S=client;}};';
+source += '\nwindow.friendTest={auth:D,state:g,model:P,actions:sr,render:H,load:ke,notice:openWorldNotification,openLinkedAccountSetting,setClient(client){S=client;}};';
 const tick = () => new Promise(resolve => setTimeout(resolve, 0));
 async function until(condition) { for (let i=0; i<50; i++) { if(condition())return; await tick(); } assert.ok(condition(), 'friend UI finishes updating'); }
 
@@ -68,6 +68,14 @@ async function until(condition) { for (let i=0; i<50; i++) { if(condition())retu
   const close=doc.querySelector('.world-settings-close');
   assert.equal(close.dataset.act,'navigation-back','closing settings returns to the actual previous screen');
   assert.equal(doc.querySelector('.world-settings-page [data-act="account-delete-open"]'),null);
+  for (const key of ['profile','notifications']) {
+    t.openLinkedAccountSetting(new URL('/world.html?tab=my&setting='+key,w.location));
+    const panel=doc.querySelector('[data-my-group="'+key+'"]');
+    assert.equal(panel.open,true);
+    const control=panel.querySelector(key==='profile'?'#p-nick':'[data-set="notify.friend"]');
+    assert.ok(control);
+    panel.open=false;
+  }
   click('[data-act="support-open"]');
   await until(()=>doc.querySelector('#note-inquiry-body'));
   const support=doc.querySelector('.note-support-layer [role="dialog"]');
@@ -96,7 +104,7 @@ async function until(condition) { for (let i=0; i<50; i++) { if(condition())retu
   await until(()=>doc.querySelector('#note-inquiry-body'));
   assert.equal(accountDisclosure.open,false,'reopening support never leaves withdrawal expanded');
   w.OjjudaNoteSupport.close();
-  group().open=true;await until(()=>doc.querySelector('#fr-q'));
+  t.openLinkedAccountSetting(new URL('/world.html?tab=my&setting=friends',w.location));await until(()=>doc.querySelector('#fr-q'));
   assert.equal(group().open,true);
   assert.ok(group().textContent.includes('친구 1명'));
   assert.equal(group().querySelector('[data-act="visit"]'),null);

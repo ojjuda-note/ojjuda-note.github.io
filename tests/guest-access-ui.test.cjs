@@ -302,7 +302,21 @@ const cardId='00000000-0000-4000-8000-000000000001';
   assert.equal(await page.locator('#compose-text').inputValue(),'고쳐 쓴 붓글씨');
   assert.equal(await page.locator('#compose-ink-art').isVisible(),false);
   assert.equal(await page.locator('.compose-photo .park-ink-box').isVisible(),false);
-  await page.locator('#close-composer').click();
+  const closeDirtyComposer = async accept => {
+   let seen;
+   page.once('dialog', async dialog => {
+    seen = [dialog.type(), dialog.message()];
+    if (accept) await dialog.accept(); else await dialog.dismiss();
+   });
+   await page.locator('#close-composer').click();
+   assert.deepEqual(seen,['confirm','작성 중인 카드를 닫고 이동할까요?']);
+  };
+  const composerBackdrop=page.locator('#composer-backdrop');
+  await closeDirtyComposer(false);
+  assert.equal(await composerBackdrop.isVisible(),true,'cancel keeps the dirty composer open');
+  assert.equal(await page.locator('#compose-text').inputValue(),'고쳐 쓴 붓글씨');
+  await closeDirtyComposer(true);
+  await composerBackdrop.waitFor({state:'hidden'});
   await page.locator('#feed-list .photo').first().scrollIntoViewIfNeeded();
   for(const [index,key] of [[1,'37'],[2,'13']]){
    const face='#feed-list article:nth-child('+index+') .photo',selector=face+' canvas.park-ink-art';

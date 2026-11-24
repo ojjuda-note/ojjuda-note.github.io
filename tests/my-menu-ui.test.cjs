@@ -312,20 +312,20 @@ async function noteFixture(context, mobile, errors) {
     'the member-information group returns after sign-in');
   assert.equal(await page.evaluate(() => {
     const before = (first, second) => !!(document.querySelector(first).compareDocumentPosition(document.querySelector(second)) & Node.DOCUMENT_POSITION_FOLLOWING);
-    return before('#note-events-title', '#note-account-title') && before('#note-tools-title', '#note-account-title')
+    return before('#note-tools-title', '#note-account-title')
       && before('#note-account-title', '#note-help-actions');
-  }), true, 'activity and member information precede account and help');
+  }), true, 'member information precedes account and help');
   assert.equal(await page.locator('#note-admin-entry').isVisible(), false, 'ordinary members never see admin settings');
   assert.equal(await page.locator('#note-my-screen details[open]').count(), 0, 'Note settings start closed');
   await fitsViewport(page, 'closed Note menu');
   if (screenshotDirectory) await page.screenshot({ path: path.join(screenshotDirectory, `note-${mobile ? 'mobile' : 'desktop'}.png`), fullPage: true });
   await exerciseGroups(page, '#note-my-screen');
-  for (const id of ['event-start', 'note-change-nickname', 'note-change-password', 'note-logout', 'note-member-info', 'note-blocks', 'note-notifications']) {
+  for (const id of ['note-change-nickname', 'note-change-password', 'note-logout', 'note-member-info', 'note-blocks', 'note-notifications']) {
     assert.equal(await page.locator(`#${id}`).isVisible(), true, `existing Note action ${id} stays reachable`);
   }
   assert.equal(await page.locator('#note-delete-account').count(), 0,
     'the legacy Note settings no longer have a direct withdrawal button');
-  assert.equal(await page.locator('#note-my-screen [data-show="events"]').isVisible(), true);
+  assert.equal(await page.locator('#event-start, #note-my-screen [data-show="events"]').count(), 0);
   // The Park menu keeps return/context parameters; assert real destinations, not bare hrefs.
   for (const [selector, destination] of [
     ['#note-my-screen a[href^="/guide.html"]', '/guide.html'],
@@ -374,8 +374,8 @@ async function noteFixture(context, mobile, errors) {
   await myButton().click();
   await page.locator('#note-change-nickname').click();
   assert.equal(await page.evaluate(() => nicknameClicks), 3);
-  await page.locator('#event-start').click();
-  assert.equal(await page.locator('#note-my-screen').isVisible(), false, 'existing event navigation leaves My');
+  await page.locator('.bottomnav [data-show="feed"]').click();
+  assert.equal(await page.locator('#note-my-screen').isVisible(), false, 'returning to cards leaves My');
   await myButton().click();
   await page.evaluate(() => memberState(false));
   assert.equal(await page.locator('#note-account-section').isVisible(), false, 'signing out hides account controls even if their group was expanded');

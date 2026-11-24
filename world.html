@@ -676,7 +676,7 @@ async function Oa(t,e,o){adminMutationPending++;t&&(t.disabled=!0);try{await e()
 const sectionReleases={
   hub:{name:'아지트',version:Go,manifest:'/version.json'},
   arcade:{name:'오락실',version:'1.3.16',manifest:'/features/arcade/version.json'},
-  park:{name:'공원',version:'1.7.8',manifest:'/park/version.json'}
+  park:{name:'공원',version:'1.8.0',manifest:'/park/version.json'}
 };
 function releaseSection(){
  const tab=worldMainTab();
@@ -3379,7 +3379,7 @@ function restoreWorldRoute(route){
 }
 function worldRouteUrl(route){
  const url=new URL(location.href);
- for(const key of ['game','challenge','score','screwTest','archery_shop','restaurantView','game_update','place','card','keep','compose','view','admin','from'])url.searchParams.delete(key);
+ for(const key of ['game','challenge','score','screwTest','archery_shop','restaurantView','setting','game_update','place','card','keep','compose','view','admin','from'])url.searchParams.delete(key);
  url.searchParams.set('tab',route.tab==='admin'?'my':route.tab);
  if(route.tab==='admin'){url.searchParams.set('admin',route.section);url.searchParams.set('from',window.OjjudaAdminScope?.resolve(route.service,route.section)||'agit');}
  return url.href;
@@ -3514,7 +3514,18 @@ function openWorldGameLink(id,options={}){
  if(id==='screw_box'||id==='screw_flat')return Al('screw',{screwMode:id==='screw_flat'?'flat':'box'});
  if(['sacheonseong','solitaire','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw','bang','tank','tour','ttang','poker','roulette','photo_ttang','archery','festival'].includes(id))return Al(id);
 }
-function my(){py();if(!worldEntryRouted){worldEntryRouted=true;const url=new URL(location.href),tab=url.searchParams.get("tab"),place=url.searchParams.get("place");sr.tab({tab:url.searchParams.getAll("game").length===1?"arcade":place==="park"||tab==="park"?"park":tab==="my"||tab==="settings"?"my":tab==="hub"?"hub":tab==="arcade"?"arcade":"hub"});let entry=url.searchParams.get("game");try{entry=window.OjjudaGameChallenges?.requestedGame?.()||entry}catch{}if(url.searchParams.getAll("game").length===1){
+// Park links use the same account controls and preferences as the Agit settings page.
+function openLinkedAccountSetting(url){
+ const key=url.searchParams.get('setting');
+ if(!['profile','friends','notifications'].includes(key))return;
+ const panel=document.querySelector('.my-hub [data-my-group="'+key+'"]');
+ if(!panel)return;
+ panel.open=true;
+ if(key==='friends')P.communityOpen=true;
+ panel.querySelector('summary')?.focus({preventScroll:true});
+ panel.scrollIntoView({block:'start'});
+}
+function my(){py();if(!worldEntryRouted){worldEntryRouted=true;const url=new URL(location.href),tab=url.searchParams.get("tab"),place=url.searchParams.get("place");sr.tab({tab:url.searchParams.getAll("game").length===1?"arcade":place==="park"||tab==="park"?"park":tab==="my"||tab==="settings"?"my":tab==="hub"?"hub":tab==="arcade"?"arcade":"hub"});if(g.tab==="my")openLinkedAccountSetting(url);let entry=url.searchParams.get("game");try{entry=window.OjjudaGameChallenges?.requestedGame?.()||entry}catch{}if(url.searchParams.getAll("game").length===1){
  const gameOptions=entry==="restaurants"&&url.searchParams.get("restaurantView")==="recommendations"?{openRecommendations:true}:undefined;
  if(entry==='screw_flat'&&url.searchParams.get('screwTest')==='1'){
   const previewOwner=D.online?D.user?.id:null;

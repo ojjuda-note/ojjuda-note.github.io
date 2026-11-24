@@ -67,8 +67,8 @@ assert.equal(preview.origin, 'https://ojjuda.kr');
 assert.equal(preview.pathname, '/note/preview.js');
 const cacheKeys = preview.searchParams.getAll('v');
 assert.equal(cacheKeys.length, 1, 'composer script has one cache revision');
-assert.match(cacheKeys[0], /^\d{8}-park-[a-z0-9-]+$/);
-assert.ok(cacheKeys[0].slice(0, 8) > '20261125' ||
+assert.match(cacheKeys[0], /^\d{8}-(?:park|classic)-[a-z0-9-]+$/);
+assert.ok(cacheKeys[0].slice(0, 8) > '20261125' || cacheKeys[0] === '20261125-classic-settings1' ||
   /^20261125-park-freeword-tags(?:[2-9]|[1-9]\d+)$/.test(cacheKeys[0]),
   'cache revision must include the freeword tag release or a later dated release');
 const { version } = JSON.parse(fs.readFileSync(path.join(root, 'park/version.json'), 'utf8'));

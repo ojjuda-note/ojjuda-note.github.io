@@ -82,7 +82,7 @@
       return;
     }
     if (!document.body.classList.contains('note-my-open')) return;
-    const cardAction = event.target.closest('[data-show], [data-sort], [data-collection], [data-open], [data-compose], #event-start');
+    const cardAction = event.target.closest('[data-show], [data-sort], [data-collection], [data-open], [data-compose]');
     if (!cardAction || cardAction.disabled) return;
     // Existing card handlers will perform the selected navigation after capture.
     // The card/collection controller records the destination after this capture.
