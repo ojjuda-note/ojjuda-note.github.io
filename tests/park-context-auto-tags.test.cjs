@@ -26,7 +26,7 @@ for (const [text, tags] of [
 assert.equal(suggest('친구 커피 노래', 1).length, 1);
 assert.equal(suggest('친구 커피 노래 사과 주말 전화').length, 5);
 
-const sql = read('supabase/migrations/20261125063000_park_literal_card_tags.sql');
+const sql = read('supabase/migrations/20261124211408_park_literal_card_tags.sql');
 const lists = vm.runInContext('TAG_WORDS', context);
 lists.forEach((words,i) => assert.ok(sql.includes("("+i+", '"+words+"')"), 'shared vocabulary tier '+i));
 const park = read('park/index.html');
