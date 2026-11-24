@@ -94,6 +94,7 @@ const cardId='00000000-0000-4000-8000-000000000001';
     selectCollection=async()=>true;
     window.guestDraws=[];
     noteRpc=async(name,args)=>{
+      if(name==='suggest_card_tags')return suggestTags(args.p_body,3);
       if(name==='guest_card_background'){
         const key=window.guestDraws.length?'37':'297';
         window.guestDraws.push({id:args.p_request_id,key});
@@ -254,11 +255,15 @@ const cardId='00000000-0000-4000-8000-000000000001';
   await checkInlineInput('writing');
   assert.deepEqual(await composeInput.evaluate(input=>[input.value,input.selectionStart,input.selectionEnd]),
    [composedText,composedText.length,composedText.length],'finishing Korean composition keeps the text and cursor');
-  await tagInput.focus();
+  // New cards auto-suggest literal words, including after Korean IME commits.
+  // Clear them through the actual tag input before sampling the tag-free raster.
+  await page.waitForFunction(() => tags.value === '첫째, 둘째');
+  await tagInput.fill('');
   await waitForInk('#compose-ink-art',multilineInk,false,[composedText,[]]);
   await checkInlineInput('preview');
   const editedBody='고쳐 쓴 붓글씨';
   await composeInput.fill(editedBody);
+  await page.waitForFunction(() => tags.value === '고쳐, 붓글씨');
   await tagInput.fill('');
   const editedInk=await waitForInk('#compose-ink-art',initialInk,false,[editedBody,[]]);
   assert.deepEqual(await page.evaluate(()=>[currentStyle().font,text.value]),['calligraphy','고쳐 쓴 붓글씨']);
