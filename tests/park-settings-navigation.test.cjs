@@ -108,10 +108,7 @@ test('standalone mobile and desktop settings buttons open the canonical settings
         assert.ok(f.root(),'actual navigation opens canonical settings');
         assert.equal(f.w.document.getElementById('note-my-screen').hidden,true,'legacy dashboard is not displayed');
         assert.equal(f.root().lastElementChild.localName,'ojjuda-service-banners');
-        const testLink = f.root().lastElementChild.querySelector('.ojjuda-test-service-link');
-        assert.equal(testLink.textContent, 'Test service');
-        assert.equal(testLink.getAttribute('href'), '/avatar-test/');
-        assert.equal(testLink.target, '_top');
+        assert.equal(f.root().lastElementChild.querySelectorAll('a').length,2);
         assert.deepEqual([...f.root().querySelectorAll('.ojjuda-service-banner')].map(link=>link.dataset.service),['agit','pajang']);
         assert.ok(f.root().querySelector('.ojjuda-settings-group .ojjuda-settings-list .ojjuda-settings-row'));
         assert.deepEqual([...f.root().querySelectorAll('.ojjuda-settings-heading')].map(el=>el.textContent),
