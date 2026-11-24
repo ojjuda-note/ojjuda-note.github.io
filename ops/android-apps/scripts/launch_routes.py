@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 WEB_ORIGIN = "https://ojjuda.kr"
 LAUNCH_ROUTES = {
     "agit": {
-        "start": "/world.html?tab=hub",
+        "start": "/world.html?tab=hub&play_store=1",
         "manifest": "/manifest.webmanifest",
         "id": "/world.html",
         "scope": "/",
