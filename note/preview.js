@@ -551,10 +551,10 @@ const TAG_LITERAL_WORDS = Object.freeze([
   '면접', '불합격', '합격', '이력서', '월세', '월급', '카드값', '통장',
   '퇴근길', '출근길', '퇴근', '출근', '회의', '동료', '메일', '회사',
   '비밀번호', '휴대폰', '답장', '메시지', '연락', '전화', '문자',
-  '고백', '짝사랑', '사랑', '설렘', '외로움', '친구', '가족', '부모님', '엄마', '아빠',
+  '고백', '짝사랑', '사랑니', '병원', '사랑', '설렘', '외로움', '친구', '가족', '부모님', '엄마', '아빠',
   '세탁기', '운동화', '슬리퍼', '엘리베이터', '충전기', '냉장고',
   '화분', '새잎', '강아지', '고양이', '산불', '지도', '로봇',
-  '빵집', '붕어빵', '카페', '커피', '과자', '라면', '국수', '김치', '국물',
+  '빵집', '붕어빵', '카페', '커피', '과자', '돈가스', '돈까스', '라면', '국수', '김치', '국물',
   '사진', '카메라', '노을', '하늘', '햇살', '이불', '알람', '우산',
   '설거지', '빨래', '청소', '택배', '산책', '운동', '책방', '서점', '책',
   '영화', '게임', '노래', '음악', '퍼즐', '동네', '시장', '구경',
@@ -562,19 +562,37 @@ const TAG_LITERAL_WORDS = Object.freeze([
   '돈', '걱정', '생각', '마음', '사람', '시간', '친절', '기억',
   '밤', '아침', '저녁', '주말', '내일', '오늘'
 ]);
+const TAG_WORD_SUFFIX = /^(?:으로부터|에서부터|에게서|한테서|에게는|한테는|으로는|에서는|이라는|이라고|이라도|이라면|이라서|이었다|이었고|였어요|이었어요|입니다|이에요|예요|하고|했다|했어|했어요|했고|했다가|했지만|했다며|하며|하다|한다|하는|하기|하려|하면|하거나|하는데|하고서|되고|됐다|되다|되는|된다|되면|되었다|부터|까지|처럼|보다|마저|조차|하고|으로|에서|에게|한테|이랑|이나|라도|마다|께서|에는|에도|에만|로만|로도|와도|과도|하고도|에서는|까지도|을|를|이|가|은|는|에|의|도|만|와|과|랑|로|께|나)$/u;
+function hasTagWord(tokens, tag) {
+  const term = tag.toLocaleLowerCase('ko-KR');
+  return tokens.some(token => token === term
+    || (token.startsWith(term) && TAG_WORD_SUFFIX.test(token.slice(term.length))));
+}
+function tagWords(body) {
+  return String(body || '').normalize('NFC').toLocaleLowerCase('ko-KR').match(/[\p{L}\p{N}\p{M}]+/gu) || [];
+}
 function suggestTags(body, limit = 5) {
-  const input = String(body || '').toLocaleLowerCase('ko-KR');
+  if (limit <= 0) return [];
+  const input = tagWords(body);
   const out = [];
   for (const word of TAG_LITERAL_WORDS) {
-    const term = word.toLocaleLowerCase('ko-KR');
-    if (!input.includes(term) || out.some(t => {
-      const prior = t.toLocaleLowerCase('ko-KR');
-      return prior.includes(term) || term.includes(prior);
-    })) continue;
+    if (!hasTagWord(input, word)) continue;
     out.push(word);
     if (out.length >= Math.min(3, limit)) break;
   }
   return out;
+}
+function acceptedAutoTags(body, candidateTags) {
+  const words = tagWords(body), accepted = [];
+  if (Array.isArray(candidateTags)) {
+    for (const tag of candidateTags) {
+      if (typeof tag !== 'string' || !tag || tag.length > 20) continue;
+      if (!hasTagWord(words, tag) || accepted.includes(tag)) continue;
+      accepted.push(tag);
+      if (accepted.length === 3) break;
+    }
+  }
+  return accepted.length ? accepted : suggestTags(body, 3);
 }
 let autoTagMode = true, manualTags = [], rejectedTags = new Set(), autoTagsNow = [];
 // 일반 카드의 첨부 사진은 비공개 저장소에서 읽을 때마다 서명합니다.
@@ -933,8 +951,7 @@ function scheduleServerAutoTags() {
     if (request !== serverTagRequest || run !== composerRun || epoch !== identityEpoch
       || userId !== session?.user?.id || backdrop.hidden || body !== String(text.value || '').trim()) return;
     if (!Array.isArray(response)) return;
-    serverTagResult = { body, tags: response.filter(t => typeof t === 'string' && t.length <= 20
-      && body.toLocaleLowerCase('ko-KR').includes(t.toLocaleLowerCase('ko-KR'))).slice(0, 3) };
+    serverTagResult = { body, tags: acceptedAutoTags(body, response) };
     if (document.activeElement !== tags && !busy) { refreshAutoTags(); updateComposer(); recordDraft(); }
   }, 500);
 }
@@ -3212,10 +3229,10 @@ async function publishCard() {
   // Confirm the exact text against the common server tagger before creating the card.
   // User-entered tags come first; dismissed automatic tags must never reappear.
   if (!editId && publishKind !== 'event' && typeof autoTagMode !== 'undefined' && autoTagMode) {
-    let suggestions = typeof suggestTags === 'function' ? suggestTags(body, 3) : [];
+    let candidates;
     try {
       const authoritative = await noteRpc('suggest_card_tags', { p_body: body });
-      if (Array.isArray(authoritative)) suggestions = authoritative;
+      candidates = authoritative;
     } catch { /* Use only the small, vetted offline list if the RPC is unreachable. */ }
     if (session?.user?.id !== actionUserId || actionEpoch !== identityEpoch
       || actionComposerRun !== composerRun || backdrop.hidden) {
@@ -3227,9 +3244,8 @@ async function publishCard() {
     const chosenManual = typeof manualTags !== 'undefined' && Array.isArray(manualTags) ? manualTags : [];
     const blockedAuto = typeof rejectedTags !== 'undefined' && rejectedTags instanceof Set ? rejectedTags : new Set();
     values = [...new Set([...values.filter(tag => !existingAuto.includes(tag)), ...chosenManual])].slice(0, 5);
-    for (const tag of suggestions) {
-      if (typeof tag === 'string' && tag.length <= 20 && body.toLocaleLowerCase('ko-KR').includes(tag.toLocaleLowerCase('ko-KR'))
-        && !values.includes(tag) && !blockedAuto.has(tag) && values.length < 5) values.push(tag);
+    for (const tag of acceptedAutoTags(body, candidates)) {
+      if (!values.includes(tag) && !blockedAuto.has(tag) && values.length < 5) values.push(tag);
     }
   }
   let cardPhotoUploadPath = null;
