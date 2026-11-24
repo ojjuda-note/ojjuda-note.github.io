@@ -11,7 +11,7 @@ assert.ok(start >= 0 && end > start, 'curated tag helper must exist in the compo
 
 const context = vm.createContext({});
 vm.runInContext(source.slice(start, end), context);
-const suggest = body => Array.from(vm.runInContext('suggestTags(' + JSON.stringify(body) + ',3)', context));
+const suggest = (body, limit = 3) => Array.from(vm.runInContext('suggestTags(' + JSON.stringify(body) + ',' + limit + ')', context));
 
 assert.deepEqual(suggest('여기에도 40대 있나요?'), ['40대']);
 assert.deepEqual(suggest('내일도 잘 될거야'), ['응원']);
