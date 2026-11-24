@@ -20,11 +20,11 @@
   const POSITIVE = new Set(['success', 'record', 'gold-gain']);
   const SAD = new Set(['failure', 'gold-loss']);
   const PAGE_GAMES = Object.freeze({
-    '/games/roulette/index.html': 'roulette', '/games/mines/index.html': 'mines',
+    '/games/mines/index.html': 'mines',
     '/games/ojjuda-tour/index.html': 'tour', '/games/tank/index.html': 'tank', '/games/yut/index.html': 'yut',
     '/games/matgo-online.html': 'matgo', '/games/matgo.html': 'matgo',
     '/games/ttang.html': 'ttang', '/games/photo-ttang.html': 'photo_ttang',
-    '/games/spot-difference/index.html': 'spot', '/games/poker/index.html': 'poker',
+    '/games/spot-difference/index.html': 'spot',
     '/games/onecard/index.html': 'onecard', '/games/bang/index.html': 'bang', '/games/sacheonseong/index.html': 'sacheonseong',
     '/games/forest-archer/index.html': 'archery'
   });

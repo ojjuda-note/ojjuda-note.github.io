@@ -103,13 +103,13 @@
 <script src="/features/friends/friend-messages.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/games/janggi/janggi-levels.css?v=20261115-janggi-streaks1">
 <link rel="stylesheet" href="/games/janggi/replay.css?v=20261110-janggi-replay1">
-<script src="/shared/games/world-game-assets.js?v=20261121-king-actions1" defer></script>
+<script src="/shared/games/world-game-assets.js?v=20261125-retire-poker-roulette" defer></script>
 <script src="/shared/games/game-launch-loading.js?v=20261107-game-lifecycle1" defer></script>
 <link rel="stylesheet" href="/shared/games/game-challenges.css?v=20261106-source-folders1">
 <script src="/shared/games/game-challenges.js?v=20261110-admin-record-free1" defer></script>
-<link rel="stylesheet" href="/shared/games/game-results.css?v=20261120-service-actions1">
-<script src="/shared/games/game-results.js?v=20261120-service-actions1" defer></script>
-<script src="/app/world/world-navigation.js?v=20261119-history4" defer></script>
+<link rel="stylesheet" href="/shared/games/game-results.css?v=20261125-retire-poker-roulette">
+<script src="/shared/games/game-results.js?v=20261125-retire-poker-roulette" defer></script>
+<script src="/app/world/world-navigation.js?v=20261125-retire-poker-roulette" defer></script>
 <script src="/app/world/world-pull-refresh.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/features/home/agit-hub.css?v=20261122-shorter-life-banners9">
 <script src="/features/home/agit-hub.js?v=20261122-fanpages-order1" defer></script>
@@ -137,7 +137,7 @@
 <script src="/shared/games/world-game-rankings.js?v=20261123-ranking-retry1" defer></script>
 <link rel="stylesheet" href="/park/world-park-notes.css?v=20261119-auto-theme1">
 <link rel="stylesheet" href="/park/card-grid.css?v=20261124-park-450">
-<script src="/park/world-park-notes.js?v=20261125-park-word-tags1" defer></script>
+<script src="/park/world-park-notes.js?v=20261125-park-word-boundaries1" defer></script>
 
 <!-- 서버 연결 도구 -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2" defer></script>
@@ -262,14 +262,14 @@
 
 <script src="/games/matgo/matgo-bridge.js?v=20261120-service-actions1" defer></script>
 <link rel="stylesheet" href="/features/arcade/arcade-rooms.css?v=20261120-service-actions2">
-<script src="/features/arcade/arcade-rooms.js?v=20261120-service-actions1" defer></script>
+<script src="/features/arcade/arcade-rooms.js?v=20261125-retire-poker-roulette" defer></script>
 <link rel="stylesheet" href="/shared/viewport/mobile-viewport.css?v=20261106-source-folders1">
 <script src="/shared/viewport/mobile-viewport.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/shared/brand/brand-copy.css?v=20261106-source-folders1">
 <link rel="stylesheet" href="/features/wallet/paid-ui.css?v=20261106-source-folders1">
 <link rel="stylesheet" href="/shared/games/game-entry.css?v=20261109-unified-multiplayer-ui2">
 <script src="/shared/games/game-entry.js?v=20261122-solo-default1" defer></script>
-<script src="/shared/games/game-friend-invites.js?v=20261115-drinking-invites1" defer></script>
+<script src="/shared/games/game-friend-invites.js?v=20261125-retire-poker-roulette" defer></script>
 <link rel="stylesheet" href="/app/world/world-design.css?v=20261122-arcade-ranking-spacing1">
 <link rel="stylesheet" href="/app/world/world-themes.css?v=20261119-auto-theme1">
 <link rel="stylesheet" href="/app/world/world-green.css?v=20261119-auto-theme1">
@@ -297,9 +297,9 @@
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
 <link rel="stylesheet" href="/shared/games/multiplayer-entry.css?v=20261109-unified-multiplayer-ui2">
 <link rel="stylesheet" href="/shared/games/world-game-screen.css?v=20261106-source-folders1">
-<script src="/shared/games/multiplayer-entry.js?v=20261112-arcade-entry-return1" defer></script>
+<script src="/shared/games/multiplayer-entry.js?v=20261125-retire-poker-roulette" defer></script>
 <link rel="stylesheet" href="/features/arcade/arcade-promotions.css?v=20261106-source-folders1">
-<script src="/features/arcade/arcade-promotions.js?v=20261120-onecard5" defer></script>
+<script src="/features/arcade/arcade-promotions.js?v=20261125-retire-poker-roulette" defer></script>
 <style>
 /* Critical loading UI is inline so the Agit is never a blank screen while scripts start. */
 .world-boot-screen{box-sizing:border-box;min-height:100svh;display:grid;place-items:center;padding:24px;background:#faf8f4;color:#423640;font-family:"Noto Sans KR",system-ui,sans-serif}
@@ -672,11 +672,11 @@ async function Oa(t,e,o){adminMutationPending++;t&&(t.disabled=!0);try{await e()
  Wt(button,async()=>{await mt("admin_set_first_visit_ju",{p_amount:amount});wt.first_visit_ju=amount;input.defaultValue=String(amount);},"첫 방문 선물을 "+amount.toLocaleString("ko-KR")+"쭈로 저장했어요");
 },"adm-limit"(t,e){let o=Math.max(0,Math.min(100,parseInt(z("#adm-limit").value,10)||0));Wt(e,async()=>{await U.setConfig("beta_charge_daily_limit",o),wt.beta_charge_daily_limit=o},`하루 ${o}번으로 바꿨어요`)}};document.addEventListener("change",t=>{if(t.target&&t.target.id==="adm-free"){let e=t.target.checked;Wt(null,async()=>{await U.setConfig("beta_free_charge",e),wt.beta_free_charge=e},e?"무료 충전을 켰어요":"무료 충전을 껐어요")}});document.addEventListener("submit",t=>{t.target.id==="adm-user-form"&&(t.preventDefault(),L.q=z("#adm-q").value.trim(),bt())});var F0="ojjuda-samsung-dark-tip",Is=()=>/SamsungBrowser/i.test(navigator.userAgent),fh=()=>!!(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);function Os(){return`<b>색이 이상하게 보이나요?</b> 삼성 인터넷의 다크 모드가 오쭈다 아지트의 색을 바꾸고 있어요.
   아래 메뉴 <b>≡</b> → <b>설정</b> → <b>실험실</b>(Labs) → <b>웹사이트 다크 테마 사용</b>을 켜주세요.
-  메뉴 이름은 버전마다 조금 다를 수 있어요. 안 보이면 메뉴의 <b>다크 모드</b>를 꺼도 돼요.`}function k0(t){if(!Is()||!t&&!fh())return;try{if(!t&&localStorage.getItem(F0))return}catch{}if(document.getElementById("browser-tip"))return;let e=document.createElement("div");e.id="browser-tip",e.setAttribute("role","note"),e.innerHTML=`<p>${Os()}</p><button type="button" class="btn sm pri" id="browser-tip-ok">알겠어요</button>`,document.body.appendChild(e),document.getElementById("browser-tip-ok").addEventListener("click",()=>{try{localStorage.setItem(F0,"1")}catch{}e.remove()})}var Go="0.73.0-beta";
+  메뉴 이름은 버전마다 조금 다를 수 있어요. 안 보이면 메뉴의 <b>다크 모드</b>를 꺼도 돼요.`}function k0(t){if(!Is()||!t&&!fh())return;try{if(!t&&localStorage.getItem(F0))return}catch{}if(document.getElementById("browser-tip"))return;let e=document.createElement("div");e.id="browser-tip",e.setAttribute("role","note"),e.innerHTML=`<p>${Os()}</p><button type="button" class="btn sm pri" id="browser-tip-ok">알겠어요</button>`,document.body.appendChild(e),document.getElementById("browser-tip-ok").addEventListener("click",()=>{try{localStorage.setItem(F0,"1")}catch{}e.remove()})}var Go="0.73.2-beta";
 const sectionReleases={
   hub:{name:'아지트',version:Go,manifest:'/version.json'},
-  arcade:{name:'오락실',version:'1.3.15',manifest:'/features/arcade/version.json'},
-  park:{name:'공원',version:'1.7.6',manifest:'/park/version.json'}
+  arcade:{name:'오락실',version:'1.3.16',manifest:'/features/arcade/version.json'},
+  park:{name:'공원',version:'1.7.9',manifest:'/park/version.json'}
 };
 function releaseSection(){
  const tab=worldMainTab();
@@ -910,11 +910,11 @@ var R0=!1,sn=null,dn=t=>{sn=t},Ua=()=>{sn&&sn()};function kh(t){let e=ra(t.kind)
  const owner=D.user?.id,active=()=>!signal?.aborted&&D.online&&D.user?.id===owner;
  if(!owner||!active())return;
  if(invite.kind==='drinking' && /^[A-Z0-9]{6}$/.test(invite.code)){location.assign('/games/drinking/?room='+invite.code);return;}
- if(['marble','tank','roulette'].includes(invite.kind)){
+ if(['marble','tank'].includes(invite.kind)){
   const game=invite.kind==='marble'?'tour':invite.kind;
   await window.OjjudaGameAssets.load(game);
   if(!active())return;
-  const bridge=game==='tour'?window.OjjudaTourGame:game==='roulette'?window.OjjudaRouletteBridge:window.OjjudaTankGame;
+  const bridge=game==='tour'?window.OjjudaTourGame:window.OjjudaTankGame;
   if(typeof bridge?.open!=='function')throw Error('game_asset_unavailable');
   Al(game,{joinCode:invite.code});return;
  }
@@ -1730,7 +1730,8 @@ vl=async function(name,args,request){
  return originalWorldGameRpc(name,args,request);
 };
 function Al(t,options={}){
- if(typeof adminGamePreviewActive==='function'&&adminGamePreviewActive()&&['roulette','poker','bang','tank'].includes(t)){
+ if(t==='poker'||t==='roulette')return M('운영이 종료된 게임이에요. 기존 기록은 게임 순위에서 확인해 주세요.');
+ if(typeof adminGamePreviewActive==='function'&&adminGamePreviewActive()&&['bang','tank'].includes(t)){
   M(t==='tank'?'관리자 체험 모드에서는 탱크게임을 시작할 수 없어요. 설정 → 관리자에서 관리자 모드를 끄고 다시 열어 주세요.':'관리자 체험 중에는 온라인 대전 기록이 남는 게임을 시작할 수 없어요.');return;
  }
  if(t==="group"){
@@ -1786,15 +1787,6 @@ function Al(t,options={}){
    if(!authorized()||!game)return {ok:false};
    return worldArcadeRound(game,score,{owner,id:runId,finishedAt:completedAt});
   }});return;
- }
- if(t==="roulette"){
-  if(!window.OjjudaRouletteBridge){M("게임을 불러오지 못했어요. 다시 눌러 주세요.");return;}
-  const owner=D.online?D.user?.id:null,authorized=()=>(D.online?D.user?.id:null)===owner;
-  return window.OjjudaRouletteBridge.open({owner,client:S,authorized,joinCode:options.joinCode,onCoins:amount=>{if(authorized()){$.coins=amount;qf();}},onError:message=>M(message)});
- }
- if(t==="poker"){
-  const owner=D.online?D.user?.id:null,authorized=()=>(D.online?D.user?.id:null)===owner;
-  window.OjjudaPokerGame?.open({owner,authorized,joinCode:options.joinCode,onCoins:amount=>{if(authorized()){$.coins=amount;qf();}},onError:message=>M(message)});return;
  }
  if(t==="tank"){
   const owner=D.online?D.user?.id:null,authorized=()=>(D.online?D.user?.id:null)===owner;
@@ -2629,10 +2621,10 @@ function Yg(){
  const notifications=`<div class="set"><h3>실시간 알림 표시</h3><div class="line-row"><label for="n-friend">친구 신청</label><input type="checkbox" class="switch" id="n-friend" data-set="notify.friend"${settings.notify.friend?' checked':''}></div></div>`;
  const help=`<section class="ojjuda-guide-entry" aria-label="오쭈다 사용 안내"><h3>오쭈다 사용 안내</h3><a href="/guide.html?from=my&amp;v=20261113-public-info1">사용법 보기 <span aria-hidden="true">→</span></a></section><section class="set ojjuda-organization-entry" aria-labelledby="organization-entry-title"><h3 id="organization-entry-title">조직도</h3><div class="line-row"><a href="/features/organization/?from=agit">오쭈다 조직도 보기 <span aria-hidden="true">→</span></a></div></section><section class="set ojjuda-creator-entry" aria-labelledby="creator-entry-title"><h3 id="creator-entry-title">제작자 소개</h3><div class="line-row"><a href="/features/guide/creator.html?v=20261119-auto-theme1">만든이 mj830417의 이야기 <span aria-hidden="true">→</span></a></div></section><div class="set" data-section-versions><h3>버전 정보</h3>${Object.values(sectionReleases).map(section=>`<div class="line-row"><span>${section.name}</span><span class="note">${section.version}</span></div>`).join('')}</div>`;
  const apps=`<section class="ojjuda-settings-group" aria-labelledby="app-download-title"><h3 class="ojjuda-settings-heading" id="app-download-title">앱 다운로드</h3><div class="ojjuda-settings-list app-store-downloads">
-   <a class="ojjuda-settings-row" data-store-app="agit" href="https://play.google.com/store/apps/details?id=kr.ojjuda.agit" aria-label="오쭈다 아지트 설치"><span class="ojjuda-settings-label">오쭈다 아지트<small>내부 테스터용</small></span><span class="app-store-action" aria-hidden="true">설치</span></a>
+   <a class="ojjuda-settings-row" data-store-app="agit" href="https://play.google.com/store/apps/details?id=kr.ojjuda.agit&amp;hl=ko" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 아지트 Google Play에서 보기 (새 창)"><span class="ojjuda-settings-label">오쭈다 아지트</span><span class="ojjuda-settings-arrow" aria-hidden="true">↗</span></a>
    <a class="ojjuda-settings-row" data-store-app="pajang" href="https://play.google.com/store/apps/details?id=kr.ojjuda.pajang" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 파장 Google Play에서 보기 (새 창)">${label('오쭈다 파장')}<span class="ojjuda-settings-arrow" aria-hidden="true">↗</span></a>
    <a class="ojjuda-settings-row" data-store-app="park" href="https://play.google.com/store/apps/details?id=kr.ojjuda.park" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 공원 Google Play에서 보기 (새 창)">${label('오쭈다 공원')}<span class="ojjuda-settings-arrow" aria-hidden="true">↗</span></a></div>
-   <p class="app-store-note"><a class="app-store-action" href="https://play.google.com/apps/internaltest/4701659999038850853">아지트 테스트 처음 참여하기</a></p></section>`;
+   <p class="app-store-note">앱을 선택하면 Google Play 페이지가 열립니다. 아지트 비공개 테스트 참여가 필요하면 <a href="https://play.google.com/apps/testing/kr.ojjuda.agit" target="_blank" rel="noopener noreferrer">먼저 참여</a>한 뒤 설치하세요.</p></section>`;
  const admin=member&&D.isAdmin?group('관리자',detail('admin','운영 관리',`<div class="set admin-entry"><h3>관리자 게임 체험</h3><div class="line-row"><label for="admin-preview-toggle"><strong>관리자 모드</strong><small class="note" style="display:block">모든 단계 · 최고 업그레이드 · 틀린그림 정답</small></label><input type="checkbox" class="switch" id="admin-preview-toggle" aria-label="관리자 모드"${window.OjjudaAdminPreview?.isEnabled()?' checked':''}${window.OjjudaAdminPreview?.isAuthorized()?'':' disabled'}></div><p class="note">체험 중인 결과는 실제 진행도와 순위에 저장되지 않아요.</p><button class="btn pri" data-act="tab" data-tab="admin">운영 관리 열기</button></div>`)):'';
  const access=member?group('계정 관리',row('로그아웃','logout'))
    :!D.online&&!D.parkGuest?group('기기 기록',detail('local','기기 기록 관리','<div class="set"><p class="note">체험 기록은 이 기기에 저장돼요.</p><button type="button" class="btn danger" data-act="reset">처음 상태로 되돌리기</button></div>')):'';
@@ -3687,12 +3679,6 @@ var worldPlaceArt=null;
 function worldMatgoButton(){
  return window.OjjudaMatgoAccess?.visible()?`<button class="gbtn" data-act="matgo-open" aria-label="맞고 · 만 19세 이상 · 최대 2명"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/matgo.webp" alt="" width="480" height="320" loading="lazy"></span><span>맞고 <small>19+</small><small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 2명</small></span></button>`:"";
 }
-function worldPokerButton(){
- return window.OjjudaMatgoAccess?.visible(19)?`<button class="gbtn" data-act="game-open" data-v="poker" aria-label="세븐포커 · 만 19세 이상 · 최대 4명"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/poker.webp" alt="" width="480" height="320" loading="lazy"></span><span>세븐포커 <small>19+</small><small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 4명</small></span></button>`:"";
-}
-function worldRouletteButton(){
- return window.OjjudaMatgoAccess?.visible(19)?`<button class="gbtn" data-act="game-open" data-v="roulette" aria-label="룰렛 · 만 19세 이상 · 최대 4명"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/roulette.webp" alt="" width="480" height="320" loading="lazy"></span><span>룰렛 <small>19+</small><small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 4명</small></span></button>`:"";
-}
 function worldPhotoTtangButton(){
  return window.OjjudaMatgoAccess?.visible(19)?`<button class="gbtn" data-act="game-open" data-v="photo_ttang" aria-label="포토땅따먹기 · 만 19세 이상"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/photo_ttang.webp" alt="" width="480" height="320" loading="lazy"></span><span class="game-name">포토땅따먹기 <small>19+</small><small style="display:block;font-size:10px;font-weight:400;opacity:.7">혼자 플레이</small></span></button>`:"";
 }
@@ -3700,7 +3686,7 @@ function worldArcadeAdultAllowed(){
  return !!(D.online&&D.user?.id&&window.OjjudaMatgoAccess?.visible(19)===true);
 }
 function worldArcadeAdultMarkup(){
- return worldArcadeAdultAllowed()?`<section class="arcade-adult" data-arcade-adult aria-label="어른들 플레이"><header class="game-section-heading"><div><span class="world-eyebrow">ADULT PLAY</span><h2>어른들 플레이</h2></div><span>만 19세 이상</span></header><div class="gbtns" data-arcade-games="adult">${worldMatgoButton()}${worldPokerButton()}${worldRouletteButton()}${worldPhotoTtangButton()}<a class="gbtn" data-v="drinking" href="/games/drinking/?v=20261120-service-actions1" aria-label="술게임 · 만 19세 이상 · 최대 12명" style="text-decoration:none"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/drinking.webp" alt="" width="480" height="320" loading="lazy"></span><span class="game-name">술게임 <small>19+</small><small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 12명</small></span></a></div></section>`:"";
+ return worldArcadeAdultAllowed()?`<section class="arcade-adult" data-arcade-adult aria-label="어른들 플레이"><header class="game-section-heading"><div><span class="world-eyebrow">ADULT PLAY</span><h2>어른들 플레이</h2></div><span>만 19세 이상</span></header><div class="gbtns" data-arcade-games="adult">${worldMatgoButton()}${worldPhotoTtangButton()}<a class="gbtn" data-v="drinking" href="/games/drinking/?v=20261120-service-actions1" aria-label="술게임 · 만 19세 이상 · 최대 12명" style="text-decoration:none"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/drinking.webp" alt="" width="480" height="320" loading="lazy"></span><span class="game-name">술게임 <small>19+</small><small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 12명</small></span></a></div></section>`:"";
 }
 function syncWorldArcadeAdultGames(){
  if(g.tab!=="place"||g.place?.id!=="arcade")return;
@@ -3791,17 +3777,12 @@ function syncWorldArcadeRooms(){
     if(D.online&&D.user?.id===owner&&data?.code)location.assign('/games/'+kind+'/?room='+encodeURIComponent(data.code));
     return;
    }
-   if(kind==='roulette'){
-    const client=S,{data,error}=await client.rpc('roulette_action',{p_action:'create',p_payload:{mode:'online',title:params.title,capacity:params.capacity,request_id:params.request_id}});
-    if(error)throw error;if(!data?.ok||!data.room?.code)throw Error(data?.error||'unavailable');
-    if(!D.online||D.user?.id!==owner||S!==client)return;dt();Al(kind,{joinCode:data.room.code});return;
-   }
    if(kind==='ttang'){
     const {data,error}=await S.rpc('arcade_ttang_room',{p_action:'create',p_title:params.title,p_request:params.request_id});
     if(error)throw error;if(!data?.ok)throw Error('unavailable');
     if(D.user?.id!==owner)return;dt();Al(kind,{hostCode:data.room.code,arcadeRoom:data.room.id});return;
    }
-   const {data,error}=await S.functions.invoke(['onecard','bang','tank','poker'].includes(kind)?kind:'marble',{body:{action:'create',request_id:params.request_id,...(kind==='onecard'?{clientVersion:'1.4.0'}:{}),options:{title:params.title,capacity:kind==='onecard'?5:params.capacity,...(kind==='onecard'?{}:kind==='tank'||kind==='poker'?{mode:'online'}:{maxRound:25})}}});
+   const {data,error}=await S.functions.invoke(['onecard','bang','tank'].includes(kind)?kind:'marble',{body:{action:'create',request_id:params.request_id,...(kind==='onecard'?{clientVersion:'1.4.0'}:{}),options:{title:params.title,capacity:kind==='onecard'?5:params.capacity,...(kind==='onecard'?{}:kind==='tank'?{mode:'online'}:{maxRound:25})}}});
    if(error){try{const body=await error.context.json();throw Error(body.error||'unavailable');}catch(e){throw Error(e.message||'unavailable');}}
    if(!data?.ok)throw Error(data?.error||'unavailable');
    if(kind==='tour'){const published=await S.rpc('arcade_publish_marble',{p_room:data.room.id});if(published.error||!published.data?.ok)throw Error(published.error?.message||'unavailable');}
@@ -3816,11 +3797,7 @@ function syncWorldArcadeRooms(){
     const {error}=await passwordRoomAction(room.kind,{p_action:'cancel',p_code:room.code});
     if(error)throw error;return;
    }
-   if(room.kind==='roulette'){
-    const {data,error}=await S.rpc('roulette_action',{p_action:'leave',p_payload:{room_id:room.match_id,code:room.code,request_id:crypto.randomUUID()}});
-    if(error)throw error;if(!data?.ok)throw Error(data?.error||'unavailable');return;
-   }
-   if(room.kind==='poker'||room.kind==='onecard'){
+   if(room.kind==='onecard'){
     const current=await S.functions.invoke(room.kind,{body:{action:'read',room_id:room.match_id,...(room.kind==='onecard'?{clientVersion:'1.4.0'}:{})}});
     if(current.error||!current.data?.room)throw Error(current.data?.error||'room_unavailable');
     const result=await S.functions.invoke(room.kind,{body:{action:'leave',room_id:room.match_id,version:current.data.room.version,request_id:crypto.randomUUID(),...(room.kind==='onecard'?{clientVersion:'1.4.0'}:{})}});

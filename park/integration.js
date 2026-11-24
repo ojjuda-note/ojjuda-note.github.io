@@ -143,23 +143,25 @@
     helpMenu.append(helpTitle, helpBody); help.append(helpMenu);
     const apps = group('앱 다운로드');
     apps.classList.add('app-store-downloads');
-    const pending = node('div', 'park-settings-row ojjuda-settings-row app-store-pending');
-    pending.dataset.storeApp = 'agit';
-    pending.setAttribute('role', 'group');
-    pending.setAttribute('aria-label', '오쭈다 아지트 앱 공개 준비 중');
-    const agitLabel = node('span', 'ojjuda-settings-label', '오쭈다 아지트');
-    agitLabel.append(node('small', '', '앱 공개 준비 중'));
-    const agitLink = node('a', 'app-store-action', '웹으로 열기 ↗');
-    agitLink.href = '/world.html?tab=hub'; agitLink.target = '_top';
-    agitLink.setAttribute('aria-label', '오쭈다 아지트 웹으로 열기');
-    pending.append(agitLabel, agitLink); apps.append(pending);
+    const agitLink = link(apps, 'app-agit', '오쭈다 아지트', 'https://play.google.com/store/apps/details?id=kr.ojjuda.agit&hl=ko', true);
+    agitLink.dataset.storeApp = 'agit';
+    agitLink.rel = 'noopener noreferrer';
+    agitLink.setAttribute('aria-label', '오쭈다 아지트 Google Play에서 보기 (새 창)');
+    
     for (const [app, name] of [['pajang', '오쭈다 파장'], ['park', '오쭈다 공원']]) {
       const storeLink = link(apps, `app-${app}`, name, `https://play.google.com/store/apps/details?id=kr.ojjuda.${app}`, true);
       storeLink.dataset.storeApp = app;
       storeLink.rel = 'noopener noreferrer';
       storeLink.setAttribute('aria-label', `${name} Google Play에서 보기 (새 창)`);
     }
-    apps.parentElement.append(node('p', 'app-store-note', '스토어 공개 후 설치할 수 있어요.'));
+    const appStoreNote = node('p', 'app-store-note');
+    appStoreNote.append(document.createTextNode('앱 이름을 누르면 Google Play 페이지가 열립니다. 아지트 비공개 테스트 참여가 필요하면 '));
+    const agitTesterLink = node('a', '', '먼저 참여');
+    agitTesterLink.href = 'https://play.google.com/apps/testing/kr.ojjuda.agit';
+    agitTesterLink.target = '_blank';
+    agitTesterLink.rel = 'noopener noreferrer';
+    appStoreNote.append(agitTesterLink, document.createTextNode('한 뒤 설치하세요.'));
+    apps.parentElement.append(appStoreNote);
     if (owner) {
       const access = group('계정 관리');
       row(access, 'logout', '로그아웃', showAccountLogout);

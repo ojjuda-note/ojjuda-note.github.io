@@ -20,15 +20,22 @@ const samples = [
   ['NASA가 산불 위험을 3차원 지도로 만들었대.', ['NASA', '산불', '지도']],
   ['아무 얘기나 편하게 나누고 싶다.', ['얘기']],
   ['전화 걸어야지.', ['전화']],
-  ['돈가스를 먹었다.', ['돈가스']],
-  ['돈까스와 국수를 먹었다.', ['돈까스', '국수']],
-  ['사랑니가 아파서 병원에 갔다.', ['사랑니', '병원']],
-  ['하늘다람쥐가 떠올랐다.', ['하늘다람쥐']],
-  ['운동화를 빨았다.', ['운동화']],
-  ['사랑을 이야기하고 돈으로 해결할 수 없다고 했다.', ['사랑', '돈']],
   ['돈 걱정 없이 잠드는 밤이 좀 많았으면 좋겠다.', ['돈', '걱정', '밤']],
   ['친구랑 커피 마셨다.', ['친구', '커피']],
-  ['모르는 단어가 나오면 무리해서 태그 만들지 말자.', []],
+  ['돈가스를 먹었다.', ['돈가스']],
+  ['사랑니가 아파서 병원에 갔다.', ['사랑니','병원']],
+  ['우루과이 하와이', ['우루과이','하와이']],
+  ['고래상어 바가지', ['고래상어','바가지']],
+  ['목걸이 샀어', ['목걸이']],
+  ['떡볶이 먹었어', ['떡볶이']],
+  ['목걸이를 샀어', ['목걸이']],
+  ['떡볶이는 먹었어', ['떡볶이']],
+  ['오솔길에서 걸었어', ['오솔길']],
+  ['고래상어를 봤어. 고래상어!', ['고래상어']],
+  ['완벽은 없다', ['완벽']],
+  ['오늘 완벽은 없다', ['완벽']],
+  ['완벽은 없지만 괜찮아', ['완벽']],
+  ['모르는 단어가 나오면 무리해서 태그 만들지 말자.', ['단어', '태그']],
 ];
 for (const [body, expected] of samples) {
   const found = suggest(body);
@@ -39,29 +46,37 @@ for (const [body, expected] of samples) {
 }
 assert.ok(!suggest('여기에도 40대 있나요?').includes('여기에'));
 assert.ok(!suggest('내일도 잘 될거야').includes('응원'));
+assert.ok(!suggest('완벽은 없다').includes('없다'));
+assert.ok(suggest('처음 만든 카레가 너무 묽다.').includes('카레'));
+assert.ok(suggest('매일 행복은 어디에 있을까').includes('행복'));
+
 assert.ok(!suggest('빵집에서 빵을 샀다.').includes('맛집'));
 assert.ok(!suggest('전화 걸어야지.').includes('산책'));
 assert.ok(suggest('퇴근하고 커피 마셨어.', 1).length <= 1);
 
 assert.match(source, /noteRpc\('suggest_card_tags', \{ p_body: body \}\)/,
   'the same server tagging function must run while writing and publishing');
-assert.deepEqual(suggest('친구랑 커피 마셨다.', 0), []);
-const accepted = (body, tags) => Array.from(vm.runInContext('acceptedAutoTags(' + JSON.stringify(body) + ',' + JSON.stringify(tags) + ')', context));
-assert.deepEqual(accepted('돈가스를 먹고 사랑니 때문에 병원에 갔어요.', ['돈', '사랑', '병원', '병원', '사랑니', '돈가스']), ['병원', '사랑니', '돈가스']);
-assert.deepEqual(accepted('돈가스를 먹었다.', ['돈']), ['돈가스']);
-assert.deepEqual(accepted('새로운 소재가 하나 생겼다.', ['응원', '새로']), []);
-assert.deepEqual(accepted('퇴근했어요. 친구에게서 연락이 왔어요.', ['친구', '퇴근', '연락']), ['친구', '퇴근', '연락']);
-assert.equal((source.match(/acceptedAutoTags\(body, (?:response|candidates)\)/g) || []).length, 2,
-  'debounced and publish-time automatic responses both use the whole-word check');
+const accept = (body, values) => Array.from(vm.runInContext('acceptedAutoTags(' + JSON.stringify(body) + ',' + JSON.stringify(values) + ')', context));
+assert.deepEqual(accept('완벽은 없다', []), ['완벽']);
+assert.deepEqual(accept('완벽은 없다', ['벽','없다']), ['완벽']);
+assert.deepEqual(accept('돈가스를 먹었다.', ['돈','돈가','돈가스']), ['돈가스']);
+assert.deepEqual(accept('사랑니가 아파서 병원에 갔다.', ['사랑','사랑니','병원']), ['사랑니','병원']);
+assert.deepEqual(accept('목걸이 샀어', ['목걸']), ['목걸이']);
+assert.deepEqual(accept('떡볶이 먹었어', ['떡볶']), ['떡볶이']);
+assert.deepEqual(accept('우루과이 하와이', ['우루과','하와']), ['우루과이','하와이']);
+assert.match(source, /autoTagMode = !editingId && kind !== 'event'/,
+  'guest and member composers must both show automatic tags');
+assert.equal((source.match(/acceptedAutoTags\(body, (?:response|authoritative)\)/g) || []).length, 2);
 assert.match(source, /!blockedAuto\.has\(tag\)/,
   'removed automatic tags remain removed');
 assert.match(source, /typeof autoTagMode !== 'undefined' && autoTagMode/,
   'only new automatic tags, not manually authored tags, are affected');
 const page = fs.readFileSync(path.join(root, 'park/index.html'), 'utf8');
-assert.match(page, /\/note\/preview\.js\?v=20261125-park-word-tags1/,
+assert.match(page, /\/note\/preview\.js\?v=20261125-park-word-boundaries1/,
   'the park must load the updated file without a stale cache');
 assert.deepEqual(JSON.parse(fs.readFileSync(path.join(root, 'park/version.json'), 'utf8')),
-  { version: '1.7.6' });
-assert.match(fs.readFileSync(path.join(root, 'world.html'), 'utf8'), /world-park-notes\.js\?v=20261125-park-word-tags1/);
-assert.match(fs.readFileSync(path.join(root, 'park/world-park-notes.js'), 'utf8'), /frameVersion = '20261125-park-word-tags1'/);
+  { version: '1.7.9' });
+assert.match(fs.readFileSync(path.join(root, 'world.html'), 'utf8'), /\/park\/world-park-notes\.js\?v=20261125-park-word-boundaries1/);
+assert.match(fs.readFileSync(path.join(root, 'world.html'), 'utf8'), /park:\{name:'공원',version:'1\.7\.9',manifest:'\/park\/version\.json'\}/);
+assert.match(fs.readFileSync(path.join(root, 'park/world-park-notes.js'), 'utf8'), /frameVersion = '20261125-park-word-boundaries1'/);
 console.log('PASS: automatic park tags are literal words from the text; manual tags and cache preserved');

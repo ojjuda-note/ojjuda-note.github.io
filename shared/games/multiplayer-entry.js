@@ -1,7 +1,7 @@
 /* Shared entrance presentation. Existing game handlers own starts, joins and exits. */
 (() => {
   'use strict';
-  const paths = new Set(['/games/roulette/index.html','/games/bang/index.html','/games/poker/index.html','/games/tank/index.html','/games/ojjuda-tour/index.html','/games/ttang.html','/games/matgo-online.html','/games/matgo.html']);
+  const paths = new Set(['/games/bang/index.html','/games/tank/index.html','/games/ojjuda-tour/index.html','/games/ttang.html','/games/matgo-online.html','/games/matgo.html']);
   const entryPath = pathname => pathname.endsWith('/') ? pathname + 'index.html' : pathname;
   const game = paths.has(entryPath(location.pathname)), embedded = parent !== window, frames = new Map();
   let queued = false, previous, observer = null, scheduledFrame = 0, disposed = false;

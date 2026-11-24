@@ -136,7 +136,14 @@ for (const options of [
     await f.send();
     assert.equal(f.writes.length, 2);
     assert.equal(f.writes.at(-1).args.p_body ?? f.writes.at(-1).args.body, ORIGINAL);
-    if (!options.guest) assert.deepEqual(f.writes.at(-1).args.p_tags ?? f.writes.at(-1).args.tags, ['검사태그']);
+    if (!options.guest) {
+      const submitted = f.writes.at(-1).args.p_tags ?? f.writes.at(-1).args.tags;
+      assert.equal(submitted[0], '검사태그', 'explicit tags must come before suggestions');
+      assert.ok(submitted.length <= 5, 'automatic tags cannot exceed the card tag limit');
+      assert.ok(submitted.slice(1).every(tag => ORIGINAL.includes(tag)),
+        'automatic tags must be actual words from the source text');
+      if (options.edit || options.kind === 'event') assert.deepEqual(submitted, ['검사태그']);
+    }
     assert.equal(text.value, '');
     assert.equal(f.document.getElementById('composer-backdrop').hidden, true);
     assert.ok(f.effects.length > 0, 'only a confirmed save leaves the editor and refreshes content');
@@ -378,3 +385,37 @@ test('Park composer rejects server word fragments on input and publish without c
   await send();
   assert.deepEqual(writes.at(-1).args.p_tags, ['사용자태그', '산책', '돈가스']);
 });
+
+for (const [requestBody, expected, serverTags] of [
+  ['완벽은 없다', ['완벽'], []],
+  ['돈가스를 먹었다.', ['돈가스'], ['돈']],
+  ['사랑니가 아파서 병원에 갔다.', ['사랑니', '병원'], ['사랑']],
+  ['목걸이 샀어', ['목걸이'], ['목걸']],
+  ['떡볶이 먹었어', ['떡볶이'], ['떡볶']]
+]) {
+  test(`Park guest and member preview and member publication preserve whole tags: ${requestBody}`, async t => {
+    for (const guest of [true, false]) {
+      const f = composer(t, { guest, suggest: body => {
+        assert.equal(body, requestBody);
+        return serverTags;
+      }});
+      f.document.getElementById('compose-text').value = requestBody;
+      const timers = [];
+      f.window.setTimeout = callback => { timers.push(callback); return timers.length; };
+      f.window.clearTimeout = () => {};
+      f.run('refreshAutoTags(); scheduleServerAutoTags()');
+      const input = f.document.getElementById('compose-tags');
+      assert.equal(input.value, expected.join(', '));
+      assert.equal(timers.length, guest ? 0 : 1);
+      if (!guest) await timers.shift()();
+      assert.equal(input.value, expected.join(', '));
+      await f.send();
+      const sent = f.writes.at(-1);
+      if (guest) {
+        assert.equal(sent.name, 'publish_guest_card');
+        assert.equal(sent.args.p_body, requestBody);
+        assert.equal('p_tags' in sent.args, false, 'guest tags remain generated on the server');
+      } else assert.deepEqual(sent.args.p_tags, expected);
+    }
+  });
+}
