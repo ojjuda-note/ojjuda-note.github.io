@@ -91,7 +91,6 @@
         <nav class="adm-folder-tabs" aria-label="관리 분류">${foldersHtml}</nav>
         <section class="adm-menu-favorites" data-admin-pins${matchedFavorites.length?'':' hidden'}><h3>★ 즐겨찾기 <small>최대 6개</small></h3>${favoriteHtml}</section>
         <div class="adm-menu-groups" aria-label="관리 기능 목록">${groupsHtml}</div>
-        <div class="adm-menu-external"><a href="https://yeoul-spring-reader.mj830417686850.chatgpt.site/">원고실</a></div>
       </div>
     </aside><!--adm-main-->`;
   }

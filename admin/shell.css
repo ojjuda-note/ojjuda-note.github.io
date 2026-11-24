@@ -12,10 +12,9 @@
 .world-redesign .adm-site-links{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex:0 0 auto;max-width:none}
 .world-redesign .adm-site-links .btn{min-height:42px;padding-inline:14px;border-radius:11px;font-size:12px;font-weight:700;background:var(--surface)}
 .world-redesign .seg.adm-areas{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));align-items:stretch;gap:7px;width:100%;max-width:none!important;padding:8px;margin:0 0 12px;border:1px solid var(--line);border-radius:17px;background:var(--surface)}
-.world-redesign .seg.adm-areas button,.world-redesign .seg.adm-areas .adm-manuscript-link{display:flex;align-items:center;justify-content:center;min-width:0;min-height:48px;padding:8px 6px;border:1px solid transparent;border-radius:11px;background:transparent;color:var(--ink-2);font:700 13px/1.3 var(--font-b);text-align:center;text-decoration:none;word-break:keep-all;white-space:normal;transition:background-color .15s,border-color .15s}
-.world-redesign .seg.adm-areas button:hover,.world-redesign .seg.adm-areas .adm-manuscript-link:hover{background:var(--surface-2);border-color:var(--line);color:var(--ink)}
+.world-redesign .seg.adm-areas button{display:flex;align-items:center;justify-content:center;min-width:0;min-height:48px;padding:8px 6px;border:1px solid transparent;border-radius:11px;background:transparent;color:var(--ink-2);font:700 13px/1.3 var(--font-b);text-align:center;text-decoration:none;word-break:keep-all;white-space:normal;transition:background-color .15s,border-color .15s}
+.world-redesign .seg.adm-areas button:hover{background:var(--surface-2);border-color:var(--line);color:var(--ink)}
 .world-redesign .seg.adm-areas button.on{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 50%,var(--line));color:var(--accent-ink);box-shadow:none}
-.world-redesign .seg.adm-areas .adm-manuscript-link{border-color:var(--line);background:var(--surface-2);color:var(--ink)}
 .world-redesign .seg.adm-tabs{display:flex;flex-wrap:nowrap;align-items:stretch;gap:6px;padding:4px 0 10px;margin:0 0 22px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;scrollbar-width:thin}
 .world-redesign .seg.adm-tabs button,.world-redesign .seg.adm-tabs .adm-tab-link{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;min-width:max-content;min-height:46px;padding:10px 14px;border:0;border-bottom:3px solid transparent;border-radius:8px 8px 0 0;background:transparent;color:var(--ink-2);font:700 13px/1.4 var(--font-b);text-decoration:none;white-space:nowrap}
 .world-redesign .seg.adm-tabs button:hover,.world-redesign .seg.adm-tabs .adm-tab-link:hover{background:var(--surface-2);color:var(--ink)}
@@ -53,11 +52,11 @@
  .world-redesign .adm-site-links{justify-content:flex-start;flex-wrap:wrap;margin-top:15px}
  .world-redesign .adm-title-row .h2{font-size:25px}
  .world-redesign .seg.adm-areas{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:6px;border-radius:14px}
- .world-redesign .seg.adm-areas button,.world-redesign .seg.adm-areas .adm-manuscript-link{min-height:46px;font-size:12px;padding:8px 4px}
+ .world-redesign .seg.adm-areas button{min-height:46px;font-size:12px;padding:8px 4px}
  .world-redesign .seg.adm-tabs{margin-bottom:17px}
  .world-redesign .seg.adm-tabs button,.world-redesign .seg.adm-tabs .adm-tab-link{font-size:12px;padding:9px 12px}
  .world-redesign .acct-card{padding:16px}
  .world-redesign .adm-stat{min-height:104px;padding:14px}
  .world-redesign .adm-wallet-current{align-items:flex-start;flex-direction:column;gap:3px}
 }
-@media(prefers-reduced-motion:reduce){.world-redesign .seg.adm-areas button,.world-redesign .seg.adm-areas .adm-manuscript-link{transition:none}}
+@media(prefers-reduced-motion:reduce){.world-redesign .seg.adm-areas button{transition:none}}

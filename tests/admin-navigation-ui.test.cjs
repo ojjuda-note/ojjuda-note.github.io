@@ -384,7 +384,8 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
       assert.equal(await page.locator('[data-act="adm-cr"], [data-act="adm-chatlim"], [data-act="adm-content-kind"]').count(), 0);
     }
     assert.deepEqual(await page.locator('.adm-site-links [data-act="adm-back"]').allTextContents(), ['← 뒤로']);
-    assert.equal(await page.locator('.adm-menu-external a').last().textContent(), '원고실');
+    assert.equal(await page.locator('.adm-navigation a[href^="https:"]').count(),0,'external administrator shortcuts are removed');
+    assert.equal(await page.locator('.adm-menu-external').count(),0,'no unused shortcuts section remains');
     assert.equal(await page.locator('.adm-site-links [data-act="adm-back"]').getAttribute('type'), 'button');
     // Both Back controls restore the actual visited administrator view.
     await area('operations'); const previousOperation=await current(); await tab('errors');

@@ -40,7 +40,8 @@ assert.equal(counts['support:reports'],'5');
 assert.equal(counts['support:feedback'],'2');
 assert.equal(counts['operations:errors'],'1');
 assert.match(host.textContent,/상품권 등록/);
-assert.match(host.textContent,/원고실/);
+assert.equal(host.querySelector('a[href^="https:"]'),null,'no external administrator shortcuts');
+assert.equal(host.querySelector('.adm-menu-external'),null,'no empty external shortcuts section');
 
 assert.equal(host.querySelectorAll('[data-admin-folder]').length,6,'all five folders and the full index stay visible');
 assert.deepEqual([...host.querySelectorAll('.adm-menu-group:not([hidden])')].map(e=>e.dataset.group),['status']);
@@ -81,6 +82,8 @@ for(const service of ['agit','park','pajang']){
   const home=scope.services[service].home,area=service==='agit'?'account':'content';
   host.innerHTML=nav.render({service,area,tab:home,summary});
   assert.equal(host.querySelector('.adm-navigation').dataset.service,service);
+  assert.equal(host.querySelector('a[href^="https:"]'),null,service+' has no external administrator shortcut');
+  assert.equal(host.querySelector('.adm-menu-external'),null);
   assert.equal(host.querySelector('[data-admin-folder="content"] span').textContent,scope.services[service].label+' 관리');
   assert.equal(host.querySelector('.adm-menu-group[data-group="headquarters"]'),null,'organization is available through public service help');
   assert.equal(host.querySelector('a[href*="operations.html"]'),null);
