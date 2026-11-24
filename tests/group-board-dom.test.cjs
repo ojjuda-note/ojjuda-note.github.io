@@ -82,8 +82,10 @@ test('writing tools preserve the same body, selection and draft while options op
       assert.equal(down.defaultPrevented,true,'pointer tap retains the writing focus');
       button.dispatchEvent(new f.w.MouseEvent('click',{bubbles:true,cancelable:true,detail:1}));
     }
+    const selectedTools=()=>[...form.querySelectorAll('.group-compose-toolbar [aria-pressed="true"]')].map(button=>button.dataset.groupTool);
+    assert.deepEqual(selectedTools(),['post']);
     for(const tool of ['photo','bet']){
-      tap(tool);
+      tap(tool);assert.deepEqual(selectedTools(),[tool],'only the open toolbar tool is highlighted');
       assert.equal(form.querySelector('[data-group-panel='+tool+']').hidden,false);
       assert.equal([...form.querySelectorAll('[data-group-panel]')].filter(panel=>!panel.hidden).length,1);
       assert.equal(form.elements.body,body);assert.equal(d.activeElement,body);assert.deepEqual(selected(),before);
@@ -319,23 +321,23 @@ test('unchanged background refresh preserves post and loaded media elements',asy
   }finally{f.dom.window.close();}
 });
 test('explicit searches ignore stale responses and background refreshes do not interrupt them',async()=>{
-  const pending=deferred();const f=fixture({respond:(a,p)=>a==='directory'&&p.query==='먼저'?pending.promise:undefined});try{
+  const pending=deferred();const f=fixture({respond:(a,p)=>a==='home'&&p.query==='먼저'?pending.promise:undefined});try{
     await tick();const d=f.w.document,input=d.querySelector('#directory-query');
     assert.equal(f.calls.find(([a])=>a==='home')[1].sort,'activity');
     const type=value=>{input.value=value;input.dispatchEvent(new f.w.Event('input'));};
     const submit=()=>input.form.dispatchEvent(new f.w.Event('submit',{bubbles:true,cancelable:true}));
-    type('먼저');await tick();assert.equal(f.calls.filter(([a])=>a==='directory').length,0);
-    submit();await tick();assert.equal(f.calls.filter(([a])=>a==='directory').length,1);
+    type('먼저');await tick();assert.equal(f.calls.filter(([a])=>a==='home').length,1);
+    submit();await tick();assert.equal(f.calls.filter(([a])=>a==='home').length,2);
     d.dispatchEvent(new f.w.Event('visibilitychange'));await tick();
-    assert.equal(f.calls.filter(([a])=>a==='home').length,1,'background refresh must not interrupt submitted search');
-    type('주말');await tick();assert.equal(f.calls.filter(([a])=>a==='directory').length,1);
-    submit();await tick();assert.equal(f.calls.filter(([a])=>a==='directory').length,2);
-    pending.resolve({data:[{id:other,name:'이전 검색 응답',member_count:1}]});await tick();
+    assert.equal(f.calls.filter(([a])=>a==='home').length,2,'background refresh must not interrupt submitted search');
+    type('주말');await tick();assert.equal(f.calls.filter(([a])=>a==='home').length,2);
+    submit();await tick();assert.equal(f.calls.filter(([a])=>a==='home').length,3);
+    pending.resolve({data:{rooms:[],invitations:[],directory:[{id:other,name:'이전 검색 응답',member_count:1}]}});await tick();
     assert.doesNotMatch(d.querySelector('#directory').textContent,/이전 검색 응답/);
     assert.match(d.querySelector('#directory').textContent,/주말 여행단/);
     for(const sort of ['members','created','activity']){
       const button=d.querySelector('[data-sort="'+sort+'"]');button.click();await tick();
-      assert.equal(f.calls.filter(([a])=>a==='directory').at(-1)[1].sort,sort);
+      assert.equal(f.calls.filter(([a])=>a==='home').at(-1)[1].sort,sort);
       assert.equal(button.getAttribute('aria-pressed'),'true');
     }
   }finally{f.dom.window.close();}
@@ -752,5 +754,37 @@ test('new group directory and room header use the same expanded shared illustrat
  assert.equal(d.querySelector('.group-card .group-artwork').getAttribute('src'),expected.src);
  d.querySelector('[data-room]').click();await tick();assert.equal(d.querySelector('.group-room-hero .group-artwork').getAttribute('src'),expected.src);
  assert.equal(d.querySelector('.group-room-hero').dataset.groupTheme,expected.theme);
+ }finally{f.dom.window.close();}
+});
+
+for(const mode of ['search','mine','sort'])test('cold '+mode+' replaces the aggregate home read, preserving member rooms and invites; more only pages directory',async()=>{
+ let finish,homeRequests=0;
+ const member={id:room,name:'주말 여행단',description:'',owner_id:id,member_count:2,is_member:true};
+ const older={id:other,name:'이전 응답',description:'',owner_id:id,member_count:2,is_member:true};
+ const incoming={id:entry,room_id:room,group_name:'보존된 초대',sender_name:'민준'};
+ const page=[member,...Array.from({length:40},(_,i)=>({...member,id:'row-'+i,name:'row '+i}))];
+ const f=fixture({respond:(action,p)=>{
+   if(action==='home') {
+     if(++homeRequests===1)return new Promise(resolve=>{finish=()=>resolve({data:{rooms:[],directory:[older],invitations:[]}});});
+     return {data:{rooms:[member],directory:page,invitations:[incoming]}};
+   }
+   if(action==='directory') return {data:[{...older,name:'두 번째 페이지'}]};
+ }});
+ try{
+  await tick();const d=f.w.document;
+  if(mode==='search'){const q=d.querySelector('#directory-query');q.value='주말';q.form.dispatchEvent(new f.w.Event('submit',{bubbles:true,cancelable:true}));}
+  else d.querySelector(mode==='mine'?'[data-action=mine]':'[data-sort=members]').click();
+  await tick();assert.equal(homeRequests,2);
+  assert.deepEqual(f.calls.filter(([action])=>action==='home').at(-1)[1],{query:mode==='search'?'주말':'',sort:mode==='sort'?'members':'activity',mine:mode==='mine'});
+  finish();await tick();
+  assert.match(d.querySelector('#directory').textContent,/주말 여행단/);assert.doesNotMatch(d.querySelector('#directory').textContent,/이전 응답/);
+  assert.match(d.querySelector('#group-invitations').textContent,/보존된 초대/);
+  d.querySelector('#directory-more').click();await tick();
+  assert.equal(homeRequests,2);
+  assert.equal(f.calls.filter(([action])=>action==='directory').at(-1)[1].offset,40);
+  assert.match(d.querySelector('#directory').textContent,/두 번째 페이지/);
+  assert.match(d.querySelector('#group-invitations').textContent,/보존된 초대/);
+  d.querySelector('[data-room="'+room+'"]').click();await tick();
+  assert.equal(d.querySelector('h1').textContent,'주말 여행단');assert.ok(f.calls.some(([action])=>action==='feed'));
  }finally{f.dom.window.close();}
 });

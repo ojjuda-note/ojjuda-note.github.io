@@ -199,7 +199,7 @@ for (const form of $('#app').querySelectorAll('[data-group-search]')) {
   event.preventDefault();
   if(directorySearch){
    directoryDraft=input.value;directoryQuery=directoryDraft.trim();epoch++;directoryLoading=false;
-   void loadDirectory();
+   void loadHome();
   }else{
    queryDraft=input.value;query=queryDraft.trim();epoch++;loading=false;void loadFeed();
   }
@@ -428,13 +428,13 @@ async function loadMedia(slot,p,f,priority=0){
 }
 async function handleClick(e){const b=e.target.closest('button');if(!b||b.disabled)return;try{
 if(b.dataset.acceptInvite||b.dataset.declineInvite){const row=b.closest('article');if(row.dataset.busy)return;const controls=[...row.querySelectorAll('button')].map(button=>({button,disabled:button.disabled}));row.dataset.busy='yes';controls.forEach(({button})=>button.disabled=true);try{const accepted=!!b.dataset.acceptInvite,data=await invitationApi(accepted?'accept':'decline',{id:b.dataset.acceptInvite||b.dataset.declineInvite});if(accepted){await reloadRooms();route(data.room_id);notify('그룹에 가입했어요.');}else{await loadInvitations();notify('초대를 거절했어요.');}}finally{delete row.dataset.busy;controls.forEach(({button,disabled})=>button.disabled=disabled);}return;}
-if(b.dataset.action==='mine'){onlyMine=!onlyMine;epoch++;directoryLoading=false;b.textContent=onlyMine?'전체 그룹':'내 그룹';b.setAttribute('aria-pressed',String(onlyMine));b.setAttribute('aria-label',onlyMine?'전체 그룹 보기':'내 그룹만 보기');directory=[];directoryHasMore=false;const box=$('#directory');signatures.delete(box);box.innerHTML='<p class="empty">불러오는 중…</p>';await loadDirectory();return;}
+if(b.dataset.action==='mine'){onlyMine=!onlyMine;epoch++;directoryLoading=false;b.textContent=onlyMine?'전체 그룹':'내 그룹';b.setAttribute('aria-pressed',String(onlyMine));b.setAttribute('aria-label',onlyMine?'전체 그룹 보기':'내 그룹만 보기');directory=[];directoryHasMore=false;const box=$('#directory');signatures.delete(box);box.innerHTML='<p class="empty">불러오는 중…</p>';await loadHome();return;}
  if(b.dataset.sort){
   if(!['activity','members','created'].includes(b.dataset.sort)||directorySort===b.dataset.sort)return;
   directorySort=b.dataset.sort;
   document.querySelectorAll('[data-sort]').forEach(button=>{const active=button.dataset.sort===directorySort;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});
   directory=[];directoryHasMore=false;epoch++;directoryLoading=false;
-  await loadDirectory();return;
+  await loadHome();return;
  }
  if(b.dataset.room!==undefined){route(b.dataset.room||null);return;}
 if(b.dataset.request||b.dataset.cancelRequest){
