@@ -99,12 +99,26 @@
     };
     const home = row(settings, 'world', '아지트 가기', () => navigate('world'), 'park-settings-home');
     home.prepend(icon('home'));
-    const account = group('내 계정');
+    const disclosure = (container, title) => {
+      const details = node('details', 'ojjuda-settings-details');
+      const summary = node('summary', 'park-settings-row ojjuda-settings-row');
+      const arrow = node('span', 'ojjuda-settings-arrow', '›');
+      arrow.setAttribute('aria-hidden', 'true');
+      summary.append(node('span', 'ojjuda-settings-label', title), arrow);
+      const body = node('div', 'ojjuda-settings-body');
+      details.append(summary, body);
+      container.append(details);
+      return body;
+    };
+    const account = group('내 정보');
     if (owner) {
-      row(account, 'member-info', '개인정보 관리', () => void showMemberInfo());
-      row(account, 'nickname', '닉네임 변경', () => void showNicknameChange());
-      row(account, 'password', '비밀번호 변경', showPasswordChange);
-      row(account, 'blocked', '차단 관리', () => void showBlocks());
+      const profile = disclosure(account, '프로필·계정정보');
+      link(profile, 'profile', '프로필 수정', '/world.html?tab=my&setting=profile');
+      row(profile, 'member-info', '개인정보 관리', () => void showMemberInfo());
+      row(profile, 'nickname', '닉네임 변경', () => void showNicknameChange());
+      row(profile, 'password', '비밀번호 변경', showPasswordChange);
+      row(profile, 'logout', '로그아웃', showAccountLogout);
+      link(account, 'friends', '친구 관리', '/world.html?tab=my&setting=friends');
     } else {
       account.className = 'ojjuda-guest-account';
       account.dataset.guestAccount = 'park';
@@ -118,29 +132,6 @@
       }
       account.append(actions);
     }
-    // These actions previously lived only in the standalone legacy dashboard.
-    const activity = group('내 활동');
-    if (owner) {
-      row(activity, 'events', '내 이벤트', () => navigate('events'));
-      row(activity, 'event-new', '이벤트 만들기', () => navigate('event-new'));
-    }
-    row(activity, 'notifications', '알림', () => navigate('notifications'));
-    const charge = row(activity, 'charge', '쭈 충전', () => window.OjjudaCharge?.open?.());
-    charge.setAttribute('aria-haspopup', 'dialog');
-    charge.setAttribute('aria-controls', 'ju-charge-dialog');
-    const help = group('이용 안내');
-    row(help, 'support', '문의·의견', () => navigate('support'));
-    link(help, 'terms', '이용약관', '/terms.html?from=park');
-    link(help, 'privacy', '개인정보처리방침', '/privacy.html?from=park');
-    const helpMenu = node('details', 'ojjuda-settings-details');
-    const helpTitle = node('summary', 'park-settings-row ojjuda-settings-row');
-    const helpArrow = node('span', 'ojjuda-settings-arrow', '›');
-    helpArrow.setAttribute('aria-hidden', 'true');
-    helpTitle.append(node('span', 'ojjuda-settings-label', '도움말'), helpArrow);
-    const helpBody = node('div', 'ojjuda-settings-body');
-    link(helpBody, 'guide', '사용법', '/guide.html?from=park');
-    link(helpBody, 'organization', '조직도', '/features/organization/?from=park');
-    helpMenu.append(helpTitle, helpBody); help.append(helpMenu);
     const apps = group('앱 다운로드');
     apps.classList.add('app-store-downloads');
     const agitLink = link(apps, 'app-agit', '오쭈다 아지트', 'https://play.google.com/store/apps/details?id=kr.ojjuda.agit&hl=ko', true);
@@ -162,10 +153,41 @@
     agitTesterLink.rel = 'noopener noreferrer';
     appStoreNote.append(agitTesterLink, document.createTextNode('한 뒤 설치하세요.'));
     apps.parentElement.append(appStoreNote);
+    const preferences = group('이용 설정');
     if (owner) {
-      const access = group('계정 관리');
-      row(access, 'logout', '로그아웃', showAccountLogout);
+      // Agit owns the member's saved notification preferences and friend list.
+      // Open the existing editor so both apps use the same account and save path.
+      link(preferences, 'friend-alert', '친구 신청 알림', '/world.html?tab=my&setting=notifications');
+      row(preferences, 'blocked', '차단 관리', () => void showBlocks());
+    } else {
+      preferences.append(node('p', 'management-help', '로그인하면 친구 신청 알림과 차단 목록을 관리할 수 있어요.'));
     }
+    const help = group('활동·도움');
+    const charge = row(help, 'charge', '쭈 충전', () => window.OjjudaCharge?.open?.());
+    charge.setAttribute('aria-haspopup', 'dialog');
+    charge.setAttribute('aria-controls', 'ju-charge-dialog');
+    row(help, 'support', '문의·의견', () => navigate('support'));
+    const helpBody = disclosure(help, '도움말');
+    link(helpBody, 'guide', '사용법', '/guide.html?from=park');
+    link(helpBody, 'creator', '제작자 소개', '/features/guide/creator.html');
+    link(helpBody, 'organization', '조직도', '/features/organization/?from=park');
+    link(help, 'terms', '이용약관', '/terms.html?from=park');
+    link(help, 'privacy', '개인정보처리방침', '/privacy.html?from=park');
+    const versions = disclosure(help, '버전 정보');
+    versions.parentElement.addEventListener('toggle', async () => {
+      if (!versions.parentElement.open) return;
+      const releases = [['아지트', '/version.json'], ['오락실', '/features/arcade/version.json'], ['공원', '/park/version.json']];
+      const lines = await Promise.all(releases.map(async ([name, path]) => {
+        try {
+          const response = await fetch(path, {cache: 'no-cache'});
+          if (!response.ok) throw new Error();
+          const {version} = await response.json();
+          if (typeof version !== 'string' || !version) throw new Error();
+          return node('p', '', name + ' ' + version);
+        } catch { return node('p', '', name + ' 버전을 확인할 수 없어요.'); }
+      }));
+      versions.replaceChildren(...lines);
+    });
     let adminGroup = null;
     syncAdminSettings = () => {
       if (!settings.isConnected) return;
