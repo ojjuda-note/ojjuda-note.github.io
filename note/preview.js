@@ -562,6 +562,40 @@ const TAG_LITERAL_WORDS = Object.freeze([
   '돈', '걱정', '생각', '마음', '사람', '시간', '친절', '기억',
   '밤', '아침', '저녁', '주말', '내일', '오늘'
 ]);
+// High-confidence fallback for words that are not yet in the vocabulary.
+// Korean particles are removed only when at least two literal syllables remain.
+const TAG_FALLBACK_STOP = new Set([
+  '오늘','내일','어제','지금','요즘','그냥','정말','진짜','너무','가끔','계속','다시','이제',
+  '그리고','하지만','그래서','그런데','근데','그래도','그래','그런','이런','저런','무슨',
+  '어떤','아무','아직','벌써','여기','저기','거기','누구','무엇','어디','언제','어떻게',
+  '아무도','아무것','나는','내가','너는','네가','우리','저는','제가','그거','이거','저거',
+  '없다','있다','없는','있는','없어','있어','없네','있네','없지만','있지만','모르','모르는',
+  '싶다','싶어','같다','좋다','좋아','좋네요','괜찮아','어땠어','아니라','아니다',
+  '한다','했다','하는','했던','해요','그래야지','모르겠다','것','거야','좀','다들',
+  '조금','많이','한참','잠깐','무리','만든','처음','만약','드디어','이렇게','저렇게',
+  '되나','될까','할까','해야지','했지','쉬고','아무것','지금은','여기에','좋지만'
+]);
+const TAG_FALLBACK_PARTICLE = /(에게서|으로는|에서는|에서도|에게도|에서|부터|까지|에게|한테|처럼|보다|으로|이라는|이란|이라|이나|에도|은|는|이|가|을|를|에|도|만|의|와|과|랑)$/u;
+const TAG_FALLBACK_PREDICATE = /(겠어|겠네|겠지|지만|으면|면|하고|해서|했다|한다|있다|없다|겠다고|거야|걸까|나요|어요|아요|래요|해요|었어|았어|였어|했어|했지|되네|하면서|하니까|해도|어야|이다|싶다|같다|좋다|이다|고|다|어|아|지)$/u;
+function suggestUnlistedTags(body, limit = 2) {
+  const originalText = String(body || '');
+  const found = [], seen = new Set();
+  for (const token of originalText.match(/[가-힣A-Za-z0-9]+/gu) || []) {
+    let word = token;
+    if (/^[가-힣]{3,}$/u.test(token)) {
+      const stem = token.replace(TAG_FALLBACK_PARTICLE, '');
+      if (stem.length >= 2) word = stem;
+    }
+    if (word.length < 2 || word.length > 14
+      || TAG_FALLBACK_STOP.has(token) || TAG_FALLBACK_STOP.has(word)
+      || TAG_FALLBACK_PREDICATE.test(token)
+      || !originalText.toLocaleLowerCase('ko-KR').includes(word.toLocaleLowerCase('ko-KR'))
+      || seen.has(word)) continue;
+    seen.add(word); found.push(word);
+    if (found.length >= limit) break;
+  }
+  return found;
+}
 function suggestTags(body, limit = 5) {
   const input = String(body || '').toLocaleLowerCase('ko-KR');
   const out = [];
@@ -573,6 +607,13 @@ function suggestTags(body, limit = 5) {
     })) continue;
     out.push(word);
     if (out.length >= Math.min(3, limit)) break;
+  }
+  // A pre-registered list is not a requirement for writing a new card.
+  // Prefer newly mentioned nouns over generic "오늘/마음" tags.
+  const generic = new Set(['오늘','내일','마음','생각','사람','시간','아침','저녁','밤']);
+  if (!out.length || out.every(tag => generic.has(tag))) {
+    const extracted = suggestUnlistedTags(body, Math.min(2, limit));
+    if (extracted.length) return extracted;
   }
   return out;
 }
@@ -2937,7 +2978,7 @@ async function openComposer(mode, card = null, replyTo = null, pending = null) {
   const identityMode = editingId ? (card.identity_mode === 'nickname' ? 'nickname' : 'anonymous') : readComposerSettings().identity;
   $(`input[name="identity"][value="${identityMode}"]`).checked = true;
   setGenderInputs(true);
-  autoTagMode = !guest && !editingId; manualTags = tagList(tags.value); rejectedTags = new Set(); autoTagsNow = [];
+  autoTagMode = !editingId && kind !== 'event'; manualTags = tagList(tags.value); rejectedTags = new Set(); autoTagsNow = [];
   serverTagResult = null; ++serverTagRequest; clearTimeout(serverTagTimer);
   clearLocalComposer();
   requestedDraftContent = draftContent();
@@ -2945,7 +2986,9 @@ async function openComposer(mode, card = null, replyTo = null, pending = null) {
     requestedDraftContent.background_key = randomDefaultBackground();
   if (draftStatus) draftStatus.hidden = true;
   setComposerInputs();
-  updateComposer(); backdrop.hidden = false; lockPage(true); updateComposer();
+  updateComposer(); backdrop.hidden = false; lockPage(true);
+  if (autoTagMode) { refreshAutoTags(); scheduleServerAutoTags(); }
+  updateComposer();
   $('.composer-body').scrollTop = 0;
   // Focus only while opening; later photo/location/render updates keep the
   // member's chosen field and caret, including native calligraphy input.
