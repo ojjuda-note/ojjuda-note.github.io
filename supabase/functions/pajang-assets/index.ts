@@ -7,7 +7,7 @@ const files: Record<string,string> = {
   "station.js": "4ae998eb91227f316d169cb89f06e6612fbffe4adc1ab69a9bc16feb64d2002d",
   "camera.webp": "b686b71a0517be69e02f61a3028d18e2f406a1087dcebc060d588bcae3df046d"
 };
-// station.js carries the unified app download links in account settings.
+// station.js carries the unified app download links and test participation path.
 const bucket='pajang-member-assets';
 const cors={'Access-Control-Allow-Origin':'https://ojjuda.kr','Access-Control-Allow-Headers':'authorization,apikey,content-type,x-client-info','Cache-Control':'private, no-store','Vary':'Origin'};
 const respond=(data:unknown,status=200)=>Response.json(data,{status,headers:cors});
