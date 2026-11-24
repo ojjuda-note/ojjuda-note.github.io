@@ -72,8 +72,8 @@ html body .shell > .col > .main { container: park-content / inline-size; }
   min-width: 0;
   max-width: none;
 }
-/* 750px original + 625px reply column + 16px gap. */
-@container park-content (min-width: 1391px) {
+/* 450px original + 375px reply column + 16px gap. */
+@container park-content (min-width: 841px) {
   .detail-screen { max-width: calc(var(--park-card-max-width) * 11 / 6 + 16px); }
   /* Four of the five reply-column units equal two thirds of the six-unit original. */
   .detail-screen .detail-layout { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); }
