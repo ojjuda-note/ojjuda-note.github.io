@@ -109,6 +109,9 @@
       .replace('게임부터 일상 이야기까지', '일상 이야기부터 운세까지');
 
     const hidePlayStoreGameEntrances = root => {
+      document.title = document.title
+        .replace('게임·타로·사주·익명카드', '일상·운세·익명카드')
+        .replace('게임부터 일상 이야기까지', '일상 이야기부터 운세까지');
       const controls = root.querySelectorAll?.('button,a,[role="button"],[data-tab],[data-place]');
       if (!controls) return;
       controls.forEach(control => {
