@@ -143,18 +143,18 @@
     helpMenu.append(helpTitle, helpBody); help.append(helpMenu);
     const apps = group('앱 다운로드');
     apps.classList.add('app-store-downloads');
-    const agitLink = link(apps, 'app-agit', '오쭈다 아지트', 'https://play.google.com/apps/testing/kr.ojjuda.agit', true);
+    const agitLink = link(apps, 'app-agit', '오쭈다 아지트', 'https://play.google.com/store/apps/details?id=kr.ojjuda.agit&hl=ko', true);
     agitLink.dataset.storeApp = 'agit';
     agitLink.rel = 'noopener noreferrer';
-    agitLink.setAttribute('aria-label', '오쭈다 아지트 비공개 테스트 참여 (새 창)');
-    agitLink.querySelector('.ojjuda-settings-label')?.append(node('small', '', '비공개 테스트'));
+    agitLink.setAttribute('aria-label', '오쭈다 아지트 Google Play에서 보기 (새 창)');
+    
     for (const [app, name] of [['pajang', '오쭈다 파장'], ['park', '오쭈다 공원']]) {
       const storeLink = link(apps, `app-${app}`, name, `https://play.google.com/store/apps/details?id=kr.ojjuda.${app}`, true);
       storeLink.dataset.storeApp = app;
       storeLink.rel = 'noopener noreferrer';
       storeLink.setAttribute('aria-label', `${name} Google Play에서 보기 (새 창)`);
     }
-    apps.parentElement.append(node('p', 'app-store-note', '아지트는 비공개 테스트 참여 후 설치할 수 있어요.'));
+    apps.parentElement.append(node('p', 'app-store-note', '앱을 선택하면 Google Play 페이지가 열립니다. 아지트 비공개 테스트 참여가 필요하면 먼저 참여한 뒤 설치하세요.'));
     if (owner) {
       const access = group('계정 관리');
       row(access, 'logout', '로그아웃', showAccountLogout);
