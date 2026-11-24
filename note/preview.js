@@ -548,26 +548,76 @@ async function showMemberInfo(afterSave = null) {
     if (run === managementRun) state(managementBody, '회원정보를 불러오지 못했어요. 잠시 후 다시 열어 주세요.');
   }
 }
-// 자동 태그: 태그는 모두 5개까지. 내가 쓴 태그는 그대로 두고, 남은 자리만 글에서 고른 낱말로 채워요. 지운 자동 태그는 다시 붙이지 않아요
-const TAG_STOP = new Set(['오늘', '어제', '내일', '정말', '진짜', '너무', '그냥', '우리', '지금', '요즘', '항상', '조금', '많이', '같이', '다시', '아직', '이제',
-  '그래서', '그리고', '하지만', '근데', '그런데', '이런', '그런', '저런', '무슨', '어떤', '모든', '매일', '가끔', '계속', '나는', '내가', '저는', '제가', '너는', '네가',
-  '이거', '그거', '저거', '여기', '거기', '저기', '뭔가', '괜히', '역시', '벌써', '문득', '하루', '마음', '생각', '느낌', '기분', '사람', '시간', '때문',
-  '좋은', '예쁜', '멋진', '슬픈', '기쁜', '작은', '많은', '적은', '추운', '더운', '맛있는', '즐거운', '행복한', '소중한', '따뜻한', '같은', '다른', '새로운', '이상한', '특별한', '편한', '힘든', '어떤', '모든', '아무']);
-const TAG_SUFFIX = ['하면서', '하며', '하고', '해서', '하는', '했던', '에서는', '으로는', '에서', '으로', '에게', '한테', '께서', '이랑', '까지', '부터', '처럼',
-  '보다', '마다', '조차', '밖에', '이나', '이라', '은', '는', '이', '가', '을', '를', '에', '와', '과', '도', '만', '의', '로', '랑'];
-const TAG_VERB = /(었어요|았어요|였어요|했어요|어요|아요|해요|예요|이에요|에요|네요|군요|죠|습니다|니다|었다|았다|였다|했다|는다|한다|된다|하다|싶다|같다|좋다|있다|없다|었어|았어|했어|해|야|지|네|래|걸|구나|더라|면서|지만|는데|은데|니까|어서|아서|해도|어도|아도|으면|겠|싶|랑|요)$/;
-const TAG_FEEL = [[/(행복|기뻐|기쁘|신나|설레|좋았|좋아)/, '행복'], [/(슬프|슬퍼|우울|눈물|외로|쓸쓸)/, '위로'], [/(피곤|힘들|지쳐|지친|고단)/, '토닥토닥'],
-  [/사랑/, '사랑'], [/(고마|감사)/, '감사'], [/(화나|짜증|속상)/, '속상'], [/(그리워|그립|보고 싶)/, '그리움']];
+// 자동 태그: 본문에 나온 낱말만 고르고, 직접 쓴 태그와 지운 태그를 우선한다.
+// The scheduled publisher uses the same tiers and Korean word boundaries (see the regression test).
+const TAG_WORDS = [
+  `누리호 면접 지각 NASA 게임대상 만두 붉은사막 스쿼시 안세영 이력서 출근 퇴근 단감 레이더 로봇 반도체 보드게임 붕어빵 빨래 새잎 설거지 슬리퍼 올빼미
+우산 운동화 이불 이어폰 청소 친구 카드값 하늘다람쥐 향수 강아지 고양이 그림 기타 꽃 노을 답장 독감 동료 둥지 등산 메일 발표 부모님 비밀번호 사직서
+사진 샤워 아이스크림 알람 양말 월급 월세 이직 책 커피 통장 퍼즐 합격 해킹 화분 회의 가계부 가족 과자 국물 국수 귤 김치 냉장고 노래 늦잠 단풍 달걀
+도시락 떡볶이 라면 로켓 목성 문단속 미술관 박물관 빵집 산불 산책길 상사 세탁기 쓰레기 안경 야식 열쇠 위성 초콜릿 카레 허리 화성 간식 고분 과일 구름
+드라마 메시지 바람 서점 유물 주식 축제 택배 햇빛 햇살 계단 농담 무역 베개 병원 빵 사진첩 시험 영화 자료 전시 전화 정류장 출근길 충전기 퇴근길 휴가
+휴대폰 디저트 레시피 배드민턴 버스 서류 소파 숙제 신발 야구 여행 지하철 책상 편의점 AI 공연 마트 말투 반찬 비 알림 엘리베이터 장바구니 카페 골목
+동네 문자 보안 수출 아빠 엄마 영상 침대 파일 한글 할인 고백 금요일 메모 소금 아버지 안부 운동 월요일 눈물 라디오 배달 연애 짝사랑 맛집 약 연락
+우승 거절 게임 공부 사랑 장보기 후회 반려동물 설렘 시장 통화 가을 겨울 봄 여름 요리 우주 음료 음악 지도 취업 감사 걱정 마우스 산책 서운함 우편물
+주말 하늘 고민 기후 다툼 사과 식당 약속 공원 모기 새벽 업무 오해 지출 만남 저녁밥 취미 부탁 쇼핑 절약 회사 휴식 건강 대전 부산 서울 스마트폰 제주
+청주 10대 20대 30대 40대 50대 60대 과학 첫인사 행사 모임 상담 집안일 퇴직 실수 응원 취향 식비 잔고 월급날 김치찌개 완벽 점심시간 점심때
+요청 수정 시계 메신저 수다 배달비 이체일 입꼬리 가격표 계산기 창가 창밖 옆자리 단톡방 밥상 그릇 문장 토요일 일요일 맞은편 TV 싱크대 숟가락
+전자레인지 곰탕 햇볕 셀카 주머니 장갑 조명 오타 단어 메뉴 습관 재료 포장 볶음밥 양배추 커버 스트레스 코드 챕터 우유 세제 옷걸이 첫눈 잔소리 입맛
+소식 양보 축하 생일 옷차림 냄새 주황빛 냉면 국 고장 결제 음악회 통장잔고 영어 국어 벚꽃 강아지풀 병아리 종이 딸기 책방 도서관 산더미 서른 음식 문제 창문 가게 공기
+위로 칭찬 혼잣말 앞날 질문 친절 준비 기억 시작 출발 결정 피곤 선택 안심 기대 긴장 인정 검색 대답 대화 인사 지원 실감`,
+  `혼자 성공 소리 옷 눈치 분위기 기회 간격 여유 계산 속도 결심 자존감 집중 장소 날짜 자리 바퀴 장면 타이밍 절반 결과 편지 모레 아침 점심 저녁 오후
+기분 가격 계획 밥 의자 손끝 조각 재촉 그리움 외로움 머리 밑단 접시 시간표 시각 단계 갈등 계절 페이지 일정 색 행복 토닥토닥 잠 부담 기운 어린이
+일상 옆구리 오랜만 자유 관심 깜빡 안전 고생 운동장 고구마 요가 장난감 동물원 어깨 목 마음 정신 짐 돈 느리게 자기비판 조급함 눈길`,
+  `하루 오늘 내일 어제 생각 시간 사람 일 말 몸 밤 낮 집 손 눈 문 길 물 차 끝 답 얘기 이야기 별일 매일 언젠가`
+];
+const TAG_ACTIONS = new Set(`완벽 고백 걱정 고민 지각 면접 출근 퇴근 연락 운동 친절 감사 준비 공부 후회 기억 생각 시작 출발 축하 양보 결정 거절 사랑 피곤 실수 수다 통화 요리
+선택 청소 빨래 설거지 쇼핑 약속 안심 합격 연애 기대 긴장 지출 인정 검색 사과 부탁 대답 대화 샤워 발표 산책 전화 인사 지원 칭찬 실감`.split(/\s+/));
+const TAG_PARTICLE = /^(?:(?:들)?(?:에게서|에게|한테서|한테|께서|께|에서|으로부터|으로서|으로써|으로|에까지|에라도|에|부터|까지|처럼|보다|밖에|만큼|마다|조차|대로|이랑|랑|하고|이라도|라도|이나|나|이든|든|과|와|은|는|을|를|이|가|로|의|도|만|엔|에선|서|인|이다|이다가|이라|라|이라서|라서|이고|이고도|인데|인데도|인지는|인지|일수록|이니까|니까|이었던|였던|이었다|였다)?(?:에는|에도|까지|부터|은|는|에|도|만|요|만이라도)?)$/u;
+const TAG_PREDICATE = /^(?:하|한|할|함|해|했|합니|됩니|되|된|될|돼|됐)[가-힣]*$/u;
+const tagRanks = new Map(TAG_WORDS.flatMap((words, rank) =>
+  words.split(/\s+/).map(word => [word.toLowerCase(), rank])));
+
+function standaloneTagName(token) {
+  return /^[A-Za-z][A-Za-z0-9]{1,13}$/.test(token) ||
+    (/^[가-힣]{2,10}$/u.test(token) && !/(?:다|요|어|아|했|네|지|까|고|게|서|는|은|면|든|만|야|죠|래|니|다가|려다가|지만|려고)$/u.test(token)
+      && !/^(?:그냥|정말|진짜|너무|조금|계속|다시|아직|벌써|누구|어디|이거|그거|저거|아무|아무것|함께|가끔|항상)$/u.test(token));
+}
+
 function suggestTags(body, limit = 5) {
-  const out = [], seen = new Set(), add = t => { if (t && !seen.has(t) && out.length < limit) { seen.add(t); out.push(t); } };
-  for (const [re, tag] of TAG_FEEL) if (re.test(body)) { add(tag); break; }
-  for (const raw of String(body).split(/[^가-힣A-Za-z0-9]+/)) {
-    let t = raw; if (t.length < 2) continue;
-    for (const s2 of TAG_SUFFIX) if (t.endsWith(s2) && t.length - s2.length >= 2) { t = t.slice(0, -s2.length); break; }
-    if (t.length < 2 || t.length > 12 || TAG_STOP.has(t) || TAG_VERB.test(t) || /^\d+$/.test(t) || /(스러운|로운|다운|스런)$/.test(t)) continue;   // 꾸밈말(사랑스러운, 자유로운…)은 빼요
-    add(t);
+  const tokens = String(body || '').match(/[가-힣A-Za-z0-9]+/gu) || [];
+  const matches = new Map();
+  const unknown = [];
+  for (const token of tokens) {
+    let recognized = false;
+    for (let length = token.length; length > 0; length--) {
+      const stem = token.slice(0, length);
+      const key = stem.toLowerCase();
+      const rank = tagRanks.get(key);
+      if (rank === undefined) continue;
+      const ending = token.slice(length);
+      if (!TAG_PARTICLE.test(ending) && !(TAG_ACTIONS.has(key) && TAG_PREDICATE.test(ending))) continue;
+      if (!matches.has(key)) matches.set(key, { tag: stem, rank });
+      recognized = true;
+      break;
+    }
+    if (!recognized) unknown.push(token);
   }
-  return out;
+  // A name outside the vocabulary can still be recognized by a noun particle.
+  for (const token of unknown) {
+    const name = token.match(/^([가-힣A-Za-z0-9]{2,14}?)(?:에서|에게|한테|이랑|으로부터|를|은|는|이|가)(?:도|는|만)?$/u)?.[1];
+    if (/(?:다가|기가|보는|가는|오는|하는|되는|있는|없는|같은|않은)$/u.test(token)) continue;
+    if (!name || /^(?:누구|요즘|지금|남들|지나|내일|오늘|자기|누군|누군가|하나|하루|거기|여기|저기|어디|이것|그것|저것|그곳|이곳|저곳|[0-9]+)$/u.test(name)
+      || /(?:다|하기|기기|하|되|리|르|오|가|같|않|싶|많|좋|작|적|늦|높|짧|낮|넓|찾|받|찍|읽|먹|남|닮|맞|젊|얇|입|싶은|하는|되는|있는|없는)$/u.test(name)) continue;
+    const key = name.toLowerCase();
+    if (!tagRanks.has(key) && !matches.has(key)) matches.set(key, { tag: name, rank: 1.5 });
+  }
+  if (!matches.size && tokens.length === 1 && standaloneTagName(tokens[0])) {
+    matches.set(tokens[0].toLowerCase(), { tag: tokens[0], rank: 1.5 });
+  }
+  if (!matches.size) return [];
+  const best = Math.min(...Array.from(matches.values(), item => item.rank));
+  return Array.from(matches.values()).filter(item => item.rank === best)
+    .slice(0, Math.min(limit, best === 2 ? 1 : 5)).map(item => item.tag);
 }
 let autoTagMode = true, manualTags = [], rejectedTags = new Set(), autoTagsNow = [];
 // 일반 카드의 첨부 사진은 비공개 저장소에서 읽을 때마다 서명합니다.
@@ -3105,6 +3155,7 @@ async function publishGuestCard(body) {
 }
 async function publishCard() {
   if (busy || submit.disabled || !client || !ready) return;
+  if (autoTagMode) refreshAutoTags();
   let body = text.value.replace(/\r\n?/g, '\n').trim(), values = parsedTags();
   if (!body || maskedTextLength(body) > 200 || !values) return;
   if (cardPhotoPreparing) { composeMessage.textContent = '첨부 파일을 준비하는 중이에요. 잠시 뒤 등록해 주세요.'; return; }
@@ -4054,7 +4105,7 @@ text.addEventListener('focus', syncComposeInkDisplay);
 text.addEventListener('blur', syncComposeInkDisplay);
 text.addEventListener('compositionstart', () => { composeInkComposing = true; syncComposeInkDisplay(); });
 text.addEventListener('compositionend', () => { composeInkComposing = false; if (autoTagMode) refreshAutoTags(); updateComposer(); });
-tags.addEventListener('input', () => { noteTagEdit(); updateComposer(); recordDraft(); });
+tags.addEventListener('input', () => { noteTagEdit(); updateComposer(); });
 tags.addEventListener('focus', () => updateComposer()); tags.addEventListener('blur', () => updateComposer());
 window.addEventListener('resize', () => { if (!backdrop.hidden) updateComposer(); requestTagFit(); });
 document.fonts?.addEventListener?.('loadingdone', () => { if (!backdrop.hidden) updateComposer(); requestTagFit(); });
