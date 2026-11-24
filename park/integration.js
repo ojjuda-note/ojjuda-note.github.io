@@ -508,6 +508,12 @@
     const link = event.target.closest?.('a[href]'); if (!link) return;
     const url = new URL(link.href, location.href);
     if (url.origin !== location.origin) return;
+    if (link.hasAttribute('data-park-open-settings')) {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      navigate('settings');
+      return;
+    }
     if (link.matches('.brand')) { event.preventDefault(); navigate('feed'); return; }
     if (url.pathname === '/world.html' && !url.search) { event.preventDefault(); navigate('world'); return; }
     if (url.pathname === '/world.html' || url.pathname === '/' || url.pathname === '/guide.html' || url.pathname === '/features/organization/') {
