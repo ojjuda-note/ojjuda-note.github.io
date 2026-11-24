@@ -10,7 +10,7 @@
     agit: {
       key: 'agit', name: '오쭈다 아지트', path: '/world.html',
       icons: '/', manifest: '/manifest.webmanifest',
-      note: '게임과 공원을 이용하려면 인터넷 연결이 필요해요.'
+      note: '아지트 기능을 이용하려면 인터넷 연결이 필요해요.'
     },
     park: {
       key: 'park', name: '오쭈다 공원', path: '/park/',
@@ -93,20 +93,10 @@
       html[data-play-store-agit="true"] a[href*="tab=arcade"],
       html[data-play-store-agit="true"] a[href*="place=arcade"],
       html[data-play-store-agit="true"] a[href*="/arcade/"],
-      html[data-play-store-agit="true"] a[href*="/games/"],
       html[data-play-store-agit="true"] [data-act="game-open"],
       html[data-play-store-agit="true"] [data-game],
       html[data-play-store-agit="true"] [data-game-id],
-      html[data-play-store-agit="true"] [data-v] {
-        display: none !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-      }
-      html[data-play-store-agit="true"] [data-tab="arcade"],
-      html[data-play-store-agit="true"] [data-place="arcade"],
-      html[data-play-store-agit="true"] [data-id="arcade"] {
-        aria-hidden: true;
-      }`;
+`;
     document.head.appendChild(safeStyle);
 
     const blockPlayStoreGameAction = event => {
