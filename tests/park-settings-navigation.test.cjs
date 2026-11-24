@@ -94,10 +94,16 @@ test('standalone mobile and desktop settings buttons open the canonical settings
         assert.equal(testLink.target, '_top');
         assert.deepEqual([...f.root().querySelectorAll('.ojjuda-service-banner')].map(link=>link.dataset.service),['agit','pajang']);
         assert.ok(f.root().querySelector('.ojjuda-settings-group .ojjuda-settings-list .ojjuda-settings-row'));
-        assert.ok(f.setting('notifications'));
+        assert.deepEqual([...f.root().querySelectorAll('.ojjuda-settings-heading')].map(el=>el.textContent),
+          ['내 정보','앱 다운로드','이용 설정','활동·도움']);
+        for (const id of ['events','event-new','notifications']) assert.equal(f.setting(id),null);
+        for (const [id,key] of [['profile','profile'],['friends','friends'],['friend-alert','notifications']]) {
+          if (!member) { assert.equal(f.setting(id),null); continue; }
+          assert.equal(f.setting(id).getAttribute('href'),'/world.html?tab=my&setting='+key);
+          assert.equal(f.setting(id).target,'_top');
+        }
         assert.ok(f.setting('charge'));
-        assert.equal(!!f.setting('events'),member);
-        assert.equal(!!f.setting('event-new'),member);
+        assert.deepEqual([...f.root().querySelectorAll('[data-store-app]')].map(el=>el.dataset.storeApp),['agit','pajang','park']);
         await f.back();
         assert.equal(f.management().hidden,true);
       }

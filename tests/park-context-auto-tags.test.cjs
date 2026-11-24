@@ -72,11 +72,15 @@ assert.match(source, /!blockedAuto\.has\(tag\)/,
 assert.match(source, /typeof autoTagMode !== 'undefined' && autoTagMode/,
   'only new automatic tags, not manually authored tags, are affected');
 const page = fs.readFileSync(path.join(root, 'park/index.html'), 'utf8');
-assert.match(page, /\/note\/preview\.js\?v=20261125-park-word-boundaries1/,
+assert.match(page, /\/note\/preview\.js\?v=20261125-park-word-boundaries2/,
   'the park must load the updated file without a stale cache');
-assert.deepEqual(JSON.parse(fs.readFileSync(path.join(root, 'park/version.json'), 'utf8')),
-  { version: '1.7.9' });
-assert.match(fs.readFileSync(path.join(root, 'world.html'), 'utf8'), /\/park\/world-park-notes\.js\?v=20261125-park-word-boundaries1/);
-assert.match(fs.readFileSync(path.join(root, 'world.html'), 'utf8'), /park:\{name:'공원',version:'1\.7\.9',manifest:'\/park\/version\.json'\}/);
-assert.match(fs.readFileSync(path.join(root, 'park/world-park-notes.js'), 'utf8'), /frameVersion = '20261125-park-word-boundaries1'/);
+const parkVersion = JSON.parse(fs.readFileSync(path.join(root, 'park/version.json'), 'utf8')).version;
+const [major,minor,patch] = parkVersion.split('.').map(Number);
+assert.ok(major > 1 || (major === 1 && (minor > 7 || (minor === 7 && patch >= 8))),
+  'Park includes the 1.7.8 automatic tag release');
+const world = fs.readFileSync(path.join(root, 'world.html'), 'utf8');
+assert.match(world, /\/park\/world-park-notes\.js\?v=20261125-park-word-boundaries2/);
+assert.ok(world.includes(`park:{name:'공원',version:'${parkVersion}',manifest:'/park/version.json'}`),
+  'world fallback and Park manifest must agree');
+assert.match(fs.readFileSync(path.join(root, 'park/world-park-notes.js'), 'utf8'), /frameVersion = '20261125-park-word-boundaries2'/);
 console.log('PASS: automatic park tags are literal words from the text; manual tags and cache preserved');

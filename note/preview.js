@@ -2257,7 +2257,6 @@ function installFeatures() {
       getActive: () => tagTabOn ? 'tag' : feedSort, select: selectSort,
       enabled: () => feedMode === 'all' });
   }
-  $('#event-start').addEventListener('click', () => openComposer('event'));
   $('#event-photo-file').addEventListener('change', event => {
     const file = event.target.files?.[0]; event.target.value = '';
     if (file) void selectEventPhoto(file);

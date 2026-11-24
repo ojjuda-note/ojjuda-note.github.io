@@ -105,6 +105,12 @@ if(parent!==window){
       const canonicalSettings=page.locator('[data-park-settings-root]');
       await canonicalSettings.waitFor({state:'visible'});
       assert.equal(new URL(page.url()).search,'','the settings button opens the canonical dialog in place');
+      assert.deepEqual(await canonicalSettings.locator('.ojjuda-settings-heading').allTextContents(),
+        ['내 정보','앱 다운로드','이용 설정','활동·도움']);
+      assert.equal(await canonicalSettings.getByText(/^(내 이벤트|이벤트 만들기|알림)$/).count(),0);
+      assert.equal(await page.locator('#note-sidebar-menu-slot #event-start').count(),0);
+      assert.equal(await canonicalSettings.getByRole('link',{name:'친구 신청 알림'}).getAttribute('href'),
+        '/world.html?tab=my&setting=notifications');
       await page.getByRole('button',{name:'관리창 닫기'}).click();
       await canonicalSettings.waitFor({state:'hidden'});
       await page.goto(origin+'/park/?view=settings');

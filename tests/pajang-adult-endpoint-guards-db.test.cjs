@@ -112,8 +112,10 @@ begin
   };
   await login({sub:account});
   await check(false); // no identity: old implementations erroneously accepted this case
-  await birth(18);
-  await check(false); // teen account, even when its private person record already exists
+  for(const age of [12,13,14,18]){
+    await birth(age);
+    await check(false); // An existing Pajang record or a Park account never waives the adult check.
+  }
   await birth(19);
   await check(true);
   await birth(20);

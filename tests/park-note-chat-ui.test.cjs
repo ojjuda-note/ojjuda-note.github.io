@@ -128,7 +128,7 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  assert.equal(await frame.locator('#compose-box-transparency-value').inputValue(),'37');
  assert.equal(await frame.locator('#card-photo-file,#event-photo-file,#compose-effect,#compose-box-transparency').count(),4,'all photo and styling controls migrated');
  assert.equal(await frame.locator('[data-sort]').count()>2,true,'latest, popular and nearby sorting migrated');
- assert.equal(await frame.locator('#note-account-menu #event-start').count(),1,'event authoring migrated');
+ assert.equal(await frame.locator('#note-account-menu #event-start').count(),0,'retired event shortcut is absent from the Park menu');
  assert.equal(await frame.locator('#note-change-nickname,#note-change-password,#note-logout').count(),3,'account tools remain available');
  assert.equal(await frame.locator('#note-delete-account').count(),0,'withdrawal is available through support, not the legacy account menu');
  assert.equal(await frame.locator('[data-collection]').count()>=2,true,'saved and owned cards migrated');
