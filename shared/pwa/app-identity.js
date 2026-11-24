@@ -123,6 +123,14 @@
           control.setAttribute('aria-hidden', 'true');
         }
       });
+      const textWalker = document.createTreeWalker(root, 4);
+      let textNode;
+      while ((textNode = textWalker.nextNode())) {
+        textNode.nodeValue = textNode.nodeValue.replace(
+          '게임부터 일상 이야기까지, 한곳에서.',
+          '일상 이야기부터 운세까지, 한곳에서.'
+        );
+      }
     };
     hidePlayStoreGameEntrances(document);
     const gameEntranceObserver = new MutationObserver(records => {
