@@ -16,7 +16,7 @@ def source_hashes():
             for p in sorted(assets)}
 
 
-def render(url, chromium, combinations, capture_dir=None):
+def render(url, chromium, combinations, capture_dir=None, all_items=False):
     from playwright.sync_api import sync_playwright
     with sync_playwright() as runner:
         browser = runner.chromium.launch(executable_path=chromium, args=["--disable-gpu", "--no-sandbox"])
@@ -50,6 +50,70 @@ def render(url, chromium, combinations, capture_dir=None):
             button.click()
             page.wait_for_function("n => window.fitDrawCount > n", arg=before)
 
+        def select_category(label):
+            page.locator("#cats button").filter(has_text=label).click()
+
+        def apply_step(step):
+            select_category(step["category"])
+            if "item" in step:
+                click_and_wait(page.locator("#items").get_by_role("button", name=step["item"], exact=True))
+            if "color" in step:
+                click_and_wait(page.locator("#wardrobeColors").get_by_role("button", name=step["color"], exact=True))
+
+        def catalog_cases():
+            # Discover the actual UI catalogue, including every displayed color.
+            baseline = "로즈 클래식"
+            excluded = {("하의", "클래식 플리츠 스커트"), ("신발", "버클 앵클부츠")}
+            inventory = {}
+            for button in page.locator("#cats button").all_text_contents():
+                category = button.rsplit(" ", 1)[0]
+                if category == "배경":
+                    continue
+                click_and_wait(page.locator("#looks").get_by_role("button", name=baseline, exact=True))
+                select_category(category)
+                names = page.locator("#items button").evaluate_all(
+                    "(buttons) => buttons.map(b => b.getAttribute('aria-label'))")
+                if None in names or len(names) != len(set(names)):
+                    raise RuntimeError(f"아이템 이름을 구분할 수 없습니다: {category}")
+                options = []
+                for name in names:
+                    if (category, name) in excluded:
+                        continue
+                    select_category(category)
+                    click_and_wait(page.locator("#items").get_by_role("button", name=name, exact=True))
+                    colors = page.locator("#wardrobeColors button").all_text_contents()
+                    if len(colors) != len(set(colors)):
+                        raise RuntimeError(f"색상 이름이 중복됩니다: {category} / {name}")
+                    for color in colors or [None]:
+                        step = {"category": category, "item": name}
+                        if color is not None:
+                            step["color"] = color.strip()
+                        options.append(step)
+                inventory[category] = options
+            if not inventory.get("헤어") or not any(
+                step["item"] == "골지 니트" for step in inventory.get("상의", [])
+            ):
+                raise RuntimeError("골지 니트 또는 헤어 검사 목록이 비어 있습니다.")
+
+            def key(step):
+                return step["category"] + "/" + step["item"] + (
+                    "/" + step["color"] if "color" in step else "")
+
+            cases = []
+            for options in inventory.values():
+                for step in options:
+                    cases.append(("전수/ " + key(step), baseline, [step]))
+            # A top or dress that looks correct with one hair can expose a hole
+            # with another. Check the full cross-product, including no hair.
+            for category in ("상의", "원피스"):
+                for garment in inventory.get(category, []):
+                    if garment["item"] == "장착 안 함":
+                        continue
+                    for hair in inventory["헤어"]:
+                        cases.append(("헤어교차/ " + key(garment) + " + " + key(hair),
+                                      baseline, [garment, hair]))
+            return cases
+
         result = {}
         captures = []
         if capture_dir:
@@ -59,13 +123,12 @@ def render(url, chromium, combinations, capture_dir=None):
             if name in names:
                 raise RuntimeError(f"추가 조합 이름이 추천 코디와 겹칩니다: {name}")
             cases.append((name, recipe["look"], recipe["steps"]))
+        if all_items:
+            cases.extend(catalog_cases())
         for name, base, steps in cases:
             click_and_wait(page.locator("#looks").get_by_role("button", name=base, exact=True))
             for step in steps:
-                page.locator("#cats button").filter(has_text=step["category"]).click()
-                target = "#items" if "item" in step else "#wardrobeColors"
-                label = step.get("item") or step["color"]
-                click_and_wait(page.locator(target).get_by_role("button", name=label, exact=True))
+                apply_step(step)
             result[name] = page.evaluate("""async () => {
               const poses = [...document.querySelectorAll('#poses button')].map(button =>
                 [button.textContent.trim(), button.querySelector('canvas')]);
@@ -137,6 +200,7 @@ def main():
     parser.add_argument("--render", action="store_true", help="소스가 같아도 픽셀 지문 확인")
     parser.add_argument("--chromium", help="설치된 Chromium 실행 파일")
     parser.add_argument("--cases", type=Path, help="추가로 검사할 착용 조합 JSON")
+    parser.add_argument("--all-items", action="store_true", help="두 제외 디자인 외 모든 아이템·색상 및 상의/원피스와 헤어 교차 검사")
     parser.add_argument("--capture-dir", type=Path, help="실제 원본 PNG 및 보간 없는 4배 확대 PNG 저장")
     parser.add_argument("--report", type=Path, help="재검사 대상과 현재 픽셀 지문을 JSON으로 저장")
     args = parser.parse_args()
@@ -150,12 +214,12 @@ def main():
         if combinations.keys() & extra.keys():
             parser.error("추가 검사 조합의 이름이 등록된 조합과 겹칩니다.")
         combinations.update(extra)
-    if (not args.url and not args.render and not args.cases and not args.capture_dir and registry["completeSnapshot"]
+    if (not args.url and not args.render and not args.cases and not args.capture_dir and not args.all_items and registry["completeSnapshot"]
             and source_hashes() == registry["sources"]):
         skipped = sum(len(poses) for poses in approved.values())
         pending = {}
     else:
-        skipped, pending = compare(render(args.url, args.chromium, combinations, args.capture_dir), approved)
+        skipped, pending = compare(render(args.url, args.chromium, combinations, args.capture_dir, args.all_items), approved)
     print(f"재검사 제외 {skipped}건 · 확인 필요 {sum(map(len, pending.values()))}건")
     for look, poses in pending.items():
         print(f"{look} — {', '.join(poses)}")
