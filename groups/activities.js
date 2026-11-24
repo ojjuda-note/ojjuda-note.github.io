@@ -464,6 +464,7 @@
         changingVote = false;
         if (action==='activity_draw') { lane=null; finish=null; reverse=false; showAll=false; revealed=false; }
         render();
+        if (action==='activity_draw' && a.kind==='wheel' && state.result) await reveal(0);
         if (action==='activity_vote') panel.querySelector('[data-results-heading]')?.focus();
       } catch (err) {
         if (!d.isConnected) return;

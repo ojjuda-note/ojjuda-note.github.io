@@ -15,7 +15,7 @@ test('invitation failures retain age gates and retry controls in Chromium',async
           window.OJJUDA_CONFIG={supabaseUrl:'https://example.supabase.co',supabaseKey:'public'};
           const invitations=[{id:invite,room_id:room,group_name:'성인 모임',sender_name:'친구',age_policy:'adults',age_eligible:eligible}];
           window.supabase={createClient:()=>({auth:{getUser:async()=>({data:{user:{id}}}),onAuthStateChange:()=>{}},rpc:async(name,args)=>{
-            const action=name==='group_home'?'home':args.p_action;calls.push(action);
+            const action=name==='group_home_sorted'?'home':args.p_action;calls.push(action);
             if(action==='home')return {data:{rooms:[],directory:[],invitations}};
             if(action==='decline'){
               if(window.retry)return {data:{ok:true}};

@@ -64,7 +64,7 @@ const sharedCode=()=>{const code=new URLSearchParams(location.hash.slice(1)).get
 const bucket='group-media', types={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif','image/avif':'avif','video/mp4':'mp4','video/webm':'webm','video/quicktime':'mov','video/x-m4v':'m4v'};
 const dayOf=v=>new Date(v).toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'}), today=()=>dayOf(Date.now());
 const dateText=(v,all=false)=>new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'long',day:'numeric',weekday:'short',...(all?{}:{hour:'2-digit',minute:'2-digit'})}).format(new Date(v));
-let client,user,rooms=[],posts=[],directory=[],directoryQuery='',directoryDraft='',directorySort='activity',onlyMine=false,directoryHasMore=false,roomId=null,view='list',filter='all',query='',queryDraft='',date='',month=today().slice(0,7),more=false,epoch=0,loading=false,observer,toastTimer,authEpoch=0,refreshTimer,navigationRun=0,directoryLoading=false,refreshRequest=null,mutationRun=0,mutating=0,invitationRun=0;
+let client,user,rooms=[],posts=[],directory=[],directoryQuery='',directoryDraft='',directorySort='activity',onlyMine=false,directoryHasMore=false,roomId=null,view='list',filter='all',query='',queryDraft='',date='',month=today().slice(0,7),more=false,epoch=0,loading=false,observer,toastTimer,authEpoch=0,navigationRun=0,directoryLoading=false,refreshRequest=null,mutationRun=0,mutating=0,invitationRun=0;
 const reads=new Map(),signatures=new WeakMap();let renderedRoomId=null;
 const mediaCache=new Map(),mediaPending=new Map(),mediaQueue=[];
 let mediaBytes=0,mediaActive=0,mediaGeneration=0;
@@ -184,7 +184,7 @@ function route(id=null){
  else if(new URL(href,location.href).href!==location.href)pushGroupState(groupRouteState(),href);
  render();void loadFeed();
 }
-function render(){epoch++;clearTimeout(refreshTimer);loading=false;directoryLoading=false;clearMedia();const r=currentRoom();renderedRoomId=r?.id||null;
+function render(){epoch++;loading=false;directoryLoading=false;clearMedia();const r=currentRoom();renderedRoomId=r?.id||null;
 $('#app').innerHTML=`<section class="hero${r?' group-room-hero':''}" ${r?GroupAppearance.attributes(r):''}>${r?GroupAppearance.artwork(r,true):''}<div class="hero-top"><h1>${esc(r?.name||'그룹')}</h1>${r?'':`<button type="button" class="mine-toggle" data-action="mine" aria-pressed="${onlyMine}" aria-label="${onlyMine?'전체 그룹 보기':'내 그룹만 보기'}">${onlyMine?'전체 그룹':'내 그룹'}</button>`}</div><div class="actions">${r?'<button data-action="home">← 그룹 목록</button>':'<button class="primary" data-action="create">＋ 그룹 만들기</button>'}<button type="button" class="page-share" data-action="share-page" aria-label="${r?'그룹 페이지 공유':'그룹 목록 페이지 공유'}">↗ 페이지 공유</button></div></section>
 ${!r?`<section class="toolbar directory-toolbar"><form class="group-search-form" data-group-search="directory" role="search"><input type="search" id="directory-query" maxlength="100" enterkeyhint="search" value="${esc(directoryDraft)}" placeholder="그룹 이름 검색" aria-label="그룹 이름 검색"><button type="submit" class="group-search-button" aria-label="그룹 검색" title="검색">${searchIcon}</button></form><div class="directory-sort" role="group" aria-label="그룹 정렬">${[['activity','최근활동'],['members','회원수'],['created','최근생성']].map(([key,label])=>`<button type="button" data-sort="${key}" class="${directorySort===key?'active':''}" aria-pressed="${directorySort===key}">${label}</button>`).join('')}</div></section><section id="group-invitations" class="feed" hidden></section><section id="directory" class="feed" aria-label="그룹 목록" aria-live="polite"><p class="empty">불러오는 중…</p></section><button class="more" id="directory-more" hidden>더 보기</button>`:
 `<div class="room-context"><p class="muted">${r.description?'<span class="room-desc" title="'+esc(r.description)+'">'+esc(r.description)+'</span><span class="room-sep"> · </span>':''}<span class="room-count">${r.member_count}명</span> ${Age.badge(r)}</p><div class="actions">${r.deleting||r.age_eligible===false?'':'<button data-action="share">초대 공유</button>'}${r.age_eligible!==false||r.owner_id===user.id?`<button data-action="manage">${r.owner_id===user.id?'그룹 관리':'그룹원'}</button>`:''}</div></div>
@@ -199,7 +199,7 @@ for (const form of $('#app').querySelectorAll('[data-group-search]')) {
   event.preventDefault();
   if(directorySearch){
    directoryDraft=input.value;directoryQuery=directoryDraft.trim();epoch++;directoryLoading=false;
-   void loadDirectory();
+   void loadHome();
   }else{
    queryDraft=input.value;query=queryDraft.trim();epoch++;loading=false;void loadFeed();
   }
@@ -211,6 +211,8 @@ if(!r)void loadHome();}
 async function reloadRooms(){const run=mutationRun,data=await api('rooms');if(run!==mutationRun)return;rooms=data;if(roomId&&!rooms.some(r=>r.id===roomId)){clearMedia(true);roomId=null;replaceGroupRoute(location.pathname);}}
 async function refresh({quiet=false}={}){
  if(refreshRequest?.run===navigationRun&&refreshRequest.mutation===mutationRun)return refreshRequest.promise;
+ // Do not replace an in-flight directory search with an automatic refresh.
+ if(quiet&&directoryLoading)return;
  const run=navigationRun,mutation=mutationRun,prior=JSON.stringify(currentRoom());
  const request=(async()=>{try{
   if(!roomId){if(!$('#directory'))render();await loadHome({preserve:quiet});return;}
@@ -426,13 +428,13 @@ async function loadMedia(slot,p,f,priority=0){
 }
 async function handleClick(e){const b=e.target.closest('button');if(!b||b.disabled)return;try{
 if(b.dataset.acceptInvite||b.dataset.declineInvite){const row=b.closest('article');if(row.dataset.busy)return;const controls=[...row.querySelectorAll('button')].map(button=>({button,disabled:button.disabled}));row.dataset.busy='yes';controls.forEach(({button})=>button.disabled=true);try{const accepted=!!b.dataset.acceptInvite,data=await invitationApi(accepted?'accept':'decline',{id:b.dataset.acceptInvite||b.dataset.declineInvite});if(accepted){await reloadRooms();route(data.room_id);notify('그룹에 가입했어요.');}else{await loadInvitations();notify('초대를 거절했어요.');}}finally{delete row.dataset.busy;controls.forEach(({button,disabled})=>button.disabled=disabled);}return;}
-if(b.dataset.action==='mine'){onlyMine=!onlyMine;epoch++;directoryLoading=false;clearTimeout(refreshTimer);b.textContent=onlyMine?'전체 그룹':'내 그룹';b.setAttribute('aria-pressed',String(onlyMine));b.setAttribute('aria-label',onlyMine?'전체 그룹 보기':'내 그룹만 보기');directory=[];directoryHasMore=false;const box=$('#directory');signatures.delete(box);box.innerHTML='<p class="empty">불러오는 중…</p>';await loadDirectory();return;}
+if(b.dataset.action==='mine'){onlyMine=!onlyMine;epoch++;directoryLoading=false;b.textContent=onlyMine?'전체 그룹':'내 그룹';b.setAttribute('aria-pressed',String(onlyMine));b.setAttribute('aria-label',onlyMine?'전체 그룹 보기':'내 그룹만 보기');directory=[];directoryHasMore=false;const box=$('#directory');signatures.delete(box);box.innerHTML='<p class="empty">불러오는 중…</p>';await loadHome();return;}
  if(b.dataset.sort){
   if(!['activity','members','created'].includes(b.dataset.sort)||directorySort===b.dataset.sort)return;
   directorySort=b.dataset.sort;
   document.querySelectorAll('[data-sort]').forEach(button=>{const active=button.dataset.sort===directorySort;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});
   directory=[];directoryHasMore=false;epoch++;directoryLoading=false;
-  await loadDirectory();return;
+  await loadHome();return;
  }
  if(b.dataset.room!==undefined){route(b.dataset.room||null);return;}
 if(b.dataset.request||b.dataset.cancelRequest){
