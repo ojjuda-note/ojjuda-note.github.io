@@ -101,7 +101,7 @@ export function AccountSettings({profileId,onOpen}:{profileId:string;onOpen:(act
           <span className="ojjuda-settings-label">오쭈다 공원</span><span className="ojjuda-settings-arrow" aria-hidden="true">↗</span>
         </a>
       </div>
-      <p className="app-store-note">앱을 선택하면 Google Play 페이지가 열립니다. 비공개 테스트 앱은 참여한 Google 계정으로 설치할 수 있어요.</p>
+      <p className="app-store-note">앱 이름을 누르면 Google Play 페이지가 열립니다. 아지트 비공개 테스트 참여가 필요하면 <a href="https://play.google.com/apps/testing/kr.ojjuda.agit" target="_blank" rel="noopener noreferrer">먼저 참여</a>한 뒤 설치하세요.</p>
     </section>
     <section className="ojjuda-settings-group" aria-labelledby="account-access-title">
       <h2 className="ojjuda-settings-heading" id="account-access-title">계정 관리</h2>
