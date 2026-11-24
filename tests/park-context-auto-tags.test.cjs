@@ -5,7 +5,7 @@ const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'note/preview.js'), 'utf8');
-const start = source.indexOf('// 자동 태그:');
+const start = source.indexOf('// 자동 태그는');
 const end = source.indexOf('let autoTagMode = true', start);
 assert.ok(start >= 0 && end > start, 'literal tag helper must exist in the composer');
 
