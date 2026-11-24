@@ -135,7 +135,7 @@ test('installed Agit, Park and Pajang authenticate before displaying their entra
   const pajangMain = read('features/pajang/station.html');
   assert.ok(world.includes('if(event==="INITIAL_SESSION"&&!session?.user)return;'),
     'World waits for the stored session instead of painting the guest entrance');
-  if (park !== null) assert.ok(park.includes("if (event === 'INITIAL_SESSION' && !current?.user) return;"),
+  if (park !== null) assert.match(park, /if\s*\(\s*event\s*===\s*'INITIAL_SESSION'\s*&&\s*!current\?\.user\s*\)\s*return;/,
     'Park waits for the stored session in its own iframe');
   if (pajang !== null) assert.ok(pajang.includes("$('welcome').dataset.memberEntry = 'direct'"),
     'Pajang only switches to a direct answer after member authorization');

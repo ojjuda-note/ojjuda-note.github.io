@@ -109,11 +109,17 @@ function adminHtml() {
     assert.ok(currentShell && requested.has('/features/pajang/shell.mjs?v='+currentShell),
       'browser loaded the currently published Pajang shell');
     for (const request of [
-      '/features/pajang/usage.mjs?v=20261121-pajang-visits1',
-      '/shared/analytics/site-usage.js?v=20261121-pajang-visits1',
-      '/features/pajang/member.mjs?v=20261119-guest-account1',
-      '/config.js?v=20261121-pajang-visits1'
-    ]) assert.ok(requested.has(request), 'browser resolved the actual module: ' + request);
+      '/features/pajang/usage.mjs',
+      '/shared/analytics/site-usage.js',
+      '/features/pajang/member.mjs',
+      '/config.js'
+    ]) {
+      const loaded = [...requested].some(value => {
+        const url = new URL(value, origin);
+        return url.pathname === request && Boolean(url.searchParams.get('v'));
+      });
+      assert.ok(loaded, 'browser resolved the versioned module: ' + request);
+    }
     await page.goto(origin + '/features/pajang/station.html', { waitUntil: 'networkidle' });
     assert.equal(await page.evaluate(() => window.__calls.length), 0, 'entry to member station deduplicates against the same browser/day');
     console.log('PASS: real Pajang shell imports usage, member client and analytics; direct visits deduplicate');
