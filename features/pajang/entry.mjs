@@ -1,5 +1,5 @@
-import {call, client, sameMember, requireMember, showGate, answeredRound} from './member.mjs?v=20261119-guest-account1';
-import {mountStation, prepareProgram} from './load-station.mjs?v=20261123-fast-start1';
+import {call, client, sameMember, requireMember, showGate, answeredRound} from './member.mjs?v=20261125-adult-entry1';
+import {mountStation, prepareProgram} from './load-station.mjs?v=20261125-adult-entry1';
 import {enhanceGuestGate} from './entry-design.mjs?v=20261122-org-display-only1';
 import {prepareLocation} from './location.mjs?v=20261119-kma-current1';
 import {themeFor, interests} from './questions.mjs?v=20261120-question-copy1';
@@ -235,12 +235,12 @@ async function start(firstEntry) {
 
 let entryAction;
 let entry = await requireMember(user => entryAction=answeredRound()===user?'state':'entry', db=>{
-  // Authorize alongside membership, then download only when the member needs the main screen.
+  // Warm the private program once the server authorizes this account.
   const ready=new Promise(resolve=>{openProgram=resolve;});
   program=prepareProgram(db,ready);
   program.catch(()=>{program=undefined;});
 }, result=>{
-  // A slow identity endpoint must not serialize the download after a successful member read.
+  // The entry form only needs the private program when it opens the main screen.
   const needed=entryAction==='state'
     ? result?.authenticated&&(result.me?.body||view==='feed')
     : result?.body||(view==='feed'&&result?.joined);
