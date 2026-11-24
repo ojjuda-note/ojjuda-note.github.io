@@ -35,7 +35,7 @@ function domFor(t, markup = '<main id="app"></main>') {
   return { window, document: window.document, run: code => new vm.Script(code).runInContext(dom.getInternalVMContext()) };
 }
 
-function composer(t, { kind = 'memo', edit = false, guest = false } = {}) {
+function composer(t, { kind = 'memo', edit = false, guest = false, suggest = () => [] } = {}) {
   const fixture = domFor(t, html), { window, document, run } = fixture;
   const writes = [], effects = [], drafts = { cancelled: 0, cleared: 0 };
   let error = null, stored;
@@ -49,6 +49,7 @@ function composer(t, { kind = 'memo', edit = false, guest = false } = {}) {
     auth: { getUser: async () => ({ data: { user: { id: USER } } }) },
     schema() { return {
       async rpc(name, args) {
+        if (name === 'suggest_card_tags') return { data: await suggest(args.p_body) };
         if (name.startsWith('publish_') || name === 'update_my_event') return write(name, args);
         assert.ok(['set_my_gender', 'set_card_style'].includes(name), `unexpected RPC: ${name}`);
         return { data: {} };
@@ -349,5 +350,72 @@ for (const view of ['inquiries', 'feedback']) {
     await f.send();
     assert.equal(f.writes.length, 1);
     assert.equal(f.writes[0].args.p_body ?? f.writes[0].args.body, body);
+  });
+}
+
+test('Park composer rejects server word fragments on input and publish without changing manual and removed tags', async t => {
+  const body = '돈가스를 먹고 사랑니 때문에 병원에 갔다. 친구랑 산책했어요.';
+  const oldBody = '옛날에 게임했어요.';
+  let completeOld, completeCurrent;
+  const oldResponse = new Promise(resolve => { completeOld = resolve; });
+  const currentResponse = new Promise(resolve => { completeCurrent = resolve; });
+  let matchingRequests = 0;
+  const {window, document, run, send, writes} = composer(t, {suggest: text => {
+    if (text === oldBody) return oldResponse;
+    assert.equal(text, body);
+    if (++matchingRequests === 1) return currentResponse;
+    return ['돈', '사랑', '친구', '산책', '돈가스'];
+  }});
+  const timers = [];
+  window.setTimeout = callback => { timers.push(callback); return timers.length; };
+  window.clearTimeout = () => {};
+  document.getElementById('compose-text').value = oldBody;
+  run("autoTagMode = true; manualTags = ['사용자태그']; refreshAutoTags(); scheduleServerAutoTags()");
+  const pendingOld = timers.shift()();
+  const input = document.getElementById('compose-tags');
+  document.getElementById('compose-text').value = body;
+  run('refreshAutoTags(); scheduleServerAutoTags()');
+  assert.match(input.value, /돈가스|사랑니|병원/);
+  const pendingCurrent = timers.shift()();
+  completeCurrent(['돈', '사랑', '병원', '친구', '산책']); await pendingCurrent;
+  assert.equal(input.value, '사용자태그, 병원, 친구, 산책');
+  completeOld(['게임']); await pendingOld;
+  assert.equal(input.value, '사용자태그, 병원, 친구, 산책', 'late response cannot replace tags for newer body');
+  input.value = '사용자태그, 병원, 산책'; run('noteTagEdit()');
+  await send();
+  assert.deepEqual(writes.at(-1).args.p_tags, ['사용자태그', '산책', '돈가스']);
+});
+
+for (const [requestBody, expected, serverTags] of [
+  ['완벽은 없다', ['완벽'], []],
+  ['돈가스를 먹었다.', ['돈가스'], ['돈']],
+  ['사랑니가 아파서 병원에 갔다.', ['사랑니', '병원'], ['사랑']],
+  ['목걸이 샀어', ['목걸이'], ['목걸']],
+  ['떡볶이 먹었어', ['떡볶이'], ['떡볶']]
+]) {
+  test(`Park guest and member preview and member publication preserve whole tags: ${requestBody}`, async t => {
+    for (const guest of [true, false]) {
+      const f = composer(t, { guest, suggest: body => {
+        assert.equal(body, requestBody);
+        return serverTags;
+      }});
+      f.document.getElementById('compose-text').value = requestBody;
+      const timers = [];
+      f.window.setTimeout = callback => { timers.push(callback); return timers.length; };
+      f.window.clearTimeout = () => {};
+      f.run('refreshAutoTags(); scheduleServerAutoTags()');
+      const input = f.document.getElementById('compose-tags');
+      assert.equal(input.value, expected.join(', '));
+      assert.equal(timers.length, guest ? 0 : 1);
+      if (!guest) await timers.shift()();
+      assert.equal(input.value, expected.join(', '));
+      await f.send();
+      const sent = f.writes.at(-1);
+      if (guest) {
+        assert.equal(sent.name, 'publish_guest_card');
+        assert.equal(sent.args.p_body, requestBody);
+        assert.equal('p_tags' in sent.args, false, 'guest tags remain generated on the server');
+      } else assert.deepEqual(sent.args.p_tags, expected);
+    }
   });
 }

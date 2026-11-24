@@ -551,10 +551,10 @@ const TAG_LITERAL_WORDS = Object.freeze([
   '면접', '불합격', '합격', '이력서', '월세', '월급', '카드값', '통장',
   '퇴근길', '출근길', '퇴근', '출근', '회의', '동료', '메일', '회사',
   '비밀번호', '휴대폰', '답장', '메시지', '연락', '전화', '문자',
-  '고백', '짝사랑', '사랑', '설렘', '외로움', '친구', '가족', '부모님', '엄마', '아빠',
-  '세탁기', '운동화', '슬리퍼', '엘리베이터', '충전기', '냉장고',
+  '고백', '짝사랑', '사랑니', '병원', '사랑', '설렘', '외로움', '친구', '가족', '부모님', '엄마', '아빠',
+  '세탁기', '운동화', '슬리퍼', '엘리베이터', '충전기', '냉장고', '목걸이',
   '화분', '새잎', '강아지', '고양이', '산불', '지도', '로봇',
-  '빵집', '붕어빵', '카페', '커피', '과자', '라면', '국수', '김치', '국물',
+  '빵집', '붕어빵', '카페', '커피', '과자', '돈가스', '돈까스', '떡볶이', '라면', '국수', '김치', '국물',
   '사진', '카메라', '노을', '하늘', '햇살', '이불', '알람', '우산',
   '설거지', '빨래', '청소', '택배', '산책', '운동', '책방', '서점', '책',
   '영화', '게임', '노래', '음악', '퍼즐', '동네', '시장', '구경',
@@ -563,7 +563,7 @@ const TAG_LITERAL_WORDS = Object.freeze([
   '밤', '아침', '저녁', '주말', '내일', '오늘'
 ]);
 // High-confidence fallback for words that are not yet in the vocabulary.
-// Korean particles are removed only when at least two literal syllables remain.
+// Do not guess at ambiguous endings such as the 이 in 하와이.
 const TAG_FALLBACK_STOP = new Set([
   '오늘','내일','어제','지금','요즘','그냥','정말','진짜','너무','가끔','계속','다시','이제',
   '그리고','하지만','그래서','그런데','근데','그래도','그래','그런','이런','저런','무슨',
@@ -573,38 +573,55 @@ const TAG_FALLBACK_STOP = new Set([
   '싶다','싶어','같다','좋다','좋아','좋네요','괜찮아','어땠어','아니라','아니다',
   '한다','했다','하는','했던','해요','그래야지','모르겠다','것','거야','좀','다들',
   '조금','많이','한참','잠깐','무리','만든','처음','만약','드디어','이렇게','저렇게',
-  '되나','될까','할까','해야지','했지','쉬고','아무것','지금은','여기에','좋지만'
+  '나오면','무리해서','만들지','말자','매일','많다','온다','간다','왔다','피었다','들었다','예쁘다','먹었다','갔다','봤어','샀어','빨았다','묽다','되나','될까','할까','해야지','했지','쉬고','아무것','지금은','여기에','좋지만'
 ]);
-const TAG_FALLBACK_PARTICLE = /(에게서|으로는|에서는|에서도|에게도|에서|부터|까지|에게|한테|처럼|보다|으로|이라는|이란|이라|이나|에도|은|는|이|가|을|를|에|도|만|의|와|과|랑)$/u;
-const TAG_FALLBACK_PREDICATE = /(겠어|겠네|겠지|지만|으면|면|하고|해서|했다|한다|있다|없다|겠다고|거야|걸까|나요|어요|아요|래요|해요|었어|았어|였어|했어|했지|되네|하면서|하니까|해도|어야|이다|싶다|같다|좋다|이다|고|다|어|아|지)$/u;
-function suggestUnlistedTags(body, limit = 2) {
-  const originalText = String(body || '');
+const TAG_WORD_SUFFIX = /^(?:으로부터|에서부터|에게서|한테서|에게는|한테는|으로는|에서는|이라는|이라고|이라도|이라면|이라서|이었다|이었고|였어요|이었어요|입니다|이에요|예요|하고|했다|했어|했어요|했고|했다가|했지만|했다며|하며|하다|한다|하는|하기|하려|하면|하거나|하는데|하고서|되고|됐다|되다|되는|된다|되면|되었다|부터|까지|처럼|보다|마저|조차|하고|으로|에서|에게|한테|이랑|이나|라도|마다|께서|에는|에도|에만|로만|로도|와도|과도|하고도|에서는|까지도|을|를|이|가|은|는|에|의|도|만|와|과|랑|로|께|나)$/u;
+const TAG_VERB_ENDING = /(?:겠어|겠네|겠지|지만|하면|하면서|하니까|거야|하고|해서|했다|한다|겠다고|을까|나요|어요|아요|래요|해요|었어|았어|였어|했어|했지|해도|어야)$/u;
+const TAG_MULTISYLLABLE_PARTICLE = /(?:으로부터|에서부터|에게서|한테서|으로는|에서는|에서도|에게도|에게|한테|에서|부터|까지|처럼|으로)$/u;
+// An unlisted stem can be confirmed by another occurrence as a complete word.
+// A small starter set covers common ambiguous short-particle forms.
+const TAG_FALLBACK_STEMS = new Set(['완벽','행복','카레','단어','장미꽃','무지개','해바라기','고라니','호랑이']);
+const TAG_KNOWN_WORDS = new Set([...TAG_LITERAL_WORDS.map(tag => tag.toLocaleLowerCase('ko-KR')), ...TAG_FALLBACK_STEMS]);
+const normalizeTagWord = value => value.normalize('NFC').toLocaleLowerCase('ko-KR');
+function tagWords(body) {
+  return String(body || '').normalize('NFC').match(/[\p{L}\p{N}\p{M}]+/gu) || [];
+}
+function recognizedTagWord(words, tag) {
+  const term = normalizeTagWord(tag);
+  return words.some(token => token === term || (!TAG_KNOWN_WORDS.has(token)
+    && token.startsWith(term) && TAG_WORD_SUFFIX.test(token.slice(term.length))));
+}
+function suggestUnlistedTags(tokens, limit = 2) {
+  const words = new Set(tokens.map(normalizeTagWord));
   const found = [], seen = new Set();
-  for (const token of originalText.match(/[가-힣A-Za-z0-9]+/gu) || []) {
+  for (const token of tokens) {
+    const key = normalizeTagWord(token);
+    if (TAG_FALLBACK_STOP.has(key) || TAG_VERB_ENDING.test(key)) continue;
     let word = token;
-    if (/^[가-힣]{3,}$/u.test(token)) {
-      const stem = token.replace(TAG_FALLBACK_PARTICLE, '');
-      if (stem.length >= 2) word = stem;
+    if (/^[가-힣]{3,}$/u.test(token) && !TAG_KNOWN_WORDS.has(key)) {
+      for (let i = token.length - 1; i >= 2; i--) {
+        const stem = token.slice(0, i), suffix = token.slice(i);
+        if ((TAG_KNOWN_WORDS.has(stem) || words.has(stem)) && TAG_WORD_SUFFIX.test(suffix)) {
+          word = stem; break;
+        }
+      }
+      if (word === token) {
+        const stem = token.replace(TAG_MULTISYLLABLE_PARTICLE, '');
+        if (stem.length >= 2) word = stem;
+      }
     }
-    if (word.length < 2 || word.length > 14
-      || TAG_FALLBACK_STOP.has(token) || TAG_FALLBACK_STOP.has(word)
-      || TAG_FALLBACK_PREDICATE.test(token)
-      || !originalText.toLocaleLowerCase('ko-KR').includes(word.toLocaleLowerCase('ko-KR'))
-      || seen.has(word)) continue;
-    seen.add(word); found.push(word);
+    if (word.length < 2 || word.length > 14 || TAG_FALLBACK_STOP.has(word) || seen.has(normalizeTagWord(word))) continue;
+    seen.add(normalizeTagWord(word)); found.push(word);
     if (found.length >= limit) break;
   }
   return found;
 }
 function suggestTags(body, limit = 5) {
-  const input = String(body || '').toLocaleLowerCase('ko-KR');
+  if (limit <= 0) return [];
+  const tokens = tagWords(body), input = tokens.map(normalizeTagWord);
   const out = [];
   for (const word of TAG_LITERAL_WORDS) {
-    const term = word.toLocaleLowerCase('ko-KR');
-    if (!input.includes(term) || out.some(t => {
-      const prior = t.toLocaleLowerCase('ko-KR');
-      return prior.includes(term) || term.includes(prior);
-    })) continue;
+    if (!recognizedTagWord(input, word)) continue;
     out.push(word);
     if (out.length >= Math.min(3, limit)) break;
   }
@@ -612,10 +629,25 @@ function suggestTags(body, limit = 5) {
   // Prefer newly mentioned nouns over generic "오늘/마음" tags.
   const generic = new Set(['오늘','내일','마음','생각','사람','시간','아침','저녁','밤']);
   if (!out.length || out.every(tag => generic.has(tag))) {
-    const extracted = suggestUnlistedTags(body, Math.min(2, limit));
+    const extracted = suggestUnlistedTags(tokens, Math.min(2, limit));
     if (extracted.length) return extracted;
   }
   return out;
+}
+function acceptedAutoTags(body, candidateTags) {
+  const words = tagWords(body).map(normalizeTagWord), unique = new Set(), accepted = [];
+  const fallback = suggestTags(body, 3);
+  const fallbackWords = new Set(fallback.map(normalizeTagWord));
+  for (const tag of [...(Array.isArray(candidateTags) ? candidateTags : []), ...fallback]) {
+    if (typeof tag !== 'string' || !tag || tag.length > 20) continue;
+    const key = normalizeTagWord(tag);
+    if (unique.has(key) || TAG_FALLBACK_STOP.has(key)) continue;
+    if (!fallbackWords.has(key) && !words.includes(key)
+      && (!TAG_KNOWN_WORDS.has(key) || !recognizedTagWord(words, key))) continue;
+    unique.add(key); accepted.push(tag);
+    if (accepted.length >= 3) break;
+  }
+  return accepted;
 }
 let autoTagMode = true, manualTags = [], rejectedTags = new Set(), autoTagsNow = [];
 // 일반 카드의 첨부 사진은 비공개 저장소에서 읽을 때마다 서명합니다.
@@ -974,8 +1006,7 @@ function scheduleServerAutoTags() {
     if (request !== serverTagRequest || run !== composerRun || epoch !== identityEpoch
       || userId !== session?.user?.id || backdrop.hidden || body !== String(text.value || '').trim()) return;
     if (!Array.isArray(response)) return;
-    serverTagResult = { body, tags: response.filter(t => typeof t === 'string' && t.length <= 20
-      && body.toLocaleLowerCase('ko-KR').includes(t.toLocaleLowerCase('ko-KR'))).slice(0, 3) };
+    serverTagResult = { body, tags: acceptedAutoTags(body, response) };
     if (document.activeElement !== tags && !busy) { refreshAutoTags(); updateComposer(); recordDraft(); }
   }, 500);
 }
@@ -3257,8 +3288,8 @@ async function publishCard() {
     let suggestions = typeof suggestTags === 'function' ? suggestTags(body, 3) : [];
     try {
       const authoritative = await noteRpc('suggest_card_tags', { p_body: body });
-      if (Array.isArray(authoritative)) suggestions = authoritative;
-    } catch { /* Use only the small, vetted offline list if the RPC is unreachable. */ }
+      if (typeof acceptedAutoTags === 'function') suggestions = acceptedAutoTags(body, authoritative);
+    } catch { /* Keep the offline suggestions if the RPC is unreachable. */ }
     if (session?.user?.id !== actionUserId || actionEpoch !== identityEpoch
       || actionComposerRun !== composerRun || backdrop.hidden) {
       draftController?.cancelPublish(); busy = false; setComposerInputs(); updateComposer(); return;
@@ -3270,8 +3301,7 @@ async function publishCard() {
     const blockedAuto = typeof rejectedTags !== 'undefined' && rejectedTags instanceof Set ? rejectedTags : new Set();
     values = [...new Set([...values.filter(tag => !existingAuto.includes(tag)), ...chosenManual])].slice(0, 5);
     for (const tag of suggestions) {
-      if (typeof tag === 'string' && tag.length <= 20 && body.toLocaleLowerCase('ko-KR').includes(tag.toLocaleLowerCase('ko-KR'))
-        && !values.includes(tag) && !blockedAuto.has(tag) && values.length < 5) values.push(tag);
+      if (!values.includes(tag) && !blockedAuto.has(tag) && values.length < 5) values.push(tag);
     }
   }
   let cardPhotoUploadPath = null;

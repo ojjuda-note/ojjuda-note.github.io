@@ -22,6 +22,16 @@ const samples = [
   ['전화 걸어야지.', ['전화']],
   ['돈 걱정 없이 잠드는 밤이 좀 많았으면 좋겠다.', ['돈', '걱정', '밤']],
   ['친구랑 커피 마셨다.', ['친구', '커피']],
+  ['돈가스를 먹었다.', ['돈가스']],
+  ['사랑니가 아파서 병원에 갔다.', ['사랑니','병원']],
+  ['우루과이 하와이', ['우루과이','하와이']],
+  ['고래상어 바가지', ['고래상어','바가지']],
+  ['목걸이 샀어', ['목걸이']],
+  ['떡볶이 먹었어', ['떡볶이']],
+  ['목걸이를 샀어', ['목걸이']],
+  ['떡볶이는 먹었어', ['떡볶이']],
+  ['오솔길에서 걸었어', ['오솔길']],
+  ['고래상어를 봤어. 고래상어!', ['고래상어']],
   ['완벽은 없다', ['완벽']],
   ['오늘 완벽은 없다', ['완벽']],
   ['완벽은 없지만 괜찮아', ['완벽']],
@@ -46,23 +56,31 @@ assert.ok(suggest('퇴근하고 커피 마셨어.', 1).length <= 1);
 
 assert.match(source, /noteRpc\('suggest_card_tags', \{ p_body: body \}\)/,
   'the same server tagging function must run while writing and publishing');
-assert.match(source, /!input\.includes\(term\)/, 'candidate must occur in source');
-assert.match(source, /suggestUnlistedTags\(body, Math\.min\(2, limit\)\)/,
-  'new words must be extracted even when absent from the preselected vocabulary');
+const accept = (body, values) => Array.from(vm.runInContext('acceptedAutoTags(' + JSON.stringify(body) + ',' + JSON.stringify(values) + ')', context));
+assert.deepEqual(accept('완벽은 없다', []), ['완벽']);
+assert.deepEqual(accept('완벽은 없다', ['벽','없다']), ['완벽']);
+assert.deepEqual(accept('돈가스를 먹었다.', ['돈','돈가','돈가스']), ['돈가스']);
+assert.deepEqual(accept('사랑니가 아파서 병원에 갔다.', ['사랑','사랑니','병원']), ['사랑니','병원']);
+assert.deepEqual(accept('목걸이 샀어', ['목걸']), ['목걸이']);
+assert.deepEqual(accept('떡볶이 먹었어', ['떡볶']), ['떡볶이']);
+assert.deepEqual(accept('우루과이 하와이', ['우루과','하와']), ['우루과이','하와이']);
 assert.match(source, /autoTagMode = !editingId && kind !== 'event'/,
   'guest and member composers must both show automatic tags');
-assert.match(source, /body\.toLocaleLowerCase\('ko-KR'\)\.includes\(t\.toLocaleLowerCase\('ko-KR'\)\)/,
-  'server responses must be checked against the literal body');
-assert.match(source, /body\.toLocaleLowerCase\('ko-KR'\)\.includes\(tag\.toLocaleLowerCase\('ko-KR'\)\)/,
-  'publication must reject an automatic tag absent from the final body');
+assert.equal((source.match(/acceptedAutoTags\(body, (?:response|authoritative)\)/g) || []).length, 2);
 assert.match(source, /!blockedAuto\.has\(tag\)/,
   'removed automatic tags remain removed');
 assert.match(source, /typeof autoTagMode !== 'undefined' && autoTagMode/,
   'only new automatic tags, not manually authored tags, are affected');
 const page = fs.readFileSync(path.join(root, 'park/index.html'), 'utf8');
-assert.match(page, /\/note\/preview\.js\?v=20261125-classic-settings1/,
+assert.match(page, /\/note\/preview\.js\?v=20261125-park-word-boundaries2/,
   'the park must load the updated file without a stale cache');
-const [major,minor,patch] = JSON.parse(fs.readFileSync(path.join(root, 'park/version.json'), 'utf8')).version.split('.').map(Number);
+const parkVersion = JSON.parse(fs.readFileSync(path.join(root, 'park/version.json'), 'utf8')).version;
+const [major,minor,patch] = parkVersion.split('.').map(Number);
 assert.ok(major > 1 || (major === 1 && (minor > 7 || (minor === 7 && patch >= 8))),
   'Park includes the 1.7.8 automatic tag release');
+const world = fs.readFileSync(path.join(root, 'world.html'), 'utf8');
+assert.match(world, /\/park\/world-park-notes\.js\?v=20261125-park-word-boundaries2/);
+assert.ok(world.includes(`park:{name:'공원',version:'${parkVersion}',manifest:'/park/version.json'}`),
+  'world fallback and Park manifest must agree');
+assert.match(fs.readFileSync(path.join(root, 'park/world-park-notes.js'), 'utf8'), /frameVersion = '20261125-park-word-boundaries2'/);
 console.log('PASS: automatic park tags are literal words from the text; manual tags and cache preserved');
