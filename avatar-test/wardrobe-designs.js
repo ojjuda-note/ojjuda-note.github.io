@@ -150,7 +150,8 @@ async function nocturneLayer(part,pose,loadImage,newCanvas,tone){
   const [sx,sy,w,h,dx,dy]=revised||nocturneCrops[part][pose];
   const sheet=await loadImage(revised?'./artwork/wardrobe-fit-02.webp':'./artwork/nocturne-01.webp');
   const out=pose==='catalog'?newCanvas(w,h):newCanvas();
-  out.getContext('2d').drawImage(sheet,sx,sy,w,h,dx,dy,w,h);
+  const neckOffset=part==='choker'?({pure:-7,cute:-2,chic:-6,lively:1}[pose]||0):0;
+  out.getContext('2d').drawImage(sheet,sx,sy,w,h,dx+neckOffset,dy,w,h);
   if(part==='dress'&&tone){
     const ctx=out.getContext('2d'),pixels=ctx.getImageData(0,0,out.width,out.height);
     const color=tone==='wine'?[1.94,.89,1.12]:[.97,1.19,1.63];
@@ -162,21 +163,150 @@ async function nocturneLayer(part,pose,loadImage,newCanvas,tone){
   }
   return out;
 }
-const neckFit={
-  basic:[206,113,1,0],pure:[198,114,.96,2],cute:[196,113,.98,3],
-  chic:[213,109,1,9],lively:[194,112,.98,-4],mini:[205,369,.79,0]
+// Source-space landmarks for the neck and the two arms of each original drawing.
+const jointFit={
+  basic:{neck:[206,100,12], arms:[[160,126,151,221,112,293],[251,127,258,221,296,294]]},
+  pure:{neck:[191,101,11], arms:[[147,128,169,222,195,296],[245,128,236,220,217,295]]},
+  cute:{neck:[196,100,11], arms:[[147,126,141,205,167,118],[241,126,246,219,275,297]]},
+  chic:{neck:[204,96,12], arms:[[163,118,99,190,150,230],[250,133,255,221,277,297]]},
+  lively:{neck:[200,97,11], arms:[[147,127,117,203,124,137],[245,125,246,217,280,292]]},
+  mini:{neck:[205,361,11], arms:[[167,380,158,419,143,455],[243,380,251,419,266,455]]}
 };
-function paintShoulders(ctx,pose){
-  const [x,y,scale,tilt]=neckFit[pose];
-  ctx.save();
-  ctx.translate(x,y);
-  ctx.transform(scale,tilt/104,0,scale,0,0);
-  const silhouette=new Path2D('M-14 -12Q-13 -3 -20 0Q-28 4 -43 8Q-53 10 -57 21Q-62 35 -60 47L-45 58L-39 67L39 67L45 55L60 48Q61 33 55 18Q50 9 42 8Q23 4 15 -2L13 -12Z');
-  const tone=ctx.createLinearGradient(-48,0,50,56);
-  tone.addColorStop(0,'#f1bdad');tone.addColorStop(.19,'#ffe2d4');tone.addColorStop(.50,'#ffe6da');tone.addColorStop(.8,'#f7d5c6');tone.addColorStop(1,'#e7b7ac');
-  ctx.fillStyle=tone;ctx.fill(silhouette);
-  ctx.restore();
+function skinTone(ctx,x1,y1,x2,y2){
+  const tone=ctx.createLinearGradient(x1,y1,x2,y2);
+  tone.addColorStop(0,'#e8b7a8');
+  tone.addColorStop(.26,'#ffe1d2');
+  tone.addColorStop(.7,'#ffe5d9');
+  tone.addColorStop(1,'#eac0b2');
+  return tone;
 }
+function paintShoulders(ctx,pose){
+  const {neck:[cx,cy,n],arms:[left,right]}=jointFit[pose];
+  const scale=pose==='mini'?.77:1, depth=pose==='mini'?10:16;
+  function cap([x,y,ex,ey],side){
+    const dx=ex-x,dy=ey-y,len=Math.hypot(dx,dy);
+    const band=pose==='mini'?.48:.31;
+    const bx=x+dx*band,by=y+dy*band,r=11*scale*side;
+    return {x,y,ox:bx+r*dy/len,oy:by-r*dx/len,ix:bx-r*dy/len,iy:by+r*dx/len};
+  }
+  const l=cap(left,-1),r=cap(right,1);
+  ctx.beginPath();ctx.moveTo(cx-n,cy-3);
+  ctx.bezierCurveTo(cx-n,cy+depth*.6,cx-n-4,cy+depth*.88,l.x+8,l.y-8*scale);
+  ctx.bezierCurveTo(l.x-5,l.y-6*scale,l.ox-1,l.oy-9,l.ox,l.oy);
+  ctx.lineTo(l.ix,l.iy);ctx.lineTo(cx-32*scale,cy+56*scale);
+  ctx.lineTo(cx+33*scale,cy+56*scale);ctx.lineTo(r.ix,r.iy);ctx.lineTo(r.ox,r.oy);
+  ctx.bezierCurveTo(r.ox+1,r.oy-10,r.x+4,r.y-7*scale,r.x-7,r.y-8*scale);
+  ctx.bezierCurveTo(cx+n+5,cy+depth*.9,cx+n,cy+depth*.6,cx+n,cy-3);ctx.closePath();
+  ctx.fillStyle=skinTone(ctx,left[0]-9,cy,right[0]+10,cy+8);ctx.fill();
+}
+function paintSchoolArms(ctx,pose,newCanvas){
+  if(pose==='mini'){
+    const patch=newCanvas(),p=patch.getContext('2d');
+    for(const [outline,left,right] of [
+      ['M158 392L178 397Q176 410 169 426L151 425Q156 409 158 392Z',154,176],
+      ['M232 397L251 392Q254 411 260 425L241 426Q235 412 232 397Z',235,257]
+    ]){
+      p.fillStyle=skinTone(p,left,400,right,407);p.fill(new Path2D(outline));
+    }
+    const fade=p.createLinearGradient(0,415,0,426);
+    fade.addColorStop(0,'#000');fade.addColorStop(1,'transparent');
+    p.globalCompositeOperation='destination-in';p.fillStyle=fade;p.fillRect(0,380,400,47);
+    ctx.globalCompositeOperation='source-over';ctx.drawImage(patch,0,0);
+    return;
+  }
+  const mini=pose==='mini';
+  for(const [x,y,ex,ey] of jointFit[pose].arms){
+    const dx=ex-x,dy=ey-y,len=Math.hypot(dx,dy),nx=dy/len,ny=-dx/len;
+    const r=mini?8.3:9.4;
+    const ax=x+dx*.35,ay=y+dy*.35,bx=x+dx*.85,by=y+dy*.85;
+    ctx.beginPath();ctx.moveTo(ax-nx*r,ay-ny*r);
+    ctx.lineTo(ax+nx*r,ay+ny*r);ctx.lineTo(bx+nx*r*.87,by+ny*r*.87);
+    ctx.lineTo(bx-nx*r*.87,by-ny*r*.87);ctx.closePath();
+    ctx.fillStyle=skinTone(ctx,ax-nx*r,ay-ny*r,ax+nx*r,ay+ny*r);ctx.fill();
+  }
+}
+function cleanWrist(ctx,source,x,y,radius){
+  // Keep the ink immediately bordering skin, but drop old hair and sleeve
+  // fragments that sit beside an exposed wrist in the original drawing.
+  const size=2*radius,left=Math.floor(x-radius),top=Math.floor(y-radius);
+  const patch=document.createElement('canvas');patch.width=size;patch.height=size;
+  const p=patch.getContext('2d',{willReadFrequently:true});
+  p.drawImage(source,left,top,size,size,0,0,size,size);
+  const im=p.getImageData(0,0,size,size),rgba=im.data,skin=new Uint8Array(size*size);
+  for(let n=0;n<skin.length;n++){
+    const i=n*4,r=rgba[i],g=rgba[i+1],b=rgba[i+2];
+    skin[n]=rgba[i+3]>35&&r>151&&g>101&&b>83&&r>=g-4&&g>=b*.92&&r-b<130;
+  }
+  for(let row=1;row<size-1;row++)for(let col=1;col<size-1;col++){
+    const n=row*size+col;
+    if(!skin[n]&&!skin[n-1]&&!skin[n+1]&&!skin[n-size]&&!skin[n+size])rgba[n*4+3]=0;
+  }
+  p.putImageData(im,0,0);ctx.drawImage(patch,left,top);
+}
+async function dressPortrait(ctx,pose,original,data,loadImage,newCanvas,straight){
+  const mini=pose==='mini',{neck:[cx,cy],arms}=jointFit[pose];
+  const saved=newCanvas();saved.getContext('2d').drawImage(ctx.canvas,0,0);
+  const head=straight?await loadImage('fitted:nocturne:head:'+pose):original;
+  ctx.clearRect(0,0,ctx.canvas.width,mini?495:319);
+  if(!straight){
+    // The hair mask keeps the original waves beyond the clipped face and hands.
+    const waves=newCanvas();const w=waves.getContext('2d');
+    w.drawImage(original,0,0);w.globalCompositeOperation='destination-in';
+    w.drawImage(await loadImage(data.items.find(i=>i.id==='casual01-hair').variants[pose]),0,0);
+    ctx.drawImage(waves,0,0);
+  }
+  paintShoulders(ctx,pose);
+  // Fit the original face outline. A soft join below the jaw preserves its
+  // painted shadow without transferring the old neckline or hair at the sides.
+  const faces={basic:[207,67,0],pure:[199,69,9],cute:[199,67,10],chic:[209,65,6],
+    lively:[199,64,9],mini:[204,305,0]};
+  const [fx,fy,rotation]=faces[pose];
+  const contour=mini?[[-34,-58],[-14,-61],[15,-61],[34,-50],[40,-19],[42,4],[39,17],
+    [33,28],[23,31],[0,35],[-23,31],[-36,22],[-41,7],[-40,-19]]:
+    [[-30,-51],[-10,-58],[15,-56],[28,-45],[35,-19],[35,3],[32,14],[24,27],[10,33],[0,36],[-13,31],[-24,24],[-32,12],[-35,-6]];
+  const face=newCanvas(),f=face.getContext('2d');
+  f.save();f.translate(fx,fy);f.rotate(rotation*Math.PI/180);
+  if(mini)f.scale(2.85,2.55);
+  f.beginPath();f.moveTo(...contour[0]);for(const pt of contour.slice(1))f.lineTo(...pt);
+  f.closePath();f.fill();f.restore();
+  if(mini){
+    // The chin reaches y=361. Keep the long side locks on their separate hair layer.
+    f.globalCompositeOperation='destination-in';
+    f.fill(new Path2D('M85 140H322V303Q312 331 278 343Q254 357 221 360Q205 365 185 360Q154 357 131 341Q105 327 85 303Z'));
+  }
+  f.globalCompositeOperation='source-in';f.drawImage(head,0,0);
+  ctx.drawImage(face,0,0);
+  const neck=newCanvas(30,25),n=neck.getContext('2d',{willReadFrequently:true});
+  n.drawImage(await loadImage(data.base[pose]),cx-15,cy-7,30,25,0,0,30,25);
+  const skin=n.getImageData(0,0,30,25),pixels=skin.data;
+  for(let y=0;y<25;y++)for(let x=0;x<30;x++){
+    const i=(y*30+x)*4,r=pixels[i],g=pixels[i+1],b=pixels[i+2];
+    const edge=Math.min(1,Math.max(0,(r-120)/26),Math.max(0,(g-72)/28),
+      Math.max(0,14-Math.abs(x-14.5)),(25-y)/10);
+    pixels[i+3]*=r>g&&g>=b*.94?edge:0;
+  }
+  n.putImageData(skin,0,0);ctx.drawImage(neck,cx-15,cy-7);
+
+  for(let index=0;index<arms.length;index++){
+    const [, ,ex,ey,x,y]=arms[index],len=Math.hypot(x-ex,y-ey);
+    const dx=(x-ex)/len,dy=(y-ey)/len,nx=dy,ny=-dx;
+    const wrist=mini?10:14, reach=mini?38:65, fan=mini?17:35;
+    const ax=x-16*dx,ay=y-16*dy,bx=x+reach*dx,by=y+reach*dy;
+    const hand=index===0&&['cute','chic','lively'].includes(pose)?await loadImage('fitted:nocturne:arm:'+pose):saved;
+    ctx.save();ctx.beginPath();ctx.moveTo(ax-wrist*nx,ay-wrist*ny);ctx.lineTo(ax+wrist*nx,ay+wrist*ny);
+    ctx.lineTo(bx+fan*nx,by+fan*ny);ctx.lineTo(bx-fan*nx,by-fan*ny);ctx.closePath();ctx.clip();
+    if(straight&&hand===saved)cleanWrist(ctx,hand,x,y,mini?44:69);
+    else ctx.drawImage(hand,0,0);
+    ctx.restore();
+  }
+}
+function trimLegsAtBoots(ctx,pose){
+  const split={basic:[210,383,383],pure:[209,383,383],cute:[204,380,375],
+    chic:[219,379,378],mini:[205,520,520],lively:[188,383,364]}[pose];
+  ctx.clearRect(0,split[1],split[0],ctx.canvas.height-split[1]);
+  ctx.clearRect(split[0],split[2],ctx.canvas.width-split[0],ctx.canvas.height-split[2]);
+}
+
 async function portraitLayer(pose,flags,data,loadImage,newCanvas){
   const straight=flags.includes('h'),dress=flags.includes('d'),boots=flags.includes('b');
   const baseKey=flags.includes('c')?'fitted:base:'+pose:data.base[pose];
@@ -207,9 +337,15 @@ async function portraitLayer(pose,flags,data,loadImage,newCanvas){
   }
   if(dress)await erase('top-original',[[0,0],[-1,0],[1,0],[0,1]]);
   if(flags.includes('p'))ctx.clearRect(132,344,111,58);
-  if(boots)await erase('shoes-original',[[0,0],[-3,0],[3,0],[0,-3],[0,3]]);
-  ctx.globalCompositeOperation='destination-over';
-  if(dress)paintShoulders(ctx,pose);
+  if(boots){
+    await erase('shoes-original',[[0,0],[-3,0],[3,0],[0,-3],[0,3]]);
+    trimLegsAtBoots(ctx,pose);
+  }
+  ctx.globalCompositeOperation='source-over';
+  if(dress)await dressPortrait(ctx,pose,original,data,loadImage,newCanvas,straight);
+  if(flags.includes('s')){
+    ctx.globalCompositeOperation='destination-over';paintSchoolArms(ctx,pose,newCanvas);
+  }
   return out;
 }
 
