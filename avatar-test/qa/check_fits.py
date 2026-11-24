@@ -1,5 +1,6 @@
 """Skip approved, unchanged avatar fits. Print the exact look and pose needing review."""
 import argparse
+import base64
 import hashlib
 import json
 from pathlib import Path
@@ -15,7 +16,7 @@ def source_hashes():
             for p in sorted(assets)}
 
 
-def render(url, chromium, combinations):
+def render(url, chromium, combinations, capture_dir=None):
     from playwright.sync_api import sync_playwright
     with sync_playwright() as runner:
         browser = runner.chromium.launch(executable_path=chromium, args=["--disable-gpu", "--no-sandbox"])
@@ -50,6 +51,9 @@ def render(url, chromium, combinations):
             page.wait_for_function("n => window.fitDrawCount > n", arg=before)
 
         result = {}
+        captures = []
+        if capture_dir:
+            capture_dir.mkdir(parents=True, exist_ok=True)
         cases = [(name, name, []) for name in names]
         for name, recipe in combinations.items():
             if name in names:
@@ -82,6 +86,29 @@ def render(url, chromium, combinations):
               }
               return Object.fromEntries(entries);
             }""")
+            if capture_dir:
+                images = page.evaluate("""() => {
+                  const views = [...document.querySelectorAll('#poses button')].map(b =>
+                    [b.textContent.trim(), b.querySelector('canvas')]);
+                  views.push(['미니미', document.querySelector('#mini')]);
+                  return views.map(([pose, canvas]) => {
+                    const zoom = document.createElement('canvas');
+                    zoom.width = canvas.width * 4;
+                    zoom.height = canvas.height * 4;
+                    const ctx = zoom.getContext('2d');
+                    ctx.imageSmoothingEnabled = false;
+                    ctx.drawImage(canvas, 0, 0, zoom.width, zoom.height);
+                    return [pose, canvas.toDataURL('image/png'), zoom.toDataURL('image/png')];
+                  });
+                }""")
+                for pose, original, enlarged in images:
+                    key = f'{len(captures)+1:03d}'
+                    filenames = [f'{key}-original.png', f'{key}-4x.png']
+                    for filename, data in zip(filenames, (original, enlarged)):
+                        (capture_dir / filename).write_bytes(base64.b64decode(data.split(',', 1)[1], validate=True))
+                    captures.append({'look': name, 'pose': pose, 'original': filenames[0], 'enlarged': filenames[1]})
+        if capture_dir:
+            (capture_dir / 'index.json').write_text(json.dumps(captures, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
         if errors:
             raise RuntimeError("\n".join(errors))
         browser.close()
@@ -110,6 +137,7 @@ def main():
     parser.add_argument("--render", action="store_true", help="소스가 같아도 픽셀 지문 확인")
     parser.add_argument("--chromium", help="설치된 Chromium 실행 파일")
     parser.add_argument("--cases", type=Path, help="추가로 검사할 착용 조합 JSON")
+    parser.add_argument("--capture-dir", type=Path, help="실제 원본 PNG 및 보간 없는 4배 확대 PNG 저장")
     parser.add_argument("--report", type=Path, help="재검사 대상과 현재 픽셀 지문을 JSON으로 저장")
     args = parser.parse_args()
     if args.report and args.report.resolve() == REGISTRY:
@@ -122,12 +150,12 @@ def main():
         if combinations.keys() & extra.keys():
             parser.error("추가 검사 조합의 이름이 등록된 조합과 겹칩니다.")
         combinations.update(extra)
-    if (not args.url and not args.render and not args.cases and registry["completeSnapshot"]
+    if (not args.url and not args.render and not args.cases and not args.capture_dir and registry["completeSnapshot"]
             and source_hashes() == registry["sources"]):
         skipped = sum(len(poses) for poses in approved.values())
         pending = {}
     else:
-        skipped, pending = compare(render(args.url, args.chromium, combinations), approved)
+        skipped, pending = compare(render(args.url, args.chromium, combinations, args.capture_dir), approved)
     print(f"재검사 제외 {skipped}건 · 확인 필요 {sum(map(len, pending.values()))}건")
     for look, poses in pending.items():
         print(f"{look} — {', '.join(poses)}")
