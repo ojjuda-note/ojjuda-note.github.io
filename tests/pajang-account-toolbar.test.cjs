@@ -197,7 +197,7 @@ test('Pajang standalone entry defers shared inbox and charging code until first 
   assert.match(shell,/window\.OjjudaPajangHistory\?\.canLeave\?\.\(\)!==false/);
   for(const file of ['index.html','station.html']){
     const html=fs.readFileSync(path.join(root,'features/pajang',file),'utf8');
-    assert.match(html,/shell\.mjs\?v=20261123-toolbar-race1/);
+    assert.match(html,/shell\.mjs\?v=20261125-adult-entry1/);
   }
 });
 
@@ -212,7 +212,7 @@ function deferredToolbarHarness(t){
   const requested=new Promise(resolve=>{resolveImport=resolve;});
   const source=fs.readFileSync(path.join(root,'features/pajang/shell.mjs'),'utf8')
     .split('// Optional measurement never delays')[0]
-    .replace("import('./account-toolbar.mjs?v=20261123-independent-toolbar1')",'loadToolbar()');
+    .replace("import('./account-toolbar.mjs?v=20261125-adult-entry1')",'loadToolbar()');
   const run=new Function('window','document','location','requestAnimationFrame','setTimeout','loadToolbar',source);
   run(w,w.document,w.location,()=>0,()=>0,()=>{loads++;return requested;});
   return {

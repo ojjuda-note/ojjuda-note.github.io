@@ -165,9 +165,14 @@ function checkStartupRequests(trace,version,scenario) {
   } else {
     const initial=scenario==='member-cold'?'member:entry':'member:state';
     overlaps('identity',initial);
-    overlaps('manifest',initial);
-    overlaps('manifest','identity');
-    overlaps('program',scenario==='member-cold'?'member:state':'feed');
+    assert.ok(manifest.start>=Math.max(request('identity').end,request(initial).end),
+      'private assets wait for the current account and its adult entry decision: '+detail);
+    if(scenario==='member-cold'){
+      overlaps('manifest','member:state');
+      overlaps('program','feed');
+    }else{
+      overlaps('manifest','feed');
+    }
   }
 }
 
@@ -1379,7 +1384,8 @@ async function checkNavigation(page){
     for(const mode of ['guest','denied']){
       await page.evaluate(m=>{sessionStorage.fixtureMode=m;},mode);
       await page.goto(origin+project+'station.html');
-      await page.locator('#gate p').filter({hasText:mode==='guest'?'로그인한':'이 계정은'}).waitFor();
+      await page.locator('#gate p').filter({hasText:'만 19세 이상 회원'}).waitFor();
+      assert.equal(await nav.count(),0,'guests and denied accounts cannot mount adult navigation');
       assert.equal(await page.locator('.flight-scene').count(),0);
       await expectHeaderClean();
       if(mode==='guest')assert.equal(await page.getByRole('link',{name:'로그인',exact:true}).getAttribute('href'),'/?auth=login&next=pajang');
