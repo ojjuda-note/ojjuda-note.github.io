@@ -66,7 +66,7 @@ async function checkSixLineCard(page, width) {
  assert.ok(sample.size>=minimum,`${width}px: six lines should be at least ${minimum}px (was ${sample.size}px)`);
 }
 (async()=>{const browser=await chromium.launch({headless:true,args:['--no-sandbox']});try{
- for(const width of expectBug?[390]:[320,360,390,768,800,1280,1600]){
+ for(const width of expectBug?[390]:[320,360,390,768,800,1280,1600,1920]){
   const context=await browser.newContext({viewport:{width,height:width===800?800:900},hasTouch:width===390}),page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await context.route('**/*',route=>{const u=new URL(route.request().url());if(u.origin!=='https://card-font.test')return route.abort();if(u.pathname==='/park/')return route.fulfill({contentType:'text/html',body:html});const f=path.join(root,u.pathname);return f.startsWith(root+path.sep)&&fs.existsSync(f)&&fs.statSync(f).isFile()?route.fulfill({path:f}):route.abort();});
@@ -143,7 +143,7 @@ async function checkSixLineCard(page, width) {
    }));
    assert.equal(faces.length,2);
    assert.ok(faces.every(face=>Math.abs(face.height-face.width)<1),width+'px: original and reply are both square');
-   if(width>=800)assert.ok(Math.abs(faces[0].width-750)<1,'the detail card reaches 750×750');
+   if(width>=800)assert.ok(Math.abs(faces[0].width-750)<1,`${width}px viewport: detail is 750×750 when space permits (actual ${faces[0].width}×${faces[0].height})`);
    assert.ok(Math.abs(faces[1].width-faces[0].width*2/3)<1,`${width}px: replies are two thirds of the parent card width`);
    assert.ok(faces.every(face=>Math.abs(face.footer)<1&&face.buttonsFit&&face.textFits),`${width}px: photo, text and controls fit without a footer ${JSON.stringify(faces)}`);
    if(width===390)await checkReplyBrowsing(page);
