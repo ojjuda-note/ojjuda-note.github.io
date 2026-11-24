@@ -3891,7 +3891,7 @@ sr.tab=function(action){
  if(action?.tab!=='hub')return navigateWorldTabOriginal.call(this,action);
  worldVisitRequest++;
  g.tab='hub';g.visiting=null;g.visitData=null;g.sel=null;
- H();window.scrollTo(0,0);
+ H();window.scrollTo(0,0);void syncAgitParkMission();
 };
 function agitProgressKey(owner){return 'ojjuda-agit-progress-v1:'+owner;}
 function readAgitProgress(owner){
@@ -3929,6 +3929,28 @@ function restoreAgitProgress(owner){
   }
  }catch{}
 }
+// Standalone Park commits the mission on the server. Merge it when returning
+// from another page or app, including an Agit restored from the back/forward cache.
+var agitParkSyncRequest=null;
+async function syncAgitParkMission(){
+ const owner=D.online&&!D.parkGuest&&!D.user?.is_anonymous?D.user?.id:null;
+ const hub=window.OjjudaAgitHub,epoch=worldAuthEpoch,date=hub?.kstDate();
+ if(!owner||ua!==owner||!hub||g.tab!=='hub'||document.hidden||hub.isComplete($.settings,'park',date))return;
+ if(agitParkSyncRequest?.owner===owner&&agitParkSyncRequest.epoch===epoch&&agitParkSyncRequest.date===date)return;
+ const request={owner,epoch,date};
+ agitParkSyncRequest=request;
+ try{
+  const {data,error}=await S.from('user_private').select('data').eq('user_id',owner).maybeSingle();
+  if(error||!worldAuthCurrent(owner,epoch)||ua!==owner||hub.kstDate()!==date)return;
+  if(hub.isComplete(data?.data?.settings,'park',date)&&hub.complete($.settings,'park',date)){
+   backUpAgitProgress();refreshAgitHub();
+  }
+ }catch(error){console.warn('공원 미션 동기화 실패',error);}
+ finally{if(agitParkSyncRequest===request)agitParkSyncRequest=null;}
+}
+window.addEventListener('pageshow',event=>{if(event.persisted)void syncAgitParkMission();});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)void syncAgitParkMission();});
+window.addEventListener('online',()=>void syncAgitParkMission());
 async function flushAgitProgress(){
  if(!ua||!de)return true;
  const deadline=Date.now()+4000;
