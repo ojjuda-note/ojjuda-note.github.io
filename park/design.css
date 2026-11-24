@@ -80,7 +80,9 @@ html body .shell > .col > .main { container: park-content / inline-size; }
   .detail-screen .reply-card { flex-basis: 80%; }
 }
 @media (max-width: 779px) {
-  .shell > .col > .main:has(> #detail:not([hidden])) { padding: 4px 12px 16px; }
+  .shell > .col > .main:has(> #detail:not([hidden])) {
+    padding: 4px 12px calc(16px + var(--app-nav-height) + var(--app-viewport-bottom));
+  }
 }
 
 /* Keep the quote, tags and edge controls in separate parts of the photo. */
