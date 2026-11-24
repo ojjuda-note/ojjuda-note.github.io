@@ -5,7 +5,8 @@
   const returnTo = new URLSearchParams(location.search).get('from');
   const returnSections = {
     my: ['/world.html?tab=my', '설정으로'],
-    park: ['/world.html?tab=park', '공원으로'],
+    park: ['/park/', '공원으로'],
+    pajang: ['/features/pajang/station.html?tab=profile', '내 파장으로'],
     admin: ['/world.html?admin=overview', '관리자 모드로']
   };
   const [returnHref, returnLabel] = returnSections[returnTo] || ['/world.html?tab=hub', '아지트로'];
@@ -13,6 +14,17 @@
   if (returnLink) {
     returnLink.href = returnHref;
     returnLink.textContent = `${returnLabel} 돌아가기`;
+  }
+  if (returnTo === 'park' || returnTo === 'pajang') {
+    const section = document.getElementById(returnTo);
+    const heading = section.querySelector('h2');
+    const title = document.createElement('h1');
+    title.id = heading.id;
+    title.textContent = heading.textContent;
+    heading.replaceWith(title);
+    section.querySelector('.section-index')?.remove();
+    document.querySelector('main').replaceChildren(section);
+    document.title = (returnTo === 'park' ? '공원' : '파장') + ' 사용법 | 오쭈다';
   }
   const cards = [...document.querySelectorAll('[data-game]')];
   const groups = [...document.querySelectorAll('[data-game-group]')];
@@ -40,9 +52,9 @@
     clear.hidden = !search.value;
     status.textContent = query ? `${count}개 게임의 사용법을 찾았어요.` : `${cards.length}개 게임의 사용법을 볼 수 있어요.`;
   }
-  document.querySelector('.game-search').hidden = false;
-  search.addEventListener('input', filterGames);
-  clear.addEventListener('click', () => { search.value = ''; filterGames(); search.focus(); });
+  if (search) document.querySelector('.game-search').hidden = false;
+  search?.addEventListener('input', filterGames);
+  clear?.addEventListener('click', () => { search.value = ''; filterGames(); search.focus(); });
 
   function revealLinkedGame() {
     let id;

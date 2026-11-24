@@ -23,8 +23,6 @@ html body .back-button { margin-top: 4px; }
 .park-settings-row + .park-settings-row { border-top: 1px solid var(--line); }
 .park-settings-row:hover { background: var(--surface-2); }
 .park-settings-arrow { margin-left: auto; color: var(--ink-2); font-size: 20px; font-weight: 400; line-height: 1; }
-.park-settings-home { border: 1px solid var(--line); border-radius: 14px; background: var(--accent-soft); }
-.park-settings-home > svg { flex: none; width: 22px; height: 22px; }
 .park-settings-row.park-settings-danger { color: var(--park-danger); }
 .management-head:has(.park-settings-back) h2 { flex: 1; }
 .park-settings-back { width: 44px; height: 44px; padding: 11px; }
@@ -59,3 +57,7 @@ html body .back-button { margin-top: 4px; }
   html:not([data-park-embedded]) body .mobile-top .nn-bell{width:32px}
   html:not([data-park-embedded]) body .mobile-top .ojjuda-service-balance{max-width:88px;padding-inline:4px}
 }
+
+.park-profile-photo { justify-self: start; display: inline-flex; align-items: center; gap: .6rem; }
+.park-profile-photo img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+.park-alert-setting { display: flex; align-items: center; gap: .65rem; min-height: 44px; cursor: pointer; }

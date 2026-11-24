@@ -144,7 +144,7 @@ fs.mkdirSync(proof,{recursive:true});
    });
    assert.equal(payload.isFile,true);assert.equal(payload.count,1);assert.equal(payload.type,'image/png');assert.match(payload.name,/\.png$/);
    assert.deepEqual(payload.signature,[137,80,78,71,13,10,26,10]);assert.ok(payload.width>=256&&payload.height>=128&&payload.size>3000&&payload.colors>60,'a decoded PNG contains the actual photo and drawn card');
-   const expectedCardUrl=origin+'/world.html?place=park&card='+id(1);
+   const expectedCardUrl=origin+'/park/?card='+id(1);
    assert.equal(payload.url,undefined,'the image payload carries its link in the caption without a duplicate URL field');
    assert.deepEqual(payload.text.split('\n'),[expectedCardUrl,'https://ojjuda.com'],'the caption starts with the actual card link and retains the requested website');
    assert.equal(await page.evaluate(()=>copiedLinks.at(-1)),expectedCardUrl,'the combined share also copies this exact card link');
@@ -200,10 +200,10 @@ fs.mkdirSync(proof,{recursive:true});
 
   // Manual link copy and link-only sharing remain available as secondary actions.
   await open(2);await ready();await action('copy').click();
-  assert.equal(await page.evaluate(()=>copiedLinks.at(-1)),origin+'/world.html?place=park&card='+id(2));
+  assert.equal(await page.evaluate(()=>copiedLinks.at(-1)),origin+'/park/?card='+id(2));
   const beforeLink=await count();await action('link').click();await page.waitForFunction(n=>sharedPayloads.length===n+1,beforeLink);
   assert.equal(await page.evaluate(()=>sharedPayloads.at(-1).files),undefined);
-  assert.equal(await page.evaluate(()=>sharedPayloads.at(-1).url),origin+'/world.html?place=park&card='+id(2));
+  assert.equal(await page.evaluate(()=>sharedPayloads.at(-1).url),origin+'/park/?card='+id(2));
   await action('share').click();assert.match(await page.evaluate(()=>sharedPayloads.at(-1).title),/다른 카드/);
   assert.equal(await page.evaluate(()=>sharedPayloads.at(-1).files.length),1,'a reply also shares its own image');await close();
 
@@ -242,7 +242,7 @@ fs.mkdirSync(proof,{recursive:true});
   await action('share').click();await page.waitForFunction(n=>sharedPayloads.length===n+1,beforeFileOnly);
   assert.equal(await page.evaluate(()=>sharedPayloads.at(-1).files.length),1);
   assert.deepEqual(await page.evaluate(()=>Object.keys(sharedPayloads.at(-1))),['files'],'a caption-incompatible browser receives a validated file-only payload');
-  assert.equal(await page.evaluate(()=>copiedLinks.at(-1)),origin+'/world.html?place=park&card='+id(1),'the fallback still preserves the card link for pasting');
+  assert.equal(await page.evaluate(()=>copiedLinks.at(-1)),origin+'/park/?card='+id(1),'the fallback still preserves the card link for pasting');
   assert.equal(await page.evaluate(()=>canSharePayloads.some(data=>data.files?.length&&typeof data.text==='string'&&data.text.includes('card='))),true,'support is checked for the full intended payload');
   assert.equal(await page.evaluate(()=>canSharePayloads.some(data=>Object.keys(data).length===1&&data.files?.length)),true,'a file-only fallback is also checked before sharing');
   await close();await page.evaluate(()=>{combinedSupported=true;});
@@ -296,7 +296,7 @@ fs.mkdirSync(proof,{recursive:true});
    await page.evaluate(()=>releaseClipboard());await settle();
    assert.equal(await count(),before+1,transition+' does not cause a delayed second share');
    if(transition==='other-card'){
-    assert.equal(await page.locator('#note-share-url').inputValue(),origin+'/world.html?place=park&card='+id(2));
+    assert.equal(await page.locator('#note-share-url').inputValue(),origin+'/park/?card='+id(2));
     assert.doesNotMatch(await page.locator('.management-message').textContent(),/링크도 복사했어요/,'the former card cannot overwrite the new dialog');await close();
    }else assert.equal(await page.locator('#management-backdrop').isVisible(),false,transition+' is not reopened by late clipboard completion');
   }
@@ -319,7 +319,7 @@ fs.mkdirSync(proof,{recursive:true});
   await open(1);await ready();const beforeRealClipboard=await count();await action('share').click();
   await page.waitForFunction(n=>sharedPayloads.length===n+1,beforeRealClipboard);
   await page.waitForFunction(()=>document.querySelector('.management-message').textContent.includes('링크도 복사했어요'));
-  assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),origin+'/world.html?place=park&card='+id(1),'the actual browser clipboard receives the per-card URL');
+  assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),origin+'/park/?card='+id(1),'the actual browser clipboard receives the per-card URL');
   assert.equal(await count(),beforeRealClipboard+1,'real clipboard permission still opens exactly one native share');
   await close();
 
@@ -383,7 +383,7 @@ fs.mkdirSync(proof,{recursive:true});
   assert.equal(sent.payload.content.imageUrl,upload.imageUrl);
   const cardButton=sent.payload.buttons.find(button=>button.title==='카드 보기');assert.ok(cardButton);
   for(const link of [sent.payload.content.link,cardButton.link]){
-   assert.equal(link.webUrl,origin+'/world.html?place=park&card='+id(1));
+   assert.equal(link.webUrl,origin+'/park/?card='+id(1));
    assert.equal(link.mobileWebUrl,link.webUrl);
   }
   assert.doesNotMatch(await page.locator('.management-message').textContent(),/전송[이 ]*완료|보냈어요/,'opening the picker is never reported as delivery');
@@ -433,7 +433,7 @@ fs.mkdirSync(proof,{recursive:true});
    await page.evaluate(()=>releaseKakaoUpload());await page.waitForFunction(url=>kakaoDeletes.includes(url),imageUrl);
    assert.equal(await sendCount(),sendsBefore,transition+' cannot send late content from the previous card/account');
    if(transition==='other-card'){
-    assert.equal(await page.locator('#note-share-url').inputValue(),origin+'/world.html?place=park&card='+id(2));
+    assert.equal(await page.locator('#note-share-url').inputValue(),origin+'/park/?card='+id(2));
     assert.notEqual(await action('kakao').textContent(),'카카오톡으로 보내기','the old upload cannot prepare the new card');await close();
    }else assert.equal(await page.locator('#management-backdrop').isVisible(),false,transition+' never reopens the old dialog');
   }

@@ -3,7 +3,7 @@
 let toolbarLoad=null, toolbarReady=false, earlyControl=null;
 function prepareToolbar(){
   if(toolbarLoad)return toolbarLoad;
-  toolbarLoad=import('./account-toolbar.mjs?v=20261125-adult-entry1')
+  toolbarLoad=import('./account-toolbar.mjs?v=20261126-adult-service1')
     .then(({installPajangToolbar})=>{
       installPajangToolbar();
       toolbarReady=true;
@@ -38,7 +38,7 @@ if(typeof requestAnimationFrame==='function'){
   setTimeout(()=>void prepareToolbar(),0);
 }
 // Optional measurement never delays or blocks the member app and its toolbar.
-void import('./usage.mjs?v=20261125-adult-entry1')
+void import('./usage.mjs?v=20261126-adult-service1')
   .then(({installPajangUsage})=>installPajangUsage()).catch(()=>{});
 
 // The Agit host restores focus and scroll when it dismisses its entry dialog.
@@ -59,11 +59,5 @@ if(window.parent!==window && new URLSearchParams(location.search).get('embed')==
       link.href=new URL('./dialog-surface.css?v=20261119-auto-theme1',import.meta.url).href;
       host.head.append(link);
     }
-    document.addEventListener('click',event=>{
-      if(!(event.target instanceof Element)||!event.target.closest('a.agit-return'))return;
-      if(event.button||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
-      event.preventDefault();
-      window.parent.postMessage('pajang:close',location.origin);
-    });
   }
 }

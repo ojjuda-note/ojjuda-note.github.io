@@ -5,7 +5,6 @@
   // the transition. Dragging does not change the filter until release.
   function create({ root, tabs, viewport, page, getActive, select, enabled }) {
     const order = ['latest', 'popular', 'nearby', 'tag'];
-    const placeSwipe = () => window.OjjudaParkFull?.embedded === true;
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     let gesture = null, ghost = null, peek = null, animation = null;
     let finishTimer = 0, suppressClickUntil = 0, scrollShift = 0;
@@ -48,7 +47,6 @@
     }
 
     function goTo(sort, options = {}, offset = 0) {
-      if (sort === 'world' && visible() && !placeSwipe()) { clean(); if(window.OjjudaParkFull?.navigate){window.OjjudaParkFull.navigate('world');return;} (window.parent !== window ? window.parent : window).location.assign('/world.html'); return; }
       if (!visible() || !order.includes(sort)) { settle(); return; }
       const previous = getActive();
       if (sort === previous) { clean(); select(sort, options); return; }
@@ -116,8 +114,7 @@
       const width = viewport.clientWidth;
       const direction = dx < 0 ? 1 : -1;
       // Park gestures stay within its feed filters and stop at either end.
-      g.next = order[order.indexOf(g.active) + direction]
-        || (!placeSwipe() && direction > 0 ? 'world' : null);
+      g.next = order[order.indexOf(g.active) + direction] || null;
       g.offset = g.next ? Math.max(-width, Math.min(width, dx)) : Math.max(-60, Math.min(60, dx * .22));
       translate(page, g.offset);
       if (!g.next) { peek?.remove(); peek = null; return; }
@@ -126,7 +123,7 @@
         peek.setAttribute('aria-hidden', 'true'); peek.inert = true;
         viewport.append(peek);
       }
-      peek.textContent = g.next === 'world' ? '아지트' : tabs.querySelector(`[data-sort="${g.next}"]`)?.textContent || '';
+      peek.textContent = tabs.querySelector(`[data-sort="${g.next}"]`)?.textContent || '';
       translate(peek, direction * width + g.offset, Math.max(0, -viewport.getBoundingClientRect().top + 24));
     }
 

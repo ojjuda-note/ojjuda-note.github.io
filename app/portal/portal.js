@@ -2,15 +2,18 @@
   'use strict';
 
   const $ = id => document.getElementById(id);
-  const destinations = { note: '/world.html?place=park', world: '/world.html', home: '/world.html?tab=home', board: '/world.html?tab=board', my: '/world.html?tab=my', photo: '/photo-ttang.html', byeolcheonji: '/byeolcheonji/', groups: '/groups/', pajang: '/features/pajang/' };
+  const destinations = { note: '/park/', world: '/world.html', home: '/world.html?tab=home', board: '/world.html?tab=board', my: '/world.html?tab=my', photo: '/photo-ttang.html', byeolcheonji: '/byeolcheonji/', groups: '/groups/', pajang: '/features/pajang/' };
   // The document linked from the checkbox and the recorded version must agree.
   // Keep the existing terms during the public notice period (Korea time).
   const termsVersion = Date.now() >= Date.parse('2026-11-20T00:00:00+09:00')
     ? '2026-11-20' : '2026-09-29-age14';
-  for (const link of document.querySelectorAll('[data-policy-document]')) {
-    const name = link.dataset.policyDocument;
-    if (name === 'terms' || name === 'privacy') {
-      link.href = termsVersion === '2026-11-20' ? `/${name}.html` : `/policies/2026-09-29/${name}.html`;
+  function setPolicyLinks(service) {
+    const context = service === 'note' ? '?from=park' : service === 'pajang' ? '?from=pajang' : '';
+    for (const link of document.querySelectorAll('[data-policy-document]')) {
+      const name = link.dataset.policyDocument;
+      if (name === 'terms' || name === 'privacy') {
+        link.href = (termsVersion === '2026-11-20' ? `/${name}.html` : `/policies/2026-09-29/${name}.html`) + context;
+      }
     }
   }
   if ($('policy-revision-note')) $('policy-revision-note').hidden = termsVersion === '2026-11-20';
@@ -281,6 +284,7 @@
       pajang: {key:'pajang', name:'파장', copy:'마음이 닿는 오늘의 한마디.', line:'답변으로 시작하는\n새로운 인연.'},
       world: {key:'agit', name:'아지트', copy:'취향이 모이는 우리의 아지트.', line:'가볍게 놀고,\n다정하게 나눠요.'}
     };
+    setPolicyLinks(destination);
     const space = spaces[destination] || spaces.world;
     dialog.setAttribute('data-entry-space', space.key);
     const text = (id, value) => { const element = $(id); if (element) element.textContent = value; };
@@ -291,7 +295,7 @@
     text('front-copy', space.copy);
     text('front-space', space.name);
     const browse = $('entry-browse');
-    if (browse) browse.href = destinationPath(destination || 'world') + (destination === 'note' ? '&guest=1' : '');
+    if (browse) browse.href = destinationPath(destination || 'world') + (destination === 'note' ? '?guest=1' : '');
     return space;
   }
 
@@ -307,7 +311,7 @@
     $('guest-browse').hidden = mode !== 'login';
     const guestDestination = pendingDestination || entryDestination || returnQueryDestination || 'world';
     const entrySpace = syncEntryIdentity(guestDestination);
-    $('guest-browse').href = destinationPath(guestDestination) + (guestDestination === 'note' ? '&guest=1' : '');
+    $('guest-browse').href = destinationPath(guestDestination) + (guestDestination === 'note' ? '?guest=1' : '');
     const isSignup = mode === 'signup';
     if (isSignup) {
       prepareSignupFields();
@@ -347,9 +351,9 @@
     $('auth-intro').textContent = isSignup ? (parkSignup() ? '생년월일을 입력해 가입 방법을 확인해 주세요.' : guestDestination === 'pajang' ? '만 19세 이상 회원만 파장을 이용할 수 있어요.' : '오쭈다 계정 하나로 함께해요.')
       : isForgot ? '등록된 이메일·전화번호·생년월일·성별을 모두 입력해 주세요.'
         : isReset ? '새 비밀번호를 입력하고, 확인 칸에 한 번 더 입력해 주세요.'
-          : isNickname ? '아지트에서 사용할 닉네임을 정해 주세요.'
+          : isNickname ? '공원에서 사용할 닉네임을 정해 주세요.'
           : guestDestination === 'pajang' ? '만 19세 이상 회원만 이용할 수 있어요.' : '오쭈다 계정으로 함께해요.';
-    submit.firstChild.textContent = isSignup ? '회원가입 ' : isForgot ? '회원정보 확인 ' : isReset ? '확인 ' : isNickname ? '아지트 시작하기 ' : '로그인 ';
+    submit.firstChild.textContent = isSignup ? '회원가입 ' : isForgot ? '회원정보 확인 ' : isReset ? '확인 ' : isNickname ? '공원 시작하기 ' : '로그인 ';
     feedback.textContent = notice;
     if ((isSignup || isForgot) && !window.OjjudaIdentity?.fields) feedback.textContent = '회원정보 입력 화면을 불러오지 못했어요. 다시 시도해 주세요.';
     submit.disabled = busy || !client || ((isSignup || isForgot) && !window.OjjudaIdentity);
@@ -564,7 +568,7 @@
       nickname.value = profile.nickname;
       syncNicknameLimit();
       $('account-badge').textContent = `${profile.nickname}님`;
-      const notePath = destinations.note + (returnCard ? `&card=${encodeURIComponent(returnCard)}` : '');
+      const notePath = destinations.note + (returnCard ? `?card=${encodeURIComponent(returnCard)}` : '');
       clearReturnDestination();
       location[replace ? 'replace' : 'assign'](notePath);
     } catch (error) {

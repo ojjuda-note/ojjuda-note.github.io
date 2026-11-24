@@ -116,7 +116,7 @@
       host.innerHTML = `<div class="asset-library">
         <header class="asset-lib-intro"><div><span class="asset-lib-eyebrow">관리자 전용 · 보는 자료실</span>
           <h3>회원 눈에 보이는 오쭈다</h3><p>어떤 그림과 인사가 보이는지 여기서 직접 확인해요. 이곳에서 미리 봐도 실제 회원 기록은 바뀌지 않아요.</p></div>
-          <a class="asset-lib-visit" href="/world.html" target="_blank" rel="noopener">실제 아지트 열기 ↗</a></header>
+          ${options.service ? '' : '<a class="asset-lib-visit" href="/world.html" target="_blank" rel="noopener">실제 아지트 열기 ↗</a>'}</header>
         <section class="asset-lib-today" aria-label="오늘의 회원 화면">
           <div class="asset-lib-today-copy"><span class="asset-lib-today-tag">${escapeHtml(today)} · 오늘 자동 테마</span>
             <h3>${escapeHtml(theme.name || '기본')} 테마가 보여요</h3>

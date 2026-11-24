@@ -14,7 +14,7 @@ function toolbarBundle(){
   }).then(result=>result.outputFiles[0].text);
 }
 
-async function fixture(t,{user='member-a',anonymous=false,readBalance,getSession,embedPath}={}){
+async function fixture(t,{user='member-a',anonymous=false,readBalance,getSession,embedPath,items=[],retention=[],getInquiry}={}){
   const html=fs.readFileSync(path.join(root,'features/pajang/station.html'),'utf8')
     .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'');
   const dom=new JSDOM(html,{url:'https://ojjuda.kr/features/pajang/station.html'+(embedPath?'?embed=1':''),
@@ -32,8 +32,9 @@ async function fixture(t,{user='member-a',anonymous=false,readBalance,getSession
     async rpc(name,args){
       calls.push({name,args,user:session?.user?.id});
       if(name==='app_notification_summary')return {data:{notifications:2,retention:0}};
-      if(name==='list_app_notifications')return {data:{items:[],unread_count:2,as_of:'2026-11-19T00:00:00Z',has_more:false,next_cursor:null}};
-      if(name==='list_retention_alerts')return {data:[]};
+      if(name==='list_app_notifications')return {data:{items,unread_count:2,as_of:'2026-11-19T00:00:00Z',has_more:false,next_cursor:null}};
+      if(name==='get_my_inquiry')return getInquiry(args.p_id);
+      if(name==='list_retention_alerts')return {data:retention};
       if(name==='beta_charge_status')return {data:{ok:true,enabled:true,coins,left:5,limit:5}};
       if(name==='beta_charge'){assert.deepEqual(Object.keys(args),['pack']);assert.equal(args.pack,'p1000');coins+=10;return {data:{ok:true,coins,added:10,bonus:0}};}
       throw Error('unexpected_rpc:'+name);
@@ -85,6 +86,24 @@ test('both public Pajang entries share the brand and the real wallet/notificatio
   }
 });
 
+test('the guest and denied gates keep their return destination in Pajang',async t=>{
+  const dom=new JSDOM('<section id="gate"></section>',{url:'https://ojjuda.kr/features/pajang/',runScripts:'outside-only'});
+  t.after(()=>dom.window.close());
+  const {window:w}=dom;
+  const gate=await esbuild.build({entryPoints:[path.join(root,'features/pajang/member.mjs')],bundle:true,write:false,format:'iife',globalName:'Gate'});
+  w.eval(gate.outputFiles[0].text);
+  w.Gate.showGate('로그인이 필요해요',true);
+  const links=()=>[...w.document.querySelectorAll('#gate a')].map(link=>link.getAttribute('href'));
+  assert.deepEqual(links(),['/?auth=signup&next=pajang','/?auth=login&next=pajang']);
+  w.Gate.showGate('다시 확인해 주세요');
+  assert.deepEqual(links(),['/features/pajang/']);
+  for(const name of ['index.html','station.html','feed.html']){
+    const page=new JSDOM(fs.readFileSync(path.join(root,'features/pajang',name),'utf8'));
+    assert.equal(page.window.document.querySelector('script[data-return-to="hub"],a[href^="/world.html"]'),null);
+    page.window.close();
+  }
+});
+
 test('member toolbar shows server balance, opens the shared inbox and charges from a settings control',async t=>{
   const f=await fixture(t);
   assert.equal(f.amount(),'70');
@@ -101,6 +120,54 @@ test('member toolbar shows server balance, opens the shared inbox and charges fr
   assert.equal(f.calls.filter(call=>call.name==='beta_charge').length,1);
   assert.equal(f.amount(),'80');
   assert.ok(f.balanceEvents.some(event=>event.userId==='member-a'&&event.coins===80));
+});
+
+test('Park card and retention notifications can be read without leaving Pajang',async t=>{
+  const created='2026-11-19T00:00:00Z',card='a0000000-0000-4000-8000-000000000001';
+  const notice='b0000000-0000-4000-8000-000000000001',retention='c0000000-0000-4000-8000-000000000001';
+  const f=await fixture(t,{
+    items:[{id:notice,kind:'reply',card_id:card,created_at:created}],
+    retention:[{id:retention,kind:'memo',card_id:card,created_at:created,archive_due_at:created}]
+  });
+  f.bell().click();await settle();
+  for(const id of [notice,retention]){
+    const row=f.w.document.querySelector('[data-notification-id="'+id+'"]');
+    assert.ok(row?.querySelector('[data-notification-read]'));
+    assert.equal(row.querySelector('[data-notification-open],a'),null);
+    assert.doesNotMatch(row.textContent,/카드 보기|영구보관/);
+  }
+  assert.equal(f.w.location.pathname,'/features/pajang/station.html');
+});
+
+test('inquiry replies open inside Pajang and an account switch clears a pending reply',async t=>{
+  const replyId='b0000000-0000-4000-8000-000000000001',worldId='b0000000-0000-4000-8000-000000000002';
+  const inquiry='a0000000-0000-4000-8000-000000000001',created='2026-11-19T00:00:00Z';
+  const items=[
+    {id:replyId,kind:'inquiry_reply',inquiry_id:inquiry,created_at:created,read_at:created},
+    {id:worldId,kind:'world_message',source:'world',target_type:'message',target_id:inquiry,created_at:created}
+  ];
+  const pending=deferred();let reads=0;
+  const f=await fixture(t,{items,getInquiry:id=>{
+    assert.equal(id,inquiry);
+    return ++reads===1?{data:{id,body:'내 문의',reply:'운영팀 답변'}}:pending.promise;
+  }});
+  const {document}=f.w;
+  const open=async()=>{
+    f.bell().click();await settle();
+    const world=document.querySelector('[data-notification-id="'+worldId+'"]');
+    assert.ok(world?.querySelector('[data-notification-read]'));
+    assert.equal(world.querySelector('[data-notification-open]'),null);
+    document.querySelector('[data-notification-open="'+replyId+'"]').click();await settle();
+    return document.querySelector('dialog.pajang-inquiry-dialog');
+  };
+  const dialog=await open();assert.ok(dialog.open);
+  assert.match(dialog.textContent,/내 문의운영팀 답변/);
+  dialog.querySelector('button').click();await settle();
+  assert.doesNotMatch(dialog.textContent,/내 문의|운영팀 답변/);
+  await open();await f.auth('member-b');
+  pending.resolve({data:{id:inquiry,body:'이전 계정',reply:'보호되는 답변'}});await settle();
+  assert.equal(dialog.open,false);assert.doesNotMatch(dialog.textContent,/이전 계정|보호되는 답변/);
+  assert.equal(f.w.location.pathname,'/features/pajang/station.html');
 });
 
 test('account changes clear old balances and reject late responses from the previous account',async t=>{
@@ -197,7 +264,7 @@ test('Pajang standalone entry defers shared inbox and charging code until first 
   assert.match(shell,/window\.OjjudaPajangHistory\?\.canLeave\?\.\(\)!==false/);
   for(const file of ['index.html','station.html']){
     const html=fs.readFileSync(path.join(root,'features/pajang',file),'utf8');
-    assert.match(html,/shell\.mjs\?v=20261125-adult-entry1/);
+    assert.match(html,/shell\.mjs\?v=20261126-adult-service1/);
   }
 });
 
@@ -212,7 +279,7 @@ function deferredToolbarHarness(t){
   const requested=new Promise(resolve=>{resolveImport=resolve;});
   const source=fs.readFileSync(path.join(root,'features/pajang/shell.mjs'),'utf8')
     .split('// Optional measurement never delays')[0]
-    .replace("import('./account-toolbar.mjs?v=20261125-adult-entry1')",'loadToolbar()');
+    .replace(/import\('\.\/account-toolbar\.mjs\?v=[\w-]+'\)/,'loadToolbar()');
   const run=new Function('window','document','location','requestAnimationFrame','setTimeout','loadToolbar',source);
   run(w,w.document,w.location,()=>0,()=>0,()=>{loads++;return requested;});
   return {

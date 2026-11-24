@@ -1902,7 +1902,7 @@ async function toggleReaction(cardId, reaction) {
 }
 function shareCard(cardId) {
   if (!validCardId(cardId)) return;
-  const url = new URL('/world.html?place=park', location.origin); url.searchParams.set('card', cardId);
+  const url = new URL('/park/', location.origin); url.searchParams.set('card', cardId);
   const shareText = 'https://ojjuda.com';
   const run = showManagement('카드 공유'), epoch = identityEpoch, userId = session?.user?.id || null;
   let sharing = false, feedbackRun = 0;
@@ -1930,7 +1930,7 @@ function shareCard(cardId) {
       const share = managementButton('다른 앱으로 공유', async () => {
         if (!current() || sharing) return;
         sharing = true; share.disabled = true; ++feedbackRun;
-        try { await navigator.share({ title: '오쭈다 아지트 · 공원', text: shareText, url: url.href }); }
+        try { await navigator.share({ title: '오쭈다 공원', text: shareText, url: url.href }); }
         catch (error) { if (current() && error.name !== 'AbortError') managementMessage.textContent = '링크 복사를 이용해 주세요.'; }
         finally { if (current()) { sharing = false; share.disabled = false; } }
       }, true);
@@ -1988,7 +1988,7 @@ function shareCard(cardId) {
     const link = managementButton('링크만 공유', async () => {
       if (!current() || sharing) return;
       sharing = true; link.disabled = true; ++feedbackRun; managementMessage.textContent = '';
-      try { await navigator.share({ title: '오쭈다 아지트 · 공원', text: shareText, url: url.href }); }
+      try { await navigator.share({ title: '오쭈다 공원', text: shareText, url: url.href }); }
       catch (error) { if (current() && error.name !== 'AbortError') managementMessage.textContent = '링크 복사를 이용해 주세요.'; }
       finally { if (current()) { sharing = false; link.disabled = false; } }
     });
@@ -2117,7 +2117,7 @@ function setCardLocationSwitch(on, status, pending = false, failed = false) {
 function installFeatures() {
   const nickname = $('input[name="identity"][value="nickname"]');
   nickname.disabled = false; nickname.closest('label').classList.remove('disabled-choice');
-  nickname.closest('label').title = '선택하면 아지트 닉네임으로 공개됩니다';
+  nickname.closest('label').title = '선택하면 계정 닉네임이 표시돼요.';
   featureMessage = node('p', 'note-feature-message'); featureMessage.hidden = true;
   featureMessage.setAttribute('role', 'status'); featureMessage.setAttribute('aria-live', 'polite');
   noticeElement = node('aside', 'note-notice'); noticeElement.hidden = true;
@@ -3586,7 +3586,7 @@ async function showNicknameChange() {
     const nickname = await fetchAccountNickname(userId);
     if (run !== managementRun || session?.user?.id !== userId) return;
     const form = node('form', 'note-account-form'); form.noValidate = true;
-    managementBody.replaceChildren(node('p', 'management-help', '아지트에서 사용하는 닉네임이에요.'), form);
+    managementBody.replaceChildren(node('p', 'management-help', '오쭈다 계정에서 사용하는 닉네임이에요.'), form);
     const input = accountField(form, 'note-new-nickname', '닉네임'); input.value = nickname;
     const syncLimit = () => { input.maxLength = textInputMaxLength(input.value, 12); };
     input.addEventListener('input', syncLimit); syncLimit();
@@ -3601,7 +3601,7 @@ async function showNicknameChange() {
         if (error) throw error;
         if (!data?.nickname) throw new Error('profile_unavailable');
         return data.nickname;
-      }, saved => { accountProfileRun++; accountNickname = saved; updateAuth(); accountSuccess('닉네임을 저장했어요. 아지트에서도 같은 닉네임을 써요.'); });
+      }, saved => { accountProfileRun++; accountNickname = saved; updateAuth(); accountSuccess('닉네임을 저장했어요.'); });
     });
   } catch {
     if (run !== managementRun || session?.user?.id !== userId) return;
@@ -3613,7 +3613,7 @@ function showPasswordChange() {
   const userId = session?.user?.id; if (!userId) return;
   const run = showManagement('비밀번호 변경');
   const form = node('form', 'note-account-form'); form.noValidate = true;
-  managementBody.append(node('p', 'management-help', '아지트에 로그인할 때 쓰는 비밀번호가 바뀌어요.'), form);
+  managementBody.append(node('p', 'management-help', '오쭈다 계정의 비밀번호가 바뀌어요.'), form);
   const password = accountField(form, 'note-new-password', '새 비밀번호', 'password'); password.minLength = 6;
   password.placeholder = '6자 이상';
   const confirmation = accountField(form, 'note-confirm-password', '새 비밀번호 확인', 'password');
@@ -3629,11 +3629,11 @@ function showPasswordChange() {
     }, () => { password.value = ''; confirmation.value = ''; accountSuccess('비밀번호를 바꿨어요. 다음 로그인부터 새 비밀번호를 써 주세요.'); });
   });
 }
-function leaveNoteAccount() { (parkEmbedded ? window.parent : window).location.assign('/'); }
+function leaveNoteAccount() { (parkEmbedded ? window.parent : window).location.assign('/park/'); }
 function showAccountLogout() {
   if (!session?.user) return;
   showManagement('로그아웃');
-  managementBody.append(node('p', 'management-help', '이 브라우저에서 아지트가 로그아웃돼요. 로그아웃할까요?'));
+  managementBody.append(node('p', 'management-help', '이 브라우저에서 오쭈다 계정을 로그아웃할까요?'));
   cancelManagement();
   managementFooter.append(managementButton('로그아웃', () => accountAction(async userId => {
     const { error } = await client.auth.signOut({ scope: 'local' });
@@ -3682,17 +3682,17 @@ async function showAccountDeletion() {
     if (run !== managementRun || session?.user?.id !== userId) return;
     const form = node('form', 'note-account-form'); form.noValidate = true;
     managementBody.replaceChildren(
-      node('p', 'management-help note-account-warning', '탈퇴하면 아지트 계정이 삭제돼요. 방·다이어리·사진·영상·친구·ZU와 공원의 카드·답글·이벤트가 삭제되며 되돌릴 수 없어요.'),
+      node('p', 'management-help note-account-warning', '탈퇴하면 오쭈다 계정이 삭제돼요. 방·다이어리·사진·영상·친구·ZU와 공원의 카드·답글·이벤트가 삭제되며 되돌릴 수 없어요.'),
       node('p', 'management-help', '계정정보는 1개월간 비공개 보관 후 삭제해요. 같은 이메일이나 전화번호로 3일(72시간) 동안 재가입할 수 없어요. 다른 사람의 방명록·댓글은 ‘탈퇴한 사용자’로 남아요.'), form);
     const input = accountField(form, 'note-delete-nickname', `확인을 위해 닉네임 ‘${nickname}’을 입력해 주세요`);
     const consentLabel = node('label', 'note-account-consent'), consent = node('input'); consent.type = 'checkbox';
-    consentLabel.append(consent, node('span', '', '아지트 계정과 모든 활동이 삭제되는 것을 확인했어요.')); form.append(consentLabel);
+    consentLabel.append(consent, node('span', '', '오쭈다 계정과 모든 활동이 삭제되는 것을 확인했어요.')); form.append(consentLabel);
     accountFormFooter(form, '탈퇴하기', true); input.focus();
     form.addEventListener('submit', event => {
       event.preventDefault();
       if (run !== managementRun || session?.user?.id !== userId) return;
       if (input.value.trim() !== nickname) { managementMessage.textContent = '닉네임이 맞지 않아요.'; input.focus(); return; }
-      if (!consent.checked) { managementMessage.textContent = '아지트 계정 탈퇴 안내를 확인해 주세요.'; consent.focus(); return; }
+      if (!consent.checked) { managementMessage.textContent = '오쭈다 계정 탈퇴 안내를 확인해 주세요.'; consent.focus(); return; }
       void accountAction(deleteNoteAccount);
     });
   } catch {
@@ -3820,7 +3820,7 @@ async function managementAction(action, after) {
     const reason = error?.message || '';
     managementMessage.textContent = /parent_not_permanent/i.test(reason)
       ? '상위 카드가 모두 영구보관된 후에 답글을 영구보관할 수 있어요.'
-      : reason === 'coins' ? 'ZU 잔액이 부족해요. 아지트에서 잔액을 확인해 주세요.'
+      : reason === 'coins' ? 'ZU 잔액이 부족해요. 공원 상단에서 잔액을 확인해 주세요.'
         : reason === 'card_unavailable' ? '이 카드는 삭제되었거나 현재 영구보관할 수 없어요.'
           : '처리하지 못했어요. 로그인과 권한을 확인한 뒤 다시 시도해 주세요.';
   } finally {
@@ -4036,7 +4036,7 @@ function installManagement() {
   const blocks = managementButton('차단 목록', showBlocks); blocks.id = 'note-blocks'; blocks.hidden = true;
   const reports = managementButton('관리자 모드 열기', () => {
     if (!moderator || !session?.user) return;
-    (parkEmbedded ? window.parent : window).location.assign('/world.html?admin=note');
+    (parkEmbedded ? window.parent : window).location.assign('/admin/?from=park&admin=cards');
   }); reports.id = 'note-moderation'; reports.className = 'btn pri'; reports.hidden = true;
   $('#note-admin-entry').append(reports);
   const memberInfo = managementButton('내 회원정보', () => showMemberInfo()); memberInfo.id = 'note-member-info'; memberInfo.hidden = true;
@@ -4202,6 +4202,7 @@ function receiveAuth(current) {
   const firstSession = !authKnown;
   const changed = session?.user?.id !== current?.user?.id;
   session = current; authKnown = true;
+  window.OjjudaParkAccount?.syncIdentity();
   if (changed) {
     stopLocationPreference();writingLocationController?.abort();window.OjjudaLocation?.forget(previousUserId);
     accountNickname = null; accountProfileRun++;
@@ -4293,14 +4294,19 @@ notificationController = window.OjjudaNoteNotifications?.install({
   onGiftClaimed: userId => loadWorldBalance(userId),
   client, getUserId: () => session?.user?.id || null,
   onOpenCard: id => { window.OjjudaNoteNavigation?.leaveMy(); openCard(id); },
-  onOpenWorld: (type,id) => {const url=new URL('/world.html',location.origin);url.searchParams.set('notice',type);url.searchParams.set('target',id);(parkEmbedded ? window.parent : window).location.assign(url.href);},
+  canOpenWorldTarget: type => !parkJunior() && (type === 'friends' || type === 'message'),
+  allowInviteNavigation: false,
+  onOpenWorld: (type,id) => {
+    if (type === 'friends') window.OjjudaParkFull?.navigate('friends');
+    if (type === 'message') void window.OjjudaParkAccount?.messages()?.openMessage(id);
+  },
   onOpenInquiry: id => window.OjjudaNoteSupport?.open?.(id),
   onKeepCard: (id, cardKind) => confirmPermanent({ id, kind: cardKind })
 });
 if (client) {
   client.auth.onAuthStateChange((event, current) => {
     // Do not show a public guest entrance before the stored session is loaded.
-    if(event==='INITIAL_SESSION'&&!current?.user)return;
+    if (event === 'INITIAL_SESSION' && !current?.user) return;
     authEventVersion++;
     receiveAuth(current);
   });

@@ -457,7 +457,7 @@ test('the real settings component checks Auth UID while keeping a distinct Pajan
       reactRoot.render(createElement(AccountSettings,{profileId,onOpen(){}}));
       await settleAdmin();
     });
-    const entry=host.querySelector('a[href="/world.html?admin=pajang-answers&from=pajang"]');
+    const entry=host.querySelector('a[href="/admin/?from=pajang&admin=pajang-answers"]');
     assert.equal(entry?.textContent,'파장 관리자모드›');
     assert.equal(entry?.target,'_top');
     assert.equal(f.state.calls.includes('is_admin'),true);

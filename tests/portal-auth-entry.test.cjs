@@ -158,7 +158,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   const loginRoutes = [
     ['world', '/world.html', '/world.html'],
     ['pajang', '/features/pajang/', '/features/pajang/'],
-    ['note', '/world.html?place=park', '/world.html?place=park&guest=1']
+    ['note', '/park/', '/park/?guest=1']
   ];
   const signIn = async app => {
     app.element('email').value = 'member@ojjuda.kr';
@@ -445,7 +445,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   await retryPark.flush();
   assert.equal(prepareCalls,1);
   assert.equal(identityCalls,2,'a retry gets a new server identity check');
-  assert.deepEqual(retryPark.navigations,['/world.html?place=park']);
+  assert.deepEqual(retryPark.navigations,['/park/']);
   const expiredPark = setup('?next=note', {user:nicknameMember,userResponse:()=>({data:{user:null},error:{status:401}})});
   await expiredPark.flush();
   assert.deepEqual(expiredPark.navigations,[]);
@@ -463,7 +463,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   repair.element('nickname').value = '새금칙별명';
   repairConflict=false;
   await repair.submit();
-  assert.deepEqual(repair.navigations, ['/world.html?place=park']);
+  assert.deepEqual(repair.navigations, ['/park/']);
   assert.deepEqual(repair.nicknameChecks,['새금칙별명']);
   assert.deepEqual(repair.noteWrites,['기존별명','새❤️❤️별명']);
   assert.deepEqual(repair.profileReads,[nicknameMember.id]);
@@ -482,6 +482,14 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
 
   const cardId = '00000000-0000-4000-8000-000000000010';
   const reader = { id: 'reader', email: 'reader@example.invalid' };
+  for (const designation of [{role:'park_junior'}, {app_metadata:{park_guardian_account:true}}]) {
+    for (const [destination,expected] of [['note','/park/?card='+cardId],['world','/park/'],['pajang','/park/']]) {
+      const junior = setup('?auth=login&next='+destination+'&card='+cardId, {user:{...reader,...designation}});
+      await junior.flush();
+      assert.deepEqual(junior.navigations,[expected],'a Park-only account returns directly to its permitted service');
+      assert.equal(junior.noteWrites.length,0,'the junior entry skips shared member enrollment');
+    }
+  }
   const pajangConfirmed = setup('?code=confirmation'); await pajangConfirmed.flush();
   pajangConfirmed.storage.set('ojjuda_post_confirm_destination', JSON.stringify({
     destination: 'pajang', email: reader.email, expiresAt: Date.now() + 60000
@@ -578,10 +586,10 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
 
   const returnToCard = setup(`?auth=login&next=note&card=${cardId}`, { user: reader });
   await returnToCard.flush();
-  assert.deepEqual(returnToCard.navigations, [`/world.html?place=park&card=${cardId}`], 'sign-in returns to the card being read');
+  assert.deepEqual(returnToCard.navigations, [`/park/?card=${cardId}`], 'sign-in returns to the card being read');
   const invalidCard = setup('?auth=login&next=note&card=https://example.invalid', { user: reader });
   await invalidCard.flush();
-  assert.deepEqual(invalidCard.navigations, ['/world.html?place=park'], 'only card UUIDs can be carried through login');
+  assert.deepEqual(invalidCard.navigations, ['/park/'], 'only card UUIDs can be carried through login');
   const cardSignup = setup(`?auth=signup&next=note&card=${cardId}`);
   await cardSignup.flush(); cardSignup.fill(); await cardSignup.submit();
   assert.equal(cardSignup.signups[0].options.emailRedirectTo, `https://ojjuda.kr/?next=note&card=${cardId}`);
@@ -617,7 +625,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   }
   for (const [returnQuery, route] of [
     ['next=pajang', '/features/pajang/'],
-    [`next=note&card=${cardId}`, `/world.html?place=park&card=${cardId}`],
+    [`next=note&card=${cardId}`, `/park/?card=${cardId}`],
     [`next=groups&invite=${groupCode}`, groupPath],
     ['next=byeolcheonji&' + bookingQuery, '/byeolcheonji/?' + bookingQuery]
   ]) {

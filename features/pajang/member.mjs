@@ -59,7 +59,7 @@ export function showGate(message,login = false) {
     account.append(actions);gate.append(account);
   }else{
     const link=document.createElement('a');
-    link.href='/world.html';link.target='_top';link.textContent='아지트로 돌아가기';
+    link.href='/features/pajang/';link.target='_top';link.textContent='파장 처음으로';
     gate.append(link);
   }
 }

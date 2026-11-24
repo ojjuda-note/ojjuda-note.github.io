@@ -38,7 +38,7 @@
     const node = el('button', text, className); node.type = 'button'; return node;
   };
 
-  function mount({ container, client, getAdminId, isCurrent = () => container.isConnected, view = 'members', initialFilter = 'all', initialState, renderActions }) {
+  function mount({ container, client, getAdminId, isCurrent = () => container.isConnected, view = 'members', initialFilter = 'all', initialState, renderActions, service }) {
     const withdrawn = view === 'withdrawn', referrals = view === 'referrals', suspended = view === 'suspended', owner = getAdminId?.();
     let destroyed = false, run = 0, query = String(initialState?.query || '').trim().slice(0, 100), total = 0, busy = false;
     let offset = Number.isSafeInteger(initialState?.offset) && initialState.offset >= 0 ? Math.floor(initialState.offset / PAGE_SIZE) * PAGE_SIZE : 0;
@@ -107,9 +107,12 @@
     pagination.append(previous, pageLabel, next); pagination.hidden = true;
     section.append(heading, intro);
     if (!withdrawn && !referrals && !suspended) {
-      const consentLink = el('a', '공원 보호자 동의 관리');
-      consentLink.href = '/admin/park-guardian/';
-      section.append(consentLink, filterBar);
+      if (service !== 'pajang') {
+        const consentLink = el('a', '공원 보호자 동의 관리');
+        consentLink.href = '/admin/park-guardian/';
+        section.append(consentLink);
+      }
+      section.append(filterBar);
     }
     section.append(form); if (!withdrawn && !referrals) section.append(sortBar);
     section.append(count, status, retry, list, pagination); container.replaceChildren(section);

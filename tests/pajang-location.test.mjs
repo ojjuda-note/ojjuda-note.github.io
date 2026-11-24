@@ -55,10 +55,11 @@ test('precise errors remain distinct and the watch always ends',async t=>{
 });
 
 test('cancel ignores late callbacks and stops an active precise watch',async t=>{
-  const controller=new AbortController(),cleared=[];let late;
-  environment(t,{getCurrentPosition(ok){ok(fix(4000));},watchPosition(ok){late=ok;return 14;},clearWatch(id){cleared.push(id);}});
+  const controller=new AbortController(),cleared=[];let late,started;
+  const watching=new Promise(resolve=>{started=resolve;});
+  environment(t,{getCurrentPosition(ok){ok(fix(4000));},watchPosition(ok){late=ok;started();return 14;},clearWatch(id){cleared.push(id);}});
   const pending=readLocationCell({signal:controller.signal});
-  await Promise.resolve();await Promise.resolve();controller.abort();
+  await watching;controller.abort();
   await assert.rejects(pending,{name:'AbortError'});late(fix(20));assert.deepEqual(cleared,[14]);
 });
 

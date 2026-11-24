@@ -285,7 +285,9 @@ const cardId='00000000-0000-4000-8000-000000000001';
   assert.equal(await page.locator('#compose-text').inputValue(),'고쳐 쓴 붓글씨');
   assert.equal(await page.locator('#compose-ink-art').isVisible(),false);
   assert.equal(await page.locator('.compose-photo .park-ink-box').isVisible(),false);
+  page.once('dialog', dialog=>dialog.accept());
   await page.locator('#close-composer').click();
+  await page.locator('#composer-backdrop').waitFor({state:'hidden'});
   await page.locator('#feed-list .photo').first().scrollIntoViewIfNeeded();
   for(const [index,key] of [[1,'37'],[2,'13']]){
    const face='#feed-list article:nth-child('+index+') .photo',selector=face+' canvas.park-ink-art';

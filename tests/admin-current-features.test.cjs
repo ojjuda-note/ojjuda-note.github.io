@@ -3,6 +3,14 @@ const read=p=>fs.readFileSync(path.join(__dirname,'..',p),'utf8');
 async function entry(query, allowed = true, signedIn = true, userError = null) {
   const panels = Object.fromEntries(['status', 'auth-required', 'no-permission', 'error', 'retry']
     .map(id => [id, {hidden: false, addEventListener() {}}]));
+  const local = ['park','pajang'].includes(new URL('https://admin.test/admin/' + query).searchParams.get('from'));
+  let document = {getElementById:id=>panels[id]};
+  if (local) {
+    const {JSDOM} = require('jsdom');
+    document = new JSDOM(read('admin/index.html')).window.document;
+    for (const id of Object.keys(panels)) panels[id] = document.getElementById(id);
+  }
+  const mounted = [];
   const redirects = [], scheduled = [], checks = {user: 0, role: 0};
   const location = new URL('https://admin.test/admin/' + query);
   location.replace = url => redirects.push(url);
@@ -30,8 +38,8 @@ async function entry(query, allowed = true, signedIn = true, userError = null) {
     }
   };
   const context = {URL, URLSearchParams, location, setTimeout: fn => scheduled.push(fn),
-    document: {getElementById: id => panels[id]},
-    window: {OJJUDA_CONFIG: {supabaseUrl: 'https://fixture.invalid', supabaseKey: 'synthetic'},
+    document,
+    window: {OjjudaAdminAssets:{loadWorkspace:async()=>({mountWorkspace(options){mounted.push(options);return {destroy(){}};}})}, OJJUDA_CONFIG: {supabaseUrl: 'https://fixture.invalid', supabaseKey: 'synthetic'},
       supabase: {createClient: () => client}}};
   const sandbox=vm.createContext(context);
   vm.runInContext(read('admin/service-scope.js'),sandbox);
@@ -41,7 +49,7 @@ async function entry(query, allowed = true, signedIn = true, userError = null) {
     while (scheduled.length) await scheduled.shift()();
   }
   await flush();
-  return {redirects, panels, checks, onAuth, flush,
+  return {redirects, panels, checks, mounted, onAuth, flush,
     signOutDuringNextRoleCheck() {
       beforeRoleResponse = () => { signedIn = false; onAuth('SIGNED_OUT'); };
     }
@@ -78,7 +86,11 @@ async function entry(query, allowed = true, signedIn = true, userError = null) {
   ['?admin=note-spam','park'],['?admin=note-settings','park']
  ]){
   const result=await entry(route);
-  assert.equal(new URL(result.redirects[0]).searchParams.get('from'),service,route);
+  if (new URLSearchParams(route.slice(1)).get('from') === service && service !== 'agit') {
+    assert.deepEqual(result.redirects, [], route);
+    assert.equal(result.mounted[0].service, service);
+    assert.equal(result.mounted[0].tab, new URLSearchParams(route.slice(1)).get('admin'));
+  } else assert.equal(new URL(result.redirects[0]).searchParams.get('from'),service,route);
  }
  for(const service of ['agit','park','pajang']){
   for(const requested of ['?admin=organization&from='+service,'?from='+service+'#organization']){
