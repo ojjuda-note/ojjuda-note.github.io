@@ -11,7 +11,7 @@ from prepare_resources import OUTPUT, PROJECT
 class TestNativeLaunchRoutes(unittest.TestCase):
     def test_every_app_opens_its_service_instead_of_a_second_splash(self):
         self.assertEqual(set(LAUNCH_ROUTES), {"agit", "park", "pajang"})
-        self.assertEqual(LAUNCH_ROUTES["agit"]["start"], "/world.html?tab=hub")
+        self.assertEqual(LAUNCH_ROUTES["agit"]["start"], "/world.html?tab=hub&play_store=1")
         self.assertEqual(LAUNCH_ROUTES["park"]["start"], "/world.html?place=park")
         self.assertEqual(LAUNCH_ROUTES["pajang"]["start"], "/features/pajang/")
         for app, route in LAUNCH_ROUTES.items():
