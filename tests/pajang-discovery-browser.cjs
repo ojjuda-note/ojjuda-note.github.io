@@ -680,7 +680,7 @@ async function checkNavigation(page){
       {name:'entry',url:'index.html?flight-check=new',selectors:{action:'#answer-form button[type=submit]',feature:'.entry-intro'},changing:['nodes.action.background','nodes.feature.background']},
       {name:'member',url:'station.html',selectors:{action:'.dialog .primary',feature:'.letter-hero',menu:'.station-nav a[aria-current=page]'},changing:['nodes.action.background','nodes.feature.background','nodes.menu.background']},
       {name:'radar',url:'station.html?tab=radar',selectors:{feature:{selector:'.radar-scope',pseudo:'::before'},menu:'.station-nav a[aria-current=page]'},changing:['nodes.feature.image','nodes.menu.background']},
-      {name:'settings',url:'station.html?tab=profile',selectors:{feature:'.account-agit',list:'.account-settings .ojjuda-settings-list'},changing:['nodes.feature.background']}
+      {name:'settings',url:'station.html?tab=profile',selectors:{menu:'.station-nav a[aria-current=page]',list:'.account-settings .ojjuda-settings-list'},changing:['nodes.menu.background']}
     ];
     await page.emulateMedia({reducedMotion:'reduce'});
     for(const view of views){
@@ -703,6 +703,7 @@ async function checkNavigation(page){
           const colors=await palette(page,view.selectors,{date});
           assert.equal(colors.theme,theme,view.name+' '+appearance+' calendar '+date);assert.equal(colors.body,colors.bg,view.name+' uses the shared background');
           if(view.selectors.action)assert.equal(colors.nodes.action.background,colors.accent,view.name+' primary action follows '+theme);
+          if(view.name==='settings')assert.equal(colors.nodes.list.background,colors.surface,'settings list uses the current surface');
           samples.push(colors);
         }
         distinctPalettes(samples,'Pajang '+view.name+' '+appearance,['bg','accent',...view.changing]);
