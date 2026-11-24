@@ -105,6 +105,7 @@ async function checkSixLineCard(page, width) {
     containerWidth:el.closest('.park-feed').getBoundingClientRect().width
    }));
    assert.equal(columns,containerWidth >= 1520?2:1,`${width}px (${containerWidth}px available): only add a column when both full-size cards fit`);
+   if(width===1920)assert.equal(columns,2,'wide desktops fit two full-size cards');
   }
   if(proof&&width===390)await page.screenshot({path:path.join(proof,expectBug?'before-bug.png':'before-fixed.png'),fullPage:true});
   for(const route of expectBug?['button']:['button','browser','embedded']){
