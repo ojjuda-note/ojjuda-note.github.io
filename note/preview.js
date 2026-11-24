@@ -542,40 +542,39 @@ async function showMemberInfo(afterSave = null) {
     if (run === managementRun) state(managementBody, '회원정보를 불러오지 못했어요. 잠시 후 다시 열어 주세요.');
   }
 }
-// 자동 태그: 짐작으로 문장을 잘라 단어를 만들지 않아요.
-// 화면에는 엄선한 핵심 키워드를 즉시 표시하고, 서버의 공통 분석 결과로 확정해요.
-const TAG_CONTEXT_CUES = [
-  [/면접/u, '면접'], [/불합격|면접 떨어/u, '불합격'], [/이력서/u, '이력서'],
-  [/월세/u, '월세'], [/월급/u, '월급'], [/통장|잔고/u, '통장'],
-  [/돈 걱정/u, '돈걱정'], [/퇴근/u, '퇴근'], [/출근/u, '출근'], [/회의/u, '회의'],
-  [/회사|직장|사무실/u, '회사'], [/답장/u, '답장'], [/연락/u, '연락'],
-  [/휴대폰|핸드폰/u, '휴대폰'], [/문자|메시지/u, '메시지'],
-  [/짝사랑|고백/u, '짝사랑'], [/외로|쓸쓸|허전/u, '외로움'],
-  [/친구/u, '친구'], [/부모님|엄마|아빠/u, '부모님'], [/가족/u, '가족'],
-  [/비밀번호/u, '비밀번호'], [/40대/u, '40대'], [/30대/u, '30대'],
-  [/20대/u, '20대'], [/응원|힘내|잘 될|잘될/u, '응원'],
-  [/빵집/u, '빵집'], [/붕어빵/u, '붕어빵'], [/커피/u, '커피'], [/카페/u, '카페'],
-  [/과자/u, '과자'], [/라면/u, '라면'], [/국수/u, '국수'],
-  [/화분/u, '화분'], [/새잎/u, '새잎'], [/사진|카메라/u, '사진'],
-  [/강아지/u, '강아지'], [/고양이/u, '고양이'],
-  [/산책|걷|걸음|함께 걸|같이 걸|길을 걸|걸었다|걸으려/u, '산책'], [/빨래|세탁/u, '빨래'],
-  [/설거지/u, '설거지'], [/청소/u, '청소'], [/택배/u, '택배'],
-  [/이불/u, '이불'], [/알람/u, '알람'],
-  [/기상청|날씨|기온/u, '날씨'], [/단풍/u, '단풍'], [/우산/u, '우산'],
-  [/NASA/u, 'NASA'], [/산불/u, '산불'], [/지도/u, '지도'],
-  [/로봇/u, '로봇'], [/게임/u, '게임'], [/영화/u, '영화'],
-  [/노래|흥얼/u, '노래'], [/책방|서점|독서/u, '책'],
-  [/주말|토요일|일요일/u, '주말'], [/아침/u, '아침'],
-];
+// 자동 태그는 본문에 실제로 쓰인 단어만 그대로 가져와요.
+// 글에 없는 감정·주제어를 임의로 만들거나, 단어를 잘라 새 단어를 만들지 않아요.
+// 서버 추천이 도착하기 전에는 글에 포함된 안전한 단어만 미리 보여 줍니다.
+const TAG_LITERAL_WORDS = Object.freeze([
+  'NASA', '하늘다람쥐', '붉은사막', '게임대상', '반도체', '인공지능',
+  '40대', '30대', '20대', '50대', '10대', '60대',
+  '면접', '불합격', '합격', '이력서', '월세', '월급', '카드값', '통장',
+  '퇴근길', '출근길', '퇴근', '출근', '회의', '동료', '메일', '회사',
+  '비밀번호', '휴대폰', '답장', '메시지', '연락', '전화', '문자',
+  '고백', '짝사랑', '사랑', '설렘', '외로움', '친구', '가족', '부모님', '엄마', '아빠',
+  '세탁기', '운동화', '슬리퍼', '엘리베이터', '충전기', '냉장고',
+  '화분', '새잎', '강아지', '고양이', '산불', '지도', '로봇',
+  '빵집', '붕어빵', '카페', '커피', '과자', '라면', '국수', '김치', '국물',
+  '사진', '카메라', '노을', '하늘', '햇살', '이불', '알람', '우산',
+  '설거지', '빨래', '청소', '택배', '산책', '운동', '책방', '서점', '책',
+  '영화', '게임', '노래', '음악', '퍼즐', '동네', '시장', '구경',
+  '말투', '인사', '약속', '얘기', '대화', '질문', '고민', '실수',
+  '돈', '걱정', '생각', '마음', '사람', '시간', '친절', '기억',
+  '밤', '아침', '저녁', '주말', '내일', '오늘'
+]);
 function suggestTags(body, limit = 5) {
-  const result = [], seen = new Set();
-  for (const [test, tag] of TAG_CONTEXT_CUES) {
-    if (test.test(String(body || '')) && !seen.has(tag)) {
-      seen.add(tag); result.push(tag);
-      if (result.length >= Math.min(3, limit)) break;
-    }
+  const input = String(body || '').toLocaleLowerCase('ko-KR');
+  const out = [];
+  for (const word of TAG_LITERAL_WORDS) {
+    const term = word.toLocaleLowerCase('ko-KR');
+    if (!input.includes(term) || out.some(t => {
+      const prior = t.toLocaleLowerCase('ko-KR');
+      return prior.includes(term) || term.includes(prior);
+    })) continue;
+    out.push(word);
+    if (out.length >= Math.min(3, limit)) break;
   }
-  return result;
+  return out;
 }
 let autoTagMode = true, manualTags = [], rejectedTags = new Set(), autoTagsNow = [];
 // 일반 카드의 첨부 사진은 비공개 저장소에서 읽을 때마다 서명합니다.
@@ -934,7 +933,8 @@ function scheduleServerAutoTags() {
     if (request !== serverTagRequest || run !== composerRun || epoch !== identityEpoch
       || userId !== session?.user?.id || backdrop.hidden || body !== String(text.value || '').trim()) return;
     if (!Array.isArray(response)) return;
-    serverTagResult = { body, tags: response.filter(t => typeof t === 'string' && t.length <= 20).slice(0, 3) };
+    serverTagResult = { body, tags: response.filter(t => typeof t === 'string' && t.length <= 20
+      && body.toLocaleLowerCase('ko-KR').includes(t.toLocaleLowerCase('ko-KR'))).slice(0, 3) };
     if (document.activeElement !== tags && !busy) { refreshAutoTags(); updateComposer(); recordDraft(); }
   }, 500);
 }
@@ -3228,8 +3228,8 @@ async function publishCard() {
     const blockedAuto = typeof rejectedTags !== 'undefined' && rejectedTags instanceof Set ? rejectedTags : new Set();
     values = [...new Set([...values.filter(tag => !existingAuto.includes(tag)), ...chosenManual])].slice(0, 5);
     for (const tag of suggestions) {
-      if (typeof tag === 'string' && tag.length <= 20 && !values.includes(tag)
-        && !blockedAuto.has(tag) && values.length < 5) values.push(tag);
+      if (typeof tag === 'string' && tag.length <= 20 && body.toLocaleLowerCase('ko-KR').includes(tag.toLocaleLowerCase('ko-KR'))
+        && !values.includes(tag) && !blockedAuto.has(tag) && values.length < 5) values.push(tag);
     }
   }
   let cardPhotoUploadPath = null;
