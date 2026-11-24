@@ -300,6 +300,10 @@ async function openSpace(page, space) {
       await surface.locator(space.signup).click();
       await page.locator(`#auth-dialog[open][data-entry-space="${space.id}"]`).waitFor();
       assert.equal(new URL(page.url()).searchParams.get('ref'), receivedReferral);
+      if (space.id === 'park') {
+        await page.locator('#signup-birth').fill('000101');
+        await page.locator('#signup-code').fill('3');
+      }
       await page.waitForFunction(() => document.getElementById('signup-referrer')?.value === '초대한이웃');
       assert.ok((await page.evaluate(() => entryFixture.calls)).some(call => call.name === 'resolve_signup_referrer' && call.args.p_ref === receivedReferral), `${space.id}: signup resolves the exact invitation code`);
     }
