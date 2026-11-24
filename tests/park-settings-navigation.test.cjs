@@ -5,7 +5,7 @@ const test = require('node:test');
 const {JSDOM} = require('jsdom');
 const read = file => fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
 
-async function fixture(member = true, {hosted = false, submitInquiry, mutationLimit = Infinity} = {}) {
+async function fixture(member = true, {hosted = false, submitInquiry, mutationLimit = Infinity, standaloneNavigation = false} = {}) {
   const dom = new JSDOM(read('park/index.html'), {
     url: 'https://fixture.test/park/?embedded=1', runScripts: 'outside-only', pretendToBeVisual: true
   });
@@ -27,7 +27,7 @@ async function fixture(member = true, {hosted = false, submitInquiry, mutationLi
     }
   };
   w.scrollTo = () => {};
-  w.matchMedia = () => ({matches:false});
+  w.matchMedia = () => ({matches:false, addEventListener() {}});
   w.HTMLElement.prototype.scrollIntoView = () => {};
   const authListeners = [];
   let session = member ? {user:{id:'park-member-a',email:'park@example.test'}} : null;
@@ -63,6 +63,7 @@ async function fixture(member = true, {hosted = false, submitInquiry, mutationLi
   w.OjjudaAccountDeletion = {run:async() => {calls.push('deleteAccount');}};
   w.eval(read('shared/brand/service-banners.js'));
   w.eval(read('note/support.js'));
+  if (standaloneNavigation) w.eval(read('note/navigation.js'));
   w.eval(read('note/preview.js') + '\nwindow.parkFixture={setBusy(value){managementBusy=value;},openCard(id){openCard(id);},backCard(){goBack();},closeManagement(){closeManagement();}};\n' + read('park/integration.js'));
   const settle = () => new Promise(resolve => w.setTimeout(resolve,0));
   for (const callback of authListeners) callback('INITIAL_SESSION',session);
@@ -77,6 +78,28 @@ async function fixture(member = true, {hosted = false, submitInquiry, mutationLi
     root:() => w.document.querySelector('[data-park-settings-root]'),
     management:() => w.document.querySelector('#management-backdrop')};
 }
+
+test('standalone mobile and desktop settings buttons open the canonical settings and both banners', async () => {
+  for (const member of [false,true]) {
+    const f = await fixture(member,{standaloneNavigation:true});
+    try {
+      for (const button of f.w.document.querySelectorAll('[data-note-my]')) {
+        button.click(); await f.settle();
+        assert.ok(f.root(),'actual navigation opens canonical settings');
+        assert.equal(f.w.document.getElementById('note-my-screen').hidden,true,'legacy dashboard is not displayed');
+        assert.equal(f.root().lastElementChild.localName,'ojjuda-service-banners');
+        assert.deepEqual([...f.root().querySelectorAll('.ojjuda-service-banner')].map(link=>link.dataset.service),['agit','pajang']);
+        assert.ok(f.root().querySelector('.ojjuda-settings-group .ojjuda-settings-list .ojjuda-settings-row'));
+        assert.ok(f.setting('notifications'));
+        assert.ok(f.setting('charge'));
+        assert.equal(!!f.setting('events'),member);
+        assert.equal(!!f.setting('event-new'),member);
+        await f.back();
+        assert.equal(f.management().hidden,true);
+      }
+    } finally {await f.close();}
+  }
+});
 
 test('guests can open Park settings, read policies and reach login', async () => {
   const f = await fixture(false);

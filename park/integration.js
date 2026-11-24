@@ -68,10 +68,10 @@
       }
     });
     const group = title => {
-      const section = node('section', 'park-settings-group');
+      const section = node('section', 'park-settings-group ojjuda-settings-group');
       section.setAttribute('aria-label', title);
-      section.append(node('h3', '', title));
-      const list = node('div', 'park-settings-list');
+      section.append(node('h3', 'ojjuda-settings-heading', title));
+      const list = node('div', 'park-settings-list ojjuda-settings-list');
       section.append(list);
       settings.insertBefore(section, serviceBanners.parentNode === settings ? serviceBanners : null);
       return list;
@@ -82,19 +82,19 @@
         if (owner !== (session?.user?.id || null)) { showParkSettings(); return; }
         historyTransition(action);
       });
-      button.className = `park-settings-row ${className}`.trim();
+      button.className = `park-settings-row ${className === 'park-settings-home' ? '' : 'ojjuda-settings-row'} ${className}`.trim();
       button.dataset.parkSettings = id;
-      const arrow = node('span', 'park-settings-arrow', '›'); arrow.setAttribute('aria-hidden', 'true');
-      button.append(node('span', '', label), arrow); container.append(button);
+      const arrow = node('span', 'park-settings-arrow ojjuda-settings-arrow', '›'); arrow.setAttribute('aria-hidden', 'true');
+      button.append(node('span', 'ojjuda-settings-label', label), arrow); container.append(button);
       return button;
     };
     const link = (container, id, label, href, newTab = false) => {
-      const anchor = node('a', 'park-settings-row');
+      const anchor = node('a', 'park-settings-row ojjuda-settings-row');
       anchor.dataset.parkSettings = id; anchor.href = href;
       anchor.target = newTab ? '_blank' : '_top';
       if (newTab) anchor.rel = 'noopener';
-      const arrow = node('span', 'park-settings-arrow', newTab ? '↗' : '›'); arrow.setAttribute('aria-hidden', 'true');
-      anchor.append(node('span', '', label), arrow); container.append(anchor);
+      const arrow = node('span', 'park-settings-arrow ojjuda-settings-arrow', newTab ? '↗' : '›'); arrow.setAttribute('aria-hidden', 'true');
+      anchor.append(node('span', 'ojjuda-settings-label', label), arrow); container.append(anchor);
       return anchor;
     };
     const home = row(settings, 'world', '아지트 가기', () => navigate('world'), 'park-settings-home');
@@ -118,8 +118,17 @@
       }
       account.append(actions);
     }
+    // These actions previously lived only in the standalone legacy dashboard.
+    const activity = group('내 활동');
+    if (owner) {
+      row(activity, 'events', '내 이벤트', () => navigate('events'));
+      row(activity, 'event-new', '이벤트 만들기', () => navigate('event-new'));
+    }
+    row(activity, 'notifications', '알림', () => navigate('notifications'));
+    const charge = row(activity, 'charge', '쭈 충전', () => window.OjjudaCharge?.open?.());
+    charge.setAttribute('aria-haspopup', 'dialog');
+    charge.setAttribute('aria-controls', 'ju-charge-dialog');
     const help = group('이용 안내');
-    help.classList.add('ojjuda-settings-list');
     row(help, 'support', '문의·의견', () => navigate('support'));
     link(help, 'terms', '이용약관', '/terms.html?from=park');
     link(help, 'privacy', '개인정보처리방침', '/privacy.html?from=park');
@@ -134,7 +143,7 @@
     helpMenu.append(helpTitle, helpBody); help.append(helpMenu);
     const apps = group('앱 다운로드');
     apps.classList.add('app-store-downloads');
-    const pending = node('div', 'park-settings-row app-store-pending');
+    const pending = node('div', 'park-settings-row ojjuda-settings-row app-store-pending');
     pending.dataset.storeApp = 'agit';
     pending.setAttribute('role', 'group');
     pending.setAttribute('aria-label', '오쭈다 아지트 앱 공개 준비 중');
@@ -158,11 +167,15 @@
     let adminGroup = null;
     syncAdminSettings = () => {
       if (!settings.isConnected) return;
-      if (!canOpenAdmin() || owner !== session?.user?.id) { adminGroup?.remove(); adminGroup = null; return; }
+      const standaloneModerator = !hosted && !!owner && moderator === true;
+      if ((!canOpenAdmin() && !standaloneModerator) || owner !== session?.user?.id) { adminGroup?.remove(); adminGroup = null; return; }
       if (adminGroup) return;
       const admin = group('관리자');
       adminGroup = admin.parentElement;
-      row(admin, 'admin', '공원 관리자모드', () => navigate('admin'));
+      row(admin, 'admin', '공원 관리자모드', () => {
+        if (hosted) navigate('admin');
+        else if (moderator === true && session?.user?.id === owner) document.getElementById('note-moderation')?.click();
+      });
     };
     settings.append(serviceBanners);
     managementBody.append(settings);
@@ -281,6 +294,8 @@
     historyPending=true;historyAllowed=true;history.back();return true;
   }
   function restoreHistory(route) {
+    // Old standalone history entries must not reopen the retired My dashboard.
+    if (!hosted && route.my) route={...route,my:false,view:route.view || 'settings'};
     historyRestoring=true;
     try {
       const sameOwner=route.owner===(session?.user?.id || null);
