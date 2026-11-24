@@ -49,8 +49,19 @@ assert.match(source, /!blockedAuto\.has\(tag\)/,
 assert.match(source, /typeof autoTagMode !== 'undefined' && autoTagMode/,
   'only new automatic tags, not manually authored tags, are affected');
 const page = fs.readFileSync(path.join(root, 'park/index.html'), 'utf8');
-assert.match(page, /\/note\/preview\.js\?v=20261125-park-literal-tags1/,
-  'the park must load the updated file without a stale cache');
-assert.deepEqual(JSON.parse(fs.readFileSync(path.join(root, 'park/version.json'), 'utf8')),
-  { version: '1.7.5' });
+const previewTags = [...page.matchAll(/<script\b[^>]*\bsrc="([^"]*\/note\/preview\.js[^"]*)"[^>]*>/g)];
+assert.equal(previewTags.length, 1, 'Park loads exactly one composer script');
+const preview = new URL(previewTags[0][1], 'https://ojjuda.kr');
+assert.equal(preview.href.startsWith('https://ojjuda.kr/note/preview.js?'), true);
+const cacheKeys = preview.searchParams.getAll('v');
+assert.equal(cacheKeys.length, 1, 'composer script has one cache revision');
+assert.match(cacheKeys[0], /^\d{8}-park-[a-z0-9-]+$/);
+assert.ok(cacheKeys[0].slice(0, 8) >= '20261125', 'cache revision must not predate the literal-tag release');
+const { version } = JSON.parse(fs.readFileSync(path.join(root, 'park/version.json'), 'utf8'));
+assert.match(version, /^\d+\.\d+\.\d+$/, 'the Park section manifest carries a valid release');
+const world = fs.readFileSync(path.join(root, 'world.html'), 'utf8');
+const installedPark = /\bpark:\{name:'공원',version:'([^']+)',manifest:'([^']+)'\}/.exec(world);
+assert.ok(installedPark, 'World defines its installed Park section release');
+assert.equal(installedPark[2], '/park/version.json');
+assert.equal(installedPark[1], version, 'World and the Park version manifest agree');
 console.log('PASS: automatic park tags are literal words from the text; manual tags and cache preserved');
