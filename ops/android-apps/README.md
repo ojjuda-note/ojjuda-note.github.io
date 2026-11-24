@@ -20,8 +20,8 @@
 
 | 앱 | 새 TWA 시작 주소 | 비로그인 시 |
 |---|---|---|
-| 아지트 | `https://ojjuda.kr/world.html?tab=hub` | 아지트의 기존 로그인·회원가입 입장 |
-| 공원 | `https://ojjuda.kr/world.html?place=park` | 공원 카드 구경 및 회원 로그인 안내 |
+| 아지트 | `https://ojjuda.kr/world.html?tab=hub&play_store=1` | 아지트의 기존 로그인·회원가입 입장 |
+| 공원 | `https://ojjuda.kr/park/` | 공원 카드 구경 및 회원 로그인 안내 |
 | 파장 | `https://ojjuda.kr/features/pajang/` | 기존 만 19세 이상 회원 전용 로그인 안내 |
 
 원본 v1의 시작 주소와 서명 정보는 `baselines/`에 그대로 보존합니다. `scripts/launch_routes.py`가 후보 빌드의 `launchUrl`·`hostName`·`webManifestUrl`·내장 매니페스트를 일관되게 생성합니다. `ojjuda.kr`의 Digital Asset Links에 등록된 서명 인증서로 검증된 Play 배포를 확인해야 TWA 전체 화면을 보장할 수 있습니다.
