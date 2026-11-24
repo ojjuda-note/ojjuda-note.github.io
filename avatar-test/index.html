@@ -7,7 +7,7 @@
 .wardrobe-colors[hidden]{display:none}
 .wardrobe-colors button{display:inline-flex;align-items:center;gap:6px;min-height:36px}
 .wardrobe-swatch{display:inline-block;width:16px;height:16px;border-radius:50%;background:var(--swatch);border:1px solid #ffffff70}
-</style><script src="./wardrobe-designs.js?v=5.5-layers1"></script></head><body><div class="wrap"><header class="header"><a class="return" href="/world.html?tab=hub" id="back" aria-label="이전 화면">‹</a><div class="brand"><span class="logo">✦</span>Ojjuda<b>.</b></div><div class="heading"><div class="eyebrow">OJJUDA AVATAR ATELIER · V5.5.0</div><h1>오쭈다 아바타 스튜디오</h1></div><div class="headbuttons"><button id="random">⤨ 랜덤</button><button id="reset">↺ 초기화</button><button class="primary" id="save">♡ 코디 저장</button></div></header><main id="studio" class="layout" inert><section class="panel"><div class="stage" id="stage"><canvas class="main" id="hero" width="400" height="656" aria-label="메인 캐릭터"></canvas><canvas class="mini" id="mini" width="400" height="656" aria-label="미니미"></canvas><div class="stagehead"><span class="chip"><i class="dot"></i>LIVE FITTING</span><span class="chip" id="poseLabel">원화 불러오는 중…</span></div><div class="stagefoot"><div><small>OJJUDA · MY AVATAR</small><strong>나만의 코디</strong></div><button id="png" class="primary">↓ PNG</button></div></div><div class="panelbody"><div class="panelhead"><h2>내 코디함</h2><span class="sub">이 기기에 저장</span></div><div id="saved" class="saved"></div><div class="footnote"></div></div></section><div class="right"><section class="panel panelbody"><div class="panelhead"><h2>포즈 선택</h2><span class="sub">각각 별도로 그린 원화</span></div><div class="poses" id="poses"></div></section><section class="panel panelbody"><div class="panelhead"><h2>아이템 컬렉션</h2><span class="sub" id="count"></span></div><div class="category" id="cats"></div><div class="items" id="items"></div><div class="category wardrobe-colors" id="wardrobeColors" role="group" aria-label="색상 선택" hidden></div><p class="footnote" id="itemNote"></p></section><section class="panel panelbody"><div class="panelhead"><h2>추천 코디</h2><span class="sub">선택한 포즈 그대로 적용</span></div><div class="looks" id="looks"></div></section></div></main><div id="toast" class="toast" role="status" hidden></div><div class="footnote">V5.5 · 아바타 스튜디오</div></div><script>
+</style><script src="./wardrobe-designs.js?v=5.5-layers2"></script></head><body><div class="wrap"><header class="header"><a class="return" href="/world.html?tab=hub" id="back" aria-label="이전 화면">‹</a><div class="brand"><span class="logo">✦</span>Ojjuda<b>.</b></div><div class="heading"><div class="eyebrow">OJJUDA AVATAR ATELIER · V5.5.1</div><h1>오쭈다 아바타 스튜디오</h1></div><div class="headbuttons"><button id="random">⤨ 랜덤</button><button id="reset">↺ 초기화</button><button class="primary" id="save">♡ 코디 저장</button></div></header><main id="studio" class="layout" inert><section class="panel"><div class="stage" id="stage"><canvas class="main" id="hero" width="400" height="656" aria-label="메인 캐릭터"></canvas><canvas class="mini" id="mini" width="400" height="656" aria-label="미니미"></canvas><div class="stagehead"><span class="chip"><i class="dot"></i>LIVE FITTING</span><span class="chip" id="poseLabel">원화 불러오는 중…</span></div><div class="stagefoot"><div><small>OJJUDA · MY AVATAR</small><strong>나만의 코디</strong></div><button id="png" class="primary">↓ PNG</button></div></div><div class="panelbody"><div class="panelhead"><h2>내 코디함</h2><span class="sub">이 기기에 저장</span></div><div id="saved" class="saved"></div><div class="footnote"></div></div></section><div class="right"><section class="panel panelbody"><div class="panelhead"><h2>포즈 선택</h2><span class="sub">각각 별도로 그린 원화</span></div><div class="poses" id="poses"></div></section><section class="panel panelbody"><div class="panelhead"><h2>아이템 컬렉션</h2><span class="sub" id="count"></span></div><div class="category" id="cats"></div><div class="items" id="items"></div><div class="category wardrobe-colors" id="wardrobeColors" role="group" aria-label="색상 선택" hidden></div><p class="footnote" id="itemNote"></p></section><section class="panel panelbody"><div class="panelhead"><h2>추천 코디</h2><span class="sub">선택한 포즈 그대로 적용</span></div><div class="looks" id="looks"></div></section></div></main><div id="toast" class="toast" role="status" hidden></div><div class="footnote">V5.5 · 아바타 스튜디오</div></div><script>
 'use strict';
 async function startStudio(){
  // The immutable source keeps the original pose layers at their authored resolution.
@@ -21,8 +21,10 @@ async function startStudio(){
 const CORE=['top','bottom','shoes'],EXTRA=['dress','hair','expression','accessory','bag','outer','headwear'],SLOTS=['dress','hair','expression','accessory','top','bottom','shoes','bag','outer','headwear'],LABEL={dress:'원피스',expression:'표정',top:'상의',bottom:'하의',shoes:'신발',outer:'아우터',bag:'가방',accessory:'액세서리',headwear:'헤드웨어',hair:'헤어',bg:'배경'},$=id=>document.getElementById(id),O={dress:null,top:'top-original',bottom:'bottom-original',shoes:'shoes-original',outer:null,bag:null,accessory:null,headwear:null,hair:null,expression:null};
 const CASUAL={...O,hair:'casual01-hair',accessory:'casual01-accessory',top:'casual01-top',bottom:'casual01-bottom',shoes:'casual01-shoes',bag:'casual01-bag'};
 let catalog=D.items.map(entry=>{
-  if(entry.category!=='top')return entry;
-  const variants=Object.fromEntries(P.map(p=>[p,'fitted:knit:'+entry.id+':'+p]));
+  if(entry.category==='shoes')return {...entry,preview:entry.variants.basic};
+  if(entry.category!=='top'&&entry.category!=='bottom')return entry;
+  const kind=entry.category==='top'?'knit':'skirt';
+  const variants=Object.fromEntries(P.map(p=>[p,'fitted:'+kind+':'+entry.id+':'+p]));
   return {...entry,variants,preview:variants.basic,originalVariants:entry.variants};
 }),state={pose:'basic',bg:0,items:{...CASUAL}},category='top',saved=[],draft={},review={},checks={},revision=0,buildRevision=0,toastTimer,registered=[],slot='top';
 const cache=new Map(),pixelCache=new Map(),garmentCache=new Map();
@@ -65,7 +67,7 @@ function image(url){
   return p;
  }
  if(url.startsWith('fitted:')){
-  const target=/^fitted:(garment|collar|tucked|knit|locks):/.test(url)?garmentCache:cache;
+  const target=/^fitted:(garment|collar|tucked|knit|skirt|locks):/.test(url)?garmentCache:cache;
   if(target.has(url)){
     const layer=target.get(url);
     if(target===garmentCache){target.delete(url);target.set(url,layer);}
@@ -99,7 +101,7 @@ function registerLocalPacks(manifest){
      refs.push([originalKey,{url:base.originalVariants[p],palette:x.palette,pattern:x.pattern}]);
     }
     const key='derived:'+id+':'+p;variants[p]=key;refs.push([key,{url:base.variants[p],palette:x.palette,pattern:x.pattern}]);}
-   entries.push({id,name:x.name,category:k,...(k==='top'?{preview:variants.basic,originalVariants}:{}),design:base.design || base.id,colorName:x.name.replace(/ (골지 니트|스커트|웨이브|하트 주얼리|앵클부츠|크로스백)$/, ''),swatch:'rgb('+x.palette[1].join(',')+')',variants});look[k]=id;
+   entries.push({id,name:x.name,category:k,...(['top','bottom','shoes'].includes(k)?{preview:variants.basic}:{}),...(k==='top'?{originalVariants}:{}),design:base.design || base.id,colorName:x.name.replace(/ (골지 니트|스커트|웨이브|하트 주얼리|앵클부츠|크로스백)$/, ''),swatch:'rgb('+x.palette[1].join(',')+')',variants});look[k]=id;
   }
   if(entries.length!==slots.length)continue;
   for(const [key,source] of refs)derivedSources.set(key,source);
@@ -138,6 +140,8 @@ function spec(s,pose,replace){
      else if(slot==='top'&&top?.tailored&&asset.startsWith('fitted:garment:'))
        urls.push(asset.replace('fitted:garment:','fitted:collar:'));
      else urls.push(tuck?asset.replace('fitted:garment:','fitted:tucked:'):asset);
+     if(slot==='bottom'&&bottom?.design==='bottom-original'&&skirtOverlap[pose])
+       urls.push('fitted:skirt-limb:'+pose);
    }
  };
  if(!straight)append('hair');
