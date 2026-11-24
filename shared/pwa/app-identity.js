@@ -103,6 +103,40 @@
       }`;
 
     document.head.appendChild(safeStyle);
+    document.title = document.title
+      .replace('게임·타로·사주·익명카드', '일상·운세·익명카드')
+      .replace('게임부터 일상 이야기까지', '일상 이야기부터 운세까지');
+
+    const hidePlayStoreGameEntrances = root => {
+      const controls = root.querySelectorAll?.('button,a,[role="button"],[data-tab],[data-place]');
+      if (!controls) return;
+      controls.forEach(control => {
+        const label = [
+          control.innerText,
+          control.getAttribute('aria-label'),
+          control.getAttribute('title'),
+          control.getAttribute('aria-description'),
+          control.dataset?.v
+        ].filter(Boolean).join(' ');
+        if (/오락실|추천\\s*게임|게임\\s*(시작|플레이)/i.test(label) && !control.hidden) {
+          control.hidden = true;
+          control.setAttribute('aria-hidden', 'true');
+        }
+      });
+      const textWalker = document.createTreeWalker(root, 4);
+      let textNode;
+      while ((textNode = textWalker.nextNode())) {
+        textNode.nodeValue = textNode.nodeValue.replace(
+          '게임부터 일상 이야기까지, 한곳에서.',
+          '일상 이야기부터 운세까지, 한곳에서.'
+        );
+      }
+    };
+    hidePlayStoreGameEntrances(document);
+    const gameEntranceObserver = new MutationObserver(() => {
+      hidePlayStoreGameEntrances(document);
+    });
+    gameEntranceObserver.observe(document.documentElement, { childList: true, subtree: true });
 
     const blockPlayStoreGameAction = event => {
       const control = event.target?.closest?.('a[href],button,[role="button"],[data-act],[data-tab],[data-place]');
