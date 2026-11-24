@@ -91,7 +91,7 @@ export function AccountSettings({profileId,onOpen}:{profileId:string;onOpen:(act
     <section className="ojjuda-settings-group" aria-labelledby="account-app-download-title">
       <h2 className="ojjuda-settings-heading" id="account-app-download-title">앱 다운로드</h2>
       <div className="ojjuda-settings-list app-store-downloads">
-        <a className="ojjuda-settings-row" data-store-app="agit" href="https://play.google.com/store/apps/details?id=kr.ojjuda.agit&amp;hl=ko" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 아지트 Google Play에서 보기 (새 창)">
+        <a className="ojjuda-settings-row" data-store-app="agit" href="https://play.google.com/store/apps/details?id=kr.ojjuda.agit&hl=ko" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 아지트 Google Play에서 보기 (새 창)">
           <span className="ojjuda-settings-label">오쭈다 아지트</span><span className="ojjuda-settings-arrow" aria-hidden="true">↗</span>
         </a>
         <a className="ojjuda-settings-row" data-store-app="pajang" href="https://play.google.com/store/apps/details?id=kr.ojjuda.pajang" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 파장 Google Play에서 보기 (새 창)">
