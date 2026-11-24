@@ -60,8 +60,9 @@ assert.match(source, /!blockedAuto\.has\(tag\)/,
 assert.match(source, /typeof autoTagMode !== 'undefined' && autoTagMode/,
   'only new automatic tags, not manually authored tags, are affected');
 const page = fs.readFileSync(path.join(root, 'park/index.html'), 'utf8');
-assert.match(page, /\/note\/preview\.js\?v=20261125-park-freeword-tags2/,
+assert.match(page, /\/note\/preview\.js\?v=20261125-classic-settings1/,
   'the park must load the updated file without a stale cache');
-assert.deepEqual(JSON.parse(fs.readFileSync(path.join(root, 'park/version.json'), 'utf8')),
-  { version: '1.7.8' });
+const [major,minor,patch] = JSON.parse(fs.readFileSync(path.join(root, 'park/version.json'), 'utf8')).version.split('.').map(Number);
+assert.ok(major > 1 || (major === 1 && (minor > 7 || (minor === 7 && patch >= 8))),
+  'Park includes the 1.7.8 automatic tag release');
 console.log('PASS: automatic park tags are literal words from the text; manual tags and cache preserved');
