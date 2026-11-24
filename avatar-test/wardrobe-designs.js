@@ -24,7 +24,7 @@ const wardrobeCrops = {
     pure: [134, 0, 134, 341, 140, 214],
     cute: [272, 0, 127, 344, 136, 213],
     chic: [403, 0, 187, 356, 137, 202],
-    lively: [594, 0, 129, 347, 125, 206],
+    lively: [0, 0, 138, 353, 121, 204],
     mini: [727, 0, 103, 145, 153, 428],
     catalog: [0, 851, 88, 224, 0, 0],
   },
@@ -42,7 +42,7 @@ const wardrobeCrops = {
     pure: [130, 360, 130, 341, 143, 214],
     cute: [264, 360, 125, 345, 137, 213],
     chic: [393, 360, 194, 358, 138, 201],
-    lively: [591, 360, 126, 347, 126, 206],
+    lively: [142, 0, 138, 353, 121, 204],
     mini: [721, 360, 101, 145, 154, 428],
     catalog: [264, 851, 87, 224, 0, 0],
   },
@@ -336,7 +336,12 @@ async function portraitLayer(pose,flags,data,loadImage,newCanvas){
     ctx.restore();
   }
   if(dress)await erase('top-original',[[0,0],[-1,0],[1,0],[0,1]]);
-  if(flags.includes('p'))ctx.clearRect(132,344,111,58);
+  if(flags.includes('p')){
+    // Both trouser legs cover the native skin. Keep the shoes and lowered hand.
+    ctx.clearRect(121,286,135,80);
+    ctx.clearRect(125,366,116,36);
+    ctx.clearRect(145,402,75,140);
+  }
   if(boots){
     await erase('shoes-original',[[0,0],[-3,0],[3,0],[0,-3],[0,3]]);
     trimLegsAtBoots(ctx,pose);
@@ -380,7 +385,8 @@ async function wardrobeLayer(key,data,loadImage,newCanvas){
   if(type==='garment'){
     const [style,part]=id.split('-');
     const [sx,sy,width,height,dx,dy]=wardrobeCrops[id][pose];
-    const sheet=await loadImage('./artwork/atelier-'+part+'-01.webp');
+    const fittedTrousers=pose==='lively'&&(id==='track-bottom'||id==='suit-bottom');
+    const sheet=await loadImage(fittedTrousers?'./artwork/lively-trousers-02.webp':'./artwork/atelier-'+part+'-01.webp');
     const patch=newCanvas(width,height),paint=patch.getContext('2d',{willReadFrequently:true});
     paint.drawImage(sheet,sx,sy,width,height,0,0,width,height);
     dyeWardrobe(paint,width,height,style,Number(choice));

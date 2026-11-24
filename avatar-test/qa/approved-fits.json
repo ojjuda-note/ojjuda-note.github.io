@@ -16,10 +16,11 @@
     "artwork/atelier-bottom-01.webp": "2f148396e391b243566cacd3ec5a53622b4af7bd558061a3979d491d961a42a5",
     "artwork/atelier-top-01.webp": "43d1589739c979a4addc053b6566674813447da48059ad68a5a0aa31389e5458",
     "artwork/female-r01.source.txt": "1b4d3184863ae2eff546a3ac4147e2eff521b39a526ab143a1b0cb0154344310",
+    "artwork/lively-trousers-02.webp": "79006c72f5c0c3c9506c3b339e8b7dc366d0611ce662578649cbc9686031eb06",
     "artwork/nocturne-01.webp": "5e8bb0973342327123cafeba0a96e67b513f197589ec72598b8eae99d91398be",
     "artwork/wardrobe-fit-02.webp": "903b5da3db282084e8b9439912dad0341d981f4781c4e157d9b31f260133bc6e",
-    "index.html": "0e864d0712c20bf3161c5e8601a2efd1bcd43422239a4bd85889892223b8a809",
-    "wardrobe-designs.js": "14737d7c805b6ce676e5221e7cb2bcb89b18342861e012e61c3bf925a8ed749a",
+    "index.html": "bd4362d8b845145532338c0ec457963925ef170bb9da2578ba3eff06bdcea068",
+    "wardrobe-designs.js": "73e73ec4058d86e551052cad3a49396e2a80a8968c12197031b7f2c33baf6838",
     "wardrobe-packs.json": "337d3148a778e58d8eb84a221c78361f5de72b6c004049768916d6ec81dbbb74"
   },
   "combinations": {
@@ -74,6 +75,24 @@
         {
           "category": "신발",
           "item": "버클 앵클부츠"
+        }
+      ]
+    },
+    "세이지 니트 · 조거 팬츠": {
+      "look": "세이지 데일리",
+      "steps": [
+        {
+          "category": "하의",
+          "item": "조거 팬츠"
+        }
+      ]
+    },
+    "세이지 니트 · 테이퍼드 슬랙스": {
+      "look": "세이지 데일리",
+      "steps": [
+        {
+          "category": "하의",
+          "item": "테이퍼드 슬랙스"
         }
       ]
     }
@@ -132,7 +151,7 @@
       "청순": "6f10613a9f96b330b3b7dc6b9040fd7ae69825ff5f17beb78cfe05e71673da2b",
       "귀염": "7d776010fb9d5936d913cdef2fe9ff501ae04d91bdc5b9254fdd37535db8070d",
       "섹시": "f13fe1ed831a2a141e8a91c490b9d3bbc4f1d59fc69131be49aa6fc713bcce85",
-      "발랄": "3bd3fc7104464924171d485174dcdf17398b28902ce14a07639f14464a7379ea",
+      "발랄": "7d1a47862f6db06cfd65b6f472bf15ab9fc591a518da249b2d578c0ddc8a4a9b",
       "미니미": "1b4dde60c16985e281c1c9f6ca69c55e539005c3ccc7fe5beb18d99dedd49a19"
     },
     "정장": {
@@ -140,7 +159,7 @@
       "청순": "4fa87b0254bc2ba679ea0ed2db998ddb09cab4d627c92d4a863d36a242d4f98e",
       "귀염": "d512706eda1e96f880718c562cdd027d010a650f959645b37f7fe0b7d6d3386b",
       "섹시": "9ed72c356098fcbe043638bac8158a3fe293768007dccbd54d7e0de1b0542eb2",
-      "발랄": "452d51f3e4e22a9a1c0d9613bfd20d3dbe1ad91a827cf8ae1a557de95c4a3535",
+      "발랄": "bf8d8ebdb061e9a99494bcf499b5265df90524850150cfa00bcc5ffa35caa720",
       "미니미": "2fd98c26d25fb74ed52cbb141f42ce4381b8c050ffb405b0113efdfa32b541cf"
     },
     "교복": {
@@ -220,7 +239,7 @@
       "청순": "94687ec46aef0ba681e3cb18ca081cec8bacc27a746a45d296f65a142b6fdb55",
       "귀염": "af37eb7eae688a85597cccb7b1a5b286b3c8eceec047fec81e9d97d96db33586",
       "섹시": "8d82cc578eec4debf4d3718d93e3e3d28e7019c6ab4d083479a79fb1fc36033c",
-      "발랄": "0f79065ba1b708f2cc1032d7fdc033ccda6a9bc3d48d1f5a125b7b2e9dbfacc4",
+      "발랄": "0ca60a81fbd4f347f2aa26e741c82e36c033af2e4fa0cf6c5d0592e31f714423",
       "미니미": "fb18c021fbdfec1a64c1faeb89bb0436fb72b6c55e40f89ab9cbd621b8dfede1"
     },
     "트레이닝복 · 니하이 부츠": {
@@ -228,7 +247,7 @@
       "청순": "98ffc6c2f263c70dc3d881af916cfd68ae6933e223c9829e2fc12ad84379cf84",
       "귀염": "6c3aaf5af633e189a3d1bae43399a29d8e77be98379bcee79faf8069faace410",
       "섹시": "d0e42657fc710408449caa9cc117c8344ad79972fef7563c4e9febbf9b92a34c",
-      "발랄": "3eb0d10bed38223a7fcd718de2e1f0e7b7e1c6baeb6b311c1861150b4f8e63e5",
+      "발랄": "d69a7dd1d27786711fe76604381195b7c96fea142ff67a4c82b639f146c54cee",
       "미니미": "2e328585b62228357fcb7b3cbd548789041d631a70a7ea87aee31e96666b616e"
     },
     "셔링 원피스 · 기본 웨이브": {
@@ -246,6 +265,22 @@
       "섹시": "83cde3ca49ce3086a83eec5788f2eb1d12720732e4d800cce78e57e4fcf4a625",
       "발랄": "8e04bd2c9a7c75dba0e97e28d970a9e468b7cf200dd81abc3e7c32431a00d874",
       "미니미": "c2434a9e0d138ac8182e9497f0bf10202d7c83527e736c4dc95de9be998ba8c3"
+    },
+    "세이지 니트 · 조거 팬츠": {
+      "기본": "a6fda4968b12cbc983393e374ebc1b7dd2814d39e39b134588334b038d7e4b3a",
+      "청순": "9d708a51f2e9e0e96bc4fec08affa743cc631e4b9470e3d1d42b79041b843a5d",
+      "귀염": "93400a9e51183e62400941702f0a0a8349c0e6dc49bed51fc3461e7bd8af265f",
+      "섹시": "a32a0c7d9a452cb27f28302d0c029a0b265249941e02d619456ad4b4518241c2",
+      "발랄": "e37a4ffaf51ef4315f0339683e58ebccdae58fbc8ff2bcee9cc408feafba1a37",
+      "미니미": "28246e852fc1d70ee508d3205c6be47151846d843ca8b091ac3048de2f772b19"
+    },
+    "세이지 니트 · 테이퍼드 슬랙스": {
+      "기본": "bc350ac06c152bdc63e5e30b525a693515ba12084df51267cb27973edea205e4",
+      "청순": "bc0aa30dd99e64d961ac1909cb3b7cba41a611c21238ad6017984aea036d7c66",
+      "귀염": "909ee02bcb526382ac276f33d4c8630127b9b8b7a9f3d8bee43ab4ea98f1242d",
+      "섹시": "447dd148b02b1bb1e515248eeee93d3cea39c716acc9604264ff5cfa1c1941d6",
+      "발랄": "c1f77019fd06f681e8dcbfe231d2492c258b96929820ead8945f04ffaa9e67a6",
+      "미니미": "7aefa99c853eb323bcdce1e9db0f4a6523929be2613d916307caf8f95a5475f3"
     }
   }
 }
