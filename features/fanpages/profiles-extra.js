@@ -628,4 +628,4 @@ window.OJJUDA_FAN_PROFILES.seventeen.checkedAt = '2026.11.14';
 window.OJJUDA_FAN_PROFILES.riize.checkedAt = '2026.11.17';
 
 // BOYNEXTDOOR: 2026-11-17 KOZ 공식 프로필(데뷔·멤버·생일) 재확인.
-window.OJJUDA_FAN_PROFILES.boynextdoor.checkedAt = '2026.11.17';
+window.OJJUDA_FAN_PROFILES.boynextdoor.checkedAt = '2026.11.19';
