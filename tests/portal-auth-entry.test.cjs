@@ -266,7 +266,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     assert.equal(app.element('nickname').readOnly, false, 'the automatic nickname remains editable');
     assert.equal(app.element('nickname').tabIndex, 0);
     assert.equal(app.element('nickname-auto-help').hidden, false);
-    assert.equal(app.focused, 'email', 'signup starts with the first editable field');
+    assert.equal(app.focused, destination === 'note' ? 'signup-birth' : 'email', 'signup starts with the first editable field');
     assert.equal(app.element('auth-dialog').open, true);
     assert.equal(app.element('signup-tab').attributes['aria-selected'], 'true');
     entryIdentity(app, destination);
@@ -482,6 +482,14 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
 
   const cardId = '00000000-0000-4000-8000-000000000010';
   const reader = { id: 'reader', email: 'reader@example.invalid' };
+  for (const designation of [{role:'park_junior'}, {app_metadata:{park_guardian_account:true}}]) {
+    for (const [destination,expected] of [['note','/park/?card='+cardId],['world','/park/'],['pajang','/park/']]) {
+      const junior = setup('?auth=login&next='+destination+'&card='+cardId, {user:{...reader,...designation}});
+      await junior.flush();
+      assert.deepEqual(junior.navigations,[expected],'a Park-only account returns directly to its permitted service');
+      assert.equal(junior.noteWrites.length,0,'the junior entry skips shared member enrollment');
+    }
+  }
   const pajangConfirmed = setup('?code=confirmation'); await pajangConfirmed.flush();
   pajangConfirmed.storage.set('ojjuda_post_confirm_destination', JSON.stringify({
     destination: 'pajang', email: reader.email, expiresAt: Date.now() + 60000

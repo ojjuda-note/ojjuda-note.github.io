@@ -5,7 +5,7 @@
  "/admin/visitors.js?v=20261121-pajang-visits1","/admin/trash.js?v=20261021-trash1",
   "/admin/friend-messages.js?v=20261116-message-page1","/admin/member-identity.js?v=20260929-phone-unique",
   "/admin/pajang-moderation.js?v=20261122-adult-only1",
-  "/admin/connections.js?v=20261022-entry1","/admin/accounts.js?v=20261116-history-pages1",
+  "/admin/connections.js?v=20261022-entry1","/admin/accounts.js?v=20261125-guardian-service1",
   "/admin/activity.js?v=20261119-pajang-admin1","/admin/photo-stages.js?v=20261006-photo1",
   "/admin/drinking-prompts.js?v=20261114-drinking-plus3001",
   "/admin/fortune-purchases.js?v=20261113-biorhythm-paid1",
@@ -48,7 +48,7 @@
   const css=styles.filter(required);
   if(stems.includes('/note/admin'))css.push('/park/fonts.css?v=20261120-nanum-myeongjo1');
   for(const url of css)void resource(url,true).catch(()=>{});
-  const [workspace]=await Promise.all([import('/admin/service-workspace.mjs?v=20261124-service1'),...scripts.filter(required).map(url=>resource(url,false))]);
+  const [workspace]=await Promise.all([import('/admin/service-workspace.mjs?v=20261125-guardian-service1'),...scripts.filter(required).map(url=>resource(url,false))]);
   return workspace;
  },async loadGallery(){
   await Promise.all([

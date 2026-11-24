@@ -11,7 +11,7 @@
   async function open() {
     const owner = session?.user?.id;
     const run = showManagement('친구 관리');
-    if (!owner || session.user.is_anonymous || !client) {
+    if (!owner || session.user.is_anonymous || parkJunior() || !client) {
       managementBody.append(node('p', 'reply-empty', '로그인하면 친구를 찾고 관리할 수 있어요.'));
       return;
     }

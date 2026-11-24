@@ -16,6 +16,7 @@ function fixture(t) {
   });
   t.after(() => dom.window.close());
   const w = dom.window, doc = w.document;
+  w.parkJunior = () => w.session?.user?.role === 'park_junior';
   const body = doc.querySelector('#body');
   const names = ['나', '별 친구', '달 친구', '해 친구', '물 친구', '차단한 친구', '새 친구', '50%_친구', '다른 사람'];
   const profiles = names.map((nickname, index) => ({id: id(index + 1), nickname, bio: '반가워요'}));

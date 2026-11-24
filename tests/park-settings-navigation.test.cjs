@@ -640,3 +640,15 @@ test('a late Park profile read cannot render the previous member after switching
     assert.equal(f.w.document.getElementById('park-profile-name').value,'다음 회원');
   } finally {await f.close();}
 });
+
+test('Park-only junior members see their permitted account and blocking tools', async () => {
+  const f=await fixture(true);
+  try {
+    await f.changeUser({user:{id:'junior',role:'park_junior',app_metadata:{park_guardian_account:true}}});
+    f.api.navigate('settings');
+    for (const item of ['member-info','password','logout','blocked']) assert.ok(f.setting(item),item);
+    for (const item of ['profile','nickname','friends','friend-alert','charge']) assert.equal(f.setting(item),null,item);
+    f.api.navigate('friends');
+    assert.ok(f.root());
+  } finally { await f.close(); }
+});

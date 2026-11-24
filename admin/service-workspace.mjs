@@ -96,7 +96,7 @@ export function mountWorkspace({client, service, tab, owner, getAdminId}) {
     }
     if (tab.startsWith('pajang-')) return window.OjjudaAdminPajang.mount({...options, view:tab === 'pajang-chats' ? 'chats' : 'answers'});
     if (tab.startsWith('trash-')) return window.OjjudaAdminTrash.mount({...options, category:tab.slice(6)});
-    if (['users','suspended','referrals'].includes(tab)) return window.OjjudaAdminAccounts.mount({...options,
+    if (['users','suspended','referrals'].includes(tab)) return window.OjjudaAdminAccounts.mount({...options, service,
       view:tab === 'users' ? 'members' : tab, renderActions:record => tab === 'suspended' ? '' : memberActions(common, record)});
     if (tab === 'visitors') return window.OjjudaAdminVisitors.mount(options);
     if (tab === 'activity') return window.OjjudaAdminActivity.mount({...options, initialSource:service === 'park' ? 'park' : 'world'});

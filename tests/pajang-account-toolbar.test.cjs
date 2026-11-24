@@ -264,7 +264,7 @@ test('Pajang standalone entry defers shared inbox and charging code until first 
   assert.match(shell,/window\.OjjudaPajangHistory\?\.canLeave\?\.\(\)!==false/);
   for(const file of ['index.html','station.html']){
     const html=fs.readFileSync(path.join(root,'features/pajang',file),'utf8');
-    assert.match(html,/shell\.mjs\?v=[\w-]+/);
+    assert.match(html,/shell\.mjs\?v=20261126-adult-service1/);
   }
 });
 

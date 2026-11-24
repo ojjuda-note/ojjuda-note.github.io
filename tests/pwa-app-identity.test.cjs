@@ -135,8 +135,8 @@ test('installed Agit, Park and Pajang authenticate before displaying their entra
   const pajangMain = read('features/pajang/station.html');
   assert.ok(world.includes('if(event==="INITIAL_SESSION"&&!session?.user)return;'),
     'World waits for the stored session instead of painting the guest entrance');
-  if (park !== null) assert.ok(park.includes("if (event === 'INITIAL_SESSION' && !current?.user) return;"),
-    'Park waits for the stored session in its own iframe');
+  if (park !== null) assert.match(park, /if\s*\(\s*event\s*===\s*'INITIAL_SESSION'\s*&&\s*!current\?\.user\s*\)\s*return;/,
+    'Park waits for the stored session before showing its guest entrance');
   if (pajang !== null) assert.ok(pajang.includes("$('welcome').dataset.memberEntry = 'direct'"),
     'Pajang only switches to a direct answer after member authorization');
   if (css !== null) {
@@ -150,7 +150,7 @@ test('installed Agit, Park and Pajang authenticate before displaying their entra
   for (const html of [pajangEntry, pajangMain]) {
     assert.match(html, /entry-design\.css\?v=20261122-app-skip-entry1/);
   }
-  assert.match(pajangEntry, /entry\.mjs\?v=\d{8}-[a-z0-9-]+/);
+  assert.match(pajangEntry, /entry\.mjs\?v=20261126-adult-service1/);
   assert.match(read('park/index.html'), /note\/preview\.js\?v=\d{8}-[a-z0-9-]+/, 'Park loads a versioned composer');
   assert.match(world, /agit-welcome\.js\?v=20261122-member-app-start1/);
 });

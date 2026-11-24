@@ -1387,7 +1387,8 @@ async function checkNavigation(page){
     for(const mode of ['guest','denied']){
       await page.evaluate(m=>{sessionStorage.fixtureMode=m;},mode);
       await page.goto(origin+project+'station.html');
-      await page.locator('#gate p').filter({hasText:mode==='guest'?'만 19세 이상 회원만':'이 계정은'}).waitFor();
+      await page.locator('#gate p').filter({hasText:'만 19세 이상 회원'}).waitFor();
+      assert.equal(await nav.count(),0,'guests and denied accounts cannot mount adult navigation');
       assert.equal(await page.locator('.flight-scene').count(),0);
       await expectHeaderClean();
       if(mode==='guest')assert.equal(await page.getByRole('link',{name:'로그인',exact:true}).getAttribute('href'),'/?auth=login&next=pajang');

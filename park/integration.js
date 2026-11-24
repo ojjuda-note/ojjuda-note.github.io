@@ -111,12 +111,12 @@
     const account = group('내 정보');
     if (owner) {
       const profile = disclosure(account, '프로필·계정정보');
-      row(profile, 'profile', '프로필 수정', () => void window.OjjudaParkAccount.profile());
+      if (!parkJunior()) row(profile, 'profile', '프로필 수정', () => void window.OjjudaParkAccount.profile());
       row(profile, 'member-info', '개인정보 관리', () => void showMemberInfo());
-      row(profile, 'nickname', '닉네임 변경', () => void showNicknameChange());
+      if (!parkJunior()) row(profile, 'nickname', '닉네임 변경', () => void showNicknameChange());
       row(profile, 'password', '비밀번호 변경', showPasswordChange);
       row(profile, 'logout', '로그아웃', showAccountLogout);
-      row(account, 'friends', '친구 관리', () => void window.OjjudaParkFriends.open());
+      if (!parkJunior()) row(account, 'friends', '친구 관리', () => void window.OjjudaParkFriends.open());
     } else {
       account.className = 'ojjuda-guest-account';
       account.dataset.guestAccount = 'park';
@@ -153,15 +153,17 @@
     apps.parentElement.append(appStoreNote);
     const preferences = group('이용 설정');
     if (owner) {
-      row(preferences, 'friend-alert', '친구 신청 알림', () => window.OjjudaParkAccount.alerts());
+      if (!parkJunior()) row(preferences, 'friend-alert', '친구 신청 알림', () => window.OjjudaParkAccount.alerts());
       row(preferences, 'blocked', '차단 관리', () => void showBlocks());
     } else {
       preferences.append(node('p', 'management-help', '로그인하면 친구 신청 알림과 차단 목록을 관리할 수 있어요.'));
     }
     const help = group('활동·도움');
-    const charge = row(help, 'charge', '쭈 충전', () => window.OjjudaCharge?.open?.());
-    charge.setAttribute('aria-haspopup', 'dialog');
-    charge.setAttribute('aria-controls', 'ju-charge-dialog');
+    if (!parkJunior()) {
+      const charge = row(help, 'charge', '쭈 충전', () => window.OjjudaCharge?.open?.());
+      charge.setAttribute('aria-haspopup', 'dialog');
+      charge.setAttribute('aria-controls', 'ju-charge-dialog');
+    }
     row(help, 'support', '문의·의견', () => navigate('support'));
     const helpBody = disclosure(help, '도움말');
     link(helpBody, 'guide', '사용법', '/guide.html?from=park');
@@ -345,7 +347,8 @@
       settingsContext=sameOwner&&['settings','profile','friends','friend-alert','member-info','nickname','password','blocked','logout'].includes(route.view);
       if (sameOwner) {
         const views={settings:showParkSettings,profile:window.OjjudaParkAccount?.profile,friends:window.OjjudaParkFriends?.open,'friend-alert':window.OjjudaParkAccount?.alerts,'member-info':showMemberInfo,nickname:showNicknameChange,password:showPasswordChange,blocked:showBlocks,logout:showAccountLogout,'delete-account':showAccountDeletion};
-        if (Object.hasOwn(views,route.view) && typeof views[route.view] === 'function') void views[route.view]();
+        if (parkJunior() && ['friends','friend-alert','profile','nickname'].includes(route.view)) showParkSettings();
+        else if (Object.hasOwn(views,route.view) && typeof views[route.view] === 'function') void views[route.view]();
         else if (route.view==='notifications') notificationController?.open?.();
         else if (route.view==='support') window.OjjudaNoteSupport?.open?.();
         // Completed writes, payments and confirmations are never replayed.
@@ -472,7 +475,7 @@
     else if (action === 'blocked') { selectCollection('all'); void showBlocks(); }
     else if (action === 'settings') showParkSettings();
     else if (action === 'friends') {
-      if (session?.user) { settingsContext = true; void window.OjjudaParkFriends.open(); }
+      if (session?.user && !parkJunior()) { settingsContext = true; void window.OjjudaParkFriends.open(); }
       else showParkSettings();
     }
     else if (action === 'member-info') {

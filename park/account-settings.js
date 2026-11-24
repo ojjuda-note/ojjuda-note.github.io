@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   let owner = null, channel = null, photoEditor = null, inbox = null;
-  const memberId = () => session?.user && !session.user.is_anonymous ? session.user.id : null;
+  const memberId = () => session?.user && !session.user.is_anonymous && !parkJunior() ? session.user.id : null;
   const allowAlerts = () => session?.user?.user_metadata?.park_friend_alerts !== false;
   const messages = () => inbox ||= window.OjjudaFriendMessages?.install({
     client, getUserId: memberId
