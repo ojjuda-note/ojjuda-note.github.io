@@ -16,6 +16,7 @@
   const workspace = document.getElementById('workspace');
   let run = 0, activeOwner = null, activePanel = null;
   if (local) {
+    workspace.dataset.adminService = source;
     document.title = serviceName + ' 관리자모드 | 오쭈다';
     document.querySelector('main h1').textContent = serviceName + ' 관리자모드';
     const brand = document.querySelector('.brand');
@@ -55,7 +56,7 @@
     let hash = location.hash.slice(1);
     try { hash = decodeURIComponent(hash); } catch { hash = ''; }
     const tab = resolve(new URLSearchParams(location.search).get('admin')) || resolve(hash) || 'overview';
-    const url = new URL(tab === 'organization' ? '/admin/operations.html' : '/world.html', location.href);
+    const url = new URL(tab === 'organization' ? '/admin/operations.html' : local ? '/admin/' : '/world.html', location.href);
     if (tab !== 'organization') url.searchParams.set('admin', tab);
     const from = new URLSearchParams(location.search).get('from');
     const service = window.OjjudaAdminScope?.resolve(from || (tab === 'note' || tab.startsWith('note-') ? 'park' : null), tab);
@@ -94,7 +95,7 @@
       const aliases = {note:'cards', 'note-users':'note-users', 'note-settings':'notice', 'note-archive':'trash-cards', 'note-inquiries':'feedback', 'note-reports':'reports', 'note-actions':'activity'};
       const candidate = Object.hasOwn(aliases, requested) ? aliases[requested] : requested?.replace(/^note-/, '');
       const tab = scope.allows(source, candidate) ? candidate : home;
-      const module = await window.OjjudaAdminAssets.loadWorkspace();
+      const module = await window.OjjudaAdminAssets.loadWorkspace(tab);
       if (current !== run) return;
       activeOwner = data.user.id;
       show(null); workspace.hidden = false;

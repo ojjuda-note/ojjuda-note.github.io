@@ -1,5 +1,5 @@
-import {requireMember} from './member.mjs?v=20261126-service-navigation1';
-import {mountStation,prepareProgram} from './load-station.mjs?v=20261126-service-navigation1';
+import {requireMember} from './member.mjs?v=20261126-adult-service1';
+import {mountStation,prepareProgram} from './load-station.mjs?v=20261126-adult-service1';
 import {enhanceGuestGate} from './entry-design.mjs?v=20261122-org-display-only1';
 let program;
 const station=await requireMember('state',db=>{

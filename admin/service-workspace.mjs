@@ -101,7 +101,10 @@ export function mountWorkspace({client, service, tab, owner, getAdminId}) {
     if (tab === 'visitors') return window.OjjudaAdminVisitors.mount(options);
     if (tab === 'activity') return window.OjjudaAdminActivity.mount({...options, initialSource:service === 'park' ? 'park' : 'world'});
     if (tab === 'connections') return window.OjjudaConnections.mount(options);
-    if (tab === 'assets') return window.OjjudaAdminAssetLibrary.mount({...options, service});
+    if (tab === 'assets') {
+      await window.OjjudaAdminAssets.loadGallery();
+      return current() ? window.OjjudaAdminAssetLibrary.mount({...options, service}) : null;
+    }
     if (tab === 'rewards') { location.replace('/admin/rewards.html?from=' + service); return null; }
     return renderCommon(common);
   }

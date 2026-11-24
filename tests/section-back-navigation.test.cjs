@@ -410,3 +410,12 @@ test('direct administrator tools retain the service that opened them', () => {
     f.back();assert.deepEqual(f.replacements,[target]);
   }
 });
+
+test('a service document cannot return to Agit through an unrelated previous page', () => {
+  for (const from of ['park','pajang']) {
+    const f = fixture({from, previous:'https://ojjuda.test/world.html?from='+from, returnLink:true});
+    assert.equal(f.history.pushes,1);
+    f.back();
+    assert.deepEqual(f.replacements,[from === 'park' ? '/park/' : '/features/pajang/station.html?tab=profile']);
+  }
+});

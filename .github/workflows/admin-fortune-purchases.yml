@@ -65,6 +65,7 @@ jobs:
           node --test tests/admin-pajang-question-suggestions.test.cjs tests/admin-pajang-question-suggestions-db.test.cjs
           node tests/admin-menu-groups.test.cjs
           node tests/admin-current-features.test.cjs
+          node --test tests/admin-service-workspace.test.cjs
           node tests/inline-scripts.test.cjs
           node scripts/check-source-layout.mjs
       - name: Install browser and Korean fonts

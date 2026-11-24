@@ -1,4 +1,4 @@
-import {call,client,sameMember,showGate} from './member.mjs?v=20261126-service-navigation1';
+import {call,client,sameMember,showGate} from './member.mjs?v=20261126-adult-service1';
 
 // Each protected read uses the current member token. No member data is stored between pages.
 export async function prepareProgram(db,ready){
@@ -91,6 +91,7 @@ export async function mountStation(beforeMount,savedStation,prepared,destination
     const script=URL.createObjectURL(new Blob([release.bytes],{type:'text/javascript'}));
     urls.add(script);
     if (beforeMount) await beforeMount();
+    if(!await sameMember(db))throw Error('signed_out');
     window.pajangArt={};
     const pending=new Map();
     window.pajangLoadArt=key=>{
@@ -110,6 +111,7 @@ export async function mountStation(beforeMount,savedStation,prepared,destination
     await import(script);
     await waitForStationStyles();
     await new Promise(resolve => requestAnimationFrame(resolve));
+    if(!await sameMember(db))throw Error('signed_out');
     const welcome=document.getElementById('welcome');
     if(welcome)welcome.hidden=true;
     document.getElementById('gate').hidden=true;

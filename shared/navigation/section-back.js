@@ -18,9 +18,9 @@
   const destination = destinations[section] || destinations.hub;
   const labels = { hub: '아지트로', arcade: '오락실로', park: '공원으로', my: '설정으로', pajang: '내 파장으로', admin: '관리자 모드로' };
   const serviceDocument = from === 'park' || from === 'pajang';
+  const sharedPage = /^\/(?:terms\.html|privacy\.html|delete-account\.html|child-safety\.html|guide\.html|features\/guide\/creator\.html|policies\/(?:pajang-revision|2026-09-29\/(?:terms|privacy))\.html)$/;
   if (serviceDocument) {
     const serviceName = from === 'park' ? '공원' : '파장';
-    const sharedPage = /^\/(?:terms\.html|privacy\.html|delete-account\.html|child-safety\.html|guide\.html|features\/guide\/creator\.html|policies\/(?:pajang-revision|2026-09-29\/(?:terms|privacy))\.html)$/;
     for (const link of document.querySelectorAll('a[href]')) {
       if (link.getAttribute('href').startsWith('#')) continue;
       const target = new URL(link.href, location.href);
@@ -44,7 +44,8 @@
     const previous = new URL(href);
     if (previous.origin !== new URL(location.href).origin) return false;
     if (!serviceDocument) return true;
-    if (previous.searchParams.get('from') === from) return true;
+    if (previous.searchParams.get('from') === from && (sharedPage.test(previous.pathname) ||
+        previous.pathname.startsWith('/admin/') || previous.pathname.startsWith('/features/organization/'))) return true;
     if (previous.pathname === '/') return previous.searchParams.get('next') === (from === 'park' ? 'note' : 'pajang');
     return from === 'park' ? /^\/(park|note)\//.test(previous.pathname) : previous.pathname.startsWith('/features/pajang/');
   }

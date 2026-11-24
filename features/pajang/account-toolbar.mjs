@@ -1,4 +1,4 @@
-import {client} from './member.mjs?v=20261126-service-navigation1';
+import {client} from './member.mjs?v=20261126-adult-service1';
 import '../../note/notifications.js?v=20261126-service-navigation1';
 import '../wallet/ju-charge.js?v=20261119-pajang-toolbar1';
 

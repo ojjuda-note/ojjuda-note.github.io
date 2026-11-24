@@ -26,7 +26,11 @@ const sdk=`window.supabase={createClient:()=>{
   const callbacks=new Set(),session={user:{id:'fixture'}};window.top.feedReads??=0;
   const result=value=>{const p=Promise.resolve(value);p.abortSignal=()=>p;return p;};
   const db={auth:{getSession:async()=>({data:{session}}),onAuthStateChange(fn){callbacks.add(fn);return {data:{subscription:{unsubscribe(){callbacks.delete(fn)}}}};}},
-    rpc:()=>result({data:{}}),from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:null})})})}),
+    rpc:()=>result({data:{}}),from:table=>{
+      const q={select:()=>q,eq:()=>q,or:()=>q,maybeSingle:async()=>({data:table==='profiles'?{nickname:'공원회원',bio:''}:null}),
+        then:(resolve,reject)=>result({data:[]}).then(resolve,reject)};
+      return q;
+    },
     schema:()=>({rpc(name){if(name==='list_cards'){window.top.feedReads++;window.top.feedReadAt=performance.timeOrigin+performance.now();const p=new Promise(resolve=>setTimeout(()=>resolve({data:${JSON.stringify(cards)}}),180));p.abortSignal=()=>p;return p;}
       return result({data:name==='get_note_state'?{}:[]});}})};return db;}};
 if(parent!==window){
@@ -109,8 +113,17 @@ if(parent!==window){
         ['내 정보','앱 다운로드','이용 설정','활동·도움']);
       assert.equal(await canonicalSettings.getByText(/^(내 이벤트|이벤트 만들기|알림)$/).count(),0);
       assert.equal(await page.locator('#note-sidebar-menu-slot #event-start').count(),0);
-      assert.equal(await canonicalSettings.getByRole('link',{name:'친구 신청 알림'}).getAttribute('href'),
-        '/world.html?tab=my&setting=notifications');
+      const agitLinks=canonicalSettings.locator('a[href*="world.html"]');
+      assert.equal(await agitLinks.count(),1);
+      assert.equal(await agitLinks.first().getAttribute('data-service'),'agit');
+      for (const [item,control] of [['profile','#park-profile-name'],['friends','#park-friend-search'],['friend-alert','input[type="checkbox"]']]) {
+        if(item==='profile') await canonicalSettings.getByText('프로필·계정정보',{exact:true}).click();
+        await canonicalSettings.locator('[data-park-settings="'+item+'"]').click();
+        await page.locator('#management-backdrop').locator(control).waitFor({state:'visible'});
+        assert.equal(new URL(page.url()).pathname,'/park/');
+        await page.getByRole('button',{name:'공원 설정으로 돌아가기'}).click();
+        await canonicalSettings.waitFor({state:'visible'});
+      }
       await page.getByRole('button',{name:'관리창 닫기'}).click();
       await canonicalSettings.waitFor({state:'hidden'});
       await page.goto(origin+'/park/?view=settings');

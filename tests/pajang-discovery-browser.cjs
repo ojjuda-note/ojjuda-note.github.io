@@ -165,9 +165,14 @@ function checkStartupRequests(trace,version,scenario) {
   } else {
     const initial=scenario==='member-cold'?'member:entry':'member:state';
     overlaps('identity',initial);
-    overlaps('manifest',initial);
-    overlaps('manifest','identity');
-    overlaps('program',scenario==='member-cold'?'member:state':'feed');
+    assert.ok(manifest.start>=Math.max(request(initial).end,request('identity').end),
+      'protected manifest waits for both identity and adult authorization: '+detail);
+    if(scenario==='member-cold'){
+      overlaps('manifest','member:state');
+      overlaps('program','feed');
+    }else{
+      overlaps('manifest','feed');
+    }
   }
 }
 
@@ -1381,7 +1386,7 @@ async function checkNavigation(page){
     for(const mode of ['guest','denied']){
       await page.evaluate(m=>{sessionStorage.fixtureMode=m;},mode);
       await page.goto(origin+project+'station.html');
-      await page.locator('#gate p').filter({hasText:mode==='guest'?'로그인한':'이 계정은'}).waitFor();
+      await page.locator('#gate p').filter({hasText:mode==='guest'?'만 19세 이상 회원만':'이 계정은'}).waitFor();
       assert.equal(await page.locator('.flight-scene').count(),0);
       await expectHeaderClean();
       if(mode==='guest')assert.equal(await page.getByRole('link',{name:'로그인',exact:true}).getAttribute('href'),'/?auth=login&next=pajang');
@@ -1427,11 +1432,12 @@ async function checkNavigation(page){
       console.log('PAJANG_OPEN_MS',version,scenario,JSON.stringify(timings),'median',openingTimes[version][scenario]);
     }
     }
-    // Both cold paths contain three 180ms waits: the current feed can be the final
-    // dependency after its program is ready. Check request overlap above rather
-    // than requiring a 50ms rendering gain at a requestAnimationFrame boundary.
-    assert.ok(openingTimes.after['member-cold']<openingTimes.before['member-cold'],'cold member entry is faster with overlapping startup requests');
-    assert.ok(openingTimes.after.member<openingTimes.before.member-50,'member entry overlaps startup waits');
+    // Account and age verification must complete before the private manifest.
+    // Allow that required dependency when comparing older startup measurements.
+    for(const scenario of ['member-cold','member']){
+      assert.ok(openingTimes.after[scenario]<openingTimes.before[scenario]+startupDelayMs+120,
+        'the adult check adds at most one mocked wait and rendering time for '+scenario);
+    }
     assert.ok(openingTimes.after.new<openingTimes.before.new+120,'first participation stays responsive');
     await page.goto(origin+project+'station.html?view=radar');
     const locationSwitch=page.getByRole('switch',{name:'내 위치 공개'});

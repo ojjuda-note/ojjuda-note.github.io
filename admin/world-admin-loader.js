@@ -35,9 +35,27 @@
    document.head.append(node);
   });loaded.set(url,promise);return promise;
  }
- window.OjjudaAdminAssets={ready:false,async loadWorkspace(){
-  const [workspace]=await Promise.all([import('/admin/service-workspace.mjs?v=20261124-service1'),this.load()]);
+ const workspaceModules={
+  cards:['/note/admin'],risk:['/note/admin'],map:['/note/admin'],notice:['/note/admin'],spam:['/note/admin'],'note-users':['/note/admin'],
+  reports:['/note/operations','/note/admin'],feedback:['/note/operations'],'pajang-questions':['/note/operations'],
+  'pajang-answers':['/admin/pajang-moderation'],'pajang-chats':['/admin/pajang-moderation'],
+  users:['/admin/accounts','/admin/member-identity'],suspended:['/admin/accounts'],referrals:['/admin/accounts'],
+  visitors:['/admin/visitors','/admin/visitors-charts'],activity:['/admin/activity'],connections:['/admin/connections'],assets:['/admin/asset-library']
+ };
+ window.OjjudaAdminAssets={ready:false,async loadWorkspace(tab){
+  const stems=tab.startsWith('trash-')?['/admin/trash']:(workspaceModules[tab]||[]);
+  const required=url=>stems.some(stem=>url.startsWith(stem+'.'));
+  const css=styles.filter(required);
+  if(stems.includes('/note/admin'))css.push('/park/fonts.css?v=20261120-nanum-myeongjo1');
+  for(const url of css)void resource(url,true).catch(()=>{});
+  const [workspace]=await Promise.all([import('/admin/service-workspace.mjs?v=20261124-service1'),...scripts.filter(required).map(url=>resource(url,false))]);
   return workspace;
+ },async loadGallery(){
+  await Promise.all([
+    resource('/app/world/world-themes.js?v=20261119-auto-theme1',false),
+    resource('/features/home/agit-welcome.js?v=20261122-member-app-start1',false),
+    resource('/features/home/agit-welcome.css?v=20261119-auto-theme1',true)
+  ]);
  },load(){
   if(this.ready)return Promise.resolve();
   if(!pending){
