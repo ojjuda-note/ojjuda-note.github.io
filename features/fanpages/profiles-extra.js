@@ -128,7 +128,10 @@ if (idleProfile) {
 const nmixxProfile = window.OJJUDA_FAN_PROFILES.nmixx;
 if (nmixxProfile) {
   nmixxProfile.expanded = true;
+  nmixxProfile.checkedAt = '2026.11.22';
   nmixxProfile.awards = [
+    { year: '2026.11.21', title: '2026 MAMA 베스트 송 톱10', detail: 'Blue Valentine · 11.21 2일차 시상', href: 'https://www.soompi.com/article/1889392wpp/winners-of-2026-mama-awards-chapter-2' },
+    { year: '2026.11.20', title: '2026 MAMA 팬스 초이스 여성 TOP10', detail: '11.20 1일차 시상', href: 'https://www.soompi.com/article/1889291wpp/winners-of-2026-mama-awards-chapter-1' },
     { year: '2026.09', title: '더팩트 뮤직 어워즈 대상', detail: 'Sound of the Year · 2026.09.19', href: 'https://www.soompi.com/article/1871808wpp/winners-of-2026-the-fact-music-awards' },
     { year: '2026.10', title: '대한민국 대중문화예술상 장관 표창', detail: '2026.10.29 제17회 시상식 · 문화체육관광부 장관 표창', href: 'https://recruit.jype.com/ko/news/61' }
   ];
