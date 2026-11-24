@@ -154,7 +154,14 @@
       storeLink.rel = 'noopener noreferrer';
       storeLink.setAttribute('aria-label', `${name} Google Play에서 보기 (새 창)`);
     }
-    apps.parentElement.append(node('p', 'app-store-note', '앱을 선택하면 Google Play 페이지가 열립니다. 아지트 비공개 테스트 참여가 필요하면 먼저 참여한 뒤 설치하세요.'));
+    const appStoreNote = node('p', 'app-store-note');
+    appStoreNote.append(document.createTextNode('앱 이름을 누르면 Google Play 페이지가 열립니다. 아지트 비공개 테스트 참여가 필요하면 '));
+    const agitTesterLink = node('a', '', '먼저 참여');
+    agitTesterLink.href = 'https://play.google.com/apps/testing/kr.ojjuda.agit';
+    agitTesterLink.target = '_blank';
+    agitTesterLink.rel = 'noopener noreferrer';
+    appStoreNote.append(agitTesterLink, document.createTextNode('한 뒤 설치하세요.'));
+    apps.parentElement.append(appStoreNote);
     if (owner) {
       const access = group('계정 관리');
       row(access, 'logout', '로그아웃', showAccountLogout);
