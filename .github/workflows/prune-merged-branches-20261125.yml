@@ -1,0 +1,169 @@
+name: One-time merged branch cleanup (2026-11-25)
+on:
+  push:
+    branches: ['maintenance/prune-merged-branches-20261125']
+    paths: ['.github/workflows/prune-merged-branches-20261125.yml']
+permissions:
+  contents: write
+  pull-requests: read
+  actions: read
+  deployments: read
+concurrency:
+  group: one-time-merged-branch-cleanup-20261125
+  cancel-in-progress: false
+jobs:
+  prune:
+    if: github.repository == 'ojjuda-note/ojjuda-note.github.io' && github.ref == 'refs/heads/maintenance/prune-merged-branches-20261125'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Verify merged PRs, safely delete old branch references, and verify removal
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64, datetime, json, os, pathlib, re, subprocess, urllib.parse, urllib.request
+          
+          repo = os.environ['GITHUB_REPOSITORY']
+          api = 'https://api.github.com/repos/' + repo
+          token = os.environ['GH_TOKEN']
+          cutoff = '2026-11-17T17:04:00Z'
+          work_branch = 'maintenance/prune-merged-branches-20261125'
+          retain = re.compile(r'(^|[/_.-])(backup|backups|archive|archives|release|deploy|deployment|production|prod|staging|stage|publish|rollback|restore|snapshot|mirror|android|avatar)([/_.-]|$)', re.I)
+          reserved = {'main', 'master', 'develop', 'development', 'dev', 'test', 'qa', 'gh-pages', 'production', 'staging', work_branch}
+          
+          def get(path):
+              req = urllib.request.Request(api + path, headers={
+                  'Authorization': 'Bearer ' + token,
+                  'Accept': 'application/vnd.github+json',
+                  'X-GitHub-Api-Version': '2022-11-28',
+                  'User-Agent': 'ojjuda-one-time-merged-branch-cleanup'
+              })
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  return json.load(r)
+          
+          def pages(path, key=None):
+              rows = []
+              for page in range(1, 101):
+                  data = get(path + ('&' if '?' in path else '?') + 'per_page=100&page=' + str(page))
+                  batch = data[key] if key else data
+                  if not isinstance(batch, list):
+                      raise RuntimeError('Unexpected pagination response')
+                  rows.extend(batch)
+                  if len(batch) < 100:
+                      return rows
+              raise RuntimeError('Incomplete pagination; abort')
+          
+          def open_refs():
+              refs = set()
+              for p in pages('/pulls?state=open'):
+                  for side in ('head', 'base'):
+                      if (p.get(side, {}).get('repo') or {}).get('full_name') == repo:
+                          refs.add(p[side]['ref'])
+              return refs
+          
+          def active_refs():
+              refs = set()
+              for status in ('queued', 'in_progress', 'waiting', 'requested', 'pending'):
+                  for run in pages('/actions/runs?status=' + status, 'workflow_runs'):
+                      if run.get('head_branch'):
+                          refs.add(run['head_branch'])
+              return refs
+          
+          def deployment_refs():
+              return {d['ref'] for d in pages('/deployments') if d.get('ref')}
+          
+          def current_branches():
+              return {b['name']: b for b in pages('/branches')}
+          
+          root = pathlib.Path(os.environ['RUNNER_TEMP']) / 'ojjuda-prune.git'
+          env = dict(os.environ, GIT_TERMINAL_PROMPT='0', GIT_CONFIG_COUNT='1',
+                     GIT_CONFIG_KEY_0='http.https://github.com/.extraheader',
+                     GIT_CONFIG_VALUE_0='AUTHORIZATION: basic ' + base64.b64encode(('x-access-token:' + token).encode()).decode())
+          subprocess.run(['git', 'init', '--bare', str(root)], check=True, stdout=subprocess.DEVNULL)
+          def git(*args, **kw):
+              return subprocess.run(['git', '-C', str(root), *args], env=env, **kw)
+          git('remote', 'add', 'origin', 'https://github.com/' + repo + '.git', check=True)
+          git('config', 'remote.origin.promisor', 'true', check=True)
+          git('config', 'remote.origin.partialclonefilter', 'tree:0', check=True)
+          git('fetch', '--no-tags', '--filter=tree:0', 'origin', '+refs/heads/main:refs/heads/main', check=True)
+          main_commits = set(git('rev-list', 'refs/heads/main', check=True, capture_output=True, text=True).stdout.splitlines())
+          branches = current_branches()
+          keep = open_refs() | active_refs() | deployment_refs() | reserved | {get('')['default_branch']}
+          closed = pages('/pulls?state=closed&sort=updated&direction=desc')
+          matches = {}
+          for p in closed:
+              h, b = p.get('head', {}), p.get('base', {})
+              if (h.get('repo') or {}).get('full_name') != repo:
+                  continue
+              name = h.get('ref')
+              if name not in branches:
+                  continue
+              # Preserve a branch if a more recent or unmerged request refers to its current tip.
+              if h.get('sha') != branches[name]['commit']['sha']:
+                  continue
+              if not p.get('merged_at') or p['merged_at'] >= cutoff or b.get('ref') != 'main' or (b.get('repo') or {}).get('full_name') != repo:
+                  keep.add(name)
+                  continue
+              if p.get('merge_commit_sha') in main_commits:
+                  matches.setdefault(name, p)
+          
+          candidates = []
+          for name, p in sorted(matches.items()):
+              branch = branches[name]
+              if name in keep or retain.search(name) or branch.get('protected'):
+                  continue
+              ref = 'refs/heads/' + name
+              git('check-ref-format', ref, check=True, stdout=subprocess.DEVNULL)
+              candidates.append((name, branch['commit']['sha'], p['number'], p['merge_commit_sha']))
+          
+          print('Branches before:', len(branches), 'Open/active/deployment/reserved:', len(keep), 'Eligible:', len(candidates), flush=True)
+          audit = pathlib.Path(os.environ['GITHUB_STEP_SUMMARY'])
+          with audit.open('a', encoding='utf-8') as f:
+              f.write('## One-time cleanup\n\nBefore: %d; eligible: %d; cutoff: %s.\n\n' % (len(branches), len(candidates), cutoff))
+          
+          deleted = []
+          failed = []
+          skipped = []
+          def push_batch(batch):
+              if not batch:
+                  return
+              leases = ['--force-with-lease=refs/heads/' + name + ':' + sha for name, sha, _, _ in batch]
+              refs = [':refs/heads/' + name for name, _, _, _ in batch]
+              result = git('push', '--atomic', '--porcelain', *leases, 'origin', *refs, capture_output=True, text=True)
+              if result.returncode:
+                  if len(batch) > 1:
+                      mid = len(batch) // 2
+                      push_batch(batch[:mid])
+                      push_batch(batch[mid:])
+                  else:
+                      failed.append(batch[0])
+                      print('Kept after push rejection:', batch[0][0], flush=True)
+                  return
+              deleted.extend(batch)
+              for name, sha, pr, merge in batch:
+                  print('Deleted:', name, sha, 'merged PR #' + str(pr), merge, flush=True)
+          
+          for start in range(0, len(candidates), 25):
+              now_keep = open_refs() | active_refs()
+              batch = []
+              for item in candidates[start:start+25]:
+                  if item[0] in now_keep:
+                      skipped.append(item)
+                  else:
+                      batch.append(item)
+              push_batch(batch)
+          
+          # The exact branch names must be absent after successful deletion.
+          after = current_branches()
+          confirmed = [x for x in deleted if x[0] not in after]
+          unconfirmed = [x for x in deleted if x[0] in after]
+          print('Verified removed:', len(confirmed), 'Remaining branches:', len(after), 'Skipped:', len(skipped), 'Rejected:', len(failed), 'Unconfirmed:', len(unconfirmed), flush=True)
+          with audit.open('a', encoding='utf-8') as f:
+              f.write('Verified removed: **%d**; remaining: **%d**; skipped: %d; rejected: %d; unconfirmed: %d.\n\n' % (len(confirmed), len(after), len(skipped), len(failed), len(unconfirmed)))
+              f.write('Only exact tips of PRs merged into main before the cutoff were eligible. Main, backup, release, deployments, recent, protected and open work were preserved.\n')
+          if failed or unconfirmed:
+              raise RuntimeError('Some eligible branches could not be deleted; inspect log.')
+          
+          PY
