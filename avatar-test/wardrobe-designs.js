@@ -416,6 +416,31 @@ async function knitLayer(id,pose,data,loadImage,newCanvas){
   return out;
 }
 
+// A hand across the pleats (or the raised knee at the hem) was cut from the
+// pose artwork. Restore the cloth underneath and draw the original limb in front.
+const skirtOverlap={
+  pure:{warp:[1.01,0,.025,1,1,5],area:'M145 211H252L238 334H176Z'},
+  chic:{warp:[.99,.16,-.16,1,-5,-8],area:'M118 204H198V247H116Z'},
+  lively:{warp:[1,0,-.045,.96,-15,-1],area:'M143 276H263V329H143Z'}
+};
+async function skirtLayer(id,pose,data,loadImage,newCanvas){
+  const source=data.items.find(i=>i.id===id).variants,fit=skirtOverlap[pose];
+  if(!fit)return loadImage(source[pose]);
+  const out=newCanvas(),c=out.getContext('2d'),[a,b,k,d,dx,dy]=fit.warp;
+  c.translate(207+dx,264+dy);
+  c.transform(a,b,k,d,0,0);c.translate(-207,-264);c.drawImage(await loadImage(source.basic),0,0);
+  return out;
+}
+async function skirtLimb(pose,data,loadImage,newCanvas){
+  const out=newCanvas(),c=out.getContext('2d'),base=await loadImage(data.base[pose]);
+  c.clip(new Path2D(skirtOverlap[pose].area));
+  if(pose==='lively')c.drawImage(base,0,0);
+  else{
+    c.clip(new Path2D(wardrobeArms[pose]));
+    cleanWrist(c,base,pose==='pure'?202:157,pose==='pure'?275:233,pose==='pure'?72:45);
+  }
+  return out;
+}
 // Opening landmarks are in atlas-registered avatar coordinates. The outer shell
 // remains whole in the wardrobe. Only its front crosses the body when worn.
 const neckOpenings={
@@ -534,6 +559,8 @@ const waveLocks={
 
 async function wardrobeLayer(key,data,loadImage,newCanvas,findItem){
   const [,type,id,pose,choice]=key.split(':');
+  if(type==='skirt')return skirtLayer(id,pose,data,loadImage,newCanvas);
+  if(type==='skirt-limb')return skirtLimb(id,data,loadImage,newCanvas);
   if(type==='knit')return knitLayer(id,pose,data,loadImage,newCanvas);
   if(type==='collar'){
     const garment=await loadImage('fitted:garment:'+id+':'+pose+':'+choice);
