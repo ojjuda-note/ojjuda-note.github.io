@@ -2,7 +2,7 @@
 <html lang="ko" data-world-theme="classic">
 <head>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2" defer></script>
-<script src="/shared/location/location.js?v=20261119-kma-current1" defer></script>
+<script src="/shared/location/location.js?v=20261125-park-guardian1" defer></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#fbf8f2">
@@ -13,38 +13,50 @@
   <script src="/shared/pwa/app-identity.js?v=app-icons-a6a612391e00"></script>
   <link rel="stylesheet" href="/shared/pwa/pwa-install.css?v=20261118-play-status2">
   <script src="/shared/pwa/pwa-install.js?v=app-icons-a6a612391e00" defer></script>
-  <title>파장 · 취향으로 만나는 소개팅 | 오쭈다 아지트</title>
-  <meta name="description" content="마음이 닿는 오늘의 한마디. 파장에서 질문에 답하고, 서로의 취향으로 새로운 인연을 만나보세요.">
+  <title>오쭈다 파장 | 질문과 취향으로 만나는 소개팅</title>
+  <meta name="description" content="오쭈다 파장은 질문에 대한 답변과 취향으로 서로를 알아가는 만 19세 이상 회원 소개팅입니다. 마음에 닿는 답변에 신호를 보내고 새로운 인연을 만나보세요.">
+  <link rel="canonical" href="https://ojjuda.kr/features/pajang/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="오쭈다 파장">
+  <meta property="og:title" content="오쭈다 파장 | 질문과 취향으로 만나는 소개팅">
+  <meta property="og:description" content="오쭈다 파장은 질문에 대한 답변과 취향으로 서로를 알아가는 만 19세 이상 회원 소개팅입니다. 마음에 닿는 답변에 신호를 보내고 새로운 인연을 만나보세요.">
+  <meta property="og:url" content="https://ojjuda.kr/features/pajang/">
+  <meta property="og:image" content="https://ojjuda.kr/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="오쭈다 파장 | 질문과 취향으로 만나는 소개팅">
+  <meta name="twitter:description" content="오쭈다 파장은 질문에 대한 답변과 취향으로 서로를 알아가는 만 19세 이상 회원 소개팅입니다. 마음에 닿는 답변에 신호를 보내고 새로운 인연을 만나보세요.">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"오쭈다 파장","url":"https://ojjuda.kr/features/pajang/","description":"오쭈다 파장은 질문에 대한 답변과 취향으로 서로를 알아가는 만 19세 이상 회원 소개팅입니다. 마음에 닿는 답변에 신호를 보내고 새로운 인연을 만나보세요.","inLanguage":"ko-KR","isPartOf":{"@id":"https://ojjuda.kr/#website"}}</script>
   <link rel="preconnect" href="https://ziezbdjofcugznowiuda.supabase.co" crossorigin>
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-  <link rel="modulepreload" href="./member.mjs?v=20261119-guest-account1">
-  <link rel="modulepreload" href="./load-station.mjs?v=20261119-guest-account1">
-  <link rel="modulepreload" href="./entry-design.mjs?v=20261120-organization-help1">
-  <link rel="preload" href="./station.css?v=20261119-profile-detail-tastes1" as="style">
+  <link rel="modulepreload" href="./member.mjs?v=20261126-adult-service1">
+  <link rel="modulepreload" href="./load-station.mjs?v=20261126-adult-service1">
+  <link rel="modulepreload" href="./entry-design.mjs?v=20261122-org-display-only1">
+  <!-- Station CSS starts with member handoff, not on the public gate. -->
   <link id="entry-style" rel="stylesheet" href="./preview.css?v=compass8">
   <link rel="stylesheet" href="./shell.css?v=flight1">
   <link rel="stylesheet" href="/app/world/world-themes.css?v=20261119-auto-theme1">
-  <link rel="stylesheet" href="./letterroom.css?v=20261121-publication-default1">
-  <link rel="stylesheet" href="./radar-motion.css?v=20261119-auto-theme1">
+  <link rel="stylesheet" href="./letterroom.css?v=20261122-next-question1" data-pajang-station-style="letterroom" media="print" onload="this.media='all'" onerror="this.dataset.pajangStyleError='true'">
+  <link rel="stylesheet" href="./radar-motion.css?v=20261122-readable-nearby1">
   <link rel="stylesheet" href="/features/account/settings-list.css?v=20261119-guest-account1">
+<link rel="stylesheet" href="/shared/brand/service-banners.css?v=20261125-avatar-test1">
+<script src="/shared/brand/service-banners.js?v=20261125-avatar-test1" defer></script>
   <link rel="stylesheet" href="/note/notifications.css?v=20261117-inbox-keyboard1">
   <link rel="stylesheet" href="/features/wallet/ju-charge.css?v=20261106-source-folders1">
   <link rel="stylesheet" href="/ju-coins/ju-coins.css?v=20261106-source-folders1">
-  <link rel="stylesheet" href="./account-toolbar.css?v=20261119-service-header1">
+  <link rel="stylesheet" href="./account-toolbar.css?v=20261126-service-navigation1">
   <link rel="stylesheet" href="./signal-purchase.css?v=20261119-signal-purchase1">
-  <link rel="stylesheet" href="./entry-design.css?v=20261120-organization-help1">
+  <link rel="stylesheet" href="./entry-design.css?v=20261122-app-skip-entry1">
   <link rel="stylesheet" href="/shared/share/page-share.css?v=20261119-main-invite1">
   <link rel="stylesheet" href="/shared/brand/service-header.css?v=20261119-main-invite1">
   <script src="/shared/auth/invite-referral.js?v=20261119-invite-referral1" defer></script>
 <script src="/shared/share/page-share.js?v=20261119-arcade-invite1" defer></script>
   <script src="/app/world/world-themes.js?v=20261119-auto-theme1"></script>
   <script src="/app/world/world-weather.js?v=20261119-kma-current1" defer></script>
-  <script type="module" src="./shell.mjs?v=20261119-service-header1"></script>
-  <script type="module" src="./entry.mjs?v=20261121-publication-default1"></script>
-<script src="/shared/navigation/section-back.js?v=20261119-history1" data-return-to="hub" defer></script>
+  <script type="module" src="./shell.mjs?v=20261126-adult-service1"></script>
+  <script type="module" src="./entry.mjs?v=20261126-adult-service1"></script>
   <script src="/shared/analytics/growth-attribution.js?v=20261121-campaign1" defer></script>
 </head>
 <body>
@@ -89,14 +101,12 @@
         <fieldset id="answer-fields">
         <label for="mine">나의 답변</label>
         <textarea id="mine" rows="3" maxlength="220" required placeholder="이번 질문에 대한 내 생각을 적어 주세요." aria-describedby="publication-note"></textarea>
-        <label class="publication-scope" for="entry-publication"><span>답변 공개 기간</span><select id="entry-publication" name="publicationScope" aria-describedby="publication-note"><option value="year" selected>365일 공개</option><option value="round">이번 회차만 공개</option></select></label>
-        <p class="publication-note" id="publication-note">다른 파장 회원이 이 질문과 답변을 작성일을 포함해 최대 365일간 볼 수 있어요(한국 시간 기준).</p>
+        <p class="publication-note" id="publication-note">질문과 답변은 질문이 올라온 날부터 최대 365일간 파장 회원에게 보여요.</p>
         </fieldset>
-        <button type="submit">365일간 공개하고 파장 메인으로</button>
+        <button type="submit">답변하기</button>
         <button type="button" class="cancel-form" id="cancel-form">취소</button>
       </form>
       <output id="my-answer" role="status"></output>
-      <small id="demo-note">답변은 공개할 때 안내받은 기간에만 다른 파장 회원에게 보여요. 차단한 회원과는 서로 볼 수 없어요.</small>
     </section>
     <details class="sample-radar"><summary>예시 레이더 보기</summary>
     <section class="panel" aria-label="예시 인연 레이더">
@@ -114,7 +124,7 @@
     </details>
   </main>
   <div id="station" hidden></div>
-  <script src="/config.js"></script>
+  <script src="/config.js?v=20261121-pajang-visits1"></script>
 </body>
 </html>
 

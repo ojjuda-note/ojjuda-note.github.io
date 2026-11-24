@@ -41,6 +41,8 @@
   return ((unit==='점'||unit==='G')&&window.OjjudaScoreFormat?window.OjjudaScoreFormat(score):number(record.score))+unit;
  }
  function describe(record,id){
+  const shared=window.OjjudaRankingDetails?.describe?.(id,record);
+  if(typeof shared==='string'&&shared)return shared;
   const detail=[];
   if(id==='sacheonseong'||id==='archery'){
    if(Number.isInteger(Number(record.stage))&&Number(record.stage)>0)detail.push(number(record.stage)+'단계');
@@ -57,7 +59,7 @@
   else if(['chess','janggi','billiards'].includes(id)){
    const variant={carom4:'4구',carom3:'3쿠션',pool8:'포켓볼'}[record.variant];
    const labels={online:'회원대결',hard:'어려움',normal:'보통',easy:'쉬움'};
-   if(id==='janggi')Object.assign(labels,{hard:'기존 통합',hard_exact:'어려움',pro:'프로',master:'마스터',grandmaster:'그랜드마스터'});
+   if(id==='janggi')Object.assign(labels,{hard:'과거 고난도 · 어려움급',hard_exact:'어려움',pro:'프로',master:'마스터',grandmaster:'그랜드마스터'});
    const level=labels[record.difficulty];
    if(variant)detail.push(variant);if(level)detail.push(level);
   }

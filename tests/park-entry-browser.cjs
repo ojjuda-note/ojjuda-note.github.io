@@ -1,10 +1,24 @@
 // Real Park scripts/styles, with identical network delays before and after the change.
 const assert=require('node:assert/strict');
 const fs=require('node:fs/promises'),path=require('node:path');
-const {execFileSync}=require('node:child_process');
 const {chromium}=require('playwright');
 const root=path.resolve(__dirname,'..'),origin='https://park-entry.test';
-const baseline='71785aabf407ca239a27b4811e252a962a725717';
+// Compare the real current Park order against a simulated older order,
+ // with identical downloaded files and a delayed optional brush engine.
+function originalBrushOrder(html) {
+  const optional = [];
+  for (const pattern of [
+    /<script src="\/note\/calligraphy-motifs\.js[^"]*" defer><\/script>/,
+    /<script src="\/note\/calligraphy\.js[^"]*" defer><\/script>/
+  ]) {
+    const tag = html.match(pattern)?.[0];
+    assert.ok(tag, 'expected brush asset tag');
+    optional.push(tag);
+    html = html.replace(tag, '');
+  }
+  return html.replace(/(<script src="\/note\/preview\.js[^"]*" defer><\/script>)/,
+    optional.map(tag => '  '+tag).join('\n')+'\n  $1');
+}
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const cards=Array.from({length:20},(_,i)=>({id:'12345678-1234-4123-8123-'+String(i+1).padStart(12,'0'),
   kind:'memo',body:'공원 이야기 '+i,background_key:String(10+i),tags:[],created_at:'2026-11-10T00:00:00Z'}));
@@ -12,7 +26,11 @@ const sdk=`window.supabase={createClient:()=>{
   const callbacks=new Set(),session={user:{id:'fixture'}};window.top.feedReads??=0;
   const result=value=>{const p=Promise.resolve(value);p.abortSignal=()=>p;return p;};
   const db={auth:{getSession:async()=>({data:{session}}),onAuthStateChange(fn){callbacks.add(fn);return {data:{subscription:{unsubscribe(){callbacks.delete(fn)}}}};}},
-    rpc:()=>result({data:{}}),from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:null})})})}),
+    rpc:()=>result({data:{}}),from:table=>{
+      const q={select:()=>q,eq:()=>q,or:()=>q,maybeSingle:async()=>({data:table==='profiles'?{nickname:'공원회원',bio:''}:null}),
+        then:(resolve,reject)=>result({data:[]}).then(resolve,reject)};
+      return q;
+    },
     schema:()=>({rpc(name){if(name==='list_cards'){window.top.feedReads++;window.top.feedReadAt=performance.timeOrigin+performance.now();const p=new Promise(resolve=>setTimeout(()=>resolve({data:${JSON.stringify(cards)}}),180));p.abortSignal=()=>p;return p;}
       return result({data:name==='get_note_state'?{}:[]});}})};return db;}};
 if(parent!==window){
@@ -40,8 +58,8 @@ if(parent!==window){
           if(url.pathname==='/config.js')return route.fulfill({contentType:'text/javascript',body:`window.OJJUDA_CONFIG={supabaseUrl:'${origin}',supabaseKey:'fixture'};`});
           const name=url.pathname==='/park/'?'park/index.html':file;
           try{
-            let body=version==='before'&&['park/index.html','note/preview.js'].includes(name)
-              ?execFileSync('git',['show',baseline+':'+name],{cwd:root,maxBuffer:2e6}):await fs.readFile(path.join(root,name));
+            let body=await fs.readFile(path.join(root,name));
+            if(version==='before'&&name==='park/index.html')body=Buffer.from(originalBrushOrder(body.toString('utf8')));
             if(name==='note/calligraphy.js')await wait(450); // cold download of optional rendering tools
             else if(name.endsWith('.css')||name.endsWith('.js'))await wait(60);
             if(/\.(?:jpg|webp)$/.test(name))await wait(120);
@@ -62,6 +80,57 @@ if(parent!==window){
       results[version]=samples.sort((a,b)=>a-b)[2];
       console.log('PARK_FIRST_CARDS_MS',version,JSON.stringify(samples),'median',results[version],'request starts',JSON.stringify(readStarts));
     }
-    assert.ok(results.after<results.before-80,'preparing the feed overlaps dependency downloads');
+    assert.ok(results.after<results.before-120,'first cards cannot wait for the optional brush download');
+    // A directly opened Park must render real cards without a World host or iframe.
+    {
+      const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,locale:'ko-KR'});
+      await context.route('**/*',async route=>{
+        const url=new URL(route.request().url()),name=url.pathname==='/park/'?'park/index.html':url.pathname.slice(1);
+        if(url.hostname==='cdn.jsdelivr.net')return route.fulfill({contentType:'text/javascript',body:sdk});
+        if(url.origin!==origin)return route.abort();
+        if(url.pathname==='/config.js')return route.fulfill({contentType:'text/javascript',body:`window.OJJUDA_CONFIG={supabaseUrl:'${origin}',supabaseKey:'fixture'};`});
+        try{
+          const body=await fs.readFile(path.join(root,name));
+          return route.fulfill({body,contentType:name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':name.endsWith('.html')?'text/html':undefined});
+        }catch{return route.abort();}
+      });
+      const page=await context.newPage(),errors=[];
+      page.on('pageerror',error=>errors.push(error.message));
+      await page.goto(origin+'/park/');
+      await page.locator('#feed-list article').first().waitFor();
+      assert.equal(new URL(page.url()).pathname,'/park/','independent Park does not redirect to World');
+      assert.equal(await page.locator('#feed-list article').count(),20);
+      assert.equal(await page.locator('iframe').count(),0,'standalone Park is not embedded in another app');
+      assert.equal(await page.locator('.bottomnav:visible').count(),1,'own navigation remains accessible on mobile');
+      assert.equal(await page.evaluate(()=>document.documentElement.hasAttribute('data-park-embedded')),false);
+      const settingsButton=page.locator('.bottomnav [data-note-my]');
+      assert.equal(await settingsButton.innerText(),'설정');
+      await settingsButton.click();
+      const canonicalSettings=page.locator('[data-park-settings-root]');
+      await canonicalSettings.waitFor({state:'visible'});
+      assert.equal(new URL(page.url()).search,'','the settings button opens the canonical dialog in place');
+      assert.deepEqual(await canonicalSettings.locator('.ojjuda-settings-heading').allTextContents(),
+        ['내 정보','앱 다운로드','이용 설정','활동·도움']);
+      assert.equal(await canonicalSettings.getByText(/^(내 이벤트|이벤트 만들기|알림)$/).count(),0);
+      assert.equal(await page.locator('#note-sidebar-menu-slot #event-start').count(),0);
+      const agitLinks=canonicalSettings.locator('a[href*="world.html"]');
+      assert.equal(await agitLinks.count(),1);
+      assert.equal(await agitLinks.first().getAttribute('data-service'),'agit');
+      for (const [item,control] of [['profile','#park-profile-name'],['friends','#park-friend-search'],['friend-alert','input[type="checkbox"]']]) {
+        if(item==='profile') await canonicalSettings.getByText('프로필·계정정보',{exact:true}).click();
+        await canonicalSettings.locator('[data-park-settings="'+item+'"]').click();
+        await page.locator('#management-backdrop').locator(control).waitFor({state:'visible'});
+        assert.equal(new URL(page.url()).pathname,'/park/');
+        await page.getByRole('button',{name:'공원 설정으로 돌아가기'}).click();
+        await canonicalSettings.waitFor({state:'visible'});
+      }
+      await page.getByRole('button',{name:'관리창 닫기'}).click();
+      await canonicalSettings.waitFor({state:'hidden'});
+      await page.goto(origin+'/park/?view=settings');
+      await page.locator('[data-park-settings-root]').waitFor();
+      assert.equal(await page.locator('[data-park-settings-root]').isVisible(),true,'legacy settings deep link opens in standalone Park');
+      assert.deepEqual(errors,[],'standalone Park has no unhandled browser script errors');
+      await context.close();
+    }
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

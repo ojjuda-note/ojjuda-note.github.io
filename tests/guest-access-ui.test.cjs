@@ -3,6 +3,7 @@ const {chromium}=require('playwright'),root=path.join(__dirname,'..'),read=p=>fs
 const strip=html=>html.replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'');
 let world=strip(read('world.html')).replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
 const helpers=['shared/games/game-session.js','shared/games/arcade-round-queue.js','shared/games/puzzle-record-queue.js','app/world/world-navigation.js','shared/auth/guest-access.js','shared/games/game-results.js','park/world-park-notes.js','games/mines/world-mines-game.js','games/saetbyeol/world-saetbyeol-game.js','games/ojjuda-tour/world-tour-game.js','games/tank/world-tank-game.js','games/spot-difference/world-spot-game.js','games/ttang/ttang-bridge.js'].map(read).join('\n');
+world=world.replace(/<script>\s*\/\/ Old Park URLs[\s\S]*?<\/script>/,'');
 world=world.replace('<script type="module">',()=>`<script>${helpers}</script><script type="module">`);
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`window.guestFixture={open:Al,close:El,finish:score=>S2(score),board:(kind)=>savePracticeStreak({kind,mode:'local'},'draw'),member:()=>{D.online=true;D.parkGuest=false;D.user={id:'member'};},park:()=>sr.tab({tab:'park'})};
@@ -153,9 +154,13 @@ const cardId='00000000-0000-4000-8000-000000000001';
   assert.equal(await frame.locator('#card-photo-attach').isVisible(),false);
   assert.equal(await frame.locator('#photo-gallery-toggle').isVisible(),false);
   await frame.waitForFunction(()=>document.querySelector('.compose-photo').style.backgroundImage.includes('/297.jpg'));
-  page.once('dialog', dialog=>dialog.accept());
+  // A guest post may complete without a confirmation dialog. Do not leave
+  // its once-handler alive to accept the next, unrelated member dialog twice.
+  const acceptGuestPublishDialog = dialog => dialog.accept();
+  page.once('dialog', acceptGuestPublishDialog);
   await frame.locator('#publish-card').click();
   await frame.locator('#composer-backdrop').waitFor({state:'hidden'});
+  page.off('dialog', acceptGuestPublishDialog);
   const posted=await frame.evaluate(()=>guestPublication);
   assert.equal(posted.p_body,'공원의 첫 글');assert.equal(posted.p_parent_id,null);
   assert.deepEqual(Object.keys(posted).sort(),['p_body','p_parent_id','p_request_id']);
@@ -284,7 +289,9 @@ const cardId='00000000-0000-4000-8000-000000000001';
   assert.equal(await page.locator('#compose-text').inputValue(),'고쳐 쓴 붓글씨');
   assert.equal(await page.locator('#compose-ink-art').isVisible(),false);
   assert.equal(await page.locator('.compose-photo .park-ink-box').isVisible(),false);
+  page.once('dialog', dialog=>dialog.accept());
   await page.locator('#close-composer').click();
+  await page.locator('#composer-backdrop').waitFor({state:'hidden'});
   await page.locator('#feed-list .photo').first().scrollIntoViewIfNeeded();
   for(const [index,key] of [[1,'37'],[2,'13']]){
    const face='#feed-list article:nth-child('+index+') .photo',selector=face+' canvas.park-ink-art';
@@ -300,7 +307,12 @@ const cardId='00000000-0000-4000-8000-000000000001';
   // Login is the automatic entry; a guest can still deliberately select signup
   // or password recovery without losing the card they were replying to.
   await page.locator('#signup-tab').click();assert.equal(await page.locator('#signup-tab').getAttribute('aria-selected'),'true');
-  assert.equal(await page.locator('#nickname').isVisible(),true);assert.equal(new URL(page.url()).searchParams.get('card'),cardId);
+  await page.locator('#signup-birth').waitFor();
+  assert.equal(await page.locator('#nickname').isVisible(),false);
+  await page.locator('#signup-birth').fill('000101');
+  await page.locator('#signup-code').fill('3');
+  await page.locator('#nickname').waitFor();
+  assert.equal(new URL(page.url()).searchParams.get('card'),cardId);
   await page.locator('#login-tab').click();await login('note');
   await page.locator('#forgot-trigger').click();assert.equal(await page.locator('#auth-title').textContent(),'비밀번호 찾기');
   assert.equal(await page.locator('#recovery-identity-slot').isVisible(),true);assert.equal(new URL(page.url()).searchParams.get('card'),cardId);

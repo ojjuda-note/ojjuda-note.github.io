@@ -533,7 +533,15 @@
     const today = koreaDay();
     const info = visit(session.state, today, { stamps: options.stamps, createdDay: options.createdDay });
     persist(session);
-    if (session.state.shownDay === today || storageRead(GLOBAL_DAY) === today) return;
+    // An already signed-in standalone app opens the actual Agit immediately.
+    // Keep visit rewards and notifications, but do not place a greeting modal
+    // over the service on every cold launch. Browser greetings remain intact.
+    const standalone = typeof window !== 'undefined' && (
+      window.matchMedia?.('(display-mode: standalone)')?.matches ||
+      window.matchMedia?.('(display-mode: minimal-ui)')?.matches ||
+      window.navigator?.standalone === true
+    );
+    if (standalone || session.state.shownDay === today || storageRead(GLOBAL_DAY) === today) return;
     void greet(session, info, today);
   }
   function revoke() {

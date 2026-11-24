@@ -1,0 +1,110 @@
+name: One-time Naver separate app and data backup
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/on-demand-naver-sections.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ojjuda-naver-one-time-sections
+  cancel-in-progress: false
+
+jobs:
+  separate_source:
+    name: Encrypt and verify four separate source archives at Naver
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      SUPABASE_PROJECT_REF: ziezbdjofcugznowiuda
+      SUPABASE_REGION: ap-northeast-2
+      SUPABASE_DB_PASSWORD: ${{ secrets.BACKUP_SUPABASE_DB_PASSWORD }}
+      SUPABASE_DB_POOLER_HOST: aws-0-ap-northeast-2.pooler.supabase.com
+      SUPABASE_S3_ACCESS_KEY: ${{ secrets.BACKUP_SUPABASE_S3_ACCESS_KEY }}
+      SUPABASE_S3_SECRET_KEY: ${{ secrets.BACKUP_SUPABASE_S3_SECRET_KEY }}
+      BACKUP_S3_ENDPOINT: https://kr.object.ncloudstorage.com
+      BACKUP_S3_REGION: kr-standard
+      BACKUP_S3_BUCKET: ojjuda-backup-ziezbdjofcugznowiuda
+      BACKUP_S3_ACCESS_KEY: ${{ secrets.BACKUP_S3_ACCESS_KEY }}
+      BACKUP_S3_SECRET_KEY: ${{ secrets.BACKUP_S3_SECRET_KEY }}
+      BACKUP_AGE_RECIPIENT: age18j7evc6kwmzau3373zpc7zq0eapmqnw2q5jetzeh4czvdlut0ekqn0yr5z
+      BACKUP_KEY_PREFIX: ojjuda-disaster-recovery/v1
+    steps:
+      - name: Checkout exact source version
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Install archive and encryption dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends age
+          python -m pip install -r ops/backup-requirements.txt
+      - name: Produce encrypted standalone app and common code backups
+        run: python ops/backup-sections-naver.py
+
+  shared_database_and_uploads:
+    name: Verify encrypted full Supabase and Storage recovery archive at Naver
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    env:
+      SUPABASE_PROJECT_REF: ziezbdjofcugznowiuda
+      SUPABASE_REGION: ap-northeast-2
+      SUPABASE_DB_URL: ${{ secrets.BACKUP_SUPABASE_DB_URL }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.BACKUP_SUPABASE_DB_PASSWORD }}
+      SUPABASE_DB_POOLER_HOST: aws-0-ap-northeast-2.pooler.supabase.com
+      SUPABASE_S3_ACCESS_KEY: ${{ secrets.BACKUP_SUPABASE_S3_ACCESS_KEY }}
+      SUPABASE_S3_SECRET_KEY: ${{ secrets.BACKUP_SUPABASE_S3_SECRET_KEY }}
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.BACKUP_SUPABASE_ACCESS_TOKEN }}
+      BACKUP_S3_ENDPOINT: https://kr.object.ncloudstorage.com
+      BACKUP_S3_REGION: kr-standard
+      BACKUP_S3_BUCKET: ojjuda-backup-ziezbdjofcugznowiuda
+      BACKUP_S3_ACCESS_KEY: ${{ secrets.BACKUP_S3_ACCESS_KEY }}
+      BACKUP_S3_SECRET_KEY: ${{ secrets.BACKUP_S3_SECRET_KEY }}
+      BACKUP_AGE_RECIPIENT: age18j7evc6kwmzau3373zpc7zq0eapmqnw2q5jetzeh4czvdlut0ekqn0yr5z
+      BACKUP_RETENTION_DAYS: '30'
+      BACKUP_KEY_PREFIX: ojjuda-disaster-recovery/v1
+    steps:
+      - name: Checkout snapshot producer
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Set up Python and Supabase CLI
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - uses: supabase/setup-cli@1dedf2c611547ede7232d26866dd3c56ab903bbb
+        with:
+          version: 2.118.0
+      - name: Install backup dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends age postgresql-client
+          python -m pip install -r ops/backup-requirements.txt
+      - name: Save and verify shared account database and member uploads
+        shell: bash
+        run: |
+          set -euo pipefail
+          log="$(mktemp)"
+          trap 'rm -f "$log"' EXIT
+          for attempt in 1 2 3; do
+            if python ops/backup.py > "$log" 2>&1; then
+              cat "$log"
+              exit 0
+            fi
+            cat "$log"
+            if [[ "$attempt" -eq 3 ]] || ! grep -Eq 'Database dump .* row count differs from inventory|Storage changed during backup|Storage object mismatch' "$log"; then
+              echo "Full encrypted shared-data snapshot not verified; source archive job is independent"
+              exit 1
+            fi
+            echo "Live Storage changed during snapshot; safely retrying with a new inventory ($attempt/3)"
+            sleep 10
+          done
+          exit 1

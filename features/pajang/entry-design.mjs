@@ -58,7 +58,9 @@ export function enhanceGuestGate(){
   organization.href='/features/organization/?from=pajang';organization.target='_top';
   const arrow=make('span','ojjuda-settings-arrow','›');arrow.setAttribute('aria-hidden','true');
   organization.append(make('span','ojjuda-settings-label','조직도'),arrow);
-  helpMenu.body.append(organization);settingsMenu.body.append(helpMenu.menu);
+  const serviceBanners=make('ojjuda-service-banners','');
+  serviceBanners.setAttribute('current','pajang');
+  helpMenu.body.append(organization);settingsMenu.body.append(helpMenu.menu,serviceBanners);
   if(new URLSearchParams(location.search).get('tab')==='profile')settingsMenu.menu.open=true;
   list.append(settingsMenu.menu);settings.append(list);
   footer.append(account,message,settings);invitation.append(opening,footer);

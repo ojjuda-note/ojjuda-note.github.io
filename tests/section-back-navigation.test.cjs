@@ -112,7 +112,7 @@ test('a direct entry falls back to its owning section', () => {
   const cases = [
     ['hub','/world.html?tab=hub'],
     ['arcade','/world.html?tab=arcade'],
-    ['park','/world.html?tab=park'],
+    ['park','/park/'],
     ['my','/world.html?tab=my'],
     ['pajang','/features/pajang/station.html?tab=profile'],
     ['admin','/world.html?admin=overview']
@@ -127,7 +127,7 @@ test('a direct entry falls back to its owning section', () => {
 
 test('a shared guide returns to the section that opened it', () => {
   const f=fixture({section:'hub',from:'park'});
-  f.back();assert.deepEqual(f.replacements,['/world.html?tab=park']);
+  f.back();assert.deepEqual(f.replacements,['/park/']);
   const g=fixture({section:'hub',from:'my'});
   g.back();assert.deepEqual(g.replacements,['/world.html?tab=my']);
 });
@@ -186,7 +186,7 @@ test('hash navigation is tracked when a browser only emits hashchange', () => {
   assert.deepEqual(f.replacements,[],'an earlier null-state fragment is not an exit');
   f.go(-1);
   f.go(-1);
-  assert.deepEqual(f.replacements,['/world.html?tab=park']);
+  assert.deepEqual(f.replacements,['/park/']);
 });
 
 test('reactivating the current fragment stays local and preserves the real exit boundary', () => {
@@ -219,7 +219,7 @@ test('a hashchange observed before popstate cannot turn a local anchor into an e
   f.go(-1);
   f.go(-1);
   f.go(-1);
-  assert.deepEqual(f.replacements,['/world.html?tab=park']);
+  assert.deepEqual(f.replacements,['/park/']);
 });
 
 test('duplicate popstate notifications for a local fragment are harmless', () => {
@@ -255,7 +255,7 @@ test('multi-step Back recognizes the exit boundary even when the fragment change
       f.hash('#profile');
       if (distance===3) f.hash('#photos');
       f.go(-distance);
-      assert.deepEqual(f.replacements,['/world.html?tab=park'],`${hash || 'page top'}: go(-${distance})`);
+      assert.deepEqual(f.replacements,['/park/'],`${hash || 'page top'}: go(-${distance})`);
     }
   }
   const middle=fixture({section:'my',hash:'#videos'});
@@ -331,7 +331,7 @@ test('every standalone return link points to its intended section', () => {
     assert.match(read(file),/data-section-return/,file);
     assert.match(read(file),/section-back\.js/,file);
   }
-  assert.match(read('park/glasses.html'),/href="\/park\/\?embedded=1"/);
+  assert.match(read('park/glasses.html'),/href="\/park\/"/);
   assert.match(read('admin/rewards.html'),/href="\/world\.html\?admin=overview"/);
 });
 
@@ -389,7 +389,7 @@ test('external previous pages do not count as in-app history', () => {
   const f=fixture({previous:'https://outside.test/',section:'park'});
   assert.equal(f.history.pushes,1);
   f.back();
-  assert.deepEqual(f.replacements,['/world.html?tab=park']);
+  assert.deepEqual(f.replacements,['/park/']);
 });
 
 test('Navigation API entries recover same-origin history even without a referrer', () => {
@@ -405,8 +405,17 @@ test('Navigation API entries recover same-origin history even without a referrer
 test('direct administrator tools retain the service that opened them', () => {
   for(const from of ['park','pajang']) {
     const f=fixture({section:'admin',from,returnLink:true});
-    const target='/world.html?admin=overview&from='+from;
+    const target='/admin/?from='+from;
     assert.equal(f.anchor.href,target);
     f.back();assert.deepEqual(f.replacements,[target]);
+  }
+});
+
+test('a service document cannot return to Agit through an unrelated previous page', () => {
+  for (const from of ['park','pajang']) {
+    const f = fixture({from, previous:'https://ojjuda.test/world.html?from='+from, returnLink:true});
+    assert.equal(f.history.pushes,1);
+    f.back();
+    assert.deepEqual(f.replacements,[from === 'park' ? '/park/' : '/features/pajang/station.html?tab=profile']);
   }
 });

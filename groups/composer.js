@@ -122,6 +122,19 @@
       const focused = document.activeElement;
       return body.contains(focused) && focused.matches('input,textarea') ? focused : null;
     }
+    function syncHighlight() {
+      // The open tool takes precedence over the underlying post kind.
+      // Photo is an attachment panel, and Bet may be open before choosing its game.
+      const selected = (active && active !== 'room') ? active :
+        categories.plan.includes(kind.value) ? 'plan' :
+        categories.bet.includes(kind.value) ? 'bet' :
+        kind.value === 'poll' ? 'poll' : 'post';
+      for (const key of ['post','photo','plan','poll','bet']) {
+        const isSelected = key === selected;
+        buttons[key].setAttribute('aria-pressed', String(isSelected));
+        buttons[key].dataset.selected = String(isSelected);
+      }
+    }
     function close(returnFocus = false) {
       if (!active) return false;
       const previous = buttons[active];
@@ -129,6 +142,7 @@
       card.hidden = true;
       Object.values(panels).forEach(panel => { panel.hidden = true; });
       Object.keys(panels).forEach(key => buttons[key].setAttribute('aria-expanded', 'false'));
+      syncHighlight();
       if (returnFocus && !previous.hidden && !previous.disabled) previous.focus({preventScroll:true});
       return true;
     }
@@ -142,6 +156,7 @@
         panels[name].hidden = name !== key;
         buttons[name].setAttribute('aria-expanded', String(name === key));
       }
+      syncHighlight();
       content.scrollTop = 0;
       if (focus) {
         const field = Array.from(panels[key].querySelectorAll('button,input,textarea,select,[tabindex]'))
@@ -201,18 +216,15 @@
       context.setAttribute('aria-label', '올릴 그룹: ' + name + ', ' + kindName);
       context.disabled = roomFixed || form.elements.room_id.disabled;
       for (const [key, values] of Object.entries(categories)) {
-        const selected = values.includes(kind.value);
         buttons[key].disabled = kind.disabled || !values.some(value => availableKinds.has(value));
-        buttons[key].dataset.selected = String(selected);
-        buttons[key].setAttribute('aria-pressed', String(selected));
       }
       for (const choice of content.querySelectorAll('[data-kind-choice]')) {
         choice.disabled = kind.disabled;
         choice.setAttribute('aria-pressed', String(choice.dataset.kindChoice === kind.value));
       }
       counter.textContent = form.elements.body.value.length.toLocaleString('ko-KR') + ' / 10,000';
-      buttons.photo.dataset.selected = String(!!form.querySelector('#attachments').children.length);
       if (active && (buttons[active].hidden || buttons[active].disabled)) close();
+      syncHighlight();
     }
     form.addEventListener('input', sync);
     form.addEventListener('change', event => {

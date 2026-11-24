@@ -4,9 +4,10 @@ const files: Record<string,string> = {
   "walk.webp": "47bc50f315c0dcf65cdccb6e2af76b120c134d8d8e55034f8511efa633f27266",
   "book.webp": "2a76a993ac3a690eb73a17ee79d4180863ba20c991dd34459abc333d90a6b95a",
   "vinyl.webp": "dfe33b7665d0ecbf952d2004710940635e4879f589ae4680ef85ac6109a23d77",
-  "station.js": "283101c4c974d60b37185368c74e5722bc58f7adc150776ef1153ba39b80b324",
+  "station.js": "5208a83fc10843f86ee4f8c87b6fe166500efc3090d469c629aebaf8b7f13509",
   "camera.webp": "b686b71a0517be69e02f61a3028d18e2f406a1087dcebc060d588bcae3df046d"
 };
+// station.js carries the unified app download links and test participation path.
 const bucket='pajang-member-assets';
 const cors={'Access-Control-Allow-Origin':'https://ojjuda.kr','Access-Control-Allow-Headers':'authorization,apikey,content-type,x-client-info','Cache-Control':'private, no-store','Vary':'Origin'};
 const respond=(data:unknown,status=200)=>Response.json(data,{status,headers:cors});

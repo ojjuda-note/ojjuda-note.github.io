@@ -13,7 +13,7 @@ world=world.replace('<script type="module">',`<script>${nav}</script><script typ
 const boot=world.indexOf('j1(()=>H());gm(');
 assert.ok(boot>0);
 world=world.slice(0,boot)+`
-window.worldTest={state:g,auth:D,admin:L,actions:sr,render:H,clear:clearWorldAdminView};
+window.worldTest={state:g,auth:D,admin:L,actions:sr,render:H,restore:restoreWorldAdminView,clear:clearWorldAdminView};
 U.cleanupMedia=async()=>({});U.overview=async()=>({});U.contentFeed=async()=>[];U.chatFeed=async()=>[];
 window.OjjudaNoteAdmin={getTabs:()=>[{id:'cards',label:'카드'},{id:'risk',label:'위험 신호'}],
  mount:(el,options)=>{window.noteOptions=options;el.textContent=options.initialTab},unmount(){},
@@ -45,7 +45,7 @@ restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
   for(const width of [320,390,412,768,899]){
    await page.setViewportSize({width,height:844});
    const layout=await page.locator('.bottomnav').evaluate(el=>({width:el.clientWidth,left:parseFloat(getComputedStyle(el).paddingLeft),right:parseFloat(getComputedStyle(el).paddingRight),gap:parseFloat(getComputedStyle(el).columnGap)||0,buttons:[...el.children].map(b=>({x:b.offsetLeft,width:b.offsetWidth}))}));
-   assert.equal(layout.buttons.length,4);
+   assert.equal(layout.buttons.length,3,'Agit navigation has 아지트, 오락실, 설정; Park uses its own navigation');
    const expected=(layout.width-layout.left-layout.right-layout.gap*(layout.buttons.length-1))/layout.buttons.length;
    layout.buttons.forEach((b,i)=>{assert.ok(Math.abs(b.width-expected)<=1);assert.ok(Math.abs(b.x-(layout.left+i*(expected+layout.gap)))<=1)});
   }
@@ -59,10 +59,25 @@ restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
   await page.evaluate(()=>{worldTest.actions['adm-area']({v:'content'});worldTest.actions['adm-tab']({v:'risk'})});
   await reload();assert.equal((await current()).area,'content');assert.equal((await current()).subtab,'risk');
   for(const view of [{area:'note',tab:'cards',noteTab:'archive'},{area:'world',tab:'settings'}]){
-   await page.evaluate(view=>sessionStorage.setItem('ojjuda.world.admin-view',JSON.stringify({...view,userId:'admin-a'})),view);
+   // The ordinary pre-auth bootstrap clears navigation. Reproduce a legacy
+   // saved view only after an actual reload, and exercise the production
+   // migration function without a competing modern history route.
    await reload();
-   assert.equal((await current()).area,view.area==='note'?'trash':'operations');
-   assert.equal((await current()).subtab,view.area==='note'?'trash-cards':'spam');
+   const state=await page.evaluate(view=>{
+     history.replaceState(null,'',location.href);
+     sessionStorage.setItem('ojjuda.world.admin-view',JSON.stringify({...view,userId:'admin-a'}));
+     const navigation=performance.getEntriesByType('navigation')[0]?.type;
+     const restored=worldTest.restore(null);
+     const before={area:worldTest.admin.area,tab:worldTest.admin.tab,restored};
+     worldTest.render();
+     return {navigation,before,after:{area:worldTest.admin.area,tab:worldTest.admin.tab}};
+   },view);
+   const area=view.area==='note'?'trash':'operations',tab=view.area==='note'?'trash-cards':'spam';
+   assert.equal(state.navigation,'reload','legacy state is tested on an actual page refresh');
+   assert.equal(state.before.restored,true,'authorized legacy navigation is converted: '+JSON.stringify(state));
+   assert.deepEqual(state.before,{area,tab,restored:true},'legacy saved route maps to its active management tab');
+   assert.equal(state.after.area,area,'re-render retains the migrated area: '+JSON.stringify(state));
+   assert.equal(state.after.tab,tab,'re-render retains the migrated tab');
   }
   for(let index=0;index<noteLinks.length;index++){
    await page.evaluate(()=>worldTest.actions.tab({tab:'admin'}));
@@ -83,7 +98,9 @@ restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
   await page.evaluate(()=>worldTest.actions.tab({tab:'my'}));
   await reload();assert.notEqual((await current()).tab,'admin','leaving admin clears restoration');
   await page.evaluate(()=>{worldTest.actions.tab({tab:'admin'});sessionStorage.setItem('fixture-user','admin-b')});
-  await reload();assert.notEqual((await current()).tab,'admin','another account cannot inherit the view');
+  await reload();
+  const switched=await page.evaluate(()=>({tab:worldTest.state.tab,user:worldTest.auth.user?.id,area:worldTest.admin.area,section:worldTest.admin.tab,url:location.href,history:history.state?.ojjudaWorldHistory?.route||null,saved:sessionStorage.getItem('ojjuda.world.admin-view')}));
+  assert.notEqual(switched.tab,'admin','another account cannot inherit the view: '+JSON.stringify(switched));
   await page.evaluate(()=>{worldTest.actions.tab({tab:'admin'});sessionStorage.setItem('fixture-role','member')});
   await reload();assert.notEqual((await current()).tab,'admin','revoked permission cannot restore admin');
   await page.evaluate(()=>{sessionStorage.removeItem('fixture-role');sessionStorage.setItem('ojjuda.world.admin-view','invalid json')});

@@ -52,13 +52,13 @@ async function fixture({url='https://ojjuda.kr/games/onecard/index.html?'+tags,s
   const offline=await fixture({fail:true});assert.equal(Object.keys(await offline.w.OjjudaGrowthAttribution.signupMetadata()).length,0);offline.dom.window.close();
 
   function parkRedirect(query){
-    let destination;const location=new URL('https://ojjuda.kr/park/?'+query);location.replace=value=>destination=value;
+    let destination;const location=new URL('https://ojjuda.kr/note/?'+query);location.replace=value=>destination=value;
     const window={location};window.parent=window;
     vm.runInNewContext(read('park/route.js'),{window,parent:window,location,URL});return new URL(destination);
   }
   assert.equal(parkRedirect(tags).searchParams.get('utm_content'),'threads-onecard-20261121');
   for(const query of [tags+'&utm_medium=blog',tags+'&utm_content=again',tags.replace('social','person@example.com')])
-    assert.deepEqual([...parkRedirect(query).searchParams.entries()],[['place','park'],['utm_source','invalid']]);
+    assert.deepEqual([...parkRedirect(query).searchParams.entries()],[['utm_source','invalid']]);
   const invalidRedirect=await fixture({stored,url:parkRedirect(tags+'&utm_medium=blog').href});
   assert.equal(invalidRedirect.calls.length,0);assert.equal(invalidRedirect.w.sessionStorage.getItem(key),null);invalidRedirect.dom.window.close();
 

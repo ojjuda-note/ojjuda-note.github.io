@@ -68,6 +68,14 @@ function composer(t, { kind = 'memo', edit = false, guest = false } = {}) {
   };
   window.OJJUDA_CONFIG = { supabaseUrl: 'https://fixture.invalid', supabaseKey: 'fixture' };
   window.supabase = { createClient: () => client };
+  window.OjjudaLocation = {
+    async authorizePosition(db, accountId, options) {
+      assert.equal(db, client);
+      assert.equal(accountId, USER);
+      assert.equal(options.park, true);
+      assert.equal(guest, false, 'guest writes have no location');
+    }
+  };
   window.console.warn = () => {};
   run(preview.slice(0, bootAt));
   window.__readFeed = value => {
@@ -135,7 +143,14 @@ for (const options of [
     await f.send();
     assert.equal(f.writes.length, 2);
     assert.equal(f.writes.at(-1).args.p_body ?? f.writes.at(-1).args.body, ORIGINAL);
-    if (!options.guest) assert.deepEqual(f.writes.at(-1).args.p_tags ?? f.writes.at(-1).args.tags, ['검사태그']);
+    if (!options.guest) {
+      const submitted = f.writes.at(-1).args.p_tags ?? f.writes.at(-1).args.tags;
+      assert.equal(submitted[0], '검사태그', 'explicit tags must come before suggestions');
+      assert.ok(submitted.length <= 5, 'automatic tags cannot exceed the card tag limit');
+      assert.ok(submitted.slice(1).every(tag => ORIGINAL.includes(tag)),
+        'automatic tags must be actual words from the source text');
+      if (options.edit || options.kind === 'event') assert.deepEqual(submitted, ['검사태그']);
+    }
     assert.equal(text.value, '');
     assert.equal(f.document.getElementById('composer-backdrop').hidden, true);
     assert.ok(f.effects.length > 0, 'only a confirmed save leaves the editor and refreshes content');

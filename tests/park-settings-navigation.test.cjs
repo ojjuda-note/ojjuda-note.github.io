@@ -5,7 +5,7 @@ const test = require('node:test');
 const {JSDOM} = require('jsdom');
 const read = file => fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
 
-async function fixture(member = true, {hosted = false, submitInquiry, mutationLimit = Infinity} = {}) {
+async function fixture(member = true, {hosted = false, submitInquiry, mutationLimit = Infinity, standaloneNavigation = false, account = {}} = {}) {
   const dom = new JSDOM(read('park/index.html'), {
     url: 'https://fixture.test/park/?embedded=1', runScripts: 'outside-only', pretendToBeVisual: true
   });
@@ -27,7 +27,7 @@ async function fixture(member = true, {hosted = false, submitInquiry, mutationLi
     }
   };
   w.scrollTo = () => {};
-  w.matchMedia = () => ({matches:false});
+  w.matchMedia = () => ({matches:false, addEventListener() {}});
   w.HTMLElement.prototype.scrollIntoView = () => {};
   const authListeners = [];
   let session = member ? {user:{id:'park-member-a',email:'park@example.test'}} : null;
@@ -37,7 +37,12 @@ async function fixture(member = true, {hosted = false, submitInquiry, mutationLi
       onAuthStateChange(callback) { authListeners.push(callback); },
       async getSession() { return {data:{session}}; },
       async signOut() { calls.push('signOut'); return {error:{message:'fixture stops sign out'}}; },
-      async updateUser() { calls.push('updateUser'); return {data:{}}; }
+      async updateUser(payload) {
+        calls.push('updateUser');
+        if (account.updateUser) return account.updateUser(payload);
+        session = {user:{...session.user,user_metadata:{...session.user.user_metadata,...payload.data}}};
+        return {data:session};
+      }
     },
     async rpc(name) {
       calls.push(name);
@@ -45,7 +50,19 @@ async function fixture(member = true, {hosted = false, submitInquiry, mutationLi
       return {data:{}};
     },
     from(table) {
-      return {select:() => ({eq:() => ({maybeSingle:async() => ({data:table === 'profiles' ? {nickname:'공원회원'} : {coins:50}})})})};
+      let id, changes, fields;
+      const q = {
+        select(columns) {fields=columns;return q;}, eq(_key, value) {id=value;return q;},
+        or() {return q;}, in() {return q;}, update(values) {changes=values;return q;},
+        async maybeSingle() {
+          if (table !== 'profiles') return {data:{coins:50}};
+          if (account.profile) return account.profile({id,fields});
+          return {data:{nickname:'공원회원',bio:''}};
+        },
+        async single() {return account.saveProfile({id,changes});},
+        then(resolve,reject) {return Promise.resolve({data:[]}).then(resolve,reject);}
+      };
+      return q;
     },
     schema:() => ({
       rpc:async(name) => {
@@ -61,8 +78,13 @@ async function fixture(member = true, {hosted = false, submitInquiry, mutationLi
   w.OJJUDA_CONFIG = {supabaseUrl:'https://fixture.test',supabaseKey:'fixture-key'};
   w.supabase = {createClient:() => client};
   w.OjjudaAccountDeletion = {run:async() => {calls.push('deleteAccount');}};
+  w.eval(read('shared/brand/service-banners.js'));
   w.eval(read('note/support.js'));
-  w.eval(read('note/preview.js') + '\nwindow.parkFixture={setBusy(value){managementBusy=value;},openCard(id){openCard(id);},backCard(){goBack();},closeManagement(){closeManagement();}};\n' + read('park/integration.js'));
+  if (standaloneNavigation) w.eval(read('note/navigation.js'));
+  w.eval(read('features/profile/world-profile-photo.js'));
+  w.eval(read('features/friends/friend-messages.js'));
+  w.eval(read('note/preview.js') + '\nwindow.parkFixture={setBusy(value){managementBusy=value;},openCard(id){openCard(id);},backCard(){goBack();},closeManagement(){closeManagement();}};\n' +
+    read('park/account-settings.js') + '\n' + read('park/friends.js') + '\n' + read('park/integration.js'));
   const settle = () => new Promise(resolve => w.setTimeout(resolve,0));
   for (const callback of authListeners) callback('INITIAL_SESSION',session);
   await settle(); await settle();
@@ -77,14 +99,48 @@ async function fixture(member = true, {hosted = false, submitInquiry, mutationLi
     management:() => w.document.querySelector('#management-backdrop')};
 }
 
+test('standalone mobile and desktop settings buttons open the canonical settings and both banners', async () => {
+  for (const member of [false,true]) {
+    const f = await fixture(member,{standaloneNavigation:true});
+    try {
+      for (const button of f.w.document.querySelectorAll('[data-note-my]')) {
+        button.click(); await f.settle();
+        assert.ok(f.root(),'actual navigation opens canonical settings');
+        assert.equal(f.w.document.getElementById('note-my-screen').hidden,true,'legacy dashboard is not displayed');
+        assert.equal(f.root().lastElementChild.localName,'ojjuda-service-banners');
+        const testLink = f.root().lastElementChild.querySelector('.ojjuda-test-service-link');
+        assert.equal(testLink.textContent, 'Test service');
+        assert.equal(testLink.getAttribute('href'), '/avatar-test/');
+        assert.equal(testLink.target, '_top');
+        assert.deepEqual([...f.root().querySelectorAll('.ojjuda-service-banner')].map(link=>link.dataset.service),['agit','pajang']);
+        assert.ok(f.root().querySelector('.ojjuda-settings-group .ojjuda-settings-list .ojjuda-settings-row'));
+        assert.deepEqual([...f.root().querySelectorAll('.ojjuda-settings-heading')].map(el=>el.textContent),
+          ['내 정보','앱 다운로드','이용 설정','활동·도움']);
+        for (const id of ['events','event-new','notifications']) assert.equal(f.setting(id),null);
+        for (const id of ['profile','friends','friend-alert']) {
+          if (!member) { assert.equal(f.setting(id),null); continue; }
+          assert.equal(f.setting(id).tagName,'BUTTON');
+          assert.equal(f.setting(id).hasAttribute('href'),false);
+        }
+        assert.ok(f.setting('charge'));
+        assert.deepEqual([...f.root().querySelectorAll('[data-store-app]')].map(el=>el.dataset.storeApp),['agit','pajang','park']);
+        await f.back();
+        assert.equal(f.management().hidden,true);
+      }
+    } finally {await f.close();}
+  }
+});
+
 test('guests can open Park settings, read policies and reach login', async () => {
   const f = await fixture(false);
   try {
     assert.equal(f.api.navigate('settings'),true);
     assert.ok(f.root());
+    assert.equal(f.root().lastElementChild.localName,'ojjuda-service-banners');
+    assert.deepEqual([...f.root().querySelectorAll('.ojjuda-service-banner')].map(link=>link.dataset.service),['agit','pajang']);
     assert.equal(f.api.navigationAction(),'settings');
     assert.ok(f.setting('login'),'guest settings have a login entry');
-    assert.ok(f.setting('world'),'guests can return to Agit');
+    assert.equal(f.setting('world'),null,'the service banner is the only Agit entry');
     assert.ok(f.setting('terms'));
     assert.ok(f.setting('privacy'));
     assert.equal(f.setting('organization').getAttribute('href'),'/features/organization/?from=park');
@@ -109,6 +165,9 @@ test('Park settings opens the existing account forms and returns without executi
   try {
     f.api.navigate('settings');
     for (const [action,selector] of [
+      ['profile','#park-profile-bio'],
+      ['friends','#park-friend-search'],
+      ['friend-alert','.park-alert-setting input'],
       ['member-info','#member-phone-edit'],
       ['nickname','#note-new-nickname'],
       ['password','#note-new-password'],
@@ -384,7 +443,15 @@ test('a fresh Park frame restores a saved route without replaying actions or ret
 
 test('Park settings shows its administrator mode only for the matching verified host account', async () => {
   const f = await fixture(true, {hosted:true});
-  const entries = () => f.messages.filter(({data}) => data.type === 'ojjuda:park-navigate' && data.action === 'admin');
+  const destinations = [];
+  function clickAdmin() {
+    const entry = f.setting('admin');
+    entry.addEventListener('click', event => {
+      if (!event.defaultPrevented) destinations.push(entry.getAttribute('href'));
+      event.preventDefault();
+    }, {once:true});
+    entry.click();
+  }
   try {
     f.api.navigate('settings');
     assert.equal(f.setting('admin'),null,'ordinary members have no administrator entry');
@@ -395,29 +462,30 @@ test('Park settings shows its administrator mode only for the matching verified 
     f.api.setAdminAccess({userId:'park-member-a',allowed:true});
     assert.equal(f.setting('admin').textContent,'공원 관리자모드›');
     assert.equal(f.setting('admin').classList.contains('park-settings-row'),true,'administrator entry shares the existing settings layout');
-    f.w.parkFixture.setBusy(true); f.setting('admin').click();
-    assert.equal(entries().length,0,'an unfinished account save blocks leaving settings');
+    assert.equal(f.root().lastElementChild.localName,'ojjuda-service-banners','asynchronous administrator access keeps service banners at the bottom');
+    f.w.parkFixture.setBusy(true); clickAdmin();
+    assert.equal(destinations.length,0,'an unfinished account save blocks leaving settings');
     assert.ok(f.root());
     f.w.parkFixture.setBusy(false);
     f.api.setAdminAccess({userId:'park-member-a',allowed:false});
     assert.equal(f.setting('admin'),null,'revoked access disappears immediately');
+    assert.equal(f.root().lastElementChild.localName,'ojjuda-service-banners','revoking access leaves the same final banner row');
     assert.equal(f.api.navigate('admin'),false);
     await f.changeUser({user:{id:'park-member-a',user_metadata:{is_admin:true,role:'admin'}}});
     f.api.navigate('settings');
     assert.equal(f.setting('admin'),null,'editable user metadata cannot grant access');
     f.api.setAdminAccess({userId:'park-member-a',allowed:true});
-    f.setting('admin').click();
-    assert.equal(entries().length,1);
-    assert.deepEqual(JSON.parse(JSON.stringify(entries()[0])), {
-      data:{type:'ojjuda:park-navigate',action:'admin',userId:'park-member-a'},origin:'https://fixture.test'
-    });
-    assert.equal(f.api.navigationSnapshot().view,'settings','the host captures settings as the route to return to');
+    assert.equal(f.setting('admin').target,'_top');
+    clickAdmin();
+    assert.deepEqual(destinations,['/admin/?from=park&admin=cards']);
+    assert.equal(f.messages.some(({data}) => data.type === 'ojjuda:park-navigate' && data.action === 'admin'),false);
+    assert.equal(f.api.navigationSnapshot().view,'settings','Park retains settings as the return screen');
     f.api.navigate('settings');
     await f.changeUser({user:{id:'park-member-b'}});
     f.api.navigate('settings');
     assert.equal(f.setting('admin'),null,'another member never inherits the earlier host grant');
     assert.equal(f.api.navigate('admin'),false);
-    assert.equal(entries().length,1);
+    assert.equal(destinations.length,1);
     assert.equal(f.calls.includes('updateUser'),false);
     assert.equal(f.calls.includes('deleteAccount'),false);
   } finally {await f.close();}
@@ -463,10 +531,124 @@ test('leaving Park settings for Agit preserves the originating screen in host hi
   try {
     f.api.navigate('settings');await f.settle();
     const before=f.api.navigationSnapshot(),length=f.w.history.length;
-    assert.equal(f.api.navigate('world'),true);await f.settle();
+    f.root().querySelector('.ojjuda-service-banner[data-service="agit"]').click();await f.settle();
     assert.equal(f.messages.at(-1).data.action,'world');
     const after=f.api.navigationSnapshot();
     assert.equal(after.view,before.view);assert.equal(after.index,before.index);
     assert.equal(f.w.history.length,length,'the iframe does not add a transient feed step while leaving');
   } finally {await f.close();}
+});
+
+test('Park profile retries a failed read, preserves a failed edit and reloads the saved profile locally', async () => {
+  let saved = {nickname:'공원회원',bio:'반갑습니다'}, failRead = true, failWrite = true;
+  const account = {
+    profile({fields}) {
+      if (fields.includes('bio') && failRead) return {error:{message:'offline'}};
+      return {data:{...saved}};
+    },
+    saveProfile({id,changes}) {
+      assert.equal(id,'park-member-a');
+      if (failWrite) return {error:{message:'offline'}};
+      assert.ok(changes.updated_at);
+      saved = {nickname:changes.nickname,bio:changes.bio};
+      return {data:{...saved}};
+    }
+  };
+  const f = await fixture(true,{account});
+  try {
+    const doc = f.w.document;
+    f.api.navigate('settings');f.setting('profile').click();await f.settle();
+    assert.match(f.management().textContent,/프로필을 불러오지 못했어요/);
+    failRead = false;
+    [...f.management().querySelectorAll('button')].find(b=>b.textContent==='다시 시도').click();await f.settle();
+    const name = doc.getElementById('park-profile-name'), intro = doc.getElementById('park-profile-bio');
+    assert.equal(name.value,'공원회원');assert.equal(intro.value,'반갑습니다');
+    assert.ok(f.management().querySelector('.park-profile-photo'));
+    name.value='새 이름';intro.value='새 소개';
+    f.w.HTMLDialogElement.prototype.showModal = function() { this.open = true; };
+    f.w.HTMLDialogElement.prototype.close = function() { this.open = false; };
+    f.w.HTMLCanvasElement.prototype.getContext = () => ({fillRect() {}});
+    f.management().querySelector('.park-profile-photo').click();await f.settle();
+    assert.ok(doc.querySelector('.profile-photo-dialog[open]'));
+    assert.equal(f.api.navigationSnapshot().view,'account-dialog');
+    await f.back();
+    assert.equal(f.api.navigationSnapshot().view,'profile');
+    assert.equal(doc.getElementById('park-profile-bio'),intro);
+    assert.equal(intro.value,'새 소개');
+    const submit = () => name.form.dispatchEvent(new f.w.Event('submit',{bubbles:true,cancelable:true}));
+    submit();await f.settle();
+    assert.match(doc.querySelector('.management-message').textContent,/다시 시도/);
+    assert.equal(intro.value,'새 소개');assert.equal(saved.bio,'반갑습니다');
+    failWrite = false;submit();await f.settle();
+    assert.match(f.management().textContent,/프로필을 저장했어요/);
+    await f.back();
+    assert.ok(f.root());
+    await f.forward();
+    assert.equal(doc.getElementById('park-profile-name').value,'새 이름');
+    assert.equal(doc.getElementById('park-profile-bio').value,'새 소개');
+    assert.equal(f.w.location.pathname,'/park/');
+  } finally {await f.close();}
+});
+
+test('Park friend alerts save their own setting, roll back a failed save and isolate a late account response', async () => {
+  const writes=[];
+  let save = 'success', release;
+  const account = {async updateUser(payload) {
+    assert.deepEqual(Object.keys(payload.data),['park_friend_alerts']);
+    const enabled = payload.data.park_friend_alerts;writes.push(enabled);
+    if (save === 'error') return {error:{message:'offline'}};
+    if (save === 'delayed') await new Promise(resolve=>{ release=resolve; });
+    return {data:{user:{id:'park-member-a',user_metadata:{park_friend_alerts:enabled}}}};
+  }};
+  const f = await fixture(true,{account});
+  try {
+    const input=()=>f.management().querySelector('.park-alert-setting input');
+    f.api.navigate('settings');f.setting('friend-alert').click();await f.settle();
+    assert.ok(input().checked);
+    save='error';input().click();await f.settle();
+    assert.ok(input().checked,'failed write restores the saved preference');
+    save='success';input().click();await f.settle();
+    assert.equal(input().checked,false);
+    assert.match(f.management().textContent,/알림을 껐어요/);
+    await f.back();await f.forward();
+    assert.equal(input().checked,false);
+    const oldInput = input();
+    save='delayed';oldInput.click();await f.settle();
+    await f.changeUser({user:{id:'park-member-b',user_metadata:{park_friend_alerts:false}}});
+    f.api.navigate('settings');f.setting('friend-alert').click();await f.settle();
+    release();await f.settle();
+    oldInput.dispatchEvent(new f.w.Event('change'));
+    assert.equal(input().checked,false);
+    assert.deepEqual(writes,[false,false,true]);
+    assert.equal(f.w.location.pathname,'/park/');
+  } finally {await f.close();}
+});
+
+test('a late Park profile read cannot render the previous member after switching accounts', async () => {
+  let release;
+  const account={async profile({id,fields}) {
+    if (id==='park-member-a' && fields.includes('bio')) await new Promise(resolve=>{release=resolve;});
+    return {data:{nickname:id==='park-member-a'?'첫 회원':'다음 회원',bio:''}};
+  }};
+  const f=await fixture(true,{account});
+  try {
+    f.api.navigate('settings');f.setting('profile').click();await f.settle();
+    assert.ok(release);
+    await f.changeUser({user:{id:'park-member-b'}});
+    f.api.navigate('settings');f.setting('profile').click();await f.settle();
+    release();await f.settle();
+    assert.equal(f.w.document.getElementById('park-profile-name').value,'다음 회원');
+  } finally {await f.close();}
+});
+
+test('Park-only junior members see their permitted account and blocking tools', async () => {
+  const f=await fixture(true);
+  try {
+    await f.changeUser({user:{id:'junior',role:'park_junior',app_metadata:{park_guardian_account:true}}});
+    f.api.navigate('settings');
+    for (const item of ['member-info','password','logout','blocked']) assert.ok(f.setting(item),item);
+    for (const item of ['profile','nickname','friends','friend-alert','charge']) assert.equal(f.setting(item),null,item);
+    f.api.navigate('friends');
+    assert.ok(f.root());
+  } finally { await f.close(); }
 });

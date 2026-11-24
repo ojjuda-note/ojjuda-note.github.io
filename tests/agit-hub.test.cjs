@@ -48,7 +48,7 @@ test('real visits and all five missions persist independently of game preview',a
   assert.ok(progressStart>=0&&actionEnd>progressStart&&renderStart>=0&&renderEnd>renderStart&&parkStart>=0&&parkEnd>parkStart);
   const today='2026-11-13',priorDays=['2026-11-10','2026-11-11','2026-11-12'];
   for(const preview of [true,false]){
-    const storage=new Map(),pending=[],notices=[],departures=[],openedGames=[],parkOpens=[];
+    const storage=new Map(),session=new Map(),pending=[],notices=[],departures=[],openedGames=[],parkOpens=[];
     const model={settings:{agitHub:{stamps:[...priorDays],completed:{},guesses:{}}}};
     const staleCloud=JSON.stringify(model.settings),host={outerHTML:''},input={value:'',focus(){}};
     let instant='2026-11-13T03:03:00Z',localWrites=0,cloudWrites=0,savedCloud,parkOptions;
@@ -59,6 +59,7 @@ test('real visits and all five missions persist independently of game preview',a
       D:{online:true,user:{id:'member-a'}},$:model,pi:model,g:{tab:'hub'},_r:{spot:{name:'틀린그림찾기'},group:{name:'그룹',test:true}},
       sr:{tab:action=>{context.g.tab=action.tab;}},
       localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value)},
+      sessionStorage:{getItem:key=>session.get(key)||null,setItem:(key,value)=>session.set(key,value),removeItem:key=>session.delete(key)},
       ua:'member-a',de:{priv:'old-cloud'},pc:false,no:JSON.stringify,
       mi:current=>({priv:{settings:current.settings}}),
       z:selector=>selector==='#agit-hub-view'?host:selector==='#agit-puzzle-answer'||selector.includes('data-act="agit-baseball-digit"')?input:null,
@@ -100,9 +101,17 @@ test('real visits and all five missions persist independently of game preview',a
       assert.deepEqual(JSON.parse(savedCloud).agitHub.completed[today].sort(),[...expected].sort(),'every mission also reaches cloud settings');
     };
     context.sr['agit-task']({v:'park'});
-    assert.deepEqual(parkOpens,['compose']);
+    assert.deepEqual(departures,['/park/?compose=memo'],'Park mission now opens the independent writer');
+    assert.deepEqual(parkOpens,[],'the large World iframe is not required for a Park mission');
+    session.set('ojjuda:agit-park-card:member-a',JSON.stringify({
+      cardId:'12345678-1234-4123-8123-000000000001',date:today
+    }));
+    context.restoreAgitProgress('member-a');
+    await expectCompleted(['park']);
+    assert.equal(session.size,0,'successful Park publication is consumed exactly once');
     parkOptions.onCardPublished();
     await expectCompleted(['park']);
+    departures.length=0;
     context.sr['agit-task']({v:'baseball'});
     input.value=activeHub.baseballAnswer(today);
     context.sr['agit-solve']();
@@ -309,11 +318,20 @@ test('occasion headline and Ojjuda copy replace the everyday greeting',()=>{
   }
 });
 
-test('mobile missions use one compact panel instead of oversized cards',()=>{
-  const css=fs.readFileSync(path.join(__dirname,'../features/home/agit-hub.css'),'utf8');
-  const mobile=css.slice(css.indexOf('@media(max-width:740px)'));
-  assert.match(css,/\.agit-quest-grid\{display:grid;grid-template-columns:minmax\(0,1fr\)/);
-  assert.match(mobile,/\.agit-quest-card\{grid-template-columns:23px 36px minmax\(0,1fr\) 18px/);
+test('compact mission cards keep their actions and show completion once',()=>{
+  const settings={};
+  hub.complete(settings,'park',date);
+  const html=hub.markup(settings,{},date);
+  const cards=[...html.matchAll(/<button\b[^>]*data-act="agit-task"[^>]*>[\s\S]*?<\/button>/g)].map(match=>match[0]);
+  assert.equal(cards.length,5);
+  assert.match(cards[0],/data-v="park"/);
+  assert.match(cards[0],/title="공원에 글 남기기"/);
+  assert.match(cards[0],/aria-label="완료한 미션: 공원가기"/);
+  assert.match(cards[0],/mission-icons\/park\.svg/,'completed cards keep their task icon');
+  assert.equal((cards[0].match(/✓/g)||[]).length,1,'one clear completion badge');
+  assert.match(cards[3],/title="추천게임 시작하기"/);
+  assert.match(cards[4],/축제방문/);
+  assert.doesNotMatch(cards.join(''),/agit-quest-number/,'decorative numbers do not consume space');
 });
 
 test('themed hero uses narrow inline white highlights without masking the artwork',()=>{

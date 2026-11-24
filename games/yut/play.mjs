@@ -15,7 +15,15 @@ let bonusTimer;
 for(const event of ['pointerup','keydown','click'])document.addEventListener(event,sounds.unlock,true);
 document.addEventListener('visibilitychange',()=>{if(document.hidden){sounds.stop();clearBonus();}});
 window.addEventListener('pagehide',sounds.stop);
-let local=newGame(2,11,DEFAULT_MODE,DEFAULT_PIECES,[1]), shown=null, net=null, room=null, pendingRoom=false, attempt=0, busy=false, motion=0, panel='',game=local;
+const YUT_DIFFICULTY_KEY='ojjuda.yut.difficulty.v1';
+function preferredYutDifficulty(){
+  try{return localStorage.getItem(YUT_DIFFICULTY_KEY)==='easy'?'easy':DEFAULT_MODE;}catch{return DEFAULT_MODE;}
+}
+function rememberYutDifficulty(value){
+  if(value!=='easy'&&value!=='island')return;
+  try{localStorage.setItem(YUT_DIFFICULTY_KEY,value);}catch{}
+}
+let local=newGame(2,11,preferredYutDifficulty(),DEFAULT_PIECES,[1]), shown=null, net=null, room=null, pendingRoom=false, attempt=0, busy=false, motion=0, panel='',game=local;
 let casting=false,selectedPawn=null,pawnPicked=false,selectedSteps=null,placement=null,resumeActionFocus=false;
 const tray=$('reserve-pawns');
 let trayKey='',trayDrag=null,suppressTrayClick=false;
@@ -80,7 +88,7 @@ function showTable(){
   document.body.dataset.mpEntry='false';$('tabletop').hidden=false;
   window.dispatchEvent(new window.Event('resize'));
 }
-function showEntry(kind){
+function showEntry(kind='computer'){
   disposeRooms();
   closePanel();$('tabletop').hidden=true;$('setup').hidden=false;
   $('yut-entry').hidden=false;$('online-lobby').hidden=true;
@@ -695,7 +703,7 @@ function resetLocal(setup,computer){
 function modePicker(current,onChange){
   const box=element('div'),label=element('label','놀이 방식'),select=element('select');
   label.htmlFor='game-mode';select.id=label.htmlFor;
-  for(const [value,copy] of [['island','장애물 놀이'],['easy','쉬운 놀이']]){
+  for(const [value,copy] of [['island','보통 · 장애물 놀이'],['easy','쉬움 · 쉬운 놀이']]){
     const option=element('option',copy);option.value=value;select.append(option);
   }
   select.value=current;select.onchange=()=>onChange?.(select.value);
@@ -728,12 +736,12 @@ function settings(){
   }
   setupControls(body,false);
 }
-function setupControls(target,entry,kind=local.computerTeams?.length?'computer':'together'){
+function setupControls(target,entry,kind=entry?'computer':(local.computerTeams?.length?'computer':'together')){
   const kinds=element('div',undefined,entry?'seg':'play-kinds');kinds.setAttribute('role','group');kinds.setAttribute('aria-label','대결 방식');
   const label=element('label','참가 팀');label.htmlFor='team-count';
   const teamCounts=Array.from({length:TEAMS.length-1},(_,i)=>[i+2,(i+2)+'팀']);
   const teams=setupSelect('team-count',teamCounts,local.pawns.length);
-  const mode=modePicker(local.mode??DEFAULT_MODE),numbers=element('div'),settingsRow=element('div',undefined,'settings-row');numbers.append(label,teams);settingsRow.append(numbers,mode.box);
+  const mode=modePicker(entry?preferredYutDifficulty():(local.mode??DEFAULT_MODE),rememberYutDifficulty),numbers=element('div'),settingsRow=element('div',undefined,'settings-row');numbers.append(label,teams);settingsRow.append(numbers,mode.box);
   const roster=element('div',undefined,'roster'),head=element('div',undefined,'roster-line roster-head');
   head.append(element('b','팀 구성'),element('span','동물'),element('span','말 수'));
   const counts=TEAMS.map((_,t)=>local.pawns[t]?.length??DEFAULT_PIECES);
@@ -812,11 +820,12 @@ async function ensureDirectory(){
 function defaultRoomSetup(count){
   return {count,counts:Array.from({length:count},(_,i)=>local.pawns[i]?.length??DEFAULT_PIECES),
     animals:Array.from({length:count},(_,i)=>animalFor(i,0,local.zodiacOffset,local.teamAnimals)),
-    offset:local.zodiacOffset,mode:local.mode??DEFAULT_MODE};
+    offset:local.zodiacOffset,mode:preferredYutDifficulty()};
 }
 function publicSetupForm(form){
   const details=element('details',undefined,'game-details'),content=element('div'),roster=element('div',undefined,'roster');
-  const mode=setupSelect('room-mode',[['island','장애물 놀이'],['easy','쉬운 놀이']],local.mode??DEFAULT_MODE);
+  const mode=setupSelect('room-mode',[['island','보통 · 장애물 놀이'],['easy','쉬움 · 쉬운 놀이']],preferredYutDifficulty());
+  mode.addEventListener('change',()=>rememberYutDifficulty(mode.value));
   const label=element('label','놀이 방식');label.htmlFor=mode.id;
   const settings=defaultRoomSetup(TEAMS.length);
   details.append(element('summary','놀이 설정'),content);content.append(label,mode,roster);

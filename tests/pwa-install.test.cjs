@@ -306,8 +306,8 @@ test('a rejected worker registration does not break manual installation guidance
 test('each app shows its own icon and name and copies only its safe installation URL', async (t) => {
   for (const [entry, name, icon, destination] of [
     ['/world.html?tab=hub', '오쭈다 아지트', '/icon-192.png', '/world.html'],
-    ['/world.html?place=park', '오쭈다 공원', '/park/assets/icon-192.png', '/world.html?place=park'],
-    ['/world.html?tab=park', '오쭈다 공원', '/park/assets/icon-192.png', '/world.html?place=park'],
+    ['/world.html?place=park', '오쭈다 공원', '/park/assets/icon-192.png', '/park/'],
+    ['/world.html?tab=park', '오쭈다 공원', '/park/assets/icon-192.png', '/park/'],
     ['/features/pajang/?tab=profile', '오쭈다 파장', '/features/pajang/assets/icon-192.png', '/features/pajang/'],
     ['/features/pajang/station.html?tab=profile', '오쭈다 파장', '/features/pajang/assets/icon-192.png', '/features/pajang/']
   ]) {

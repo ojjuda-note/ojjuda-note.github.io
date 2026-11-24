@@ -1,6 +1,6 @@
-import {call, client, sameMember, requireMember, showGate, answeredRound} from './member.mjs?v=20261119-guest-account1';
-import {mountStation, prepareProgram} from './load-station.mjs?v=20261119-guest-account1';
-import {enhanceGuestGate} from './entry-design.mjs?v=20261120-organization-help1';
+import {call, client, sameMember, requireMember, showGate, answeredRound} from './member.mjs?v=20261126-adult-service1';
+import {mountStation, prepareProgram} from './load-station.mjs?v=20261126-adult-service1';
+import {enhanceGuestGate} from './entry-design.mjs?v=20261122-org-display-only1';
 import {prepareLocation} from './location.mjs?v=20261119-kma-current1';
 import {themeFor, interests} from './questions.mjs?v=20261120-question-copy1';
 import {textInputMaxLength} from '../../shared/content/text-length.mjs';
@@ -42,8 +42,9 @@ function enterMain(destination = main, savedStation) {
   handoff=(async()=>{
     const style=document.createElement('link');
     style.rel='stylesheet';
+    style.dataset.pajangStationStyle='main';
     style.media='print';
-    style.href='./station.css?v=20261119-dots1';
+    style.href='./station.css?v=20261122-light-controls1';
     const styled=new Promise((resolve,reject)=>{style.onload=resolve;style.onerror=reject;});
     document.querySelector('link[href*="shell.css"]').before(style);
     await Promise.all([styled,mountStation(async()=>{
@@ -102,7 +103,6 @@ async function start(firstEntry) {
   let timer;
   let refreshing = null;
   let mode = 'answer';
-  const publication = $('entry-publication');
 
   function paint() {
     $('slot-label').textContent = (entry.slot === 'am' ? '오전' : '오후') + ' 질문';
@@ -126,8 +126,6 @@ async function start(firstEntry) {
       }
       if (entry.day !== current.day || entry.slot !== current.slot) {
         mine.value = '';
-        publication.value = 'year';
-        paintPublication();
         status.textContent = '새 시간대의 질문이 열렸어요.';
       }
       entry = current;
@@ -166,13 +164,7 @@ async function start(firstEntry) {
   const write = $('write');
   const browse = $('browse');
   const answerFields = $('answer-fields');
-  function paintPublication() {
-    const roundOnly = publication.value === 'round';
-    $('publication-note').textContent = roundOnly ? '다른 파장 회원은 이 질문과 답변을 다음 질문이 열리기 전까지만 볼 수 있어요.' : '다른 파장 회원이 이 질문과 답변을 작성일을 포함해 최대 365일간 볼 수 있어요(한국 시간 기준).';
-    if(mode !== 'feed')submit.textContent = roundOnly ? '이번 회차에만 공개하고 오늘로' : '365일간 공개하고 오늘로';
-  }
-  publication.onchange = paintPublication;
-  function openForm(destination) {
+  function openForm(destination, focus = true) {
     mode = destination;
     if (destination === 'feed' && entry.joined) return enterMain(feed);
     const joiningOnly = destination === 'feed';
@@ -181,10 +173,9 @@ async function start(firstEntry) {
     form.hidden = false;
     answerFields.hidden = joiningOnly;
     answerFields.disabled = joiningOnly;
-    if(joiningOnly)submit.textContent = '참여하고 '+nextName+' 보기';
-    else paintPublication();
+    submit.textContent = joiningOnly ? '참여하고 '+nextName+' 보기' : '답변하기';
     write.setAttribute('aria-expanded', String(!joiningOnly));
-    (!entry.joined ? form.elements.consent : mine).focus();
+    if (focus) (!entry.joined ? form.elements.consent : mine).focus();
   }
   write.onclick = () => openForm('answer');
   browse.onclick = () => openForm('feed');
@@ -199,7 +190,14 @@ async function start(firstEntry) {
     status.textContent = '';
     trigger.focus();
   };
+  // This screen is only reached after a verified member session. Skip its
+  // second welcome action and show the answer immediately, without opening the
+  // mobile keyboard. A first-time member still completes consent in this form.
   if (view === 'feed' || view === 'write') openForm(view === 'feed' ? 'feed' : 'answer');
+  else openForm('answer', false);
+  // The member has passed Auth and Pajang membership checks. Installed-app
+  // launches show the answer directly, not the decorated public entry scene.
+  $('welcome').dataset.memberEntry = 'direct';
   mine.oninput = () => { mine.setCustomValidity(''); mine.maxLength = textInputMaxLength(mine.value,220); };
   form.onsubmit = async event => {
     event.preventDefault();
@@ -212,11 +210,9 @@ async function start(firstEntry) {
     }
     submit.disabled = true;
     const joiningOnly = mode === 'feed';
-    const roundOnly = publication.value === 'round';
-    publication.disabled = true;
     status.textContent = joiningOnly ? '참여 정보를 확인하고 있어요.' : '답변을 저장하고 있어요.';
     try {
-      const data = joiningOnly ? {} : {body, day:entry.day, slot:entry.slot, ...(roundOnly ? {archive:false} : {archive:true, publicationPolicy:"year-v1"})};
+      const data = joiningOnly ? {} : {body, day:entry.day, slot:entry.slot, archive:true, publicationPolicy:"year-v1"};
       if (!joiningOnly && entry.question) data.questionId = entry.question.id;
       if (!entry.joined) {
         const {province, city, interest, consent} = form.elements;
@@ -230,7 +226,6 @@ async function start(firstEntry) {
       updates?.postMessage('saved');
       enterMain(joiningOnly ? feed : main,saved);
     } catch (error) {
-      publication.disabled = false;
       status.textContent = error.message || '저장하지 못했어요. 다시 시도해 주세요.';
       if (error.code === 'PT409') await refresh();
       submit.disabled = false;
@@ -240,12 +235,12 @@ async function start(firstEntry) {
 
 let entryAction;
 let entry = await requireMember(user => entryAction=answeredRound()===user?'state':'entry', db=>{
-  // Authorize alongside membership, then download only when the member needs the main screen.
+  // Warm the private program once the server authorizes this account.
   const ready=new Promise(resolve=>{openProgram=resolve;});
   program=prepareProgram(db,ready);
   program.catch(()=>{program=undefined;});
 }, result=>{
-  // A slow identity endpoint must not serialize the download after a successful member read.
+  // The entry form only needs the private program when it opens the main screen.
   const needed=entryAction==='state'
     ? result?.authenticated&&(result.me?.body||view==='feed')
     : result?.body||(view==='feed'&&result?.joined);

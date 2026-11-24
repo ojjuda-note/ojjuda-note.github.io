@@ -33,3 +33,13 @@
   }
   .scope::after,.radar-scope::after{animation-delay:-4.8s}
 }
+
+/* One location marker opens that member's answers to the latest three questions. */
+.radar-answer-list{display:grid;gap:18px;min-width:0}
+.radar-answer+.radar-answer{padding-top:18px;border-top:1px solid var(--line)}
+.radar-answer-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:7px;color:var(--ink-2,var(--muted));font-size:13px;font-weight:600;line-height:1.5}
+.radar-answer-meta span{padding:2px 7px;border-radius:6px;background:var(--accent-soft,var(--soft));color:var(--accent-ink,var(--dark));font-size:12px}
+.radar-answer-question{margin:0 0 7px;font:650 15px/1.6 var(--sans);letter-spacing:-.025em;color:var(--ink);overflow-wrap:anywhere}
+.radar-answer-list .radar-quote{margin:0;font-size:16px;line-height:1.75}
+.nearby-section .nearby-heading p{font-size:14px;line-height:1.65}
+@media(min-width:701px){.radar-answer-list .radar-quote{font-size:17px}}

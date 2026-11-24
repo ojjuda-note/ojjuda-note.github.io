@@ -1,14 +1,14 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261121-restaurants-c2s52-chungnam-tv3'
+ const revision='20261125-restaurants-c2s52-chungnam-tv2-enrich1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
   onecard:'2.4.3',
   croc:'1.5.1',
   liar:'1.7.1',
-  king:'1.12.1',
+  king:'1.12.2',
   minority:'1.11.1',
   mission:'1.7.1',
   bottle:'1.5.2',
@@ -21,20 +21,18 @@
   secretcount:'1.2.1',
   updown:'1.5.1',
   partyroulette:'1.6.1',
-  drinking:'1.26.2',
+  drinking:'1.26.3',
   shapematch:'1.3.1',
   tarot:'1.12.3',
   saju:'2.17.4',
   group:'1.2.2',
   chacha_rush:'1.1.2',
   byeolcheonji:'1.0.5',
-  festival:'1.6.3',
+  festival:'1.6.2',
   restaurants:'1.13.10',
   recommendations:'1.7.2',
   archery:'3.4.2',
-  roulette:'1.10.2',
   bang:'1.12.2',
-  poker:'1.7.3',
   tank:'1.7.2',
   solitaire:'1.5.3',
   mines:'1.5.3',
@@ -71,10 +69,8 @@
   restaurants:[...restaurantRatings,...restaurantComments,...restaurantLocation,'/games/certified-restaurants/world-restaurant-guide.css?v=20261106-source-folders1','/games/certified-restaurants/world-restaurant-guide.js?v=20261111-restaurants-broadcast1','/games/certified-restaurants/recommended-restaurants.css?v=20261106-source-folders1',recommendedRestaurantScript],
   recommendations:[...restaurantRatings,...restaurantComments,...restaurantLocation,'/games/certified-restaurants/recommended-restaurants.css?v=20261106-source-folders1',recommendedRestaurantScript],
   archery:['/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/forest-archer/world-archery-game.css?v=20261106-source-folders1','/games/forest-archer/world-archery-game.js?v=20261120-service-actions1'],
-  roulette:[session,'/games/roulette/world-roulette-game.css?v=20261106-source-folders1','/games/roulette/world-roulette-game.js?v=20261120-service-actions1'],
   bang:[session,'/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/bang/world-bang-game.js?v=20261120-service-actions1'],
   sacheonseong:['/games/sacheonseong/world-sacheonseong-game.css?v=20261106-source-folders1','/games/sacheonseong/world-sacheonseong-game.js?v=20261120-service-actions1'],
-  poker:[session,'/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/poker/world-poker-game.css?v=20261106-source-folders1','/games/poker/world-poker-game.js?v=20261120-service-actions1'],
   tank:[session,'/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/tank/world-tank-game.css?v=20261106-source-folders1','/games/tank/world-tank-game.js?v=20261120-service-actions1'],
   solitaire:['/shared/games/world-tour-game.css?v=20261106-source-folders1',solitaireRules,'/games/solitaire/world-solitaire-game.js?v=20261117-arcade-score-repair1'],
   mines:['/shared/games/world-tour-game.css?v=20261106-source-folders1',minesRules,'/games/mines/world-mines-game.js?v=20261120-service-actions1'],

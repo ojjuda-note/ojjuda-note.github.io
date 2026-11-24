@@ -3,6 +3,27 @@
 <head>
 <meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'">
+<script>
+// Old Park URLs and installed shortcuts must exit before heavy Agit scripts start.
+(() => {
+  const source = new URL(location.href);
+  const parkRoute = source.searchParams.get('place') === 'park' || source.searchParams.get('tab') === 'park';
+  if (!parkRoute || source.searchParams.has('game') || source.searchParams.has('admin')
+      || source.searchParams.has('auth') || source.searchParams.has('reset')
+      || source.searchParams.has('code') || source.searchParams.has('error')
+      || /(?:^#|[&#])(?:access_token|refresh_token|type)=/.test(source.hash)) return;
+  const target = new URL('/park/', source.origin);
+  for (const key of ['card','keep','compose','view','utm_source','utm_medium','utm_campaign','utm_content','ref']) {
+    if (source.searchParams.has(key)) target.searchParams.set(key, source.searchParams.get(key));
+  }
+  if (target.searchParams.get('view') === 'glasses') {
+    target.pathname = '/park/glasses.html';
+    target.searchParams.delete('view');
+  }
+  target.hash = source.hash;
+  location.replace(target.href);
+})();
+</script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -15,7 +36,7 @@
     "ojjuda.kr"
   ],
   "url": "https://ojjuda.kr/",
-  "description": "게임과 익명카드로 즐기고 소통하는 오쭈다 아지트. 타로·사주, 아이돌 팬페이지, 맛집·축제 정보까지 좋아하는 것들이 모인 편안한 온라인 아지트입니다.",
+  "description": "오쭈다 아지트는 게임과 일상을 즐기는 온라인 공간입니다. 오쭈다 공원에서 익명카드로 이야기를 나누고, 오쭈다 파장에서 질문과 취향으로 인연을 만나보세요. 타로·사주와 팬페이지도 함께 즐겨요.",
   "inLanguage": "ko-KR",
   "creator": {
     "@type": "Person",
@@ -35,6 +56,16 @@
       "@id": "https://ojjuda.kr/features/guide/creator.html#webpage",
       "name": "제작자 소개 · 오쭈다 아지트",
       "url": "https://ojjuda.kr/features/guide/creator.html"
+    },
+    {
+      "@type": "WebPage",
+      "name": "오쭈다 공원",
+      "url": "https://ojjuda.kr/features/guide/park.html"
+    },
+    {
+      "@type": "WebPage",
+      "name": "오쭈다 파장",
+      "url": "https://ojjuda.kr/features/pajang/"
     }
   ]
 }
@@ -51,7 +82,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <title>오쭈다 아지트 | 게임·타로·사주·익명카드</title>
-<meta name="description" content="게임과 익명카드로 즐기고 소통하는 오쭈다 아지트. 타로·사주, 아이돌 팬페이지, 맛집·축제 정보까지 좋아하는 것들이 모인 편안한 온라인 아지트입니다.">
+<meta name="description" content="오쭈다 아지트는 게임과 일상을 즐기는 온라인 공간입니다. 오쭈다 공원에서 익명카드로 이야기를 나누고, 오쭈다 파장에서 질문과 취향으로 인연을 만나보세요. 타로·사주와 팬페이지도 함께 즐겨요.">
 <link rel="canonical" href="https://ojjuda.kr/world.html">
 <link rel="icon" href="/icon-192.png?v=seasonal-v1-autumn-d0c431c01ed9" type="image/png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=seasonal-v1-autumn-d0c431c01ed9">
@@ -61,31 +92,31 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="오쭈다 아지트">
-<script src="/shared/pwa/app-identity.js?v=app-icons-a6a612391e00"></script>
+<script src="/shared/pwa/app-identity.js?v=20261124-play-store-agit2"></script>
 <!-- 서버 연결 정보 (같은 폴더의 config.js). 없으면 체험 모드로 실행돼요 -->
-<script src="config.js?v=20261113-biorhythm-paid1" defer></script>
+<script src="config.js?v=20261121-pajang-visits1" defer></script>
 <link rel="stylesheet" href="/admin/navigation.css?v=20261119-service-admin1">
-<script src="/admin/service-scope.js?v=20261120-organization1" defer></script>
+<script src="/admin/service-scope.js?v=20261122-org-display-only1" defer></script>
 <script src="/admin/navigation.js?v=20261120-organization-help1" defer></script>
-<script src="/admin/world-admin-loader.js?v=20261121-campaign1" defer></script>
+<script src="/admin/world-admin-loader.js?v=20261125-guardian-service1" defer></script>
 <link rel="stylesheet" href="/features/friends/friend-messages.css?v=20261106-source-folders1">
 <script src="/features/friends/friend-messages.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/games/janggi/janggi-levels.css?v=20261115-janggi-streaks1">
 <link rel="stylesheet" href="/games/janggi/replay.css?v=20261110-janggi-replay1">
-<script src="/shared/games/world-game-assets.js?v=20261121-restaurants-c2s52-chungnam-tv3" defer></script>
+<script src="/shared/games/world-game-assets.js?v=20261125-restaurants-c2s52-chungnam-tv2-enrich1" defer></script>
 <script src="/shared/games/game-launch-loading.js?v=20261107-game-lifecycle1" defer></script>
 <link rel="stylesheet" href="/shared/games/game-challenges.css?v=20261106-source-folders1">
 <script src="/shared/games/game-challenges.js?v=20261110-admin-record-free1" defer></script>
-<link rel="stylesheet" href="/shared/games/game-results.css?v=20261120-service-actions1">
-<script src="/shared/games/game-results.js?v=20261120-service-actions1" defer></script>
-<script src="/app/world/world-navigation.js?v=20261119-history4" defer></script>
+<link rel="stylesheet" href="/shared/games/game-results.css?v=20261125-retire-poker-roulette">
+<script src="/shared/games/game-results.js?v=20261125-retire-poker-roulette" defer></script>
+<script src="/app/world/world-navigation.js?v=20261125-retire-poker-roulette" defer></script>
 <script src="/app/world/world-pull-refresh.js?v=20261106-source-folders1" defer></script>
-<link rel="stylesheet" href="/features/home/agit-hub.css?v=20261119-place-banners1">
-<script src="/features/home/agit-hub.js?v=20261119-place-banners1" defer></script>
-<script type="module" src="/features/home/location-warmup.mjs?v=20261119-kma-current1"></script>
+<link rel="stylesheet" href="/features/home/agit-hub.css?v=20261122-shorter-life-banners9">
+<script src="/features/home/agit-hub.js?v=20261122-fanpages-order1" defer></script>
+<script type="module" src="/features/home/location-warmup.mjs?v=20261123-park-first-paint1"></script>
 <link rel="stylesheet" href="/features/home/agit-welcome.css?v=20261119-auto-theme1">
 <link rel="stylesheet" href="/features/home/entry-design.css?v=20261119-entry1">
-<script src="/features/home/agit-welcome.js?v=20261119-entry1" defer></script>
+<script src="/features/home/agit-welcome.js?v=20261122-member-app-start1" defer></script>
 
 <link rel="stylesheet" href="/features/profile/world-profile-photo.css?v=20261106-source-folders1">
 <script src="/features/profile/world-profile-photo.js?v=20261106-source-folders1" defer></script>
@@ -95,17 +126,18 @@
 
 
 
-<link rel="stylesheet" href="/shared/games/world-game-rankings.css?v=20261109-signup-cta1">
+<link rel="stylesheet" href="/shared/games/world-game-rankings.css?v=20261122-arcade-rank-gap2">
+<link rel="stylesheet" href="/features/arcade/rank-entry.css?v=20261122-full-rank1">
 
 <script src="/games/solitaire/rules.js?v=20261106-solitaire-ranking1" defer></script>
 <script src="/games/mines/rules.js?v=20261117-arcade-score-repair1" defer></script>
 <script src="/games/sacheonseong/ranking.js?v=20261108-sacheonseong-200-stacks1" defer></script>
 <script src="/games/mole/ranking.js?v=20261117-arcade-score-repair1" defer></script>
 <script src="/shared/games/score-format.js?v=20261117-saetbyeol-growth1" defer></script>
-<script src="/shared/games/world-game-rankings.js?v=20261120-onecard7" defer></script>
+<script src="/shared/games/world-game-rankings.js?v=20261123-ranking-retry1" defer></script>
 <link rel="stylesheet" href="/park/world-park-notes.css?v=20261119-auto-theme1">
-<link rel="stylesheet" href="/park/card-grid.css?v=20261119-park-600">
-<script src="/park/world-park-notes.js?v=20261120-organization-help1" defer></script>
+<link rel="stylesheet" href="/park/card-grid.css?v=20261124-park-450">
+<script src="/park/world-park-notes.js?v=20261123-independent-park1" defer></script>
 
 <!-- 서버 연결 도구 -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2" defer></script>
@@ -113,7 +145,7 @@
 <script src="/shared/auth/guest-access.js?v=20261106-source-folders1" defer></script>
 <script src="/shared/auth/guest-visits.js?v=20261106-source-folders1" defer></script>
 <script src="/shared/analytics/growth-attribution.js?v=20261121-campaign1" defer></script>
-<script src="/shared/analytics/site-usage.js?v=20261113-biorhythm-paid1" defer></script>
+<script src="/shared/analytics/site-usage.js?v=20261121-pajang-visits1" defer></script>
 <script src="/shared/games/guest-game-scores.js?v=20261117-arcade-score-repair1" defer></script>
 <script src="/shared/games/arcade-round-queue.js?v=20261117-arcade-score-repair1" defer></script>
 
@@ -128,7 +160,7 @@
 <script src="/features/wallet/ju-decorations.js?v=20261106-source-folders1" defer></script>
 <script src="/features/wallet/ju-charge.js?v=20261119-pajang-toolbar1" defer></script>
 <script src="note/notifications.js?v=20261117-inbox-keyboard1" defer></script>
-<script src="note/support.js?v=20261119-content-rules1" defer></script>
+<script src="note/support.js?v=20261124-service-return1" defer></script>
 
 <style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#EDEFF9;--surface:#FFFFFF;--surface-2:#F5F6FC;--ink:#23264A;--ink-2:#626894;--line:#DADDF0;--accent:#F0679A;--accent-ink:#a93263;--on-accent:#171429;--accent-soft:color-mix(in srgb, var(--accent) 15%, var(--surface));--font-d:"Gowun Dodum","Apple SD Gothic Neo","Malgun Gothic",sans-serif;--font-b:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;color-scheme:light dark}:root[data-accent=mint]{--accent:#1FA488;--accent-ink:#116957}:root[data-accent=sky]{--accent:#4B82F0;--accent-ink:#2858b3}:root[data-accent=lemon]{--accent:#E3A008;--accent-ink:#7a5100}:root[data-accent=lilac]{--accent:#8A6BEF;--accent-ink:#6043b5}@media(prefers-color-scheme:dark){:root:not([data-theme=dark]){--bg:#EDEFF9;--surface:#FFFFFF;--ink:#23264A;color-scheme:light dark}}:root[data-theme=dark]{--accent-ink:color-mix(in srgb,var(--accent) 80%,#fff);--bg:#141629;--surface:#1D2040;--surface-2:#252950;--ink:#ECEEFF;--ink-2:#A3A8D4;--line:#33376A;color-scheme:dark}*,*:before,*:after{box-sizing:inherit}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-b);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}:focus-visible{outline:3px solid var(--accent-ink);outline-offset:2px}.vh{position:absolute!important;width:1px;height:1px;opacity:0;overflow:hidden;clip:rect(0 0 0 0)}.ell{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.shell{display:grid;grid-template-columns:minmax(0,1fr)}.col{min-width:0}.side{display:none}.main{padding:12px 14px 110px;max-width:1320px;width:100%;margin:0 auto}.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 2px}.brand{display:flex;align-items:center;gap:9px;line-height:1}.brand .dot{width:15px;height:15px;border-radius:3px;background:var(--accent);transform:scaleY(.58) rotate(45deg)}.coinpill{display:flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-weight:500;font-variant-numeric:tabular-nums}.cz{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:4px;background:#ffd37a;transform:rotate(45deg);flex:none}.cz i{transform:rotate(-45deg);font-style:normal;font-size:9px;font-weight:700;color:#6b4a00;line-height:1}.bottomnav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:color-mix(in srgb,var(--surface) 90%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px))}.bottomnav button{display:flex;flex-direction:column;align-items:center;gap:1px;font-size:11px;color:var(--ink-2);background:none;border:0;padding:5px 0}.bottomnav button.on{color:var(--accent-ink);font-weight:500}@media(min-width:900px){.shell{grid-template-columns:264px minmax(0,1fr)}.side{display:flex;flex-direction:column;gap:18px;position:sticky;top:0;height:100vh;padding:26px 18px 20px;border-right:1px solid var(--line);background:var(--surface);overflow:auto}.topbar,.bottomnav{display:none!important}.main{padding:28px 32px 48px}}.pcard{padding:16px;border-radius:20px;background:var(--surface-2)}.pc-av{width:72px;height:72px;border-radius:22px;background:var(--accent-soft);overflow:hidden;margin-bottom:10px}.pc-name{font-family:var(--font-d);font-size:20px;line-height:1.3}.pc-mood{font-size:13px;color:var(--ink-2)}.pc-bio{font-size:13px;margin:8px 0 10px}.pc-visit{display:flex;gap:14px;font-size:12px;color:var(--ink-2)}.pc-visit b{color:var(--ink);font-size:14px;font-variant-numeric:tabular-nums}.sidenav{display:grid;gap:2px}.navbtn{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;border:0;background:none;color:var(--ink-2);font-size:15px;text-align:left}.navbtn:hover{background:var(--surface-2)}.navbtn.on{background:var(--accent-soft);color:var(--ink);font-weight:500}.navbtn.on svg{color:var(--accent-ink)}.coin{margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:16px;border:1px solid var(--line);background:var(--surface);font-size:14px;width:100%}.coinval{display:flex;align-items:center;gap:8px;font-weight:500;font-variant-numeric:tabular-nums}.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-weight:500;font-size:14px;white-space:nowrap}.btn:hover{border-color:color-mix(in srgb,var(--accent) 50%,var(--line))}.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}.btn.sm{height:32px;padding:0 12px;font-size:13px}.btn.ghost{border-color:transparent;background:transparent;color:var(--ink-2)}.btn.ghost:hover{background:var(--surface-2)}.btn:disabled{opacity:.5;cursor:not-allowed}.danger{color:#d6455d!important}.inp{width:100%;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;padding:9px 12px;font:inherit;font-size:15px}textarea.inp{min-height:88px;resize:vertical;line-height:1.55}.inp::placeholder{color:var(--ink-2);opacity:1}.inp:focus{outline:none;border-color:var(--accent)}.note{font-size:12px;color:var(--ink-2)}.h2{font-family:var(--font-d);font-size:26px;font-weight:400;margin:4px 0 16px;letter-spacing:-.01em;line-height:1.3}.h3{font-family:var(--font-d);font-size:19px;font-weight:400;margin:30px 0 12px}.head-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}.head-row .h2{margin:0}.empty{text-align:center;padding:28px 12px;color:var(--ink-2);font-size:14px}.home{display:grid;gap:18px}@media(min-width:1200px){.home{grid-template-columns:minmax(0,1.3fr) minmax(340px,1fr);align-items:start}.home .panel{position:sticky;top:24px;max-height:calc(100vh - 48px);overflow:auto}}.visit-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 8px 8px 16px;border-radius:16px;background:var(--accent-soft);margin-bottom:12px;font-size:14px}.ob-av{width:54px;height:54px;border-radius:18px;background:var(--accent-soft);overflow:hidden;flex:none}.ob-name{font-family:var(--font-d);font-size:21px;line-height:1.25}.ob-sub{font-size:13px;color:var(--ink-2)}#place-svg{display:block;width:100%;height:auto;max-height:70vh;margin:0 auto;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}#place-svg{touch-action:manipulation}.npc{cursor:pointer}.chip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:999px;background:color-mix(in srgb,var(--surface) 84%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);font-size:13px;color:var(--ink);border:1px solid color-mix(in srgb,var(--line) 70%,transparent);font-variant-numeric:tabular-nums}button.chip{font-weight:500}.stage-hint{font-size:13px;color:var(--ink-2);margin:10px 4px 0}.panel{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:14px;min-width:0}.seg{display:flex;gap:3px;padding:4px;background:var(--surface-2);border-radius:999px;overflow-x:auto;scrollbar-width:none}.seg button{flex:1;white-space:nowrap;border:0;background:transparent;padding:7px 14px;border-radius:999px;font-size:14px;color:var(--ink-2);font-weight:500}.seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px #23264a24}.badge{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--accent);color:var(--on-accent);font-size:11px;margin-left:4px;line-height:1}.panel-body{margin-top:14px}.compose{display:grid;gap:8px;padding:12px;border-radius:16px;background:var(--surface-2);margin-bottom:10px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row select.inp{width:auto;flex:none;padding-right:28px}.post{padding:14px 2px;border-top:1px solid var(--line)}.post:first-of-type{border-top:0}.post h4{margin:0 0 2px;font-family:var(--font-d);font-size:18px;font-weight:400}.meta{font-size:12px;color:var(--ink-2);display:flex;gap:8px;align-items:center;flex-wrap:wrap}.vis{padding:0 8px;border-radius:999px;border:1px solid var(--line);font-size:11px;line-height:18px}.post p{margin:8px 0;white-space:pre-wrap;word-break:break-word}.media{margin:10px 0 6px;border-radius:14px;overflow:hidden;max-width:440px;background:#0f1128}.media img,.media video{display:block;width:100%;max-height:360px;object-fit:contain}.acts{display:flex;gap:4px;flex-wrap:wrap}.like.on{color:var(--accent-ink);border-color:var(--accent)}.upload-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;flex-wrap:wrap}.chips{display:flex;gap:6px;flex-wrap:wrap}.fchip{height:30px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:13px}.fchip.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px}.tile{position:relative;aspect-ratio:1;border-radius:14px;overflow:hidden;border:0;padding:0;background:var(--surface-2)}.tile img{width:100%;height:100%;object-fit:cover;display:block}.tile .dur{position:absolute;right:6px;bottom:6px;background:#14162bbd;color:#fff;font-size:11px;padding:1px 7px;border-radius:8px}.tvtag{position:absolute;left:6px;top:6px;background:var(--accent);color:var(--on-accent);font-size:10px;padding:1px 6px;border-radius:7px;font-weight:700}.art{width:100%;height:100%;display:grid;place-items:center;font-size:40px}.gb{display:flex;gap:10px;padding:12px 0;border-top:1px solid var(--line)}.compose+.gb,.gb:first-child{border-top:0}.ini{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;font-family:var(--font-d);color:#fff;flex:none;font-size:16px}.gb .body{flex:1;min-width:0}.who{font-weight:500;font-size:14px;color:var(--ink)}.gb p{margin:3px 0 4px;white-space:pre-wrap;word-break:break-word}.gb p.secret{color:var(--ink-2)}.reply{margin:4px 0;padding:8px 10px;border-radius:10px;background:var(--surface-2);font-size:13px}.chk{display:inline-flex;align-items:center;gap:6px;font-size:14px}.chk input{width:16px;height:16px;accent-color:var(--accent)}.intro{display:flex;justify-content:space-between;gap:12px;align-items:baseline;padding:12px 2px;border-top:1px solid var(--line)}.compose+.intro,.intro:first-child{border-top:0}.intro .q{font-family:var(--font-d);font-size:16px}.fr-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}.fr{display:flex;gap:12px;align-items:center;padding:12px;border-radius:20px;background:var(--surface);border:1px solid var(--line)}.fr .av{width:64px;height:64px;border-radius:20px;flex:none;overflow:hidden}.fr .mid{min-width:0;flex:1}.feed{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:2px 16px}.fi{display:flex;gap:12px;width:100%;text-align:left;padding:12px 0;border:0;border-top:1px solid var(--line);background:none;align-items:center}.fi:first-child{border-top:0}.fi .mid{flex:1;min-width:0}.box{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:16px}.box .row .inp{flex:1;min-width:160px;width:auto}.line-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}.deco-grid{display:grid;gap:16px}@media(min-width:1100px){.deco-grid{grid-template-columns:minmax(0,1.35fr) minmax(320px,1fr);align-items:start}}.lock{position:absolute;top:5px;right:5px;font-size:10px;padding:0 6px;border-radius:7px;background:var(--surface-2);color:var(--ink-2);line-height:17px}.og{margin-top:16px}.og h4{margin:0 0 8px;font-size:13px;color:var(--ink-2);font-weight:500}.opt{height:34px;padding:0 13px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:13px;position:relative}.opt.on{border-color:var(--accent);background:var(--accent-soft);font-weight:500}.opt .lock{position:static;margin-left:4px}.sws{display:flex;flex-wrap:wrap;gap:8px}.sw{width:34px;height:34px;border-radius:12px;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line);padding:0}.sw.on{box-shadow:0 0 0 2.5px var(--accent)}.wallet{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px;border-radius:20px;background:var(--ink);color:var(--surface);flex-wrap:wrap}.wallet .amt{font-family:var(--font-d);font-size:30px;line-height:1.2}.wallet .btn:disabled{opacity:.7}.set{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:14px;max-width:680px}.set h3{margin:0 0 12px;font-family:var(--font-d);font-weight:400;font-size:19px}.field{display:grid;gap:5px;margin-bottom:12px}.field label{font-size:13px;color:var(--ink-2)}.switch{appearance:none;-webkit-appearance:none;width:44px;height:26px;border-radius:13px;background:var(--line);position:relative;cursor:pointer;flex:none;margin:0;transition:background .2s}.switch:before{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0003;transition:transform .2s}.switch:checked{background:var(--accent)}.switch:checked:before{transform:translate(18px)}.modal-bg{position:fixed;inset:0;background:#0f11288c;display:grid;place-items:center;z-index:50;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))}.modal{width:min(560px,100%);max-height:100%;overflow:auto;background:var(--surface);border-radius:24px;padding:18px}.mhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}.mhead h3{margin:0;font-family:var(--font-d);font-weight:400;font-size:20px}.viewer img,.viewer video{width:100%;max-height:58vh;object-fit:contain;background:#0f1128;border-radius:14px;display:block}.viewer .art{aspect-ratio:4/3;font-size:84px;border-radius:14px}.cms{margin-top:12px;display:grid;gap:4px;font-size:14px}.mfoot{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}.pick{display:grid;gap:8px}.pick button{display:flex;align-items:center;gap:12px;padding:10px;border-radius:14px;border:1px solid var(--line);background:var(--surface);text-align:left}.pick button:hover{border-color:var(--accent)}#toast{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px);opacity:0;background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:14px;font-size:14px;z-index:60;transition:opacity .25s,transform .25s;pointer-events:none;max-width:min(92vw,440px);text-align:center}#toast.show{opacity:1;transform:translate(-50%)}@media(min-width:900px){#toast{bottom:28px}}.place-list{display:grid;gap:12px;grid-template-columns:1fr}@media(min-width:640px){.place-list{grid-template-columns:repeat(3,1fr)}}.place{display:grid;gap:2px;text-align:left;padding:16px 18px;border-radius:22px;border:0;background:linear-gradient(140deg,var(--c1),var(--c2));color:#23264a;min-height:136px;align-content:end;position:relative;overflow:hidden}.place:hover{filter:brightness(1.03)}.place .pe{font-size:34px;line-height:1;position:absolute;top:14px;right:16px}.place .pn{font-family:var(--font-d);font-size:21px}.place .pd{font-size:13px;opacity:.78}.place .pc{font-size:12px;margin-top:8px;display:inline-flex;align-items:center;gap:6px;font-weight:500}.place .pc:before{content:"";width:7px;height:7px;border-radius:50%;background:#1fb36b}.panel-title{font-family:var(--font-d);font-size:17px;margin:2px 2px 8px}.plog{height:360px;overflow:auto;display:flex;flex-direction:column;gap:5px;padding:8px 10px;border-radius:14px;background:var(--surface-2)}.plog.short{height:170px;margin-top:14px}@media(max-width:899px){.plog{height:240px}}#pcount{white-space:nowrap}.plog>:first-child{margin-top:auto}.msg{font-size:14px;line-height:1.5;word-break:break-word}.msg b{margin-right:6px;font-weight:500}.msg.me b{color:var(--accent-ink)}.msg.sys{color:var(--ink-2);font-size:12px;text-align:center}.chatbar{margin-top:10px;flex-wrap:nowrap}.chatbar .inp{flex:1;width:auto;min-width:0}.npcp{display:flex;gap:14px;align-items:center}.auth{min-height:100vh;display:grid;place-items:center;padding:24px 16px}.auth-card{width:min(420px,100%);background:var(--surface);border:1px solid var(--line);border-radius:28px;overflow:hidden;box-shadow:0 30px 70px -40px #23264a8c}.auth-hero svg{display:block;width:100%;height:auto;max-height:230px}.auth-body{padding:20px 22px 22px}.auth-sub{margin:8px 0 16px;color:var(--ink-2);font-size:14px}.auth-form .field{margin-bottom:10px}.auth-err{min-height:20px;margin:2px 0 8px;font-size:13px;color:#d6455d}.btn.wide{width:100%;height:46px;font-size:15px}.auth-switch{margin:14px 0 0;text-align:center;font-size:14px;color:var(--ink-2)}.linkbtn{border:0;background:none;padding:0;color:var(--accent-ink);font-weight:500;text-decoration:underline;text-underline-offset:3px}.auth-loading{display:grid;gap:8px;place-items:center}.navbtn .badge{margin-left:auto}.bottomnav button{position:relative}.bottomnav .badge{position:absolute;top:0;left:calc(50% + 4px);margin:0}.h3 .badge{vertical-align:middle}.fi .ini svg,.line-row .ini svg{width:100%;height:100%}.line-row .ini{width:36px;height:36px}.vtag{position:absolute;right:6px;top:6px;background:#14162bb8;color:#fff;font-size:10px;padding:1px 6px;border-radius:7px}.migrate{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:14px;background:var(--accent-soft);margin-bottom:12px;font-size:13px;flex-wrap:wrap}.row select.inp#m-vis{flex:none}.radio{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);font-size:14px;cursor:pointer}.radio:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}.radio input{accent-color:var(--accent);width:16px;height:16px;margin:0}.quote{padding:10px 12px;border-radius:12px;background:var(--surface-2);font-size:13px;margin-bottom:12px;white-space:pre-wrap;word-break:break-word;max-height:120px;overflow:auto}.beta{margin-left:2px;border:0;background:var(--accent-soft);color:var(--ink);font-family:var(--font-b);font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;line-height:1.2;letter-spacing:0}.beta:hover{background:var(--accent);color:var(--on-accent)}.consent{margin:2px 0 8px;font-size:13px;align-items:flex-start}.consent input{margin-top:2px;flex:none}.consent a,.auth-legal a,.set a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}.auth-forgot{margin:-4px 0 6px;text-align:right;font-size:13px}.auth-legal{margin:14px 0 0;display:flex;justify-content:center;gap:14px;font-size:12px;color:var(--ink-2)}.auth-legal a{color:var(--ink-2)}.btn.danger-solid{background:#d6455d;border-color:#d6455d;color:#fff}#browser-tip{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:40;background:var(--surface);color:var(--ink);border:2px solid var(--accent);border-radius:18px;padding:14px 16px;box-shadow:0 20px 50px -20px #0f112880;font-size:14px;line-height:1.6}#browser-tip p{margin:0 0 10px}@media(min-width:900px){#browser-tip{left:auto;right:24px;bottom:24px;max-width:380px}}.notice-bar{margin:0 0 14px;padding:10px 14px;border-radius:14px;background:var(--accent-soft);font-size:14px;line-height:1.5;word-break:break-word}.notice-bar.ban{background:#ffe8ec;color:#8a1f33}.charge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}.charge{display:grid;gap:4px;justify-items:start;text-align:left;padding:14px;border-radius:18px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}.charge:hover:not(:disabled){border-color:var(--accent)}.charge:disabled{opacity:.55;cursor:not-allowed}.ch-coins{display:flex;align-items:center;gap:8px;font-family:var(--font-d);font-size:20px}.ch-bonus{font-size:12px;color:var(--accent-ink);font-weight:700}.ch-won{font-size:13px;color:var(--ink-2)}.ch-won b{color:var(--accent-ink)}.admin-entry{border-color:var(--accent)}.adm-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}.adm-stat{display:grid;gap:2px;text-align:left;padding:14px;border-radius:16px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}.adm-stat:disabled{cursor:default;opacity:1}.adm-stat:not(:disabled):hover{border-color:var(--accent)}.adm-n{font-family:var(--font-d);font-size:26px;line-height:1.2}.adm-l{font-size:13px;color:var(--ink-2)}.adm-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:10px}.warn-tag{border-color:#d6455d;color:#d6455d}.adm-pre{white-space:pre-wrap;word-break:break-word;font-size:11px;background:var(--surface-2);padding:8px;border-radius:8px;max-height:200px;overflow:auto}.quizcard{background:linear-gradient(160deg,#eef3ff,#fff5e6);border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin-bottom:16px;color:#23264a}:root[data-theme=dark] .quizcard{background:linear-gradient(160deg,#252950,#2e2a3f);color:var(--ink)}.qhead{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px}.qtime{color:var(--ink-2)}.qtime b{font-variant-numeric:tabular-nums;color:var(--ink)}.qtext{font-family:var(--font-d);font-size:22px;line-height:1.4;margin:10px 0 6px;word-break:keep-all;overflow-wrap:anywhere}.qstate{font-size:14px;margin-top:8px}.qprev{font-size:12px;color:var(--ink-2);margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}.react-row{margin-top:8px;gap:6px}.react-row .btn{min-width:40px;padding:0 8px;font-size:17px}.pat line,.pat path,.pat rect,.pat ellipse{vector-effect:non-scaling-stroke}.swgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:8px}details.og summary{cursor:pointer;list-style:none}details.og summary::-webkit-details-marker{display:none}details.og summary h4:after{content:" ▾";font-size:12px;color:var(--ink-2)}.logo-mark{width:32px;height:32px;flex:none;object-fit:contain}.logo-word{font-family:"Jua",var(--font-d);font-size:25px;letter-spacing:-.01em;color:var(--ink);white-space:nowrap;padding-top:2px}.logo-word em{font-style:normal;color:#FF765F}.brand .beta{margin-left:1px;font-size:10.5px;padding:3px 7px;align-self:center;transform:translateY(-1px)}.topbar .logo-mark{width:28px;height:28px}.topbar .logo-word{font-size:22px}.auth .brand .logo-mark{width:36px;height:36px}.auth .brand .logo-word{font-size:28px}.avgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:8px}.og h4.sub{margin:12px 0 8px;font-size:13px;color:var(--ink-2)}[data-item=try]{animation:trypulse 1.4s ease-in-out infinite}@keyframes trypulse{50%{opacity:.72}}@media(prefers-reduced-motion:reduce){[data-item=try]{animation:none}}.arcade-card{margin-bottom:14px}.gbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.gbtns.bd-btns{grid-template-columns:repeat(3,minmax(0,1fr))}.gbtn{display:grid;gap:4px;justify-items:center;padding:10px 4px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface-2);color:var(--ink);font-size:12.5px;font-weight:500}.gbtn .ge{font-size:24px;line-height:1}.gbtn:hover{border-color:var(--accent)}body.gaming{overflow:hidden}.gov{position:fixed;inset:0;z-index:60;background:#141629b8;display:grid;place-items:center;padding:max(10px,env(safe-area-inset-top,0px)) 10px max(10px,env(safe-area-inset-bottom,0px));backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}.gbox{width:min(100%,400px);max-height:100%;display:flex;flex-direction:column;gap:8px;background:var(--surface);border-radius:24px;padding:10px;box-shadow:0 30px 60px -30px #0009}.ghead{display:flex;align-items:center;gap:8px;padding:2px 4px}.ghead .gt{font-weight:700;font-size:16px}.ghead .gsc{margin-left:auto;font-weight:700;color:var(--accent-ink);font-size:15px}.gx{border:0;background:var(--surface-2);color:var(--ink);width:34px;height:34px;border-radius:50%;font-size:15px}.gcan{position:relative;border-radius:18px;overflow:hidden;aspect-ratio:2/3;max-height:calc(100dvh - 190px);margin:0 auto;width:100%}.gcan canvas{display:block;width:100%;height:100%;touch-action:none;user-select:none;-webkit-user-select:none}.gscreen{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;background:#ffffff1f}.gcard{background:var(--surface);color:var(--ink);border-radius:20px;padding:18px 16px;text-align:center;width:100%;max-width:300px;box-shadow:0 20px 40px -24px #00000080;max-height:100%;overflow:auto}.gcard .ge{font-size:38px;line-height:1.1}.gcard h3{margin:6px 0;font-size:20px}.gcard p{margin:0 0 10px;font-size:13.5px;line-height:1.55}.gcard .gbigscore{font-size:34px;margin:2px 0 8px;color:var(--accent-ink)}.gwin{color:var(--accent-ink)}.grank{margin-top:12px;text-align:left}.grank h4{margin:0 0 6px;font-size:13px;color:var(--ink-2)}.grank ol{margin:0;padding-left:20px;font-size:13px}.grank li{display:flex;justify-content:space-between;gap:8px;padding:2px 0}.grank li.me{color:var(--accent-ink);font-weight:700}.gctrl{display:flex;justify-content:center;min-height:0}.gctrl:empty{display:none}#gov[data-game="breakout"] .gctrl{flex-shrink:0}.breakout-touchpad{width:100%;height:80px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:12px;border:1px solid #414760;border-radius:14px;background:#292E46;color:#C1CAE6;touch-action:none;user-select:none;-webkit-user-select:none;font-size:13px;font-weight:700;cursor:ew-resize}.breakout-touchpad:active{background:#353D59}.breakout-touchpad span{pointer-events:none}.dpad{display:grid;grid-template-columns:repeat(3,54px);grid-template-rows:repeat(2,44px);gap:6px}.dpad button{border:0;border-radius:12px;background:var(--surface-2);color:var(--ink);font-size:18px}.dpad [data-g="key:U"]{grid-column:2;grid-row:1}.dpad [data-g="key:L"]{grid-column:1;grid-row:2}.dpad [data-g="key:D"]{grid-column:2;grid-row:2}.dpad [data-g="key:R"]{grid-column:3;grid-row:2}.gbig{min-width:180px;min-height:52px;font-size:18px}.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 0 10px;padding-bottom:2px}.chips::-webkit-scrollbar{display:none}.chip{flex:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:13px;white-space:nowrap;font-family:inherit}.chip.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}.chip.more{margin-left:auto;background:var(--surface-2)}@media(max-width:1099px){.deco-grid{gap:10px}.deco-grid>div:first-child{position:sticky;top:0;z-index:6;background:var(--bg);padding:6px 0 8px;box-shadow:0 12px 14px -14px #23264a59}.swgrid.strip:not(.all),.avgrid.strip:not(.all){display:grid;grid-auto-flow:column;grid-template-rows:repeat(2,auto);grid-template-columns:none;grid-auto-columns:88px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;padding-bottom:8px;-webkit-overflow-scrolling:touch}.avgrid.strip:not(.all){grid-auto-columns:76px}.strip:not(.all)>*{scroll-snap-align:start}.sws{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}.sws .sw{flex:none}}@media(min-width:1100px){.chip.more{display:none}}@media(max-width:1099px){.deco-grid>.panel{padding:10px 12px}.deco-grid>.panel .seg{margin-bottom:8px}}.strip{padding-bottom:12px}.msg .nick{border:0;background:none;padding:0;margin:0 6px 0 0;font:inherit;font-weight:700;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}.msg .nick:hover{text-decoration-style:solid}.wordlist{display:flex;flex-wrap:wrap;gap:6px}.wtag{display:inline-flex;align-items:center;gap:6px;padding:4px 6px 4px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--line);font-size:13px}.wtag em{font-style:normal;font-size:11px;color:var(--ink-2)}.wtag.ok{background:var(--surface-2)}.wtag button{border:0;background:var(--surface-2);color:var(--ink-2);width:22px;height:22px;border-radius:50%;font-size:11px;cursor:pointer}.seg.adm-tabs{flex-wrap:wrap;max-width:none!important;border-radius:18px;overflow:visible}.seg.adm-tabs button{flex:1 0 auto;min-width:64px}.wtag.base{cursor:pointer;padding:5px 11px;border-color:#f3c1cf;background:#fff1f5;color:#b8324f;font-family:inherit}.wtag.base span{font-size:10.5px;color:var(--ink-2)}.wtag.base.off{background:var(--surface-2);border-color:var(--line);color:var(--ink-2);text-decoration:line-through}.wtag.base.off span{text-decoration:none;display:inline-block;margin-left:4px}.bw-res{margin:10px 0 0;padding:8px 12px;border-radius:12px;font-size:14px;font-weight:600}.bw-res.bad{background:#fff1f5;color:#b8324f}.bw-res.ok{background:#e9f7ef;color:#2e7d52}.track{height:9px;border-radius:99px;background:var(--surface-2);overflow:hidden}.track i{display:block;height:100%;border-radius:99px}.track i.love{background:linear-gradient(90deg,#f7a8c0,#f0679a)}.track i.full{background:#ffb347}.track i.joy{background:#7fd1a1}.seg.adm-tabs{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:4px;border-radius:18px;padding:5px}.seg.adm-tabs button{min-width:0;white-space:normal;word-break:keep-all;padding:9px 6px;line-height:1.2}.brand .beta{white-space:nowrap}.box.warn{background:#fff6e3;border-color:#f4d07a}@keyframes psBurst{0%{opacity:0;transform:scale(.2)}35%{opacity:1;transform:scale(1.25)}to{opacity:0;transform:translateY(-22px) scale(1)}}.a-pat .sh{animation:psBurst .9s ease-out .9s both}.a-pat .sh2{animation-delay:1.3s}.a-pat .hb{animation:psBurst 1s ease-out 2s both}.adm-card.post .meta,.adm-chat .meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12.5px;color:var(--ink-2);margin-bottom:6px}.adm-card.post .meta b,.adm-chat .meta b{color:var(--ink)}.vis.k-diary{background:#eef0ff;color:#4c57c9}.vis.k-media{background:#e9f7ef;color:#2e7d52}.vis.k-guestbook{background:#fff1f5;color:#b8324f}.vis.k-intro{background:#fff6e3;color:#9a6a12}.adm-card .flag{font-size:11px;padding:1px 7px;border-radius:999px;background:var(--surface-2)}.adm-card .ttl{margin:0 0 4px;font-weight:700}.adm-card .body,.adm-chat .body{margin:0 0 8px;white-space:pre-wrap;word-break:break-word;font-size:14px;line-height:1.5}.adm-media{margin:4px 0 8px}.adm-media img{max-width:100%;max-height:220px;border-radius:12px;display:block}.adm-acts{gap:6px;flex-wrap:wrap}.adm-chats{display:grid;gap:6px}.adm-chat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 10px}.adm-chat .body{margin:0}.door-stage{border-radius:24px;overflow:hidden;box-shadow:0 10px 30px -18px #23264a66}.door-stage svg{display:block;width:100%;height:auto}.door-tag{font-size:12.5px;color:var(--ink-2);background:var(--surface-2);border-radius:999px;padding:4px 10px;white-space:nowrap}.notice-bar.update{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#eef0ff;color:#3a3f66;border-color:#d5d8f5}.diary-list.scrolly{max-height:min(540px,62vh);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:0 4px 30px 0;scrollbar-width:thin;-webkit-mask-image:linear-gradient(#000 calc(100% - 44px),transparent);mask-image:linear-gradient(#000 calc(100% - 44px),transparent)}.diary-list.scrolly:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:12px}.post-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px}.pf-meta{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-2);min-width:0}.pf-acts{display:flex;gap:6px;flex:none}.diary-more{margin:4px 0 0;font-size:12px;text-align:center}.diary-compose{margin:14px 0 0}.brand-home{display:inline-flex;align-items:center;gap:inherit;background:none;border:0;padding:0;margin:0;color:inherit;font:inherit;cursor:pointer;border-radius:12px;-webkit-tap-highlight-color:transparent}.brand-home:focus-visible{outline:2px solid var(--accent);outline-offset:4px}.folders{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;margin:0 0 4px;scrollbar-width:thin}.folder{flex:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;width:auto;min-width:max-content;padding:8px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:14px;cursor:pointer}.folder .fc{font-size:12px;color:var(--ink-2)}.folder.on{border-color:var(--accent);background:var(--accent-soft)}.folder.add{border-style:dashed;color:var(--ink-2)}.folder-info{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface-2);border-radius:14px;padding:8px 12px;margin:0 0 10px;font-size:14px}.fd-lbl{display:block;margin:12px 0 6px;font-weight:700;font-size:14px}.fd-vis{display:grid;gap:6px}.fd-opt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1.5px solid var(--line);border-radius:14px;cursor:pointer}.fd-opt:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}.fd-opt span{display:grid;gap:1px}.fd-opt small{color:var(--ink-2);font-size:12.5px}.fd-opt input{margin-top:4px;accent-color:var(--accent)}.fd-friends{margin-top:8px;display:grid;gap:6px;max-height:200px;overflow:auto;padding:8px;border-radius:14px;background:var(--surface-2)}.fd-fr{display:flex;gap:8px;align-items:center;font-size:14.5px}.fd-fr input{accent-color:var(--accent);width:18px;height:18px}.adm-card.risk,.adm-chat.risk{border-color:#f08a8a;box-shadow:inset 4px 0 #e0413e}.risk-tag{background:#fde8e8;color:#b42323;border-radius:999px;padding:1px 8px;font-size:11.5px;font-weight:700}.adm-card .flag.priv{background:#eef0ff;color:#3a3f66}.adm-media{position:relative;display:block;border:0;padding:0;background:none;cursor:zoom-in;border-radius:12px;overflow:hidden}.adm-media .adm-zoom{position:absolute;right:8px;bottom:8px;background:#23264abf;color:#fff;font-size:12px;border-radius:999px;padding:2px 10px}.risk-box{background:#fff1f1;border-color:#f4b4b4;margin-bottom:12px}.seg.adm-filter{flex-wrap:wrap;max-width:none!important;border-radius:18px;overflow:visible}.seg.adm-filter button{flex:0 0 auto}.adm-dates{display:flex;flex-direction:column;gap:2px;margin-top:2px}.adm-dates b{font-weight:700}.adm-dates small{color:var(--ink-2);font-size:11px}.seen-recent{color:#2e7d52}.seen-week{color:#9a6a12}.seen-old,.seen-none{color:#b8324f}.bd-root{max-width:460px;margin:0 auto}.bd-wrap{position:relative;margin:6px auto;max-width:420px}.bd-svg{display:block;width:100%;height:auto;border-radius:14px;touch-action:manipulation;user-select:none;-webkit-user-select:none}.bd-glyph{font-family:Segoe UI Symbol,"Noto Sans Symbols 2",DejaVu Sans,Apple Symbols,sans-serif}.bd-han{font-family:"Noto Serif CJK KR",Noto Sans CJK KR,Malgun Gothic,Apple SD Gothic Neo,serif}.bd-who{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:12px;font-size:14px;min-height:34px}.bd-who.on{background:var(--accent-soft);box-shadow:inset 0 0 0 1.5px var(--accent)}.bd-dot{width:14px;height:14px;border-radius:50%;border:1.5px solid #3A3F66;flex:none}.bd-status{margin:8px 0 6px;text-align:center;font-weight:700;font-size:15px}.bd-status.check{color:#c0392b}.bd-status.over{color:var(--accent-ink);font-size:17px}.bd-acts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}.bd-undo-request{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin:8px 0;padding:10px 12px;border-radius:14px;background:var(--surface-2);font-size:13px}.bd-undo-request .row{gap:6px}.bd-promo{position:absolute;inset:auto 8px 8px;background:var(--surface);border-radius:16px;padding:12px;box-shadow:0 10px 30px -10px #0006;text-align:center}.bd-promo p{margin:0 0 8px;font-weight:700}.bd-promo .row{justify-content:center;flex-wrap:wrap;gap:6px}.bd-promo .bd-glyph{font-size:22px;line-height:1}.bd-mode{border:1.5px solid var(--line);border-radius:16px;padding:12px;margin:10px 0}.bd-mode h4{margin:0 0 8px;font-size:16px}.bd-seg{display:flex;flex-wrap:wrap;max-width:none!important;margin-bottom:8px}.bd-layout{padding:10px 0}.bd-layout>.note{margin:0 0 6px}.bd-layout-row{margin:8px 0}.bd-layout-row[data-side="c"]{--bd-side:#147041;--bd-side-soft:#E5F5EB}.bd-layout-row[data-side="h"]{--bd-side:#ac2b35;--bd-side-soft:#FCE9EA}:root[data-theme=dark] .bd-layout-row[data-side="c"]{--bd-side-title:#75d5a1}:root[data-theme=dark] .bd-layout-row[data-side="h"]{--bd-side-title:#ff8d98}.bd-layout-row strong{display:flex;align-items:center;gap:6px;margin-bottom:5px;font-size:13px;color:var(--bd-side-title,var(--bd-side))}.bd-layout-row strong:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--bd-side)}.bd-layout-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.bd-layout-grid button{min-height:36px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:inherit;font-size:13px;cursor:pointer}.bd-layout-grid button.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}.bd-layout-row .bd-layout-grid button.on{background:var(--bd-side-soft);border-color:var(--bd-side);color:var(--bd-side);font-weight:700}.bd-layout-grid.bd-layout-h button.on{background:#FCE9EA;border-color:#C64049;color:#ac2b35;font-weight:700}.bd-layout-grid button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}.bd-resume{width:100%;margin:6px 0 4px}.bd-list{margin:8px 0}.bd-list>b{display:block;margin:4px 0}.bd-list .line-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid var(--line)}.bd-myturn{color:var(--accent-ink)}.bd-badge{background:var(--accent);color:var(--on-accent);border-radius:999px;padding:0 8px;font-size:12px;margin-left:4px}.bd-caps{margin-left:auto;display:flex;align-items:center;flex-wrap:wrap;justify-content:flex-end;gap:0;max-width:62%}.bd-capi{width:20px;height:20px;margin-left:-3px;overflow:visible}.bd-adv{margin-left:6px;font-size:12px;color:var(--ink-2)}.bd-ghost{animation:bdGhost .34s ease-in .3s forwards;transform-box:fill-box;transform-origin:center}.bd-pc{transform-box:fill-box;transform-origin:50% 60%}@keyframes bdGhost{to{opacity:0;transform:scale(.4)}}.bd-svg{box-shadow:0 12px 26px -14px #28180a99}@media(prefers-reduced-motion:reduce){.bd-ghost{display:none}}.gov.bl-ov{display:block;padding:0;background:#0b151b;backdrop-filter:none;-webkit-backdrop-filter:none}
 .bl-box{box-sizing:border-box;width:100%;height:100%;max-height:none;position:relative;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto auto auto;gap:6px;overflow:hidden;border-radius:0;box-shadow:none;padding:max(8px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:radial-gradient(ellipse at 48% 35%,#203338 0%,#101e24 55%,#0a131a 100%);color:#fff}
@@ -211,7 +243,7 @@
 <link rel="stylesheet" href="/shared/media/photo-protection.css?v=20261106-source-folders1">
 <script src="/shared/media/photo-protection.js?v=20261106-source-folders1" defer></script>
 
-<link rel="stylesheet" href="/app/world/world-room.css?v=20261106-source-folders1">
+<link rel="stylesheet" href="/app/world/world-room.css?v=20261122-arcade-ranking-spacing1">
 
 
 
@@ -230,27 +262,29 @@
 
 <script src="/games/matgo/matgo-bridge.js?v=20261120-service-actions1" defer></script>
 <link rel="stylesheet" href="/features/arcade/arcade-rooms.css?v=20261120-service-actions2">
-<script src="/features/arcade/arcade-rooms.js?v=20261120-service-actions1" defer></script>
+<script src="/features/arcade/arcade-rooms.js?v=20261125-retire-poker-roulette" defer></script>
 <link rel="stylesheet" href="/shared/viewport/mobile-viewport.css?v=20261106-source-folders1">
 <script src="/shared/viewport/mobile-viewport.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/shared/brand/brand-copy.css?v=20261106-source-folders1">
 <link rel="stylesheet" href="/features/wallet/paid-ui.css?v=20261106-source-folders1">
 <link rel="stylesheet" href="/shared/games/game-entry.css?v=20261109-unified-multiplayer-ui2">
-<script src="/shared/games/game-entry.js?v=20261107-observer-guard1" defer></script>
-<script src="/shared/games/game-friend-invites.js?v=20261115-drinking-invites1" defer></script>
-<link rel="stylesheet" href="/app/world/world-design.css?v=20261116-arcade-card-spacing1">
+<script src="/shared/games/game-entry.js?v=20261122-solo-default1" defer></script>
+<script src="/shared/games/game-friend-invites.js?v=20261125-retire-poker-roulette" defer></script>
+<link rel="stylesheet" href="/app/world/world-design.css?v=20261122-arcade-ranking-spacing1">
 <link rel="stylesheet" href="/app/world/world-themes.css?v=20261119-auto-theme1">
 <link rel="stylesheet" href="/app/world/world-green.css?v=20261119-auto-theme1">
 <link rel="stylesheet" href="/features/account/settings-list.css?v=20261119-guest-account1">
+<link rel="stylesheet" href="/shared/brand/service-banners.css?v=20261125-avatar-test1">
+<script src="/shared/brand/service-banners.js?v=20261125-avatar-test1" defer></script>
 <link rel="stylesheet" href="/admin/shell.css?v=20261111-asset-library1">
 <script src="/app/world/world-themes.js?v=20261119-auto-theme1"></script>
-<script src="/shared/location/location.js?v=20261119-kma-current1" defer></script>
+<script src="/shared/location/location.js?v=20261125-park-guardian1" defer></script>
 <script src="/app/world/world-weather.js?v=20261119-kma-current1" defer></script>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="오쭈다 아지트">
 <meta property="og:url" content="https://ojjuda.kr/world.html">
 <meta property="og:title" content="오쭈다 아지트 | 게임·타로·사주·익명카드">
-<meta property="og:description" content="게임과 익명카드로 즐기고 소통하는 오쭈다 아지트. 타로·사주, 아이돌 팬페이지, 맛집·축제 정보까지 좋아하는 것들이 모인 편안한 온라인 아지트입니다.">
+<meta property="og:description" content="오쭈다 아지트는 게임과 일상을 즐기는 온라인 공간입니다. 오쭈다 공원에서 익명카드로 이야기를 나누고, 오쭈다 파장에서 질문과 취향으로 인연을 만나보세요. 타로·사주와 팬페이지도 함께 즐겨요.">
 <meta property="og:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
@@ -258,14 +292,14 @@
 <meta property="og:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="오쭈다 아지트 | 게임·타로·사주·익명카드">
-<meta name="twitter:description" content="게임과 익명카드로 즐기고 소통하는 오쭈다 아지트. 타로·사주, 아이돌 팬페이지, 맛집·축제 정보까지 좋아하는 것들이 모인 편안한 온라인 아지트입니다.">
+<meta name="twitter:description" content="오쭈다 아지트는 게임과 일상을 즐기는 온라인 공간입니다. 오쭈다 공원에서 익명카드로 이야기를 나누고, 오쭈다 파장에서 질문과 취향으로 인연을 만나보세요. 타로·사주와 팬페이지도 함께 즐겨요.">
 <meta name="twitter:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
 <link rel="stylesheet" href="/shared/games/multiplayer-entry.css?v=20261109-unified-multiplayer-ui2">
 <link rel="stylesheet" href="/shared/games/world-game-screen.css?v=20261106-source-folders1">
-<script src="/shared/games/multiplayer-entry.js?v=20261112-arcade-entry-return1" defer></script>
+<script src="/shared/games/multiplayer-entry.js?v=20261125-retire-poker-roulette" defer></script>
 <link rel="stylesheet" href="/features/arcade/arcade-promotions.css?v=20261106-source-folders1">
-<script src="/features/arcade/arcade-promotions.js?v=20261120-onecard5" defer></script>
+<script src="/features/arcade/arcade-promotions.js?v=20261125-retire-poker-roulette" defer></script>
 <style>
 /* Critical loading UI is inline so the Agit is never a blank screen while scripts start. */
 .world-boot-screen{box-sizing:border-box;min-height:100svh;display:grid;place-items:center;padding:24px;background:#faf8f4;color:#423640;font-family:"Noto Sans KR",system-ui,sans-serif}
@@ -282,7 +316,7 @@
 <link rel="stylesheet" href="/shared/share/page-share.css?v=20261119-main-invite1">
 <link rel="stylesheet" href="/shared/brand/service-header.css?v=20261119-main-invite1">
 <script src="/shared/auth/invite-referral.js?v=20261119-invite-referral1" defer></script>
-<script src="/shared/share/page-share.js?v=20261119-arcade-invite1" defer></script>
+<script src="/shared/share/page-share.js?v=20261123-park-share1" defer></script>
 </head>
 <body class="world-redesign">
 <div id="app"><main class="world-boot-screen" role="status" aria-live="polite" aria-busy="true"><div class="world-boot-card"><span class="world-boot-mark" aria-hidden="true">✦</span><strong>오쭈다 아지트</strong><p>잠시만요, 아지트를 준비하고 있어요.</p><span class="world-boot-spinner" aria-hidden="true"></span><a class="world-boot-retry" href="">오래 걸리면 다시 불러오기</a></div></main></div>
@@ -451,11 +485,26 @@ adminTabsByArea.content.push(["rewards","상품권 등록"]);
 var worldAdminService="agit";
 function adminScopeAllows(tab){return window.OjjudaAdminScope?.allows(worldAdminService,tab)!==false;}
 function adminServiceLabel(){return window.OjjudaAdminScope?.services[worldAdminService]?.label||"아지트";}
-var worldAdminViewKey="ojjuda.world.admin-view",worldAdminViewReady=false;
+var worldAdminViewKey="ojjuda.world.admin-view",worldAdminOwnerKey="ojjuda.world.admin-owner",worldAdminViewReady=false;
+function boundWorldAdminOwner(){try{return sessionStorage.getItem(worldAdminOwnerKey)}catch{return null}}
+function bindWorldAdminOwner(){
+ if(!D.online||!D.isAdmin||!D.user?.id)return false;
+ try{sessionStorage.setItem(worldAdminOwnerKey,D.user.id)}catch{}
+ return true;
+}
+// Capture owners before the provisional guest/hub bootstrap can rewrite the
+// browser route or clear an earlier administrator session. Navigation is never
+// authority: a new account must enter administration explicitly.
+var worldAdminBootOwners=[];
+try{const route=history.state?.ojjudaWorldHistory?.route;if(route?.tab==='admin')worldAdminBootOwners.push(route.owner||'unbound');}catch{}
+try{const saved=JSON.parse(sessionStorage.getItem(worldAdminViewKey)||'null');if(saved?.userId)worldAdminBootOwners.push(saved.userId);}catch{}
 function clearWorldAdminView(){worldAdminService="agit";try{sessionStorage.removeItem(worldAdminViewKey)}catch{}adminMenuSummary={owner:null,data:null,pending:false};window.OjjudaAdminNavigation?.resetQuery()}
 function saveWorldAdminView(){
  if(!worldAdminViewReady)return;
  if(g.tab!=="admin"||!D.online||!D.isAdmin||!D.user?.id){clearWorldAdminView();return}
+ // The provisional shell must never rebind a previous administrator's view
+ // to another signed-in account while restoring browser history.
+ if(boundWorldAdminOwner()&&boundWorldAdminOwner()!==D.user.id){clearWorldAdminView();return}
  try{sessionStorage.setItem(worldAdminViewKey,JSON.stringify({userId:D.user.id,service:worldAdminService,area:L.area,tab:L.tab,noteTab:L.noteTab,reportSource:L.reportSource,riskType:L.riskType,archiveType:L.archiveType,spamType:L.spamType}))}catch{}
 }
 function normalizeAdminView(view){
@@ -482,11 +531,19 @@ function normalizeAdminView(view){
 function restoreWorldAdminView(requestedTab){
  worldAdminViewReady=true;
  requestedTab=adminRetiredTabs[requestedTab]||requestedTab;
- if(!D.online||!D.isAdmin||!D.user?.id){clearWorldAdminView();return false}
+ const ownerBound=boundWorldAdminOwner();
+ if(!D.online||!D.isAdmin||!D.user?.id||ownerBound&&ownerBound!==D.user.id||worldAdminBootOwners.some(owner=>owner!==D.user.id)){
+  clearWorldAdminView();
+  if(g.tab==="admin")g.tab="my";
+  // Clear an outdated binding only after rejecting the stale route. The new
+  // account may enter administration explicitly after its own role check.
+  if(ownerBound&&D.online&&D.user?.id&&ownerBound!==D.user.id)try{sessionStorage.removeItem(worldAdminOwnerKey)}catch{}
+  return false;
+ }
  let view;
  const noteAliases={note:"cards","note-cards":"cards","note-risk":"risk","note-map":"map","note-archive":"archive","note-settings":"settings","note-spam":"spam"};
  const visited=history.state?.ojjudaWorldHistory?.route;
- if(visited?.tab==='admin'&&(!visited.owner||visited.owner===D.user.id)&&adminTabsByArea[visited.area]?.some(([id])=>id===visited.section))view=normalizeAdminView({service:visited.service,area:visited.area,tab:visited.section});
+ if(visited?.tab==='admin'&&visited.owner===D.user.id&&adminTabsByArea[visited.area]?.some(([id])=>id===visited.section))view=normalizeAdminView({service:visited.service,area:visited.area,tab:visited.section});
  else if(noteAliases[requestedTab])view=normalizeAdminView({area:"note",noteTab:noteAliases[requestedTab]});
  else if(["note-actions","note-inquiries","note-reports"].includes(requestedTab)||Object.values(adminTabsByArea).some(tabs=>tabs.some(([id])=>id===requestedTab)))view=normalizeAdminView({area:adminAreaForTab(requestedTab),tab:requestedTab});
  else {
@@ -502,7 +559,9 @@ function restoreWorldAdminView(requestedTab){
  g.tab="admin";L.area=view.area;L.tab=view.tab;
  L.noteTab=typeof view.noteTab==="string"&&/^[a-z-]{1,40}$/.test(view.noteTab)?view.noteTab:"cards";
  L.riskType=L.archiveType=L.spamType="cards";
- L.reportSource=view.reportSource==="note"?"note":"world";syncAdminContentFilters();return true;
+ L.reportSource=view.reportSource==="note"?"note":"world";syncAdminContentFilters();
+ if(!ownerBound)bindWorldAdminOwner();
+ return true;
 }
 function adminDataTab(){return L.tab;}
 let adminMenuSummary={owner:null,data:null,pending:false};
@@ -613,11 +672,11 @@ async function Oa(t,e,o){adminMutationPending++;t&&(t.disabled=!0);try{await e()
  Wt(button,async()=>{await mt("admin_set_first_visit_ju",{p_amount:amount});wt.first_visit_ju=amount;input.defaultValue=String(amount);},"첫 방문 선물을 "+amount.toLocaleString("ko-KR")+"쭈로 저장했어요");
 },"adm-limit"(t,e){let o=Math.max(0,Math.min(100,parseInt(z("#adm-limit").value,10)||0));Wt(e,async()=>{await U.setConfig("beta_charge_daily_limit",o),wt.beta_charge_daily_limit=o},`하루 ${o}번으로 바꿨어요`)}};document.addEventListener("change",t=>{if(t.target&&t.target.id==="adm-free"){let e=t.target.checked;Wt(null,async()=>{await U.setConfig("beta_free_charge",e),wt.beta_free_charge=e},e?"무료 충전을 켰어요":"무료 충전을 껐어요")}});document.addEventListener("submit",t=>{t.target.id==="adm-user-form"&&(t.preventDefault(),L.q=z("#adm-q").value.trim(),bt())});var F0="ojjuda-samsung-dark-tip",Is=()=>/SamsungBrowser/i.test(navigator.userAgent),fh=()=>!!(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);function Os(){return`<b>색이 이상하게 보이나요?</b> 삼성 인터넷의 다크 모드가 오쭈다 아지트의 색을 바꾸고 있어요.
   아래 메뉴 <b>≡</b> → <b>설정</b> → <b>실험실</b>(Labs) → <b>웹사이트 다크 테마 사용</b>을 켜주세요.
-  메뉴 이름은 버전마다 조금 다를 수 있어요. 안 보이면 메뉴의 <b>다크 모드</b>를 꺼도 돼요.`}function k0(t){if(!Is()||!t&&!fh())return;try{if(!t&&localStorage.getItem(F0))return}catch{}if(document.getElementById("browser-tip"))return;let e=document.createElement("div");e.id="browser-tip",e.setAttribute("role","note"),e.innerHTML=`<p>${Os()}</p><button type="button" class="btn sm pri" id="browser-tip-ok">알겠어요</button>`,document.body.appendChild(e),document.getElementById("browser-tip-ok").addEventListener("click",()=>{try{localStorage.setItem(F0,"1")}catch{}e.remove()})}var Go="0.72.51-beta";
+  메뉴 이름은 버전마다 조금 다를 수 있어요. 안 보이면 메뉴의 <b>다크 모드</b>를 꺼도 돼요.`}function k0(t){if(!Is()||!t&&!fh())return;try{if(!t&&localStorage.getItem(F0))return}catch{}if(document.getElementById("browser-tip"))return;let e=document.createElement("div");e.id="browser-tip",e.setAttribute("role","note"),e.innerHTML=`<p>${Os()}</p><button type="button" class="btn sm pri" id="browser-tip-ok">알겠어요</button>`,document.body.appendChild(e),document.getElementById("browser-tip-ok").addEventListener("click",()=>{try{localStorage.setItem(F0,"1")}catch{}e.remove()})}var Go="0.73.2-beta";
 const sectionReleases={
   hub:{name:'아지트',version:Go,manifest:'/version.json'},
-  arcade:{name:'오락실',version:'1.3.6',manifest:'/features/arcade/version.json'},
-  park:{name:'공원',version:'1.5.4',manifest:'/park/version.json'}
+  arcade:{name:'오락실',version:'1.3.16',manifest:'/features/arcade/version.json'},
+  park:{name:'공원',version:'1.9.2',manifest:'/park/version.json'}
 };
 function releaseSection(){
  const tab=worldMainTab();
@@ -851,11 +910,11 @@ var R0=!1,sn=null,dn=t=>{sn=t},Ua=()=>{sn&&sn()};function kh(t){let e=ra(t.kind)
  const owner=D.user?.id,active=()=>!signal?.aborted&&D.online&&D.user?.id===owner;
  if(!owner||!active())return;
  if(invite.kind==='drinking' && /^[A-Z0-9]{6}$/.test(invite.code)){location.assign('/games/drinking/?room='+invite.code);return;}
- if(['marble','tank','roulette'].includes(invite.kind)){
+ if(['marble','tank'].includes(invite.kind)){
   const game=invite.kind==='marble'?'tour':invite.kind;
   await window.OjjudaGameAssets.load(game);
   if(!active())return;
-  const bridge=game==='tour'?window.OjjudaTourGame:game==='roulette'?window.OjjudaRouletteBridge:window.OjjudaTankGame;
+  const bridge=game==='tour'?window.OjjudaTourGame:window.OjjudaTankGame;
   if(typeof bridge?.open!=='function')throw Error('game_asset_unavailable');
   Al(game,{joinCode:invite.code});return;
  }
@@ -1544,7 +1603,7 @@ async function loadJanggiStreaks(panel,current){
    const row=data[id];if(!row)throw new Error('incomplete_streaks');
    return `<tr><th scope="row">${label}</th><td>${score(row.current)}</td><td>${score(row.best)}</td><td>${score(row.monthly_best)}</td></tr>`;
   }).join('');
-  host.innerHTML=`<table aria-label="장기 난이도별 연승"><thead><tr><th scope="col">난이도</th><th scope="col">내 현재</th><th scope="col">내 최고</th><th scope="col">이달 전체 최고</th></tr></thead><tbody>${rows}</tbody></table><p class="note">—는 대국 기록이 없다는 뜻이에요. 기존 통합은 어려움부터 그랜드마스터까지 함께 저장된 기록이에요.</p>`;
+  host.innerHTML=`<table aria-label="장기 난이도별 연승"><thead><tr><th scope="col">난이도</th><th scope="col">내 현재</th><th scope="col">내 최고</th><th scope="col">이달 전체 최고</th></tr></thead><tbody>${rows}</tbody></table>`;
  }catch(error){
   if(current()&&panel.isConnected&&panel.streakRequest===request)host.textContent='기록을 불러오지 못했어요. 닫았다가 다시 열어 주세요.';
  }
@@ -1671,7 +1730,8 @@ vl=async function(name,args,request){
  return originalWorldGameRpc(name,args,request);
 };
 function Al(t,options={}){
- if(typeof adminGamePreviewActive==='function'&&adminGamePreviewActive()&&['roulette','poker','bang','tank'].includes(t)){
+ if(t==='poker'||t==='roulette')return M('운영이 종료된 게임이에요. 기존 기록은 게임 순위에서 확인해 주세요.');
+ if(typeof adminGamePreviewActive==='function'&&adminGamePreviewActive()&&['bang','tank'].includes(t)){
   M(t==='tank'?'관리자 체험 모드에서는 탱크게임을 시작할 수 없어요. 설정 → 관리자에서 관리자 모드를 끄고 다시 열어 주세요.':'관리자 체험 중에는 온라인 대전 기록이 남는 게임을 시작할 수 없어요.');return;
  }
  if(t==="group"){
@@ -1727,15 +1787,6 @@ function Al(t,options={}){
    if(!authorized()||!game)return {ok:false};
    return worldArcadeRound(game,score,{owner,id:runId,finishedAt:completedAt});
   }});return;
- }
- if(t==="roulette"){
-  if(!window.OjjudaRouletteBridge){M("게임을 불러오지 못했어요. 다시 눌러 주세요.");return;}
-  const owner=D.online?D.user?.id:null,authorized=()=>(D.online?D.user?.id:null)===owner;
-  return window.OjjudaRouletteBridge.open({owner,client:S,authorized,joinCode:options.joinCode,onCoins:amount=>{if(authorized()){$.coins=amount;qf();}},onError:message=>M(message)});
- }
- if(t==="poker"){
-  const owner=D.online?D.user?.id:null,authorized=()=>(D.online?D.user?.id:null)===owner;
-  window.OjjudaPokerGame?.open({owner,authorized,joinCode:options.joinCode,onCoins:amount=>{if(authorized()){$.coins=amount;qf();}},onError:message=>M(message)});return;
  }
  if(t==="tank"){
   const owner=D.online?D.user?.id:null,authorized=()=>(D.online?D.user?.id:null)===owner;
@@ -2408,11 +2459,11 @@ function Dn(t){if(!ce.ready)return hf("신고");ensureSharedSupport();if(!window
   <div class="mfoot" style="justify-content:space-between"><span class="row"><button class="btn sm ghost danger" data-act="person-report" data-uid="${t.uid}">신고</button><button class="btn sm ghost" data-act="person-block" data-uid="${t.uid}">차단</button></span><span class="row"><button class="btn sm" data-act="visit" data-uid="${t.uid}">방 구경하기</button>${o}</span></div>`,t.name+" 프로필");let r=await S.from("profiles").select("bio,mood,mood_text").eq("id",t.uid).maybeSingle();if(!r.error&&r.data){let a=z("#pp-bio");a&&(a.textContent=r.data.bio||"");let i=z("#pp-mood");i&&(i.textContent=`${r.data.mood||""} ${r.data.mood_text||""}`)}}var yf={"report-send"(t,e){Y2(e)},unblock(t,e){e.disabled=!0,v0(t.uid).then(()=>{M("차단을 풀었어요"),mf()}).catch(o=>{console.error(o),e.disabled=!1,M("차단을 풀지 못했어요")})}};var Pt={cafe:{name:"보니 카페",emoji:"☕",desc:"테이블에 앉아 수다 떨기",card:["#FFE3C2","#F3C9A0"],chat:!0,spawn:[5,9]},library:{name:"여기 도서관",emoji:"📚",desc:"5분마다 새 퀴즈, 먼저 맞히면 1 ZU (하루 3번까지)",card:["#DDE8FE","#B8CCF5"],chat:!0,quiz:!0,spawn:[5,9]},park:{name:"까지 공원",emoji:"🌳",desc:"카드로 나누는 동네 이야기",card:["#D8F4C8","#A8D98A"],chat:!1,spawn:[4,9]},arcade:{name:"왔네 오락실",emoji:"🕹️",desc:"미니 게임과 대전",card:["#E6DDFF","#C3B1F5"],chat:!0,arcade:!0,spawn:[5,9]}};var Ae=10;function _n(t){if(D.online)return D0(t);let e=new Date().getHours(),o=new Date().getMinutes();return({cafe:34,library:21,park:47,arcade:28}[t]||20)+Math.round(10*Math.sin(e/3))+o%7}function Sn(t){return[...t.npcs,t.me]}function Af(t,e,o){let[r,a]=e.spawn,i=[];for(let c=0;c<Ae;c++)for(let d=0;d<Ae;d++){let p=Math.abs(c-r)+Math.abs(d-a),f=c+","+d;p>2||t.blocked.has(f)||t.seatSet.has(f)||o&&o.has(f)||i.push({gx:c,gy:d,d:p})}if(!i.length)return{gx:r,gy:a};let l=i.filter(c=>c.d===Math.min(...i.map(d=>d.d))),s=Math.random()<.5?l:i;return s[Math.floor(Math.random()*s.length)]}function lg(t){let e=Pt[t],o={id:t,ch:0,npcs:[],bubbles:[],log:[],lastSend:0,blocked:new Set,seats:[],seatSet:new Set,me:null,count:1},r=Af(o,e);o.me={id:"me",name:$.me.nick,gx:r.gx,gy:r.gy,seat:0,target:null,isMe:!0};return o}function xf(t,e,fromMainMenu=true){if(!["arcade","park"].includes(t))t="arcade";let o=Pt[t],r=lg(t);r.fromMainMenu=fromMainMenu;g.place=r;if(t==="arcade")void refreshWorldMatgoAccess();if(D.online){bg();r.live=!0;r.log.push({sys:!0,text:"연결하는 중이에요…"});g.tab="place";H();window.scrollTo(0,0);Pa(r,e).catch(a=>{console.error(a);g.place===r&&worldPresenceChanged(r,"reconnecting")});return}r.ch=e||1;r.log.push({sys:!0,text:o.name+" "+r.ch+"호점에 들어왔어요"});o.quiz&&ri(r);g.tab="place";H();window.scrollTo(0,0)}function cg(t,e){for(let o=t.log.length-1;o>=0;o--){let r=t.log[o];if(r.me&&r.text===e){t.log.splice(o,1);break}}t.bubbles=t.bubbles.filter(o=>!(o.aid===t.me.id&&o.text===e)),t.logDirty=!0}function $f(t){g.chatWaitUntil=Date.now()+t*1e3,clearInterval(g.chatWaitT);let e=()=>{let o=document.querySelector('[data-act="pl-send"]'),r=Math.ceil((g.chatWaitUntil-Date.now())/1e3);if(r<=0){clearInterval(g.chatWaitT),g.chatWaitT=null,g.chatWaitUntil=0,o&&(o.disabled=!1,o.textContent="보내기");return}o&&(o.disabled=!0,o.textContent=`${r}초`)};e(),g.chatWaitT=setInterval(e,300)}function oo(t,e,o,r=!0){let a=Date.now();t.bubbles=t.bubbles.filter(i=>i.aid!==e.id),t.bubbles.push({aid:e.id,text:o,until:a+(o.length>12?5500:4200)}),r&&(t.log.push({who:e.name,uid:e.uid,aid:e.id,text:o,me:!!e.isMe,at:a}),t.log.length>80&&t.log.shift(),t.logDirty=!0)}function dg(t,e,o,r,a){let i=o+","+r,l=e.gx+","+e.gy,s=a?new Set(Sn(t).filter(b=>b!==e).map(b=>b.gx+","+b.gy)):null,c=(b,F)=>{if(b<0||F<0||b>=Ae||F>=Ae)return!1;let C=b+","+F;return t.blocked.has(C)?!1:C===i?!0:!(t.seatSet.has(C)||s&&s.has(C))};if(l===i)return{path:[],reached:!0};let d=new Map([[l,null]]),p=[[e.gx,e.gy]],f=l,m=Math.abs(e.gx-o)+Math.abs(e.gy-r);for(let b=0;b<p.length;b++){let[F,C]=p[b],x=F+","+C,A=Math.abs(F-o)+Math.abs(C-r);if(A<m&&(m=A,f=x),x===i)break;for(let[v,B]of[[1,0],[-1,0],[0,1],[0,-1]]){let j=F+v,J=C+B,Q=j+","+J;d.has(Q)||!c(j,J)||(d.set(Q,x),p.push([j,J]))}}let h=d.has(i)?i:f,u=[];for(let b=h;b&&b!==l;b=d.get(b)){let[F,C]=b.split(",").map(Number);u.unshift([F,C])}return{path:u,reached:h===i}}function Ff(t,e){if(!e.target)return;if(e.gx===e.target.gx&&e.gy===e.target.gy){e.seat=e.target.lift||0,e.target=null,e.path=null,e.stuck=0;return}let o=e.target.gx+","+e.target.gy;if(!e.path||e.pathFor!==o){let i=dg(t,e,e.target.gx,e.target.gy,!1);if(!i.reached){if(e.live){e.gx=e.target.gx,e.gy=e.target.gy,e.seat=e.target.lift||0,e.target=null,e.path=null;return}if(!i.path.length){e.target=null,e.path=null;return}let l=i.path[i.path.length-1];e.target={gx:l[0],gy:l[1]}}e.path=i.path,e.pathFor=e.target.gx+","+e.target.gy}if(!e.path.length){e.path=null;return}let[r,a]=e.path[0];if(e.path.length===1&&e.target.lift&&Sn(t).some(i=>i!==e&&i.gx===r&&i.gy===a&&i.seat)){e.isMe&&M("다른 사람이 먼저 앉았어요"),e.target=null,e.path=null;return}e.path.shift(),e.gx=r,e.gy=a,e.seat=0,e.stuck=0}function pg(){let t=g.place;if(!t||document.hidden)return;let e=Pt[t.id],o=Date.now();t.bubbles=t.bubbles.filter(i=>i.until>o);t.npcs.forEach(i=>Ff(t,i));Ff(t,t.me);e.quiz&&xg(t,o);Sr();if(t.logDirty){t.logDirty=!1;eo()}let count=z("#pcount");if(count)count.textContent=worldPlacePresenceText(t)}function Cf(){
  if(g.place?.id==="park"&&worldParkNotes)return worldParkNotes.markup();
  return `<section class="arcade-home" aria-label="오락실">
- <div class="arcade-overview"><section data-arcade-rank-root aria-label="게임순위"></section></div>
+ <div class="arcade-overview"><a class="arcade-ranking-entry" href="/features/arcade/all-rankings.html" aria-label="이번 달 전체 게임순위 보기"><span class="arcade-ranking-entry-icon" aria-hidden="true">🏆</span><strong>게임순위</strong><small>이번 달 전체 보기</small><span class="arcade-ranking-entry-arrow" aria-hidden="true">›</span></a></div>
  <div class="panel" id="ppanel">${Df()}</div></section>`;
 }
 function Mf(t){const render=e=>e.sys?`<div class="msg sys">${w(e.text)}</div>`:`<div class="msg${e.me?" me":""}">${e.me||!e.aid?`<b style="${e.me?"":`color:${br(e.who)}`}">${w(e.who)}</b>`:`<button class="nick" data-act="pl-nick" data-id="${w(e.aid)}" style="color:${br(e.who)}" title="프로필, 신고, 차단">${w(e.who)}</button>`}${w(e.text)}</div>`;return t.log.map(render).join("")}function Df(){let t=g.place,e=Pt[t.id];if(t.id==="park")return "";return e.chat?`${e.quiz?`<div class="quizcard" id="quizcard" aria-live="polite">${Sf(t)}</div>`:""}${e.arcade?`<div class="arcade-card"><header class="game-section-heading"><div><span class="world-eyebrow">SOLO PLAY</span><h2>나만의 플레이</h2></div><span>혼자서도 즐겁게</span></header><div class="gbtns" data-arcade-games="solo"><a class="gbtn" data-v="chacha_rush" href="https://chacharush-arcade-2611.mj830417686850.chatgpt.site/" target="_blank" rel="noopener noreferrer" aria-label="차차 러시! · 오쭈다 안에서 플레이" style="text-decoration:none;cursor:pointer"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/chacha-rush.webp" alt="" width="480" height="320" loading="lazy"></span><span class="game-name">차차 러시!</span></a>${Object.entries(_r).filter(([id,r])=>!["onecard","bang","ttang"].includes(id)&&!(r.age>=19)&&!r.test).map(([o,r])=>`<button class="gbtn" ${r.maintenance&&!(o==="screw"&&D.online&&D.isAdmin)?"disabled":'data-act="game-open"'} data-v="${o}" aria-label="${r.name}${r.maintenance?" · "+r.maintenance:""}${r.age?" · 만 "+r.age+"세 이상":""}${r.test?" · 일상":""}${r.memberOnly?" · 회원 전용":""}"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/${o}.webp" alt="" width="480" height="320" loading="lazy"></span><span class="game-name">${r.name}${r.maintenance?'<small class="game-maintenance-badge">'+r.maintenance+'</small>':""}${r.age?" <small>"+r.age+"+</small>":""}${r.test?'<small class="game-test-badge">'+(r.memberOnly?"회원 전용":"일상")+'</small>':""}</span></button>`).join("")}</div>
-    <header class="game-section-heading"><div><span class="world-eyebrow">BETTER TOGETHER</span><h2>함께하는 플레이${g.bdInvites?` <span class="bd-badge">신청 ${g.bdInvites}</span>`:""}</h2></div><span>친구와 한 판</span></header><div class="gbtns bd-btns" data-arcade-games="multi"><a class="gbtn" data-v="onecard" href="/games/onecard/?v=20261121-campaign1" aria-label="원카드" style="text-decoration:none"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/onecard.webp?v=20261120-onecard7" alt="" width="480" height="320" loading="lazy"></span><span class="game-name">원카드</span></a><button class="gbtn" data-act="game-open" data-v="bang" aria-label="뱅! · 최대 7명"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/bang.webp" alt="" width="480" height="320" loading="lazy"></span><span>뱅!<small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 7명</small></span></button><button class="gbtn" data-act="game-open" data-v="tank" aria-label="탱크게임 · 최대 12명"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/tank.webp" alt="" width="480" height="320" loading="lazy"></span><span>탱크게임<small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 12명</small></span></button><a class="gbtn" data-v="yut" href="/games/yut/?v=20261121-yut-capture1&mode=online" aria-label="윷놀이 · 최대 8명" style="text-decoration:none"><span class="ge arcade-cover" aria-hidden="true"><img src="/games/yut/cover.webp?v=1" alt="" width="480" height="320" loading="lazy"></span><span class="game-name">윷놀이<small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 8명</small></span></a><button class="gbtn" data-act="game-open" data-v="tour" aria-label="마블 · 최대 8명"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/tour.webp" alt="" width="480" height="320" loading="lazy"></span><span>마블<small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 8명</small></span></button><button class="gbtn" data-act="game-open" data-v="ttang"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/ttang.webp" alt="" width="480" height="320" loading="lazy"></span><span>월드땅따먹기<small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 2명</small></span></button><button class="gbtn" data-act="bd-open" data-v="janggi"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/janggi.webp" alt="" width="480" height="320" loading="lazy"></span><span>장기<small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 2명</small></span></button><button class="gbtn" data-act="bd-open" data-v="chess"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/chess.webp" alt="" width="480" height="320" loading="lazy"></span><span>체스<small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 2명</small></span></button><button class="gbtn" data-act="bl-open" data-v="carom4"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/carom4.webp" alt="" width="480" height="320" loading="lazy"></span><span>당구<small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 2명</small></span></button></div>
+    <header class="game-section-heading"><div><span class="world-eyebrow">BETTER TOGETHER</span><h2>함께하는 플레이${g.bdInvites?` <span class="bd-badge">신청 ${g.bdInvites}</span>`:""}</h2></div><span>친구와 한 판</span></header><div class="gbtns bd-btns" data-arcade-games="multi"><a class="gbtn" data-v="onecard" href="/games/onecard/?v=20261121-campaign1" aria-label="원카드" style="text-decoration:none"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/onecard.webp?v=20261120-onecard7" alt="" width="480" height="320" loading="lazy"></span><span class="game-name">원카드</span></a><button class="gbtn" data-act="game-open" data-v="bang" aria-label="뱅! · 최대 7명"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/bang.webp" alt="" width="480" height="320" loading="lazy"></span><span>뱅!<small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 7명</small></span></button><button class="gbtn" data-act="game-open" data-v="tank" aria-label="탱크게임 · 최대 12명"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/tank.webp" alt="" width="480" height="320" loading="lazy"></span><span>탱크게임<small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 12명</small></span></button><a class="gbtn" data-v="yut" href="/games/yut/?v=20261122-yut-solo-first1" aria-label="윷놀이 · 최대 8명" style="text-decoration:none"><span class="ge arcade-cover" aria-hidden="true"><img src="/games/yut/cover.webp?v=1" alt="" width="480" height="320" loading="lazy"></span><span class="game-name">윷놀이<small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 8명</small></span></a><button class="gbtn" data-act="game-open" data-v="tour" aria-label="마블 · 최대 8명"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/tour.webp" alt="" width="480" height="320" loading="lazy"></span><span>마블<small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 8명</small></span></button><button class="gbtn" data-act="game-open" data-v="ttang"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/ttang.webp" alt="" width="480" height="320" loading="lazy"></span><span>월드땅따먹기<small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 2명</small></span></button><button class="gbtn" data-act="bd-open" data-v="janggi"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/janggi.webp" alt="" width="480" height="320" loading="lazy"></span><span>장기<small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 2명</small></span></button><button class="gbtn" data-act="bd-open" data-v="chess"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/chess.webp" alt="" width="480" height="320" loading="lazy"></span><span>체스<small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 2명</small></span></button><button class="gbtn" data-act="bl-open" data-v="carom4"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/carom4.webp" alt="" width="480" height="320" loading="lazy"></span><span>당구<small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 2명</small></span></button></div>
     ${worldArcadeAdultMarkup()}
     <header class="game-section-heading" data-arcade-test-heading><div><span class="world-eyebrow">DAILY</span><h2>일상</h2></div></header><div class="gbtns" data-arcade-games="test">${Object.entries(_r).filter(([,r])=>r.test&&!(r.age>=19)).map(([o,r])=>`<button class="gbtn" data-act="game-open" data-v="${o}" aria-label="${r.name}${r.age?" · 만 "+r.age+"세 이상":""}${r.memberOnly?" · 회원 전용":""}"><span class="ge" aria-hidden="true"><img src="/assets/design/games/${o}.svg${o==='runner'?'?v=20261110-runner-card-v3-3-1':''}" alt="" width="120" height="84" loading="lazy"></span><span class="game-name">${r.name}${r.age?" <small>"+r.age+"+</small>":""}${r.memberOnly?'<small class="game-test-badge">회원 전용</small>':""}</span></button>`).join("")}<a class="gbtn" href="/features/fanpages/index.html" aria-label="팬페이지" style="text-decoration:none;cursor:pointer"><span class="ge" aria-hidden="true"><img src="/features/fanpages/fan-tile.svg?v=20261110-fanpages1" alt="" width="120" height="84" loading="lazy"></span><span class="game-name">팬페이지<small class="game-test-badge">일상</small></span></a></div></div>`:""}<aside class="arcade-social" aria-label="대전방"><span class="world-eyebrow">PLAY TOGETHER</span><header class="arcade-status" aria-label="오락실 채널"><div class="visit-banner"><span class="world-live-dot" aria-hidden="true"></span><span id="pcount" aria-live="polite">${worldPlacePresenceText(t)}</span><span id="pch">${t.ch?t.ch+"호점":""}</span><button class="btn sm" data-act="pl-channel">채널 변경</button></div></header>${window.OjjudaArcadeRooms?.markup()||'<section class="arcade-rooms"><h3>대전방</h3><p class="note">대전방을 불러오는 중이에요.</p></section>'}</aside>`:""}function eo(){let t=z("#plog");if(!t||!g.place)return;let e=t.scrollHeight-t.scrollTop-t.clientHeight<40;(t.querySelector("[data-place-messages]")||t).innerHTML=Mf(g.place),e&&(t.scrollTop=t.scrollHeight)}function Bf(){if(g.place?.id==="park"&&worldParkNotes){worldParkNotes.sync();return}let t=z("#ppanel");if(t&&g.place){t.innerHTML=Df();syncWorldArcadeRooms();let e=z("#plog");e&&(e.scrollTop=e.scrollHeight)}}function _f(t){t.innerHTML='<span class="place-art-status" role="status">공간을 불러오고 있어요…</span>';let a=z("#plog");a&&(a.scrollTop=a.scrollHeight),g.placeT||(g.placeT=setInterval(pg,450))}function Sr(){if(g.place)worldPlaceArt?.sync()}
 function ql(t){let person=g.place?.npcs.find(p=>p.id===t&&p.live);if(person)bf(person)}var Ln={"enter-place"(t){xf(t.id)},"game-open"(t){Al(t.v)},"matgo-open"(){window.openMatgo?.()},"pl-nick"(t){let e=g.place;if(e){if(!e.npcs.some(o=>o.id===t.id)){M("지금은 이곳을 떠난 사람이에요");return}ql(t.id)}},"pl-leave"(){sr.tab({tab:"arcade"})},"pl-channel"(){let t=g.place;if(!t)return;if(t.live){let o=Gs(t.id,t.ch);if(o===t.ch){M("다른 채널이 모두 가득 찼어요");return}t.log=[{sys:!0,text:"채널을 옮기는 중이에요…"}],t.bubbles=[],eo(),Pa(t,o).catch(r=>{console.error(r),M("채널을 옮기지 못했어요")});return}let e=t.ch;for(;e===t.ch;)e=1+Math.floor(Math.random()*4);clearInterval(g.placeT),g.placeT=null,xf(t.id,e,t.fromMainMenu)},"pl-send"(){if(["park","arcade"].includes(g.place?.id))return;if(D.parkGuest){location.assign(window.OjjudaInvite?.withReferral("/?auth=login&next=note")||"/?auth=login&next=note");return}let t=g.place,e=z("#pmsg");if(!t||!e)return;let o=e.value.trim();if(!o)return;let r=Date.now();if(g.chatWaitUntil&&r<g.chatWaitUntil){M(`${Math.ceil((g.chatWaitUntil-r)/1e3)}초 뒤에 보낼 수 있어요`);return}o=maskWorldText(o);let a=Vp(o),i=Up(a);if(!i.ok){M(wl(i)),i.why!=="dup"&&$f(i.wait);return}if(oo(t,t.me,a),Yp(a),t.lastSend=r,e.value="",eo(),!t.live&&Pt[t.id].quiz&&t.quiz&&t.quiz.local&&!t.quiz.winner&&t.quiz.answers.some(l=>Dl(l)===Dl(a))){Lf(t,$.me.nick,!0);return}if(t.live){_0(t,a).then(()=>{Pt[t.id].quiz&&setTimeout(()=>Fg(t),700)}).catch(l=>{console.error(l);let s=Kp(l.message);s?(cg(t,a),Zp(),M(wl(s)),s.why!=="dup"&&$f(s.wait)):t.log.push({sys:!0,text:"메시지를 보내지 못했어요. 연결을 확인해 주세요"}),eo()});return}},"pl-react"(t){let e=g.place;if(["park","arcade"].includes(e?.id))return;if(e&&!(Date.now()-e.lastSend<800)){if(e.lastSend=Date.now(),oo(e,e.me,t.v,!1),e.log.push({who:$.me.nick,text:t.v+" 응원을 보냈어요",me:!0}),eo(),e.live){S0(t.v),Sr();return}Sr()}},"person-report"(t){let e=g.place,o=e&&e.npcs.find(i=>i.uid===t.uid),r=o?o.name:"이 사람",a=e?e.log.filter(i=>i.uid===t.uid).slice(-5).map(i=>i.text).join(`
@@ -2569,12 +2620,16 @@ function Yg(){
    :'<div class="ojjuda-guest-account" data-guest-account="agit" role="group" aria-label="회원가입 및 로그인"><div class="ojjuda-guest-account-actions"><a class="ojjuda-guest-account-signup" href="/?auth=signup&next=world">회원가입</a><a class="ojjuda-guest-account-login" href="/?auth=login&next=world">로그인</a></div></div>';
  const notifications=`<div class="set"><h3>실시간 알림 표시</h3><div class="line-row"><label for="n-friend">친구 신청</label><input type="checkbox" class="switch" id="n-friend" data-set="notify.friend"${settings.notify.friend?' checked':''}></div></div>`;
  const help=`<section class="ojjuda-guide-entry" aria-label="오쭈다 사용 안내"><h3>오쭈다 사용 안내</h3><a href="/guide.html?from=my&amp;v=20261113-public-info1">사용법 보기 <span aria-hidden="true">→</span></a></section><section class="set ojjuda-organization-entry" aria-labelledby="organization-entry-title"><h3 id="organization-entry-title">조직도</h3><div class="line-row"><a href="/features/organization/?from=agit">오쭈다 조직도 보기 <span aria-hidden="true">→</span></a></div></section><section class="set ojjuda-creator-entry" aria-labelledby="creator-entry-title"><h3 id="creator-entry-title">제작자 소개</h3><div class="line-row"><a href="/features/guide/creator.html?v=20261119-auto-theme1">만든이 mj830417의 이야기 <span aria-hidden="true">→</span></a></div></section><div class="set" data-section-versions><h3>버전 정보</h3>${Object.values(sectionReleases).map(section=>`<div class="line-row"><span>${section.name}</span><span class="note">${section.version}</span></div>`).join('')}</div>`;
- const apps=`<section class="ojjuda-settings-group" aria-labelledby="app-download-title"><h3 class="ojjuda-settings-heading" id="app-download-title">앱 다운로드</h3><div class="ojjuda-settings-list app-store-downloads"><div class="ojjuda-settings-row app-store-pending" data-store-app="agit" role="group" aria-label="오쭈다 아지트 앱 공개 준비 중"><span class="ojjuda-settings-label">오쭈다 아지트<small>앱 공개 준비 중</small></span><a class="app-store-action" href="/world.html?tab=hub" aria-label="오쭈다 아지트 웹으로 열기">웹으로 열기 ↗</a></div><a class="ojjuda-settings-row" data-store-app="pajang" href="https://play.google.com/store/apps/details?id=kr.ojjuda.pajang" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 파장 Google Play에서 보기 (새 창)">${label('오쭈다 파장')}<span class="ojjuda-settings-arrow" aria-hidden="true">↗</span></a><a class="ojjuda-settings-row" data-store-app="park" href="https://play.google.com/store/apps/details?id=kr.ojjuda.park" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 공원 Google Play에서 보기 (새 창)">${label('오쭈다 공원')}<span class="ojjuda-settings-arrow" aria-hidden="true">↗</span></a></div><p class="app-store-note">스토어 공개 후 설치할 수 있어요.</p></section>`;
+ const apps=`<section class="ojjuda-settings-group" aria-labelledby="app-download-title"><h3 class="ojjuda-settings-heading" id="app-download-title">앱 다운로드</h3><div class="ojjuda-settings-list app-store-downloads">
+   <a class="ojjuda-settings-row" data-store-app="agit" href="https://play.google.com/store/apps/details?id=kr.ojjuda.agit&amp;hl=ko" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 아지트 Google Play에서 보기 (새 창)"><span class="ojjuda-settings-label">오쭈다 아지트</span><span class="ojjuda-settings-arrow" aria-hidden="true">↗</span></a>
+   <a class="ojjuda-settings-row" data-store-app="pajang" href="https://play.google.com/store/apps/details?id=kr.ojjuda.pajang" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 파장 Google Play에서 보기 (새 창)">${label('오쭈다 파장')}<span class="ojjuda-settings-arrow" aria-hidden="true">↗</span></a>
+   <a class="ojjuda-settings-row" data-store-app="park" href="https://play.google.com/store/apps/details?id=kr.ojjuda.park" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 공원 Google Play에서 보기 (새 창)">${label('오쭈다 공원')}<span class="ojjuda-settings-arrow" aria-hidden="true">↗</span></a></div>
+   <p class="app-store-note">앱을 선택하면 Google Play 페이지가 열립니다. 아지트 비공개 테스트 참여가 필요하면 <a href="https://play.google.com/apps/testing/kr.ojjuda.agit" target="_blank" rel="noopener noreferrer">먼저 참여</a>한 뒤 설치하세요.</p></section>`;
  const admin=member&&D.isAdmin?group('관리자',detail('admin','운영 관리',`<div class="set admin-entry"><h3>관리자 게임 체험</h3><div class="line-row"><label for="admin-preview-toggle"><strong>관리자 모드</strong><small class="note" style="display:block">모든 단계 · 최고 업그레이드 · 틀린그림 정답</small></label><input type="checkbox" class="switch" id="admin-preview-toggle" aria-label="관리자 모드"${window.OjjudaAdminPreview?.isEnabled()?' checked':''}${window.OjjudaAdminPreview?.isAuthorized()?'':' disabled'}></div><p class="note">체험 중인 결과는 실제 진행도와 순위에 저장되지 않아요.</p><button class="btn pri" data-act="tab" data-tab="admin">운영 관리 열기</button></div>`)):'';
  const access=member?group('계정 관리',row('로그아웃','logout'))
    :!D.online&&!D.parkGuest?group('기기 기록',detail('local','기기 기록 관리','<div class="set"><p class="note">체험 기록은 이 기기에 저장돼요.</p><button type="button" class="btn danger" data-act="reset">처음 상태로 되돌리기</button></div>')):'';
- return `<section class="my-hub world-menu-grid world-settings-page" aria-label="설정"><header class="world-settings-header"><h2 class="h2">아지트 설정</h2><button type="button" class="world-settings-close" data-act="navigation-back" aria-label="설정 닫기"><span aria-hidden="true">×</span></button></header><div class="ojjuda-settings">${group('내 계정',account)}${group('이용 설정',detail('notifications','알림',notifications)+row('쭈 충전','',' data-ju-charge-open aria-haspopup="dialog" aria-controls="ju-charge-dialog"'))}${group('이용 안내',row('문의·의견','support-open')+link('이용약관','terms.html?from=my')+link('개인정보처리방침','privacy.html?from=my')+detail('help','도움말 · 버전 정보',help))}${apps}${access}${admin}</div></section>`;
-}var Hf='<span class="nl-logo" aria-hidden="true"><svg class="ojjuda-theme-logo" viewBox="-16 -16 544 544" width="26" height="26" aria-hidden="true" focusable="false"><path fill="currentColor" d="M100 0H354Q369 0 381 12L499 130Q512 143 512 165V428Q512 512 428 512H84Q0 512 0 428V100Q0 0 100 0Z"/>  <path fill="#FFF" d="M346 37Q346 22 358 31L476 149Q485 161 470 161H395Q346 161 346 112Z"/>  <path d="M108 290Q256 420 404 290" fill="none" stroke="#FFF" stroke-width="60" stroke-linecap="round"/></svg></span>';function Wf(t){return `<button class="note-link${t==="my"?" my":""}" data-act="enter-place" data-id="park" aria-label="공원 열기">${Hf}<span>공원</span><span class="nl-arrow" aria-hidden="true">→</span></button>`}function worldNoticeMarkup(){
+ return `<section class="my-hub world-menu-grid world-settings-page" aria-label="설정"><header class="world-settings-header"><h2 class="h2">아지트 설정</h2><button type="button" class="world-settings-close" data-act="navigation-back" aria-label="설정 닫기"><span aria-hidden="true">×</span></button></header><div class="ojjuda-settings">${group('내 계정',account)}${group('이용 설정',detail('notifications','알림',notifications)+row('쭈 충전','',' data-ju-charge-open aria-haspopup="dialog" aria-controls="ju-charge-dialog"'))}${group('이용 안내',row('문의·의견','support-open')+link('이용약관','terms.html?from=my')+link('개인정보처리방침','privacy.html?from=my')+detail('help','도움말 · 버전 정보',help))}${apps}${access}${admin}<ojjuda-service-banners current="agit"></ojjuda-service-banners></div></section>`;
+}var Hf='<span class="nl-logo" aria-hidden="true"><svg class="ojjuda-theme-logo" viewBox="-16 -16 544 544" width="26" height="26" aria-hidden="true" focusable="false"><path fill="currentColor" d="M100 0H354Q369 0 381 12L499 130Q512 143 512 165V428Q512 512 428 512H84Q0 512 0 428V100Q0 0 100 0Z"/>  <path fill="#FFF" d="M346 37Q346 22 358 31L476 149Q485 161 470 161H395Q346 161 346 112Z"/>  <path d="M108 290Q256 420 404 290" fill="none" stroke="#FFF" stroke-width="60" stroke-linecap="round"/></svg></span>';function Wf(t){return `<a class="note-link${t==="my"?" my":""}" href="/park/" aria-label="공원 열기">${Hf}<span>공원</span><span class="nl-arrow" aria-hidden="true">→</span></a>`}function worldNoticeMarkup(){
  if(g.tab==="admin"||!D.online||!wt.notice)return "";
  const theme=worldThemeNotice(),notice=`<span class="nb-announcement">${w(wt.notice)}</span>`;
  const contents=notice+(theme?`<span class="nb-divider" aria-hidden="true">✦</span><span class="nb-season">${w(theme)}</span>`:"");
@@ -3013,6 +3068,8 @@ async function om(t,e){
  const sessionEvent=worldAuthEvent,client=S;
  worldAuthSubscription=client.auth.onAuthStateChange((event,session)=>{
   if(binding!==worldAuthBinding||client!==S)return;
+  // A provisional empty initial session cannot replace a persisted member.
+  if(event==="INITIAL_SESSION"&&!session?.user)return;
   const sequence=++worldAuthEvent,user=session?.user||null,previousId=D.user?.id||null;
   const changed=previousId!==(user?.id||null);
   // Invalidate synchronously: a resolved profile promise may run before this
@@ -3085,7 +3142,7 @@ async function Un(user,epoch=worldAuthEpoch){
     member:true,owner,client:S,settings:$.settings,nickname:$.me.nick,
     stamps:window.OjjudaAgitHub?.safeState($.settings)?.stamps||[],
     createdDay:user.created_at?window.OjjudaAgitHub?.kstDate(new Date(user.created_at)):null,
-    save:Ti,navigate:tab=>sr.tab({tab}),isCurrent:current
+    save:Ti,navigate:tab=>tab==='park'?location.assign('/park/'):sr.tab({tab}),isCurrent:current
    });
   }
  }catch(error){if(current()){console.error(error);tm(error);}}
@@ -3126,7 +3183,7 @@ var Zb=[["all","전체 공개"],["friends","친구만"],["me","나만 보기"]];
  o.remote&&ec(o,viewer.current).then(comments=>{if(comments&&viewer.current())viewer.comments.innerHTML=Yn(o);}).catch(error=>{
   if(!viewer.current())return;console.error(error);viewer.comments.innerHTML='<div class="note">댓글을 불러오지 못했어요</div>';
  });
-}function Kb(t){let e=String(t&&t.message||""),o;return(o=e.match(/gb_fast:(\d+)/))?`방명록은 조금 천천히 남겨 주세요. ${o[1]}초 뒤에 다시 남길 수 있어요`:(o=e.match(/gb_many:(\d+)/))?`한 방에는 10분에 3개까지 남길 수 있어요. ${o[1]}분 뒤에 다시 남겨 주세요`:(o=e.match(/gb_hour:(\d+)/))?`방명록은 1시간에 20개까지 남길 수 있어요. ${o[1]}분 뒤에 다시 남겨 주세요`:/gb_dup/.test(e)?"같은 글을 여러 번 남길 수 없어요":/banned_word/.test(e)?"쓸 수 없는 표현이 들어 있어요":/row-level security|42501/.test(e+(t&&t.code||""))?"이 방에는 방명록을 남길 수 없어요":"방명록을 남기지 못했어요. 잠시 뒤 다시 시도해 주세요"}function sm(t,e){let o=$.friends.find(r=>r.id===t);o&&(closeWorldHouse(false),g.visiting=t,g.visitData=Object.assign({isMe:!1,tvMedia:null},o,{roomIdx:0}),g.tab="home",g.sec=e||"all",g.albumFilter="all",g.albumFolder="all",g.visitPos={gx:4,gy:6},g.visited.has(t)||(g.visited.add(t),o.visits.today++,o.visits.total++,I()),H(),window.scrollTo(0,0),D.online&&void openWorldHouse())}function ty(){if(qt)return;let t=document.querySelector(".stage, .door-stage");if(!t||t.querySelector(".surf-wave"))return;let e=document.createElement("div");e.className="surf-wave cover",e.setAttribute("aria-hidden","true"),t.appendChild(e)}function dm(){let t=document.querySelector(".surf-wave");t&&t.remove()}var sr={"where-owner"(t){t.msg&&M(t.msg)},"notice-open"(){ct(`<div class="mhead"><h3>📢 공지</h3><div class="row"><button type="button" class="btn sm pri" data-act="feedback-open" aria-haspopup="dialog" title="고장신고·문의·의견 보내기">제안</button><button type="button" class="btn sm ghost" data-act="close">닫기</button></div></div><p style="margin:0;white-space:pre-wrap;line-height:1.6">${w(wt.notice||"")}</p>`,"공지")},"charge-toggle"(){g.chargeOpen=!g.chargeOpen,H()},"note-soon"(){M("익명카드는 준비 중이에요. 곧 만나요! ✨")},"app-update"(){I1()},"app-update-dismiss"(){dismissSectionUpdate()},"door-toggle"(){if(D.online&&!D.doorReady){M("서버 설정이 필요해요. 관리자가 update_door.sql을 먼저 실행해야 해요");return}if(D.online&&D.doorWritable===!1){M("서버 설정이 필요해요. 관리자가 update_door_fix.sql을 실행해야 해요");return}$.doorClosed?($.doorClosed=!1,I(),H(),M("문을 열었어요. 친구들이 다시 놀러 올 수 있어요")):Tt("문을 닫을까요? 친구를 포함해 아무도 내 방과 글을 볼 수 없어요. 언제든 다시 열 수 있어요.","문 닫기",()=>{$.doorClosed=!0,I(),H(),M("문을 닫았어요. 푹 쉬어요 🌙")})},tab(t){if(!["hub","arcade","park","my","admin"].includes(t.tab))t={...t,tab:"hub"};worldVisitRequest++;if(t.tab==="admin"&&g.tab!=="admin"){worldAdminService="agit";L.area="account";L.tab="overview";}if(t.tab==="park"||t.tab==="arcade"){g.visiting=null;g.visitData=null;g.sel=null;if(g.tab!=="place"||g.place?.id!==t.tab)xf(t.tab,undefined,true);else g.place.fromMainMenu=true;return;}if(t.tab==="shop")t={...t,tab:"friends"};g.tab=t.tab,g.visiting=null,g.visitData=null,g.sel=null,t.tab==="home"&&(g.sec=g.sec||"diary"),H(),window.scrollTo(0,0);if(isWorldHouseTab())void openWorldHouse()},"go-home"(){sr.tab({tab:"home"})},sec(t){In(t.sec)},afilter(t){g.albumFilter=t.f,st()},async"diary-post"(t,e){let o=z("#d-body").value.trim(),r=z("#d-title").value.trim(),a=z("#d-vis").value;if(!o&&!g.pendingFile){M("내용을 적어주세요"),z("#d-body").focus();return}let i=null;if(g.pendingFile){e.disabled=!0;let l=await tc([g.pendingFile],{vis:a});if(e.disabled=!1,!l.length)return;i=l[0]}$.diary.unshift({id:$t(),title:r,body:o,vis:a,media:i,at:Date.now(),likes:0,liked:!1}),g.pendingFile=null,I(),st(),M("다이어리를 올렸어요")},like(t){let e=Rt(),o=e.diary.find(a=>a.id===t.id);if(!o)return;let r=o.liked;if(o.liked=!r,o.likes+=r?-1:1,st(),D.online&&(e.isMe||e.real)){Bd(o.id,r).catch(a=>{console.error(a),o.liked=r,o.likes+=r?1:-1,st(),M("공감을 저장하지 못했어요")});return}I()},"diary-del"(t){Tt("이 다이어리를 삭제할까요?","삭제",()=>{let e=$.diary.findIndex(o=>o.id===t.id);e>=0&&$.diary.splice(e,1),I(),st(),M("삭제했어요")})},"open-media"(t){nm(t.id)},"m-comment"(t,e){
+}function Kb(t){let e=String(t&&t.message||""),o;return(o=e.match(/gb_fast:(\d+)/))?`방명록은 조금 천천히 남겨 주세요. ${o[1]}초 뒤에 다시 남길 수 있어요`:(o=e.match(/gb_many:(\d+)/))?`한 방에는 10분에 3개까지 남길 수 있어요. ${o[1]}분 뒤에 다시 남겨 주세요`:(o=e.match(/gb_hour:(\d+)/))?`방명록은 1시간에 20개까지 남길 수 있어요. ${o[1]}분 뒤에 다시 남겨 주세요`:/gb_dup/.test(e)?"같은 글을 여러 번 남길 수 없어요":/banned_word/.test(e)?"쓸 수 없는 표현이 들어 있어요":/row-level security|42501/.test(e+(t&&t.code||""))?"이 방에는 방명록을 남길 수 없어요":"방명록을 남기지 못했어요. 잠시 뒤 다시 시도해 주세요"}function sm(t,e){let o=$.friends.find(r=>r.id===t);o&&(closeWorldHouse(false),g.visiting=t,g.visitData=Object.assign({isMe:!1,tvMedia:null},o,{roomIdx:0}),g.tab="home",g.sec=e||"all",g.albumFilter="all",g.albumFolder="all",g.visitPos={gx:4,gy:6},g.visited.has(t)||(g.visited.add(t),o.visits.today++,o.visits.total++,I()),H(),window.scrollTo(0,0),D.online&&void openWorldHouse())}function ty(){if(qt)return;let t=document.querySelector(".stage, .door-stage");if(!t||t.querySelector(".surf-wave"))return;let e=document.createElement("div");e.className="surf-wave cover",e.setAttribute("aria-hidden","true"),t.appendChild(e)}function dm(){let t=document.querySelector(".surf-wave");t&&t.remove()}var sr={"where-owner"(t){t.msg&&M(t.msg)},"notice-open"(){ct(`<div class="mhead"><h3>📢 공지</h3><div class="row"><button type="button" class="btn sm pri" data-act="feedback-open" aria-haspopup="dialog" title="고장신고·문의·의견 보내기">제안</button><button type="button" class="btn sm ghost" data-act="close">닫기</button></div></div><p style="margin:0;white-space:pre-wrap;line-height:1.6">${w(wt.notice||"")}</p>`,"공지")},"charge-toggle"(){g.chargeOpen=!g.chargeOpen,H()},"note-soon"(){M("익명카드는 준비 중이에요. 곧 만나요! ✨")},"app-update"(){I1()},"app-update-dismiss"(){dismissSectionUpdate()},"door-toggle"(){if(D.online&&!D.doorReady){M("서버 설정이 필요해요. 관리자가 update_door.sql을 먼저 실행해야 해요");return}if(D.online&&D.doorWritable===!1){M("서버 설정이 필요해요. 관리자가 update_door_fix.sql을 실행해야 해요");return}$.doorClosed?($.doorClosed=!1,I(),H(),M("문을 열었어요. 친구들이 다시 놀러 올 수 있어요")):Tt("문을 닫을까요? 친구를 포함해 아무도 내 방과 글을 볼 수 없어요. 언제든 다시 열 수 있어요.","문 닫기",()=>{$.doorClosed=!0,I(),H(),M("문을 닫았어요. 푹 쉬어요 🌙")})},tab(t){if(!["hub","arcade","park","my","admin"].includes(t.tab))t={...t,tab:"hub"};worldVisitRequest++;if(t.tab==="admin"&&D.online&&D.isAdmin&&D.user?.id)bindWorldAdminOwner();if(t.tab==="admin"&&g.tab!=="admin"){worldAdminService="agit";L.area="account";L.tab="overview";}if(t.tab==="park"||t.tab==="arcade"){g.visiting=null;g.visitData=null;g.sel=null;if(g.tab!=="place"||g.place?.id!==t.tab)xf(t.tab,undefined,true);else g.place.fromMainMenu=true;return;}if(t.tab==="shop")t={...t,tab:"friends"};g.tab=t.tab,g.visiting=null,g.visitData=null,g.sel=null,t.tab==="home"&&(g.sec=g.sec||"diary"),H(),window.scrollTo(0,0);if(isWorldHouseTab())void openWorldHouse()},"go-home"(){sr.tab({tab:"home"})},sec(t){In(t.sec)},afilter(t){g.albumFilter=t.f,st()},async"diary-post"(t,e){let o=z("#d-body").value.trim(),r=z("#d-title").value.trim(),a=z("#d-vis").value;if(!o&&!g.pendingFile){M("내용을 적어주세요"),z("#d-body").focus();return}let i=null;if(g.pendingFile){e.disabled=!0;let l=await tc([g.pendingFile],{vis:a});if(e.disabled=!1,!l.length)return;i=l[0]}$.diary.unshift({id:$t(),title:r,body:o,vis:a,media:i,at:Date.now(),likes:0,liked:!1}),g.pendingFile=null,I(),st(),M("다이어리를 올렸어요")},like(t){let e=Rt(),o=e.diary.find(a=>a.id===t.id);if(!o)return;let r=o.liked;if(o.liked=!r,o.likes+=r?-1:1,st(),D.online&&(e.isMe||e.real)){Bd(o.id,r).catch(a=>{console.error(a),o.liked=r,o.likes+=r?1:-1,st(),M("공감을 저장하지 못했어요")});return}I()},"diary-del"(t){Tt("이 다이어리를 삭제할까요?","삭제",()=>{let e=$.diary.findIndex(o=>o.id===t.id);e>=0&&$.diary.splice(e,1),I(),st(),M("삭제했어요")})},"open-media"(t){nm(t.id)},"m-comment"(t,e){
  const input=z("#m-cm"),submitted=input?.value,text=submitted?.trim();if(!text)return;
  const record=Rt().album.find(item=>item.id===t.id),viewer=mediaCommentViewer();
  if(!record||!viewer.current()||!viewer.modal.contains(e))return;
@@ -3322,7 +3379,7 @@ function restoreWorldRoute(route){
 }
 function worldRouteUrl(route){
  const url=new URL(location.href);
- for(const key of ['game','challenge','score','screwTest','archery_shop','restaurantView','game_update','place','card','keep','compose','view','admin','from'])url.searchParams.delete(key);
+ for(const key of ['game','challenge','score','screwTest','archery_shop','restaurantView','setting','game_update','place','card','keep','compose','view','admin','from'])url.searchParams.delete(key);
  url.searchParams.set('tab',route.tab==='admin'?'my':route.tab);
  if(route.tab==='admin'){url.searchParams.set('admin',route.section);url.searchParams.set('from',window.OjjudaAdminScope?.resolve(route.service,route.section)||'agit');}
  return url.href;
@@ -3400,7 +3457,7 @@ sr["adm-pin"]=(input)=>{
 };
 sr["adm-folder"]=(_input,button)=>window.OjjudaAdminNavigation?.selectFolder(button);
 for(const action of ["tab","adm-area","adm-tab","adm-open","adm-members","adm-risk","adm-note-reports","adm-world-reports","house-playtest","furniture-studio"]){const original=sr[action];if(original)sr[action]=function(...args){if(worldRouteRestoring||adminCanLeave())return original(...args)}}
-h0(H);H1();Tf(H);uf(H);function enterWorldGuest(start){D.online=false;D.parkGuest=true;D.user=null;resumeArcadeRounds();xd(false);Fs(Ao());$.me={nick:"손님",bio:"로그인하면 내 공간과 기록을 만들 수 있어요",mood:"😊",moodText:"둘러보는 중"};$.coins=0;start();window.OjjudaAgitWelcome?.enter({member:false,navigate:tab=>sr.tab({tab}),isCurrent:()=>D.parkGuest&&!D.online});void window.OjjudaGuestVisits?.record();}
+h0(H);H1();Tf(H);uf(H);function enterWorldGuest(start){D.online=false;D.parkGuest=true;D.user=null;resumeArcadeRounds();xd(false);Fs(Ao());$.me={nick:"손님",bio:"로그인하면 내 공간과 기록을 만들 수 있어요",mood:"😊",moodText:"둘러보는 중"};$.coins=0;start();window.OjjudaAgitWelcome?.enter({member:false,navigate:tab=>tab==='park'?location.assign('/park/'):sr.tab({tab}),isCurrent:()=>D.parkGuest&&!D.online});void window.OjjudaGuestVisits?.record();}
 function py(){if(D.parkGuest)return;let t=Xt();if($.visits.day!==t){if(!D.online){let e=3+Math.floor(Math.random()*8);$.visits.today=e,$.visits.total+=e}$.visits.day=t,$.friends.forEach(e=>{let o=2+Math.floor(Math.random()*15);e.visits.today=o,e.visits.total+=o}),I()}}function wc(){if(worldHouseClose||worldHouseOpening)return false;if(window.OjjudaCharge?.isOpen())return false;if(worldNotifications?.isOpen?.()||window.OjjudaNoteSupport?.isOpen?.())return false;let t=document.activeElement,e=t&&(t.tagName==="INPUT"||t.tagName==="TEXTAREA");return(g.tab==="home"||g.tab==="friends"||g.tab==="my")&&!g.drag&&!e&&!z("#modal-root").innerHTML}var worldNewsPending=null;
 async function kc(){
  if(!D.online||document.hidden)return;
@@ -3439,10 +3496,10 @@ function openWorldOnecard(options={}){
  return location.assign(target.pathname+target.search);
 }
 function openWorldYut(options={}){
- const target=new URL('/games/yut/',location.origin);target.searchParams.set('v','20261121-yut-capture1');
+ const target=new URL('/games/yut/',location.origin);target.searchParams.set('v','20261122-yut-solo-first1');
  const roomNo=Number(options.roomNo??options.joinCode);
  if(Number.isSafeInteger(roomNo)&&roomNo>=1001)target.searchParams.set('room',String(roomNo));
- else{target.searchParams.set('mode','online');if(options.create)target.searchParams.set('create','1');}
+ else if(options.mode==='online'||options.create===true){target.searchParams.set('mode','online');if(options.create===true)target.searchParams.set('create','1');}
  return location.assign(target.pathname+target.search);
 }
 function openWorldGameLink(id,options={}){
@@ -3457,7 +3514,18 @@ function openWorldGameLink(id,options={}){
  if(id==='screw_box'||id==='screw_flat')return Al('screw',{screwMode:id==='screw_flat'?'flat':'box'});
  if(['sacheonseong','solitaire','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw','bang','tank','tour','ttang','poker','roulette','photo_ttang','archery','festival'].includes(id))return Al(id);
 }
-function my(){py();if(!worldEntryRouted){worldEntryRouted=true;const url=new URL(location.href),tab=url.searchParams.get("tab"),place=url.searchParams.get("place");sr.tab({tab:url.searchParams.getAll("game").length===1?"arcade":place==="park"||tab==="park"?"park":tab==="my"||tab==="settings"?"my":tab==="hub"?"hub":tab==="arcade"?"arcade":"hub"});let entry=url.searchParams.get("game");try{entry=window.OjjudaGameChallenges?.requestedGame?.()||entry}catch{}if(url.searchParams.getAll("game").length===1){
+// Park links use the same account controls and preferences as the Agit settings page.
+function openLinkedAccountSetting(url){
+ const key=url.searchParams.get('setting');
+ if(!['profile','friends','notifications'].includes(key))return;
+ const panel=document.querySelector('.my-hub [data-my-group="'+key+'"]');
+ if(!panel)return;
+ panel.open=true;
+ if(key==='friends')P.communityOpen=true;
+ panel.querySelector('summary')?.focus({preventScroll:true});
+ panel.scrollIntoView({block:'start'});
+}
+function my(){py();if(!worldEntryRouted){worldEntryRouted=true;const url=new URL(location.href),tab=url.searchParams.get("tab"),place=url.searchParams.get("place");sr.tab({tab:url.searchParams.getAll("game").length===1?"arcade":place==="park"||tab==="park"?"park":tab==="my"||tab==="settings"?"my":tab==="hub"?"hub":tab==="arcade"?"arcade":"hub"});if(g.tab==="my")openLinkedAccountSetting(url);let entry=url.searchParams.get("game");try{entry=window.OjjudaGameChallenges?.requestedGame?.()||entry}catch{}if(url.searchParams.getAll("game").length===1){
  const gameOptions=entry==="restaurants"&&url.searchParams.get("restaurantView")==="recommendations"?{openRecommendations:true}:undefined;
  if(entry==='screw_flat'&&url.searchParams.get('screwTest')==='1'){
   const previewOwner=D.online?D.user?.id:null;
@@ -3622,12 +3690,6 @@ var worldPlaceArt=null;
 function worldMatgoButton(){
  return window.OjjudaMatgoAccess?.visible()?`<button class="gbtn" data-act="matgo-open" aria-label="맞고 · 만 19세 이상 · 최대 2명"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/matgo.webp" alt="" width="480" height="320" loading="lazy"></span><span>맞고 <small>19+</small><small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 2명</small></span></button>`:"";
 }
-function worldPokerButton(){
- return window.OjjudaMatgoAccess?.visible(19)?`<button class="gbtn" data-act="game-open" data-v="poker" aria-label="세븐포커 · 만 19세 이상 · 최대 4명"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/poker.webp" alt="" width="480" height="320" loading="lazy"></span><span>세븐포커 <small>19+</small><small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 4명</small></span></button>`:"";
-}
-function worldRouletteButton(){
- return window.OjjudaMatgoAccess?.visible(19)?`<button class="gbtn" data-act="game-open" data-v="roulette" aria-label="룰렛 · 만 19세 이상 · 최대 4명"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/roulette.webp" alt="" width="480" height="320" loading="lazy"></span><span>룰렛 <small>19+</small><small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 4명</small></span></button>`:"";
-}
 function worldPhotoTtangButton(){
  return window.OjjudaMatgoAccess?.visible(19)?`<button class="gbtn" data-act="game-open" data-v="photo_ttang" aria-label="포토땅따먹기 · 만 19세 이상"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/photo_ttang.webp" alt="" width="480" height="320" loading="lazy"></span><span class="game-name">포토땅따먹기 <small>19+</small><small style="display:block;font-size:10px;font-weight:400;opacity:.7">혼자 플레이</small></span></button>`:"";
 }
@@ -3635,7 +3697,7 @@ function worldArcadeAdultAllowed(){
  return !!(D.online&&D.user?.id&&window.OjjudaMatgoAccess?.visible(19)===true);
 }
 function worldArcadeAdultMarkup(){
- return worldArcadeAdultAllowed()?`<section class="arcade-adult" data-arcade-adult aria-label="어른들 플레이"><header class="game-section-heading"><div><span class="world-eyebrow">ADULT PLAY</span><h2>어른들 플레이</h2></div><span>만 19세 이상</span></header><div class="gbtns" data-arcade-games="adult">${worldMatgoButton()}${worldPokerButton()}${worldRouletteButton()}${worldPhotoTtangButton()}<a class="gbtn" data-v="drinking" href="/games/drinking/?v=20261120-service-actions1" aria-label="술게임 · 만 19세 이상 · 최대 12명" style="text-decoration:none"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/drinking.webp" alt="" width="480" height="320" loading="lazy"></span><span class="game-name">술게임 <small>19+</small><small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 12명</small></span></a></div></section>`:"";
+ return worldArcadeAdultAllowed()?`<section class="arcade-adult" data-arcade-adult aria-label="어른들 플레이"><header class="game-section-heading"><div><span class="world-eyebrow">ADULT PLAY</span><h2>어른들 플레이</h2></div><span>만 19세 이상</span></header><div class="gbtns" data-arcade-games="adult">${worldMatgoButton()}${worldPhotoTtangButton()}<a class="gbtn" data-v="drinking" href="/games/drinking/?v=20261120-service-actions1" aria-label="술게임 · 만 19세 이상 · 최대 12명" style="text-decoration:none"><span class="ge arcade-cover" aria-hidden="true"><img src="/assets/design/games/drinking.webp" alt="" width="480" height="320" loading="lazy"></span><span class="game-name">술게임 <small>19+</small><small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 12명</small></span></a></div></section>`:"";
 }
 function syncWorldArcadeAdultGames(){
  if(g.tab!=="place"||g.place?.id!=="arcade")return;
@@ -3726,17 +3788,12 @@ function syncWorldArcadeRooms(){
     if(D.online&&D.user?.id===owner&&data?.code)location.assign('/games/'+kind+'/?room='+encodeURIComponent(data.code));
     return;
    }
-   if(kind==='roulette'){
-    const client=S,{data,error}=await client.rpc('roulette_action',{p_action:'create',p_payload:{mode:'online',title:params.title,capacity:params.capacity,request_id:params.request_id}});
-    if(error)throw error;if(!data?.ok||!data.room?.code)throw Error(data?.error||'unavailable');
-    if(!D.online||D.user?.id!==owner||S!==client)return;dt();Al(kind,{joinCode:data.room.code});return;
-   }
    if(kind==='ttang'){
     const {data,error}=await S.rpc('arcade_ttang_room',{p_action:'create',p_title:params.title,p_request:params.request_id});
     if(error)throw error;if(!data?.ok)throw Error('unavailable');
     if(D.user?.id!==owner)return;dt();Al(kind,{hostCode:data.room.code,arcadeRoom:data.room.id});return;
    }
-   const {data,error}=await S.functions.invoke(['onecard','bang','tank','poker'].includes(kind)?kind:'marble',{body:{action:'create',request_id:params.request_id,...(kind==='onecard'?{clientVersion:'1.4.0'}:{}),options:{title:params.title,capacity:kind==='onecard'?5:params.capacity,...(kind==='onecard'?{}:kind==='tank'||kind==='poker'?{mode:'online'}:{maxRound:25})}}});
+   const {data,error}=await S.functions.invoke(['onecard','bang','tank'].includes(kind)?kind:'marble',{body:{action:'create',request_id:params.request_id,...(kind==='onecard'?{clientVersion:'1.4.0'}:{}),options:{title:params.title,capacity:kind==='onecard'?5:params.capacity,...(kind==='onecard'?{}:kind==='tank'?{mode:'online'}:{maxRound:25})}}});
    if(error){try{const body=await error.context.json();throw Error(body.error||'unavailable');}catch(e){throw Error(e.message||'unavailable');}}
    if(!data?.ok)throw Error(data?.error||'unavailable');
    if(kind==='tour'){const published=await S.rpc('arcade_publish_marble',{p_room:data.room.id});if(published.error||!published.data?.ok)throw Error(published.error?.message||'unavailable');}
@@ -3751,11 +3808,7 @@ function syncWorldArcadeRooms(){
     const {error}=await passwordRoomAction(room.kind,{p_action:'cancel',p_code:room.code});
     if(error)throw error;return;
    }
-   if(room.kind==='roulette'){
-    const {data,error}=await S.rpc('roulette_action',{p_action:'leave',p_payload:{room_id:room.match_id,code:room.code,request_id:crypto.randomUUID()}});
-    if(error)throw error;if(!data?.ok)throw Error(data?.error||'unavailable');return;
-   }
-   if(room.kind==='poker'||room.kind==='onecard'){
+   if(room.kind==='onecard'){
     const current=await S.functions.invoke(room.kind,{body:{action:'read',room_id:room.match_id,...(room.kind==='onecard'?{clientVersion:'1.4.0'}:{})}});
     if(current.error||!current.data?.room)throw Error(current.data?.error||'room_unavailable');
     const result=await S.functions.invoke(room.kind,{body:{action:'leave',room_id:room.match_id,version:current.data.room.version,request_id:crypto.randomUUID(),...(room.kind==='onecard'?{clientVersion:'1.4.0'}:{})}});
@@ -3826,7 +3879,7 @@ sr.tab=function(action){
  if(action?.tab!=='hub')return navigateWorldTabOriginal.call(this,action);
  worldVisitRequest++;
  g.tab='hub';g.visiting=null;g.visitData=null;g.sel=null;
- H();window.scrollTo(0,0);
+ H();window.scrollTo(0,0);void syncAgitParkMission();
 };
 function agitProgressKey(owner){return 'ojjuda-agit-progress-v1:'+owner;}
 function readAgitProgress(owner){
@@ -3842,12 +3895,50 @@ function backUpAgitProgress(){
 }
 function restoreAgitProgress(owner){
  const hub=window.OjjudaAgitHub,backup=readAgitProgress(owner);
- if(!hub||!backup||!$.settings)return;
- const merged=hub.mergeProgress($.settings.agitHub,backup);
- if(JSON.stringify(hub.safeState($.settings))===JSON.stringify(merged))return;
- $.settings.agitHub=merged;
- updateAgitProgress(true);
+ if(!hub||!$.settings)return;
+ if(backup){
+  const merged=hub.mergeProgress($.settings.agitHub,backup);
+  if(JSON.stringify(hub.safeState($.settings))!==JSON.stringify(merged)){
+   $.settings.agitHub=merged;
+   updateAgitProgress(true);
+  }
+ }
+ // A direct Park visit writes this receipt only after an actual successful card
+ // publication. Reconcile it when the same member next opens Agit.
+ try{
+  const key='ojjuda:agit-park-card:'+owner;
+  const raw=sessionStorage.getItem(key);
+  if(raw){
+   const receipt=JSON.parse(raw);
+   sessionStorage.removeItem(key);
+   if(receipt?.date===hub.kstDate()&&/^[0-9a-f-]{36}$/i.test(receipt.cardId)){
+    updateAgitProgress(hub.complete($.settings,'park'));
+   }
+  }
+ }catch{}
 }
+// Standalone Park commits the mission on the server. Merge it when returning
+// from another page or app, including an Agit restored from the back/forward cache.
+var agitParkSyncRequest=null;
+async function syncAgitParkMission(){
+ const owner=D.online&&!D.parkGuest&&!D.user?.is_anonymous?D.user?.id:null;
+ const hub=window.OjjudaAgitHub,epoch=worldAuthEpoch,date=hub?.kstDate();
+ if(!owner||ua!==owner||!hub||g.tab!=='hub'||document.hidden||hub.isComplete($.settings,'park',date))return;
+ if(agitParkSyncRequest?.owner===owner&&agitParkSyncRequest.epoch===epoch&&agitParkSyncRequest.date===date)return;
+ const request={owner,epoch,date};
+ agitParkSyncRequest=request;
+ try{
+  const {data,error}=await S.from('user_private').select('data').eq('user_id',owner).maybeSingle();
+  if(error||!worldAuthCurrent(owner,epoch)||ua!==owner||hub.kstDate()!==date)return;
+  if(hub.isComplete(data?.data?.settings,'park',date)&&hub.complete($.settings,'park',date)){
+   backUpAgitProgress();refreshAgitHub();
+  }
+ }catch(error){console.warn('공원 미션 동기화 실패',error);}
+ finally{if(agitParkSyncRequest===request)agitParkSyncRequest=null;}
+}
+window.addEventListener('pageshow',event=>{if(event.persisted)void syncAgitParkMission();});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)void syncAgitParkMission();});
+window.addEventListener('online',()=>void syncAgitParkMission());
 async function flushAgitProgress(){
  if(!ua||!de)return true;
  const deadline=Date.now()+4000;
@@ -3921,7 +4012,7 @@ sr['agit-daily']=function(action){
 sr['agit-park']=function(action,element,event){
  if(event?.ctrlKey||event?.metaKey||event?.shiftKey||event?.altKey)return;
  event?.preventDefault();
- sr.tab({tab:'park'});
+ location.assign('/park/');
 };
 sr['agit-fan']=function(action,element,event){
  const pending=markAgitPageVisit('fanpages');
@@ -3955,7 +4046,7 @@ sr['agit-task']=function(action){
  const id=action.v,hub=window.OjjudaAgitHub;
  if(!agitMissionStillCurrent(id))return;
  if(hub.isComplete($.settings,id)){M('이미 완료한 미션이에요.');return;}
- if(id==='park')return worldParkNotes?.open('compose');
+ if(id==='park')return location.assign('/park/?compose=memo');
  if(id==='baseball')return openAgitPuzzle('baseball');
  if(id==='quiz')return openAgitPuzzle(hub.quizMode());
  if(id==='recommend')return sr['agit-play']({v:hub.recommended(_r)?.id});

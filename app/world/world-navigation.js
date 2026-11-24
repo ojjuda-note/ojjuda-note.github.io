@@ -401,7 +401,6 @@
         '/games/sacheonseong/index.html': '#game-home',
         '/games/spot-difference/index.html': '#game-home',
         '/games/ojjuda-tour/index.html': '#exitBtn',
-        '/games/poker/index.html': '[data-action="exit"]',
         '/games/matgo.html': '#exit',
         '/games/matgo-online.html': '#exit'
       };

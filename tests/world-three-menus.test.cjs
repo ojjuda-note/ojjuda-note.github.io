@@ -20,6 +20,7 @@ function fixture(url='https://ojjuda.kr/world.html'){
  w.eval(fs.readFileSync(path.join(root,'shared/games/world-game-rankings.js'),'utf8'));
  w.eval(fs.readFileSync(path.join(root,'shared/games/world-game-assets.js'),'utf8'));
  w.eval(fs.readFileSync(path.join(root,'features/home/agit-hub.js'),'utf8'));
+ w.eval(fs.readFileSync(path.join(root,'shared/brand/service-banners.js'),'utf8'));
  w.eval(source);
  return dom;
 }
@@ -47,18 +48,23 @@ function fixture(url='https://ojjuda.kr/world.html'){
     ['group','restaurants','festival']);
   assert.equal(w.document.querySelector('#agit-daily h2').textContent,'일상 둘러보기');
   assert.deepEqual([...w.document.querySelectorAll('[data-act=agit-daily][aria-label*="회원 전용"]')].map(b=>b.dataset.v),['group']);
-  const parkBanner=w.document.querySelector('.agit-park-banner');
-  assert.ok(parkBanner,'Park stays discoverable after removal from the global menu');
-  assert.equal(parkBanner.previousElementSibling.id,'agit-daily');
-  assert.ok(parkBanner.nextElementSibling.classList.contains('agit-pajang-banner'),'the Park banner appears immediately before Pajang');
-  const parkClick=new w.MouseEvent('click',{bubbles:true,cancelable:true,button:0});
-  parkBanner.dispatchEvent(parkClick);
-  assert.equal(parkClick.defaultPrevented,true,'the banner does not also reload the whole page');
-  assert.equal(active(),'park','the actual banner opens Park within the existing World shell');
+  assert.equal(w.document.querySelector('.agit-park-banner,.agit-pajang-banner,ojjuda-service-banners'),null,'large service banners no longer occupy the Agit home');
+  t.actions.tab({tab:'my'});
+  const bannerRow=w.document.querySelector('ojjuda-service-banners[current="agit"]');
+  assert.equal(bannerRow.parentElement.lastElementChild,bannerRow,'service banners occupy the bottom of Settings');
+  assert.deepEqual([...bannerRow.querySelectorAll('.ojjuda-service-banner')].map(link=>link.dataset.service),['park','pajang']);
+  const parkBanner=bannerRow.querySelector('[data-service="park"]');
+  assert.equal(new URL(parkBanner.href).pathname,'/park/');
+  assert.equal(parkBanner.dataset.act,undefined,'Park opens as its own document, not inside World');
+  assert.equal(active(),'my','direct Park links do not initialize the old iframe');
+  assert.match(html,/function Wf\(t\)\{return `<a class=\"note-link/,'Park shortcuts open a standalone link');
   t.actions.tab({tab:'hub'});
   t.actions.tab({tab:'arcade'});assert.equal(active(),'arcade');
   assert.equal(w.document.querySelector('#pstage'),null,'the old arcade illustration is removed');
-  assert.ok(w.document.querySelector('[data-arcade-rank-root]'));
+  assert.equal(w.document.querySelector('[data-arcade-rank-root]'),null,'the ranking widget now lives on the dedicated rankings page');
+  const rankingsLink=w.document.querySelector('.arcade-overview .arcade-ranking-entry');
+  assert.ok(rankingsLink,'Arcade has a visible ranking entry');
+  assert.equal(rankingsLink.getAttribute('href'),'/features/arcade/all-rankings.html');
   assert.ok(w.document.querySelector('[data-arcade-games=solo]'));
   assert.ok(w.document.querySelector('[data-arcade-games=multi]'));
   assert.equal(w.document.querySelector('[data-arcade-adult]'),null,'guests have no adult section');
@@ -77,7 +83,7 @@ function fixture(url='https://ojjuda.kr/world.html'){
   const gameId=button=>button.dataset.act==='matgo-open'?'matgo':button.dataset.act==='bl-open'?'billiards':button.dataset.v;
   const categories={
    solo:['chacha_rush','solitaire','archery','sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw'],
-   multi:['bang','tank','yut','tour','ttang','janggi','chess','billiards'],
+   multi:['onecard','bang','tank','yut','tour','ttang','janggi','chess','billiards'],
    adult:['matgo','poker','roulette','photo_ttang','drinking']
   };
   assert.deepEqual([...w.document.querySelectorAll('[data-arcade-games]')].map(grid=>grid.dataset.arcadeGames),Object.keys(categories),'Arcade has solo, multiplayer and adult games');
@@ -114,7 +120,7 @@ function fixture(url='https://ojjuda.kr/world.html'){
   assertArcadeCategories();
   delete w.OjjudaMatgoAccess;t.auth.online=false;t.auth.user=null;t.render();
   assertArcadeCategories();
-  assert.ok(w.document.querySelector('[data-arcade-rank-root]').compareDocumentPosition(w.document.querySelector('#ppanel'))&w.Node.DOCUMENT_POSITION_FOLLOWING,'rankings precede games');
+  assert.ok(w.document.querySelector('.arcade-overview').compareDocumentPosition(w.document.querySelector('#ppanel'))&w.Node.DOCUMENT_POSITION_FOLLOWING,'the ranking link precedes games');
   assert.equal(t.state.placeT,null,'arcade presence needs no repeating scene-update timer');
   const room=t.state.place,presence=t.presence();room.live=true;room.presenceStatus='auth';
   presence.onConnection(room);
@@ -145,10 +151,10 @@ function fixture(url='https://ojjuda.kr/world.html'){
    t.state.tab=tab;t.render();assert.equal(active(),'arcade',tab+' restored state redirects to arcade');
   }
   for(const id of ['cafe','library']){t.actions['enter-place']({id});assert.equal(active(),'arcade');}
-  t.auth.isAdmin=true;t.auth.online=true;t.actions.tab({tab:'my'});
+  t.auth.isAdmin=true;t.auth.online=true;t.auth.user={id:'admin-menu-fixture'};t.actions.tab({tab:'my'});
   assert.equal(w.document.querySelectorAll('.sidenav [data-tab]').length,3,'administration is inside settings');
   assert.ok(w.document.querySelector('.my-hub [data-tab=admin]'));
-  assert.deepEqual(Array.from(t.adminTabs.content,x=>x[0]),['cards','messages','groups','photo-stages','drinking-prompts','risk','map','rewards']);
+  assert.deepEqual(Array.from(t.adminTabs.content,x=>x[0]),['cards','messages','pajang-answers','pajang-questions','pajang-chats','groups','photo-stages','drinking-prompts','risk','map','rewards']);
   assert.equal(t.adminTabs.operations.some(x=>x[0]==='quiz'),false);
   t.adminState.area='trash';t.adminState.tab='trash-cards';
   assert.ok(t.adminMarkup().includes('world-admin-trash'),'deleted cards use the unified trash screen');

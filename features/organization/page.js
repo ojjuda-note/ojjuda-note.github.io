@@ -7,12 +7,13 @@
   const retry = document.getElementById('retry');
   const settings = {
     agit: '/world.html?tab=my',
-    park: '/world.html?place=park&view=settings',
+    park: '/park/?view=settings',
     pajang: '/features/pajang/station.html?tab=profile'
   };
   const source = new URLSearchParams(location.search).get('from');
   const service = Object.hasOwn(settings, source) ? source : 'agit';
   document.getElementById('settings-back').href = settings[service];
+  if (service !== 'agit') document.querySelector('.brand').href = settings[service];
   let chart = null, request = null, generation = 0;
 
   async function load() {

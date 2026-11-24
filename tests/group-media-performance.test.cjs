@@ -30,7 +30,7 @@ function fixture({media=[],download,upload,autoObserve=true}={}){
    remove:async paths=>{removed.push(...paths);return {};} })},
   rpc:async(name,args)=>{
    let data=[],action=args.p_action,payload=args.p_payload||{};calls.push({name,action,payload});
-   if(name==='group_home')data={rooms:[room],directory:[{...room,is_member:true}],invitations:[]};
+   if(name==='group_home_sorted')data={rooms:[room],directory:[{...room,is_member:true}],invitations:[]};
    if(name==='group_board'){
     if(action==='rooms')data=[room];
     if(action==='feed')data=entries;

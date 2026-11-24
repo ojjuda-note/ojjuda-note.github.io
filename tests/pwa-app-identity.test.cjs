@@ -10,7 +10,7 @@ const revision = source.match(/const iconRevision = '([^']+)'/)[1];
 const manifestRevision = '20261119-illustrated-icons-1';
 const services = {
   agit: {name: '오쭈다 아지트', manifest: '/manifest.webmanifest', icon: '/icon-192.png', id: '/world.html', start: '/world.html'},
-  park: {name: '오쭈다 공원', manifest: '/park/manifest.webmanifest', icon: '/park/assets/icon-192.png', id: '/world.html?place=park', start: '/world.html?place=park'},
+  park: {name: '오쭈다 공원', manifest: '/park/manifest.webmanifest', icon: '/park/assets/icon-192.png', id: '/world.html?place=park', start: '/park/'},
   pajang: {name: '오쭈다 파장', manifest: '/features/pajang/manifest.webmanifest', icon: '/features/pajang/assets/icon-192.png', id: '/features/pajang/', start: '/features/pajang/'}
 };
 
@@ -118,4 +118,39 @@ test('manifests preserve Agit identity and give Park and Pajang separate install
   const agit = JSON.parse(fs.readFileSync(path.join(root, 'manifest.webmanifest'), 'utf8'));
   assert.equal(agit.id, '/world.html');
   assert.equal(agit.start_url, './world.html');
+});
+
+test('installed Agit, Park and Pajang authenticate before displaying their entrances', () => {
+  const read = file => fs.readFileSync(path.join(root, file), 'utf8');
+  const world = read('world.html');
+  // Lightweight PWA checkouts can omit the large Park renderer; the full
+  // browser/unit suite verifies its callback while this suite checks entry assets.
+  const parkPath = path.join(root, 'note/preview.js');
+  const park = fs.existsSync(parkPath) ? read('note/preview.js') : null;
+  const pajangPath = path.join(root, 'features/pajang/entry.mjs');
+  const cssPath = path.join(root, 'features/pajang/entry-design.css');
+  const pajang = fs.existsSync(pajangPath) ? read('features/pajang/entry.mjs') : null;
+  const css = fs.existsSync(cssPath) ? read('features/pajang/entry-design.css') : null;
+  const pajangEntry = read('features/pajang/index.html');
+  const pajangMain = read('features/pajang/station.html');
+  assert.ok(world.includes('if(event==="INITIAL_SESSION"&&!session?.user)return;'),
+    'World waits for the stored session instead of painting the guest entrance');
+  if (park !== null) assert.match(park, /if\s*\(\s*event\s*===\s*'INITIAL_SESSION'\s*&&\s*!current\?\.user\s*\)\s*return;/,
+    'Park waits for the stored session before showing its guest entrance');
+  if (pajang !== null) assert.ok(pajang.includes("$('welcome').dataset.memberEntry = 'direct'"),
+    'Pajang only switches to a direct answer after member authorization');
+  if (css !== null) {
+    assert.match(css, /@media \(display-mode: standalone\), \(display-mode: minimal-ui\)/,
+      'the quick entry applies to installed app display modes');
+    assert.ok(css.includes('#gate .flight-scene { display:none!important; }'),
+      'the logged-in app cannot flash a public airplane scene while loading');
+    assert.ok(css.includes('#welcome[data-member-entry="direct"] .sample-radar'),
+      'the installed member answer keeps public invitation examples out of the way');
+  }
+  for (const html of [pajangEntry, pajangMain]) {
+    assert.match(html, /entry-design\.css\?v=20261122-app-skip-entry1/);
+  }
+  assert.match(pajangEntry, /entry\.mjs\?v=20261126-adult-service1/);
+  assert.match(read('park/index.html'), /note\/preview\.js\?v=\d{8}-[a-z0-9-]+/, 'Park loads a versioned composer');
+  assert.match(world, /agit-welcome\.js\?v=20261122-member-app-start1/);
 });

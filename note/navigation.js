@@ -65,6 +65,12 @@
     const myButton = event.target.closest('[data-note-my]');
     if (myButton) {
       event.preventDefault();
+      // Standalone Park and the legacy host share the canonical settings route.
+      // The old My dashboard is only a fallback for pages without ParkFull.
+      if (window.OjjudaParkFull?.navigate) {
+        window.OjjudaParkFull.navigate('settings');
+        return;
+      }
       if (window.OjjudaParkHistory?.transition) {
         window.OjjudaParkHistory.transition(() => showMy(true, true));
         return;
@@ -76,7 +82,7 @@
       return;
     }
     if (!document.body.classList.contains('note-my-open')) return;
-    const cardAction = event.target.closest('[data-show], [data-sort], [data-collection], [data-open], [data-compose], #event-start');
+    const cardAction = event.target.closest('[data-show], [data-sort], [data-collection], [data-open], [data-compose]');
     if (!cardAction || cardAction.disabled) return;
     // Existing card handlers will perform the selected navigation after capture.
     // The card/collection controller records the destination after this capture.
@@ -107,7 +113,8 @@
     for (const button of document.querySelectorAll('[data-note-my]')) {
       const badge = button.querySelector('[data-note-my-badge]');
       if (badge) { badge.hidden = !unread; badge.textContent = unread; }
-      button.setAttribute('aria-label', unread ? `메뉴, 읽지 않은 알림 ${unread}개` : '메뉴');
+      const label = button.dataset.settingsLabel || '메뉴';
+      button.setAttribute('aria-label', unread ? `${label}, 읽지 않은 알림 ${unread}개` : label);
     }
   }
 

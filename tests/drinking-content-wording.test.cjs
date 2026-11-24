@@ -310,6 +310,9 @@ for(const kind of kinds){
           const earlier=plan.original.map(entry=>entry.body).filter(body=>!currentText.has(body));
           const expansionEdits=JSON.parse(fs.readFileSync(path.join(root,'games/drinking/content/corrections/flavor500-reread.json'),'utf8')).truth;
           assert.deepEqual(sorted(bank.retiredTruth),sorted([...new Set([...earlier,...expansionEdits.map(edit=>edit.from)])]),'the current client remembers every superseded official spelling');
+        }else if(kind==='king'){
+          const actions=(await import('../scripts/build-drinking-king-actions.mjs')).createKingActionsPlan();
+          assert.deepEqual(sorted(bank.king),sorted(actions.entries.map(entry=>entry.body)), 'the current bundle follows the later action-only catalog');
         }else assert.deepEqual(sorted(bank[kind]),sorted(plan.catalog));
       }
       const active=current.filter(row=>row.active);

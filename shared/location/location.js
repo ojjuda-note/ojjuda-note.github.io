@@ -4,6 +4,8 @@
 if(root.OjjudaLocation)return;
 const notices = {
   disabled:'위치가 꺼져 있어요. 공원이나 파장에서 위치를 켜 주세요.',
+  guardian:'위치를 이용하려면 보호자의 위치 동의가 필요해요.',
+  account:'로그인 상태를 확인한 뒤 위치를 이용해 주세요.',
   denied:'위치 권한이 막혀 있어요. 휴대폰 설정에서 브라우저의 위치 권한과 오쭈다 사이트의 위치 허용을 확인해 주세요.',
   unavailable:'위치 신호를 받지 못했어요. 휴대폰의 위치 기능과 인터넷 연결을 확인한 뒤 다시 시도해 주세요.',
   timeout:'위치 확인 시간이 초과됐어요. 창가나 실외에서 다시 확인해 주세요.',
@@ -56,14 +58,16 @@ function locate(geo,{signal,precise,timeout,fresh}) {
   });
 }
 
-async function measurePosition({signal,onProgress,fresh=false,preciseTimeout=20000}={}) {
+async function measurePosition({signal,onProgress,fresh=false,preciseTimeout=20000},authorize) {
   if(!navigator.geolocation||globalThis.isSecureContext===false)throw failure('unsupported');
+  await authorize();
   onProgress?.('위치를 확인하고 있어요.');
   try {
     return await locate(navigator.geolocation,{signal,precise:false,timeout:4000,fresh});
   }catch(error){
     if(error.name==='AbortError'||error.code==='denied'||error.code==='disabled')throw error;
   }
+  await authorize();
   onProgress?.('더 정확한 위치를 확인하고 있어요.');
   return locate(navigator.geolocation,{signal,precise:true,timeout:preciseTimeout,fresh:true});
 }
@@ -135,6 +139,29 @@ async function verifyAccount(db,accountId){
   if(error||data.session?.user?.id!==accountId||data.session?.user?.is_anonymous){
     throw Error('회원 정보를 다시 확인해 주세요.');
   }
+  return data.session.user;
+}
+const parkSurface=()=>/^\/(?:park|note)(?:\/|$)/.test(root.location?.pathname||'');
+async function authorizePosition(db,accountId,{park=parkSurface(),weather=false,signal}={}){
+  if(signal?.aborted)throw signal.reason;
+  if(!db||!accountId){
+    if(park)throw failure('account');
+    return;
+  }
+  const user=await verifyAccount(db,accountId);
+  const junior=user.app_metadata?.park_guardian_account===true||user.role==='park_junior';
+  if(junior&&(weather||!park))throw failure('disabled');
+  if(park||junior){
+    const request=db.rpc('park_guardian_location_allowed');
+    const {data,error}=await (signal&&request.abortSignal?request.abortSignal(signal):request);
+    if(error||data!==true){
+      clearPosition(accountId);notifyWeather(null,accountId);
+      throw error?Error('위치 동의를 확인할 수 없어요. 잠시 후 다시 시도해 주세요.'):failure('guardian');
+    }
+    await verifyAccount(db,accountId);
+  }
+  if(signal?.aborted)throw signal.reason;
+  return {junior};
 }
 async function preference(db,accountId,{refresh=false,legacyDisabled=false,signal}={}){
   if(!accountId)return {enabled:true,version:0};
@@ -199,7 +226,9 @@ async function cachedPosition(accountId,coarseCache){
   if(freshPosition(value))return {...value};
   clearPosition(accountId);return null;
 }
-async function readPosition({db,accountId,allowDisabled=false,coarseCache=false,cache=true,...options}={}){
+async function readPosition({db,accountId,allowDisabled=false,coarseCache=false,cache=true,park=parkSurface(),...options}={}){
+  const authorize=signal=>authorizePosition(db,accountId,{park,signal});
+  if(park&&!accountId)throw failure('account');
   if(db&&accountId){
     const choice=await preference(db,accountId);
     if(!choice.enabled&&!allowDisabled)throw failure('disabled');
@@ -208,10 +237,10 @@ async function readPosition({db,accountId,allowDisabled=false,coarseCache=false,
   if(cache&&!options.fresh){
     const cached=await cachedPosition(accountId,coarseCache);
     if(cached){
-      if(db&&accountId)await verifyAccount(db,accountId);
+      const permission=await authorize(options.signal);
       if(options.signal?.aborted)throw options.signal.reason;
       if(!allowDisabled&&preferences.get(accountId)?.enabled===false)throw failure('disabled');
-      if(preferences.get(accountId)?.enabled!==false)notifyWeather(cached);
+      if(!permission?.junior&&preferences.get(accountId)?.enabled!==false)notifyWeather(cached);
       return cached;
     }
   }
@@ -223,13 +252,13 @@ async function readPosition({db,accountId,allowDisabled=false,coarseCache=false,
   let measured;
   try{
     if(options.signal?.aborted)cancel();
-    measured=measurePosition({...options,signal:controller.signal});
+    measured=measurePosition({...options,signal:controller.signal},()=>authorize(controller.signal));
     if(accountId)featureReads.set(accountId,measured);
     const position=await measured;
-    if(db&&accountId)await verifyAccount(db,accountId);
+    const permission=await authorize(controller.signal);
     if(controller.signal.aborted)throw controller.signal.reason;
     if(cache)rememberPosition(accountId,position);
-    if(preferences.get(accountId)?.enabled!==false)notifyWeather(position);
+    if(!permission?.junior&&preferences.get(accountId)?.enabled!==false)notifyWeather(position);
     return position;
   }catch(error){
     if(error?.code==='denied'||error?.code==='disabled')notifyWeather(null,accountId);
@@ -283,6 +312,7 @@ async function readWeatherPosition({db,accountId,signal,cell}={}){
       Number.isFinite(cell.capturedAt)&&cell.capturedAt<=Date.now()&&Date.now()-cell.capturedAt<120000?
       {nx:cell.nx,ny:cell.ny,capturedAt:cell.capturedAt}:null;
     if(!grid){
+      await authorizePosition(db,accountId,{weather:true,signal:controller.signal});check();
       const cached=memory.get(accountId);
       const position=freshPosition(cached)?cached:await weatherPosition(controller.signal,featureReads.get(accountId));
       check();grid=weatherCell(position);
@@ -291,6 +321,7 @@ async function readWeatherPosition({db,accountId,signal,cell}={}){
     // A settings change while GPS was pending must invalidate its result.
     const latest=await preference(db,accountId,{refresh:true,signal:controller.signal});check();
     if(!latest.enabled||permission.state!=='granted')throw failure(latest.enabled?'denied':'disabled');
+    await authorizePosition(db,accountId,{weather:true,signal:controller.signal});check();
     return grid;
   }finally{
     permission?.removeEventListener?.('change',revoked);controller.abort();
@@ -303,6 +334,6 @@ function forget(accountId){
   clearPosition(accountId);preferences.delete(accountId);
   for(const controller of active.get(accountId)||[])controller.abort();
 }
-root.OjjudaLocation={readPosition,readWeatherPosition,preference,setPreference,acceptPreference,subscribe,observe,forget,
+root.OjjudaLocation={readPosition,readWeatherPosition,authorizePosition,preference,setPreference,acceptPreference,subscribe,observe,forget,
   current:accountId=>preferences.get(accountId),errorText:error=>error?.message||notices.unavailable};
 })(globalThis);

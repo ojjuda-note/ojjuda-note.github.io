@@ -125,9 +125,18 @@ for (const member of [false, true]) {
         }
       };
       window.eval(read('note/preview.js'));
+      if (member) {
+        // Supabase can emit a provisional empty initial event while restoring
+        // the persisted session on an Android app cold start.
+        onAuth('INITIAL_SESSION', null);
+        assert.equal(window.document.getElementById('park-guest-entry').hidden, true,
+          'a not-yet-resolved member never sees the Park guest entrance');
+      }
       onAuth('INITIAL_SESSION', session);
       const settle = () => new Promise(resolve => window.setTimeout(resolve, 0));
-      await settle();
+      // Guest opening now waits for the actual initial Auth read rather than
+      // starting work from a provisional null event.
+      for (let attempt = 0; attempt < 20 && requested.length === 0; attempt++) await settle();
       assert.equal(requested.length, 1);
       const labels = [...window.document.querySelectorAll('#feed-list .card-meta small')];
       const expectedDate = new NativeDateTimeFormat('ko-KR', {
@@ -374,4 +383,175 @@ test('returning from a reply restores the original feed button and reading posit
   } finally {
     dom.window.close();
   }
+});
+
+test('a stalled Park feed is aborted and a single automatic retry restores cards', async () => {
+  const dom = new JSDOM(read('park/index.html'), {
+    url: 'https://fixture.test/park/', runScripts: 'outside-only', pretendToBeVisual: true
+  });
+  const w = dom.window, doc = w.document;
+  const nativeSetTimeout = w.setTimeout.bind(w);
+  try {
+    w.scrollTo = () => {};
+    w.matchMedia = () => ({ matches: false });
+    w.setTimeout = (fn, delay, ...args) => nativeSetTimeout(fn,
+      delay === 8500 ? 15 : delay === 1400 ? 15 : delay, ...args);
+    let reads = 0, aborted = 0;
+    const card = {
+      id: '12345678-1234-4123-8123-000000000001', kind: 'memo',
+      body: '다시 연결된 카드', background_key: '10', tags: [],
+      created_at: '2026-11-22T06:00:00Z'
+    };
+    const client = {
+      auth: {
+        onAuthStateChange() {},
+        getSession: async () => ({ data: { session: null } })
+      },
+      schema: () => ({
+        rpc(name) {
+          if (name !== 'list_cards') return Promise.resolve({ data: [] });
+          reads++;
+          if (reads === 1) {
+            return { abortSignal(signal) {
+              return new Promise((resolve, reject) => signal.addEventListener('abort', () => {
+                aborted++; reject(new Error('aborted'));
+              }, { once: true }));
+            } };
+          }
+          return { abortSignal: () => Promise.resolve({ data: [card] }) };
+        }
+      })
+    };
+    w.OJJUDA_CONFIG = { supabaseUrl: 'https://fixture.test', supabaseKey: 'test' };
+    w.supabase = { createClient: () => client };
+    w.eval(read('note/preview.js'));
+    // Busy CI runners may delay both the retry and the rendered card.
+    // Wait for both real results within two seconds without weakening assertions.
+    const recoveryDeadline = Date.now() + 2000;
+    while (Date.now() < recoveryDeadline &&
+        (reads < 2 || !doc.querySelector('#feed-list [data-card-id="' + card.id + '"]'))) {
+      await new Promise(resolve => nativeSetTimeout(resolve, 20));
+    }
+    assert.equal(aborted, 1, 'stalled network work is aborted at the deadline');
+    assert.equal(reads, 2, 'one automatic recovery attempt runs after a timeout');
+    assert.ok(doc.querySelector('#feed-list [data-card-id="' + card.id + '"]'),
+      'the recovered response replaces the loading cards');
+    assert.equal(doc.querySelector('#connection-status').hidden, true);
+    assert.equal(doc.querySelector('[data-retry-feed]'), null);
+  } finally {
+    dom.window.close();
+  }
+});
+
+test('a stalled initial auth session still opens the public Park feed', async () => {
+  const dom = new JSDOM(read('park/index.html'), {
+    url: 'https://fixture.test/park/', runScripts: 'outside-only', pretendToBeVisual: true
+  });
+  const w = dom.window, doc = w.document, nativeSetTimeout = w.setTimeout.bind(w);
+  try {
+    w.scrollTo = () => {};
+    w.matchMedia = () => ({ matches: false });
+    w.setTimeout = (fn, delay, ...args) => nativeSetTimeout(fn, delay === 8500 ? 15 : delay, ...args);
+    let reads = 0;
+    w.OJJUDA_CONFIG = { supabaseUrl: 'https://fixture.test', supabaseKey: 'test' };
+    w.supabase = { createClient: () => ({
+      auth: {
+        onAuthStateChange() {},
+        getSession: () => new Promise(() => {})
+      },
+      schema: () => ({
+        rpc(name) {
+          if (name === 'list_cards') {
+            reads++;
+            return Promise.resolve({ data: [{
+              id: '12345678-1234-4123-8123-000000000002', kind: 'memo',
+              body: '공개 카드', tags: [], background_key: '10',
+              created_at: '2026-11-22T06:00:00Z'
+            }] });
+          }
+          return Promise.resolve({ data: [] });
+        }
+      })
+    }) };
+    w.eval(read('note/preview.js'));
+    await new Promise(resolve => nativeSetTimeout(resolve, 100));
+    assert.equal(reads, 1, 'authentication stalls must not block public feed access');
+    assert.ok(doc.querySelector('#feed-list [data-card-id="12345678-1234-4123-8123-000000000002"]'));
+  } finally {
+    dom.window.close();
+  }
+});
+
+
+test('Park paints its public cards before optional GPS and defers feature-only styles',()=>{
+  const source=read('note/preview.js'), html=read('park/index.html');
+  const start=source.indexOf('async function loadFeed('),end=source.indexOf('function locationErrorText(',start);
+  assert.ok(start>=0&&end>start);
+  const feedSource=source.slice(start,end);
+  assert.ok(feedSource.indexOf('for (const card of data || []) {')>=0);
+  assert.ok(feedSource.indexOf('for (const card of data || []) {')<feedSource.indexOf('const locateAfterPaint ='),
+    'the card DOM is built before location acquisition starts');
+  assert.match(feedSource,/requestAnimationFrame\(\(\) => requestAnimationFrame\(locateAfterPaint\)\)/,
+    'allow the first cards to paint before checking GPS');
+  assert.ok(feedSource.indexOf('positionIfAlreadyGranted()')>feedSource.indexOf('const locateAfterPaint ='));
+  for(const path of ['/note/map.css','/note/composer-tools.css','/note/notifications.css',
+    '/features/wallet/ju-charge.css','/features/account/settings-list.css']){
+    const tag=html.split('\n').find(line=>line.includes('href="'+path+'?'));
+    assert.ok(tag,'expected stylesheet '+path);
+    assert.match(tag,/media="print" onload="this\.media='all'"/);
+  }
+  for(const path of ['/note/style.css','/note/features.css','/park/design.css']){
+    const tag=html.split('\n').find(line=>line.includes('href="'+path+'?'));
+    assert.ok(tag,'expected essential feed style '+path);
+    assert.doesNotMatch(tag,/media="print"/,'feed styles must remain immediately available');
+  }
+});
+
+test('a late brush renderer repaints the first card without repeating the feed query', async () => {
+  const dom = new JSDOM(read('park/index.html'), {
+    url: 'https://fixture.test/park/', runScripts: 'outside-only', pretendToBeVisual: true
+  });
+  const w = dom.window;
+  try {
+    w.scrollTo = () => {};
+    w.matchMedia = () => ({ matches: false });
+    let reads = 0;
+    const card = { id: '12345678-1234-4123-8123-000000000001',
+      kind: 'memo', body: '오늘의 붓글씨 카드', style: { font: 'calligraphy' },
+      background_key: '10', tags: [], created_at: '2026-11-23T00:00:00Z' };
+    w.OJJUDA_CONFIG = { supabaseUrl: 'https://fixture.test', supabaseKey: 'test' };
+    w.supabase = { createClient: () => ({
+      auth: { onAuthStateChange() {}, getSession: async () => ({ data: { session: null } }) },
+      schema: () => ({ rpc: async name => {
+        if (name === 'list_cards') { reads++; return { data: [card] }; }
+        return { data: [] };
+      } })
+    }) };
+    w.eval(read('note/preview.js'));
+    let canvas;
+    for (let attempt = 0; attempt < 30; attempt++) {
+      canvas = w.document.querySelector('#feed-list .park-ink-art');
+      if (canvas) break;
+      await new Promise(resolve => w.setTimeout(resolve, 0));
+    }
+    assert.ok(canvas, 'first ink card has its canvas before the large brush engine loads');
+    assert.notEqual(canvas.dataset.inkReady, 'true');
+    w.ParkCalligraphy = { render: () => ({}), inkBounds: () => null };
+    w.dispatchEvent(new w.Event('ojjuda:park-calligraphy-ready'));
+    assert.equal(canvas.dataset.inkReady, 'true', 'late renderer restores the displayed original card');
+    assert.equal(reads, 1, 'repainting does not re-request private or public card data');
+  } finally { dom.window.close(); }
+});
+
+test('optional brush is ordered after Park readiness and idle warming fetches only static assets', () => {
+  const html = read('park/index.html'), host = read('park/world-park-notes.js');
+  const ready = html.indexOf('/park/integration.js?'), brush = html.indexOf('/note/calligraphy.js?');
+  const preview = html.indexOf('/note/preview.js?');
+  assert.ok(preview >= 0 && ready > preview && brush > ready,
+    'Park signals readiness before the optional brush runtime');
+  assert.match(host, /window\.requestIdleCallback\(/);
+  assert.match(host, /network\?\.saveData/);
+  assert.match(host, /link\.rel = 'prefetch'/);
+  assert.doesNotMatch(host, /rpc\(['"]list_cards['"]/,
+    'idle warming never starts a member card request');
 });

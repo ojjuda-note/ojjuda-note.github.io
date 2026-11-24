@@ -11,7 +11,7 @@ const retention=(n,read=false)=>({id:uuid(n),card_id:uuid(n+100),created_at:'202
 const missing=(code='PGRST202',name='public.app_notification_summary')=>({error:{code,
   message:code==='PGRST202'?`Could not find the function ${name} without parameters in the schema cache`:`function ${name}() does not exist`}});
 
-function fixture({user='member-a',handle,refreshClosedBadge}={}){
+function fixture({user='member-a',handle,refreshClosedBadge,options={}}={}){
   const dom=new JSDOM('<main><div data-notifications-slot></div><span data-notification-badge hidden></span><i data-notification-dot hidden></i><button data-note-my></button></main>',
     {url:'https://ojjuda.kr/world.html',runScripts:'outside-only',pretendToBeVisual:true});
   const w=dom.window,calls=[],timers=[],intervals=[],broadcasts=[],channels=[],openedGroups=[];
@@ -28,7 +28,7 @@ function fixture({user='member-a',handle,refreshClosedBadge}={}){
   const invoke=async(schema,name,args)=>{calls.push({schema,name,user:identity,args});return responder(name,args,identity,schema);};
   const client={rpc:(name,args)=>invoke('public',name,args),schema:schema=>({rpc:(name,args)=>invoke(schema,name,args)}),
     auth:{onAuthStateChange(callback){authCallback=callback;}}};
-  w.eval(source);const api=w.OjjudaNotifications.install({client,getUserId:()=>identity,refreshClosedBadge,onOpenGroup:id=>openedGroups.push(id)});
+  w.eval(source);const api=w.OjjudaNotifications.install({client,getUserId:()=>identity,refreshClosedBadge,onOpenGroup:id=>openedGroups.push(id),...options});
   return {dom,w,api,calls,channels,broadcasts,openedGroups,
     badge:()=>({hidden:w.document.querySelector('#note-notification-badge').hidden,text:w.document.querySelector('#note-notification-badge').textContent}),
     respond:callback=>{responder=callback;},advance:ms=>{clock+=ms;},
@@ -157,6 +157,31 @@ test('same-account read broadcasts force a fresh count and ignore other-account 
     f.w.dispatchEvent(new f.w.Event('ojjuda:messages-read'));await settle();assert.equal(f.calls.length,2);
     assert.equal(f.broadcasts.at(-1).type,'read');assert.equal(f.broadcasts.at(-1).user,'member-a');
   }finally{f.close();}
+});
+
+test('a service inbox opens local targets and handles invitations without leaving the service',async()=>{
+  const targets=[],time='2026-11-06T00:00:00Z';
+  const items=['friends','guestbook','group_invite'].map((type,i)=>({
+    id:'world:'+type+':'+uuid(i),source:'world',target_type:type,target_id:uuid(i),
+    kind:['world_friend_request','world_guestbook','group_invite'][i],created_at:time
+  }));
+  const f=fixture({options:{canOpenWorldTarget:type=>type==='friends',allowInviteNavigation:false,
+    onOpenWorld:(type,id)=>targets.push([type,id])},handle:name=>{
+    if(name==='list_app_notifications')return {data:{items,unread_count:items.length,as_of:time,has_more:false}};
+    if(name==='list_retention_alerts')return {data:[]};
+    if(name==='group_invitation'){items.pop();return {data:{room_id:uuid(100)}};}
+    return {data:0};
+  }});
+  try {
+    await f.boot();f.api.open();await settle();
+    const d=f.w.document;
+    assert.equal(d.querySelectorAll('[data-notification-open]').length,1);
+    assert.ok(d.querySelector('[data-notification-read]'));
+    d.querySelector('[data-group-invite-action="accept"]').click();await settle();
+    assert.equal(f.api.isOpen(),true);assert.deepEqual(f.openedGroups,[]);
+    d.querySelector('[data-notification-open]').click();await settle();
+    assert.deepEqual(targets,[['friends',uuid(0)]]);
+  } finally {f.close();}
 });
 
 test('group notifications identify the inviter and join only after acceptance',async()=>{

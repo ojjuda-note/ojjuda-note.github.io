@@ -14,7 +14,7 @@ function toolbarBundle(){
   }).then(result=>result.outputFiles[0].text);
 }
 
-async function fixture(t,{user='member-a',anonymous=false,readBalance,getSession,embedPath}={}){
+async function fixture(t,{user='member-a',anonymous=false,readBalance,getSession,embedPath,items=[],retention=[],getInquiry}={}){
   const html=fs.readFileSync(path.join(root,'features/pajang/station.html'),'utf8')
     .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'');
   const dom=new JSDOM(html,{url:'https://ojjuda.kr/features/pajang/station.html'+(embedPath?'?embed=1':''),
@@ -32,8 +32,9 @@ async function fixture(t,{user='member-a',anonymous=false,readBalance,getSession
     async rpc(name,args){
       calls.push({name,args,user:session?.user?.id});
       if(name==='app_notification_summary')return {data:{notifications:2,retention:0}};
-      if(name==='list_app_notifications')return {data:{items:[],unread_count:2,as_of:'2026-11-19T00:00:00Z',has_more:false,next_cursor:null}};
-      if(name==='list_retention_alerts')return {data:[]};
+      if(name==='list_app_notifications')return {data:{items,unread_count:2,as_of:'2026-11-19T00:00:00Z',has_more:false,next_cursor:null}};
+      if(name==='get_my_inquiry')return getInquiry(args.p_id);
+      if(name==='list_retention_alerts')return {data:retention};
       if(name==='beta_charge_status')return {data:{ok:true,enabled:true,coins,left:5,limit:5}};
       if(name==='beta_charge'){assert.deepEqual(Object.keys(args),['pack']);assert.equal(args.pack,'p1000');coins+=10;return {data:{ok:true,coins,added:10,bonus:0}};}
       throw Error('unexpected_rpc:'+name);
@@ -85,6 +86,24 @@ test('both public Pajang entries share the brand and the real wallet/notificatio
   }
 });
 
+test('the guest and denied gates keep their return destination in Pajang',async t=>{
+  const dom=new JSDOM('<section id="gate"></section>',{url:'https://ojjuda.kr/features/pajang/',runScripts:'outside-only'});
+  t.after(()=>dom.window.close());
+  const {window:w}=dom;
+  const gate=await esbuild.build({entryPoints:[path.join(root,'features/pajang/member.mjs')],bundle:true,write:false,format:'iife',globalName:'Gate'});
+  w.eval(gate.outputFiles[0].text);
+  w.Gate.showGate('로그인이 필요해요',true);
+  const links=()=>[...w.document.querySelectorAll('#gate a')].map(link=>link.getAttribute('href'));
+  assert.deepEqual(links(),['/?auth=signup&next=pajang','/?auth=login&next=pajang']);
+  w.Gate.showGate('다시 확인해 주세요');
+  assert.deepEqual(links(),['/features/pajang/']);
+  for(const name of ['index.html','station.html','feed.html']){
+    const page=new JSDOM(fs.readFileSync(path.join(root,'features/pajang',name),'utf8'));
+    assert.equal(page.window.document.querySelector('script[data-return-to="hub"],a[href^="/world.html"]'),null);
+    page.window.close();
+  }
+});
+
 test('member toolbar shows server balance, opens the shared inbox and charges from a settings control',async t=>{
   const f=await fixture(t);
   assert.equal(f.amount(),'70');
@@ -101,6 +120,54 @@ test('member toolbar shows server balance, opens the shared inbox and charges fr
   assert.equal(f.calls.filter(call=>call.name==='beta_charge').length,1);
   assert.equal(f.amount(),'80');
   assert.ok(f.balanceEvents.some(event=>event.userId==='member-a'&&event.coins===80));
+});
+
+test('Park card and retention notifications can be read without leaving Pajang',async t=>{
+  const created='2026-11-19T00:00:00Z',card='a0000000-0000-4000-8000-000000000001';
+  const notice='b0000000-0000-4000-8000-000000000001',retention='c0000000-0000-4000-8000-000000000001';
+  const f=await fixture(t,{
+    items:[{id:notice,kind:'reply',card_id:card,created_at:created}],
+    retention:[{id:retention,kind:'memo',card_id:card,created_at:created,archive_due_at:created}]
+  });
+  f.bell().click();await settle();
+  for(const id of [notice,retention]){
+    const row=f.w.document.querySelector('[data-notification-id="'+id+'"]');
+    assert.ok(row?.querySelector('[data-notification-read]'));
+    assert.equal(row.querySelector('[data-notification-open],a'),null);
+    assert.doesNotMatch(row.textContent,/카드 보기|영구보관/);
+  }
+  assert.equal(f.w.location.pathname,'/features/pajang/station.html');
+});
+
+test('inquiry replies open inside Pajang and an account switch clears a pending reply',async t=>{
+  const replyId='b0000000-0000-4000-8000-000000000001',worldId='b0000000-0000-4000-8000-000000000002';
+  const inquiry='a0000000-0000-4000-8000-000000000001',created='2026-11-19T00:00:00Z';
+  const items=[
+    {id:replyId,kind:'inquiry_reply',inquiry_id:inquiry,created_at:created,read_at:created},
+    {id:worldId,kind:'world_message',source:'world',target_type:'message',target_id:inquiry,created_at:created}
+  ];
+  const pending=deferred();let reads=0;
+  const f=await fixture(t,{items,getInquiry:id=>{
+    assert.equal(id,inquiry);
+    return ++reads===1?{data:{id,body:'내 문의',reply:'운영팀 답변'}}:pending.promise;
+  }});
+  const {document}=f.w;
+  const open=async()=>{
+    f.bell().click();await settle();
+    const world=document.querySelector('[data-notification-id="'+worldId+'"]');
+    assert.ok(world?.querySelector('[data-notification-read]'));
+    assert.equal(world.querySelector('[data-notification-open]'),null);
+    document.querySelector('[data-notification-open="'+replyId+'"]').click();await settle();
+    return document.querySelector('dialog.pajang-inquiry-dialog');
+  };
+  const dialog=await open();assert.ok(dialog.open);
+  assert.match(dialog.textContent,/내 문의운영팀 답변/);
+  dialog.querySelector('button').click();await settle();
+  assert.doesNotMatch(dialog.textContent,/내 문의|운영팀 답변/);
+  await open();await f.auth('member-b');
+  pending.resolve({data:{id:inquiry,body:'이전 계정',reply:'보호되는 답변'}});await settle();
+  assert.equal(dialog.open,false);assert.doesNotMatch(dialog.textContent,/이전 계정|보호되는 답변/);
+  assert.equal(f.w.location.pathname,'/features/pajang/station.html');
 });
 
 test('account changes clear old balances and reject late responses from the previous account',async t=>{
@@ -161,4 +228,96 @@ test('only the genuine same-origin Agit dialog supplies the embedded client',asy
   assert.deepEqual(accepted.counts(),{hostCalls:1,localCalls:0});assert.equal(accepted.amount(),'70');
   const rejected=await fixture(t,{embedPath:'/another-host.html'});
   assert.deepEqual(rejected.counts(),{hostCalls:0,localCalls:1});assert.equal(rejected.amount(),'70');
+});
+
+
+test('member-only CSS does not block the entry gate and is ready before the station is shown',()=>{
+  const entry=fs.readFileSync(path.join(root,'features/pajang/index.html'),'utf8');
+  const direct=fs.readFileSync(path.join(root,'features/pajang/station.html'),'utf8');
+  const load=fs.readFileSync(path.join(root,'features/pajang/load-station.mjs'),'utf8');
+  const handoff=fs.readFileSync(path.join(root,'features/pajang/entry.mjs'),'utf8');
+  const entryDom=new JSDOM(entry).window.document;
+  const directDom=new JSDOM(direct).window.document;
+  assert.equal(entryDom.querySelector('link[rel="preload"][href^="./station.css"]'),null,
+    'public gate must not download the private member sheet early');
+  for(const [document,name] of [[entryDom,'entry'],[directDom,'direct']]){
+    const letter=document.querySelector('link[data-pajang-station-style="letterroom"]');
+    assert.ok(letter,name+' must load letterroom styles without blocking the gate');
+    assert.equal(letter.media,'print');
+    assert.match(letter.getAttribute('onload'),/media='all'/);
+  }
+  const main=directDom.querySelector('link[data-pajang-station-style="main"]');
+  assert.ok(main);assert.equal(main.media,'print');
+  assert.match(load,/await import\(script\);\s*await waitForStationStyles\(\);/);
+  assert.match(load,/link\.dataset\.pajangStyleError/);
+  assert.match(handoff,/style\.dataset\.pajangStationStyle='main'/);
+});
+
+test('Pajang standalone entry defers shared inbox and charging code until first paint or first tap',()=>{
+  const shell=fs.readFileSync(path.join(root,'features/pajang/shell.mjs'),'utf8');
+  assert.doesNotMatch(shell,/^import\s*\{installPajangToolbar\}/m,
+    'entry must not eagerly download wallet and inbox scripts');
+  assert.match(shell,/requestAnimationFrame\(\(\)=>setTimeout\(\(\)=>void prepareToolbar\(\),0\)\)/);
+  assert.match(shell,/event\.target\.closest\?\.\('\[data-ju-charge-open\],\[data-notifications-open\]'\)/);
+  assert.match(shell,/earlyControl=\{node:control,href:location\.href\};/);
+  assert.match(shell,/if\(pending\?\.node\.isConnected && pending\.href===location\.href/);
+  assert.match(shell,/window\.OjjudaPajangHistory\?\.canLeave\?\.\(\)!==false/);
+  for(const file of ['index.html','station.html']){
+    const html=fs.readFileSync(path.join(root,'features/pajang',file),'utf8');
+    assert.match(html,/shell\.mjs\?v=20261126-adult-service1/);
+  }
+});
+
+
+function deferredToolbarHarness(t){
+  const dom=new JSDOM('<button data-ju-charge-open>충전</button><button data-notifications-open>알림</button>',{
+    url:'https://ojjuda.kr/features/pajang/station.html',pretendToBeVisual:true
+  });
+  const w=dom.window;
+  t.after(()=>w.close());
+  let resolveImport, count=0, loads=0;
+  const requested=new Promise(resolve=>{resolveImport=resolve;});
+  const source=fs.readFileSync(path.join(root,'features/pajang/shell.mjs'),'utf8')
+    .split('// Optional measurement never delays')[0]
+    .replace(/import\('\.\/account-toolbar\.mjs\?v=[\w-]+'\)/,'loadToolbar()');
+  const run=new Function('window','document','location','requestAnimationFrame','setTimeout','loadToolbar',source);
+  run(w,w.document,w.location,()=>0,()=>0,()=>{loads++;return requested;});
+  return {
+    w,
+    charge:w.document.querySelector('[data-ju-charge-open]'),
+    bell:w.document.querySelector('[data-notifications-open]'),
+    count:()=>count,
+    loads:()=>loads,
+    async loaded(){
+      resolveImport({installPajangToolbar(){
+        w.document.addEventListener('click',event=>{
+          if(event.target.closest?.('[data-ju-charge-open],[data-notifications-open]'))count++;
+        });
+      }});
+      await settle();
+    }
+  };
+}
+
+test('deferred Pajang toolbar does not replay stale clicks after navigation or form locking',async t=>{
+  const successful=deferredToolbarHarness(t);
+  successful.charge.click();assert.equal(successful.count(),0);
+  await successful.loaded();assert.equal(successful.count(),1,'one valid early tap is replayed once');
+
+  const moved=deferredToolbarHarness(t);
+  moved.bell.click();moved.w.history.pushState({},'', '?tab=profile');
+  await moved.loaded();assert.equal(moved.count(),0,'the previous route cannot open a dialog');
+
+  const blockedBefore=deferredToolbarHarness(t);
+  blockedBefore.w.OjjudaPajangHistory={canLeave:()=>false};
+  blockedBefore.charge.click();assert.equal(blockedBefore.loads(),0,'an unsaved form blocks the early tap');
+
+  const blockedAfter=deferredToolbarHarness(t);
+  let locked=false;blockedAfter.w.OjjudaPajangHistory={canLeave:()=>!locked};
+  blockedAfter.charge.click();locked=true;
+  await blockedAfter.loaded();assert.equal(blockedAfter.count(),0,'a form locked during load stays closed');
+
+  const left=deferredToolbarHarness(t);
+  left.charge.click();left.w.dispatchEvent(new left.w.Event('pagehide'));
+  await left.loaded();assert.equal(left.count(),0,'leaving cancels a pending tap');
 });

@@ -1,7 +1,7 @@
 /* Park has its own document, but shares the World design tokens and theme. */
 :root { --park-card-ratio: 1 / 1; }
 html,body{background:var(--bg);color:var(--ink);font-family:var(--font-b)}
-html body .shell > .col > .main { width: min(100%, calc(2 * var(--park-card-max-width) + var(--park-grid-gap) + 48px)); }
+html body .shell > .col > .main { width: min(100%, calc(2 * var(--park-card-max-width) + var(--park-grid-gap) + 64px)); }
 
 .note-collection-tabs{gap:8px!important;margin:0 0 18px!important;padding:0 0 14px!important;border:0!important;border-bottom:1px solid var(--line)!important;background:none!important;border-radius:0!important}.note-collection-tabs button{border:0!important;border-radius:9px!important;font:500 13px var(--font-b)!important;min-height:40px!important;padding:9px 16px!important;background:transparent!important;color:var(--ink-2)!important}.note-collection-tabs button.selected{background:var(--accent-soft)!important;color:var(--accent-ink)!important;box-shadow:none!important;font-weight:700!important}
 .feed-sort-tabs.tabs{display:flex;justify-content:flex-end;gap:6px;margin:0 0 20px;width:auto;padding:0;border:0;background:none}.feed-sort-tabs.tabs button{flex:0 1 auto;border:1px solid transparent;border-radius:7px;background:none;color:var(--ink-2);padding:7px 14px;font-size:11px;box-shadow:none}.feed-sort-tabs.tabs button.selected{border-color:var(--line);background:var(--surface);color:var(--accent-ink)}
@@ -20,6 +20,7 @@ html body .shell > .col > .main { width: min(100%, calc(2 * var(--park-card-max-
 @media(prefers-reduced-motion:reduce){.park-skeleton-quote,.park-skeleton-meta span{animation:none}}
 
 /* Card detail and its reply column. */
+html body .shell > .col > .main { container: park-content / inline-size; }
 .detail-screen .back-button {
   min-height: 40px;
   margin: 0 0 4px;
@@ -71,8 +72,8 @@ html body .shell > .col > .main { width: min(100%, calc(2 * var(--park-card-max-
   min-width: 0;
   max-width: none;
 }
-/* Keep the main card full-size before placing replies beside it. */
-@media (min-width: 1440px) {
+/* 450px original + 375px reply column + 16px gap. */
+@container park-content (min-width: 841px) {
   .detail-screen { max-width: calc(var(--park-card-max-width) * 11 / 6 + 16px); }
   /* Four of the five reply-column units equal two thirds of the six-unit original. */
   .detail-screen .detail-layout { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); }
@@ -101,12 +102,14 @@ html body .shell > .col > .main { width: min(100%, calc(2 * var(--park-card-max-
   display: grid;
   grid-template: minmax(0, 1fr) fit-content(45%) / minmax(0, 1fr);
   align-items: center;
-  row-gap: 8px;
+  /* Preserve content height while reserving a real gap above the 44px
+     bottom action buttons at narrow widths and on reply faces. */
+  row-gap: 3px;
   width: 100%;
   height: auto;
   min-height: 0;
   aspect-ratio: var(--park-card-ratio);
-  padding: 44px 12px;
+  padding: 41px 12px 52px;
 }
 .park-card-background {
   position: absolute;

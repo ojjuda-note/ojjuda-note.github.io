@@ -1,4 +1,4 @@
-import {call,client,sameMember,showGate} from './member.mjs?v=20261119-guest-account1';
+import {call,client,sameMember,showGate} from './member.mjs?v=20261126-adult-service1';
 
 // Each protected read uses the current member token. No member data is stored between pages.
 export async function prepareProgram(db,ready){
@@ -17,6 +17,19 @@ async function verifiedBytes(data,hash){
   const fingerprint=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),n=>n.toString(16).padStart(2,'0')).join('');
   if(fingerprint!==hash)throw Error('release_unavailable');
   return bytes;
+}
+
+// Large member-only styles can download in parallel with Auth and the private
+// program. Never reveal React content until both sheets have actually loaded.
+async function waitForStationStyles(){
+  await Promise.all([...document.querySelectorAll('link[data-pajang-station-style]')].map(link=>{
+    if(link.dataset.pajangStyleError==='true')return Promise.reject(Error('missing_style'));
+    if(link.sheet){link.media='all';return Promise.resolve();}
+    return new Promise((resolve,reject)=>{
+      link.addEventListener('load',()=>{link.media='all';resolve();},{once:true});
+      link.addEventListener('error',()=>reject(Error('missing_style')),{once:true});
+    });
+  }));
 }
 
 function startFeed(db,station){
@@ -78,6 +91,7 @@ export async function mountStation(beforeMount,savedStation,prepared,destination
     const script=URL.createObjectURL(new Blob([release.bytes],{type:'text/javascript'}));
     urls.add(script);
     if (beforeMount) await beforeMount();
+    if(!await sameMember(db))throw Error('signed_out');
     window.pajangArt={};
     const pending=new Map();
     window.pajangLoadArt=key=>{
@@ -95,7 +109,9 @@ export async function mountStation(beforeMount,savedStation,prepared,destination
     };
     window.pajangState=station;
     await import(script);
+    await waitForStationStyles();
     await new Promise(resolve => requestAnimationFrame(resolve));
+    if(!await sameMember(db))throw Error('signed_out');
     const welcome=document.getElementById('welcome');
     if(welcome)welcome.hidden=true;
     document.getElementById('gate').hidden=true;

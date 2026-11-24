@@ -1,6 +1,6 @@
 {
-  "updatedAt": "2026-11-10",
-  "sourceName": "한국관광공사 지정 향토음식점 · 아산시 문화관광 · 충청남도 공식 충남관광 음식점·백년가게 목록",
+  "updatedAt": "2026-11-25",
+  "sourceName": "한국관광공사 지정 향토음식점 · 아산시 문화관광 · 충청남도 공식 충남관광 음식점·백년가게 목록 · KBS 공식 방송정보",
   "sourceUrls": [
     "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=ed39ae46-8ed5-4ae1-8d36-8fc2be1adbdc",
     "https://tour.asan.go.kr/tour/develop/m_food/",
@@ -11,9 +11,10 @@
     "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=333",
     "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do?pageIndex=43",
     "https://tour.chungnam.go.kr/kor/sub02_01_01.do?category=04",
-    "https://qbh.purpleo.kr/article/230250"
+    "https://qbh.purpleo.kr/article/230250",
+    "https://iaudience.kbs.co.kr/broadcast/11409"
   ],
-  "sourceScope": "2026-11-06 기존 천안·아산 5곳 보존. 2026-11-10 충남관광 공식 식당 상세 5곳(천안2·아산3)과 백년가게로 표시된 아산2곳을 추가. 상호·현 게시 주소만 수록. 먹거리순대 1곳은 정확한 상호·주소에 수치좌표가 붙은 공개자료와 공식 관광목록 대조 보강. 이 명단은 충남 전체 명단이나 블루리본 정규 선정 명단이 아님.",
+  "sourceScope": "2026-11-06 기존 천안·아산 5곳 보존. 2026-11-10 충남관광 공식 식당 상세 5곳(천안2·아산3)과 백년가게로 표시된 아산2곳을 추가. 상호·현 게시 주소만 수록. 먹거리순대 1곳은 정확한 상호·주소에 수치좌표가 붙은 공개자료와 공식 관광목록 대조 보강. 이 명단은 충남 전체 명단이나 블루리본 정규 선정 명단이 아님. 2026-11-25 KBS 2625회(2026-10-16) 상호·주소 재대조. 방송 출연은 선정·현재 영업과 구분.",
   "verificationLimit": "공식 음식점 수록은 엄격한 인증/선정과 구분. [백년가게] 표기는 출처의 안내 이력일 뿐 지정연도·현 지정 상태·현재 영업 상태 확인으로 확장하지 않음. 아산시 관광 자체 사이트 직접 접근 제한에 우회 없음. 한국관광공사·블루리본의 신규 정규 등급을 추측하지 않음.",
   "coordinatePolicy": "먹거리순대 한 곳만 동일 상호·지점·도로명·건물번호를 공공 관광 공개 목록 및 수치좌표 공개자료로 교차 확인해 위치 보강. 나머지 식당은 정확히 일치하는 공개 수치좌표가 없어 null 유지. 좌표를 추정·지오코딩하거나 회원 개인 위치를 조회하지 않음.",
   "completeRegionalCollection": false,
@@ -63,7 +64,22 @@
       },
       "coordinateSourceUrl": "https://qbh.purpleo.kr/article/230250",
       "coordinateSourceName": "철도역 인근 공개장소 원자료 재게시 수치좌표 · 공식 도로명주소 교차 확인",
-      "coordinateRetrievedAt": "2026-11-10"
+      "coordinateRetrievedAt": "2026-11-10",
+      "broadcasts": [
+        {
+          "program": "2TV 생생정보",
+          "broadcaster": "KBS",
+          "episode": 2625,
+          "airedAt": "2026-10-16",
+          "sourceUrl": "https://iaudience.kbs.co.kr/broadcast/11409",
+          "sourceName": "KBS 시청자상담실 · 2TV 생생정보 2625회 공식 방송정보",
+          "verifiedAt": "2026-11-25",
+          "sourceType": "broadcaster_program_information",
+          "airedAtSourceUrl": "https://iaudience.kbs.co.kr/broadcast/11409",
+          "sourcePublishedAt": "2026-10-16",
+          "addressAtSource": "충청남도 천안시 동남구 병천면 아우내순대길 27"
+        }
+      ]
     },
     {
       "id": "local-chungnam-slot25-asan-gamasot-dubu",

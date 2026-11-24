@@ -32,6 +32,14 @@ const fs=require('fs'),path=require('path'),assert=require('node:assert/strict')
    return route.fulfill({path:f,contentType:({'.html':'text/html','.js':'application/javascript','.css':'text/css'})[path.extname(f)]});
  });
  const root='https://fan.test/features/fanpages/',btn=t=>page.getByRole('button',{name:t,exact:true}), label=t=>page.getByLabel(t,{exact:true});
+ // Wait for the save-triggered full document load. A same-document history
+ // update also emits framenavigated and must not be mistaken for a reload.
+ async function saveSectionAndWaitForReload() {
+   const reloaded = page.waitForEvent('load');
+   await btn('변경 사항 저장').click();
+   await reloaded;
+   await page.locator('#profile').waitFor();
+ }
  await page.goto(root+'index.html');await btn('아이돌 추가').click();
  await label('아이돌 이름').fill('새 팀 <테스트>');await label('페이지 주소 이름 (선택)').fill('qa-artist');
  await label('회원 검색').fill('편집자');await btn('회원 찾기').click();await label('검색 결과').selectOption('member');
@@ -44,12 +52,15 @@ const fs=require('fs'),path=require('path'),assert=require('node:assert/strict')
  assert.equal(await page.getByText('담당자 지정',{exact:true}).count(),0);
  await label('편집할 항목').selectOption('photos');await btn('사진 항목 추가').click();
  await label('사진 제목').fill('담당 사진');await label('사진 업로드').setInputFiles({name:'test.png',mimeType:'image/png',buffer:Buffer.from('fixture')});
- await btn('변경 사항 저장').click();await page.waitForSelector('[data-photo-index="0"]');assert.ok(uploads[0].startsWith('qa-artist/'));assert.equal(pages['qa-artist'].photos[0].label,'담당 사진');
- await btn('팬페이지 관리').click();await label('편집할 항목').selectOption('videos');await btn('영상 항목 추가').click();await label('제목').fill('테스트 영상');await label('영상 파일 업로드').setInputFiles({name:'movie.mp4',mimeType:'video/mp4',buffer:Buffer.from('fixture')});await btn('변경 사항 저장').click();
+ await saveSectionAndWaitForReload();await page.waitForSelector('[data-photo-index="0"]');assert.ok(uploads[0].startsWith('qa-artist/'));assert.equal(pages['qa-artist'].photos[0].label,'담당 사진');
+ await btn('팬페이지 관리').click();await label('편집할 항목').selectOption('videos');await btn('영상 항목 추가').click();await label('제목').fill('테스트 영상');await label('영상 파일 업로드').setInputFiles({name:'movie.mp4',mimeType:'video/mp4',buffer:Buffer.from('fixture')});await saveSectionAndWaitForReload();
  await page.locator('[data-video-index="0"]').click();assert.match(await page.locator('#video-viewer video').getAttribute('src'),/qa-artist\/.+\.mp4/);await btn('영상 닫기').click();
+ // Closing a viewer consumes its browser-history entry asynchronously.
+ // Wait for the Back navigation to settle before opening another artist.
+ await page.waitForFunction(() => !history.state?.ojjudaPublicDialog && !document.querySelector('#video-viewer')?.open);
  await page.goto(root+'artist.html?group=ive');await page.waitForSelector('#profile');assert.equal(await btn('팬페이지 관리').isVisible(),false);
  account='admin';await page.reload();await btn('팬페이지 관리').click();await page.locator('summary').filter({hasText:'담당자 지정'}).click();await label('회원 검색').fill('편집자');await btn('회원 찾기').click();await label('검색 결과').selectOption('member');await btn('담당자 지정').click();await page.getByText('담당자를 지정했어요.').waitFor();
- account='member';await page.reload();await btn('팬페이지 관리').click();await label('편집할 항목').selectOption('music');await page.locator('.fan-admin form details summary').first().click();const first=label('제목').first();assert.ok(await first.inputValue());await first.fill('새 음반 제목');await btn('변경 사항 저장').click();await page.getByRole('link',{name:/새 음반 제목/}).first().waitFor();
+ account='member';await page.reload();await btn('팬페이지 관리').click();await label('편집할 항목').selectOption('music');await page.locator('.fan-admin form details summary').first().click();const first=label('제목').first();assert.ok(await first.inputValue());await first.fill('새 음반 제목');await saveSectionAndWaitForReload();await page.getByRole('link',{name:/새 음반 제목/}).first().waitFor();
  account=null;await page.goto(root+'index.html');await label('아이돌 검색').fill('새 팀');await page.getByRole('link',{name:'새 팀 <테스트> 팬페이지 열기'}).waitFor();assert.equal(await btn('아이돌 추가').isVisible(),false);
  assert.deepEqual(errors,[]);console.log('PASS: create, assign, standard mobile template, directory search, restricted management, existing album edit, photo/video uploads and playback.');
  } finally {await browser.close();}

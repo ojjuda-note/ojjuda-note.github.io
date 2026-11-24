@@ -11,7 +11,24 @@ const catalog = JSON.parse(fs.readFileSync(path.join(directory, 'restaurants.jso
 const sources = JSON.parse(fs.readFileSync(path.join(directory, 'sources.json'), 'utf8'));
 const broadcastAudit = sources.latestBroadcastAudit;
 const slot44 = JSON.parse(fs.readFileSync(path.join(directory, 'official-gyeongnam-slot44.json'), 'utf8'));
-const broadcastRecords = [...catalog.restaurants, ...slot44.restaurants].filter(row => row.broadcasts?.length);
+const slot25 = JSON.parse(fs.readFileSync(path.join(directory, 'official-chungnam-slot25.json'), 'utf8'));
+const slot52 = JSON.parse(fs.readFileSync(path.join(directory, 'official-chungnam-slot52.json'), 'utf8'));
+const broadcastCatalog = [...catalog.restaurants, ...slot44.restaurants, ...slot25.restaurants, ...slot52.restaurants];
+const broadcastRecords = broadcastCatalog.filter(row => row.broadcasts?.length);
+const preservedCheonan = broadcastCatalog.filter(row => row.name === '먹거리순대' && row.address === '충청남도 천안시 동남구 병천면 아우내순대길 27');
+assert.equal(preservedCheonan.length, 1, 'the same address must not acquire a second restaurant ID');
+assert.equal(preservedCheonan[0].id, 'local-chungnam-slot25-cheonan-meokgeori-sundae');
+assert.equal(preservedCheonan[0].lat, 36.760464);
+assert.equal(preservedCheonan[0].lng, 127.297854);
+assert.ok(preservedCheonan[0].guides.some(row => row.provider === 'local-guide'));
+assert.ok(preservedCheonan[0].broadcasts.some(row => row.episode === 2625 && row.sourceUrl === 'https://iaudience.kbs.co.kr/broadcast/11409'));
+for (const id of ['broadcast-chungnam-c2s52-cheonan-gc-bread', 'broadcast-chungnam-c2s52-cheonan-hakhwa-hodugwaja']) {
+  const rows = broadcastCatalog.filter(row => row.id === id);
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].lat, null);
+  assert.equal(rows[0].lng, null);
+  assert.equal(rows[0].guides.length, 0);
+}
 assert.ok(broadcastAudit && typeof broadcastAudit.id === 'string' && broadcastAudit.id.length > 0, 'the latest broadcast audit has a stable identity');
 assert.ok(Number.isInteger(broadcastAudit.newRestaurantCount) && broadcastAudit.newRestaurantCount >= 0 && Number.isInteger(broadcastAudit.broadcastEnrichmentCount) && broadcastAudit.broadcastEnrichmentCount >= 0, 'broadcast audits record nonnegative addition and enrichment counts regardless of their trigger');
 assert.deepEqual(broadcastAudit, sources.coverageAuditHistory.find(row => row.id === broadcastAudit.id), 'broadcast audit preserves its exact coverage snapshot');
@@ -56,6 +73,7 @@ function fixture(query = '') {
     const filename = path.basename(url.pathname);
     const data = filename === 'restaurants.json' ? { restaurants: structuredClone(rows), updatedAt: '2026-11-11' } : JSON.parse(fs.readFileSync(path.join(directory, filename), 'utf8'));
     if (filename === 'official-gyeongnam-slot44.json') data.restaurants = []; // Isolate fixture rows from real sidebar broadcast records.
+    if (['official-chungnam-slot25.json', 'official-chungnam-slot52.json'].includes(filename)) data.restaurants = data.restaurants.filter(row => !row.broadcasts?.length);
     return { ok: true, json: async () => data };
   };
   window.L = {

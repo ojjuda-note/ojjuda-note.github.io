@@ -99,6 +99,9 @@ jobs:
       - name: Prepare the approved native images and generated manifests
         run: python3 scripts/prepare_resources.py
 
+      - name: Verify app launcher URLs and generated TWA manifests
+        run: python3 -m unittest discover -s scripts -p 'test_launch_routes.py' -v
+
       - name: Test the shared native calendar and icon switching rules
         run: |
           bash ./gradlew :core:test \

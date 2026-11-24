@@ -1,5 +1,5 @@
-import {client} from './member.mjs?v=20261119-guest-account1';
-import '../../note/notifications.js?v=20261117-inbox-keyboard1';
+import {client} from './member.mjs?v=20261126-adult-service1';
+import '../../note/notifications.js?v=20261126-service-navigation1';
 import '../wallet/ju-charge.js?v=20261119-pajang-toolbar1';
 
 // This public toolbar shares the same authenticated client as the member app.
@@ -102,6 +102,40 @@ export function installPajangToolbar() {
     return request.promise;
   }
 
+  let inquiryDialog, inquiryId, inquiryRevision=0;
+  function showInquiry(id) {
+    if(!userId||!id)return;
+    if(!inquiryDialog){
+      const dialog=document.createElement('dialog'),heading=document.createElement('h2');
+      const body=document.createElement('p'),reply=document.createElement('p'),done=document.createElement('button');
+      dialog.className='pajang-inquiry-dialog';heading.id='pajang-inquiry-title';
+      heading.textContent='문의 답변';dialog.setAttribute('aria-labelledby',heading.id);
+      reply.setAttribute('role','status');done.type='button';done.textContent='닫기';
+      done.addEventListener('click',()=>dialog.close());
+      dialog.addEventListener('close',()=>{++inquiryRevision;body.textContent='';reply.textContent='';});
+      dialog.append(heading,body,reply,done);document.body.append(dialog);
+      inquiryDialog={
+        isOpen:()=>dialog.open,close:()=>{if(dialog.open)dialog.close();},
+        open:async()=>{
+          const owner=userId,requested=inquiryId,revision=++inquiryRevision;
+          if(!owner||!requested)return;
+          body.textContent='';reply.textContent='답변을 불러오고 있어요.';
+          if(!dialog.open)dialog.showModal();
+          const current=()=>dialog.open&&userId===owner&&revision===inquiryRevision;
+          try{
+            const {data,error}=await db.schema('ojjuda_note').rpc('get_my_inquiry',{p_id:requested});
+            if(!current())return;
+            if(error)throw error;
+            if(data?.id!==requested){reply.textContent='해당 문의를 찾을 수 없어요.';return;}
+            body.textContent=data.body;reply.textContent=data.reply||'답변을 기다리고 있어요.';
+          }catch{if(current())reply.textContent='문의 답변을 불러오지 못했어요. 다시 열어 주세요.';}
+        }
+      };
+      watchOverlay(dialog,()=>inquiryDialog);
+    }
+    inquiryId=id;void inquiryDialog.open();
+  }
+
   function sessionChanged(session) {
     const next=session?.user&&!session.user.is_anonymous?session.user.id:null;
     const changed=!authKnown||next!==userId;
@@ -109,14 +143,11 @@ export function installPajangToolbar() {
     if(!changed)return;
     userId=next;++overlayAccount;++balanceRun;pendingBalance=null;
     paint(next?'…':'—',next?'보유 ZU 확인 중':'로그인 후 보유 ZU 확인');
+    inquiryId=null;inquiryDialog?.close();
     notifications?.close();
     window.OjjudaCharge?.close();
     // Supabase must finish its auth callback before another request starts.
     if(installed)setTimeout(()=>{if(userId===next)void refreshBalance();},0);
-  }
-
-  function navigate(path) {
-    (window.top||window).location.assign(path);
   }
 
   async function connect() {
@@ -139,11 +170,8 @@ export function installPajangToolbar() {
           window.dispatchEvent(new CustomEvent('pajang:balance',{detail:{userId:owner,coins}}));
         }});
         notifications=window.OjjudaNotifications.install({client:db,getUserId:()=>userId,
-          onOpenCard:id=>navigate('/world.html?place=park&card='+encodeURIComponent(id)),
-          onOpenInquiry:id=>navigate('/world.html?inquiry='+encodeURIComponent(id)+'&from=pajang'),
-          onKeepCard:(id,kind)=>navigate('/world.html?place=park&card='+encodeURIComponent(id)+'&keep='+encodeURIComponent(kind)),
-          onOpenWorld:(type,id)=>navigate('/world.html?notice='+encodeURIComponent(type)+'&target='+encodeURIComponent(id)),
-          onOpenGroup:id=>navigate('/groups/#room='+encodeURIComponent(id)),
+          onOpenInquiry:showInquiry,
+          allowInviteNavigation:false,
           onGiftClaimed:()=>void refreshBalance()
         });
         watchDialogs();

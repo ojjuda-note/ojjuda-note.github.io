@@ -47,7 +47,7 @@ let world = read('world.html')
 const scripts = ['features/home/agit-hub.js','shared/games/puzzle-record-queue.js', 'shared/games/game-session.js', 'app/world/world-navigation.js', 'games/mines/world-mines-game.js', 'games/saetbyeol/world-saetbyeol-game.js',
   'games/ojjuda-tour/world-tour-game.js', 'games/certified-restaurants/world-restaurant-guide.js', 'games/certified-restaurants/recommended-restaurants.js', 'games/tank/world-tank-game.js', 'games/spot-difference/world-spot-game.js', 'games/ttang/ttang-bridge.js',
   'games/photo-ttang/photo-ttang-bridge.js', 'games/matgo/matgo-bridge.js', 'games/festival-schedule/world-festival-schedule.js', 'games/forest-archer/world-archery-game.js',
-  'games/sacheonseong/world-sacheonseong-game.js', 'games/bang/world-bang-game.js', 'games/poker/world-poker-game.js', 'games/roulette/world-roulette-game.js', 'games/screw/screw-loader.js'].map(fixtureScript).join('\n');
+  'games/sacheonseong/world-sacheonseong-game.js', 'games/bang/world-bang-game.js', 'games/screw/screw-loader.js'].map(fixtureScript).join('\n');
 world = world.replace('<script type="module">', () => `<script>${scripts}</script><script type="module">`);
 const boot = world.indexOf('j1(()=>H());gm(');
 assert.ok(boot > 0);
@@ -118,7 +118,7 @@ window.childReady=true;
       };
       const arcade = async (scenario='Arcade return') => {
         try {
-          await page.waitForFunction(() => history.state?.ojjudaWorldHistory?.overlay === false && history.state.ojjudaWorldHistory.route.tab === 'arcade' && !!document.querySelector('.arcade-home') && !document.querySelector('#gov,#matgo-overlay,#ttang-overlay,#photo-ttang-overlay,dialog[open],[data-bl="close"]'),undefined,{timeout:scenario==='poker'?5000:30000});
+          await page.waitForFunction(() => history.state?.ojjudaWorldHistory?.overlay === false && history.state.ojjudaWorldHistory.route.tab === 'arcade' && !!document.querySelector('.arcade-home') && !document.querySelector('#gov,#matgo-overlay,#ttang-overlay,#photo-ttang-overlay,dialog[open],[data-bl="close"]'),undefined,{timeout:30000});
         } catch (error) {
           const state=await page.evaluate(()=>({url:location.href,tab:backFixture.state.tab,place:backFixture.state.place?.id,
             history:history.state,navigation:window.worldNavigationProbe?.(),gaming:document.body.classList.contains('gaming'),arcade:!!document.querySelector('.arcade-home'),
@@ -132,7 +132,7 @@ window.childReady=true;
       };
       const games = [
         ['restaurants','.restaurant-guide-dialog'],['festival','.festival-schedule-dialog'],['archery','.archery-game-dialog'],
-        ['sacheonseong','.sacheonseong-game-dialog'],['bang','.bang-game-dialog'],['poker','.poker-game-dialog'],['roulette','.roulette-game-dialog'],
+        ['sacheonseong','.sacheonseong-game-dialog'],['bang','.bang-game-dialog'],
         ['janggi','#bd-menu'],['chess','#bd-menu'],['carom4','#bd-menu'],['carom3','#bd-menu'],['pool8','#bd-menu'],
         ['screw','#gov'],['mole','#gov'],['runner','#gov'],['breakout','#gov'],['stacker','#gov'],['mines','.tour-game-dialog'],['saetbyeol','.tour-game-dialog'],
         ['tour','.tour-game-dialog'],['tank','.tank-game-dialog'],['spot','.spot-game-dialog'],
@@ -145,8 +145,6 @@ window.childReady=true;
           if (game === 'matgo') await openMatgo();
           else if (game === 'photo_ttang') await OjjudaPhotoTtangBridge.open({owner:'fixture'});
           else if (game === 'billiards') backFixture.billiards();
-          else if (game === 'poker') await OjjudaPokerGame.open({owner:'fixture',authorized:()=>true});
-          else if (game === 'roulette') await OjjudaRouletteBridge.open({owner:'fixture',client:OjjudaMatgoAccess.getClient(),authorized:()=>true});
           else if (['janggi','chess','carom4','carom3','pool8'].includes(game)) await backFixture.link(game);
           else backFixture.open(game);
         }, game);

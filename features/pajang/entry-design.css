@@ -22,8 +22,8 @@
 }
 .pajang-entry-eyebrow::before {content:"";width:24px;height:1px;background:currentColor}
 #gate .pajang-entry-title {
-  margin:0;color:var(--ink);font:600 clamp(33px,4.9vw,47px)/1.38 var(--serif,serif);
-  letter-spacing:-.06em;word-break:keep-all;
+  margin:0;color:var(--pajang-heading);font:500 clamp(33px,4.9vw,47px)/1.45 var(--serif,serif);
+  letter-spacing:-.045em;word-break:keep-all;
 }
 .pajang-entry-title span {color:var(--accent-ink)}
 #gate .pajang-entry-lead {
@@ -151,31 +151,40 @@
 
 /* A signed-in first visit keeps the real question and existing participation form. */
 #welcome {width:min(750px,calc(100% - 40px));max-width:none;margin:26px auto 36px;padding:0}
-#welcome .entry-intro {min-height:252px;padding:32px 36px;border-radius:24px;background:var(--hero-bg)}
+#welcome .entry-intro {min-height:220px;padding:24px 28px;border-radius:16px;background:var(--hero-bg)}
 #welcome .entry-intro::before {
   background:linear-gradient(90deg,var(--hero-bg) 3%,color-mix(in srgb,var(--hero-bg) 94%,transparent) 48%,color-mix(in srgb,var(--hero-bg) 30%,transparent)),var(--hero-art) right center/auto 115% no-repeat;
   opacity:1;
 }
-#welcome .entry-intro h1 {max-width:88%;margin:16px 0;font-size:clamp(25px,4.6vw,36px);line-height:1.45}
+#welcome .entry-intro h1 {max-width:90%;margin:12px 0;font-size:clamp(25px,4.6vw,34px);line-height:1.45;overflow-wrap:anywhere}
 #welcome .entry-intro .intro {max-width:none;font-size:13px}
-#welcome .entry-slot {display:flex;align-items:center;gap:9px;font-size:11px;letter-spacing:.04em}
+#welcome .entry-slot {display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600;letter-spacing:0}
 #welcome .entry-slot::before {content:"";width:22px;height:1px;background:currentColor}
 #welcome .actions {
-  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;
-  margin:16px 0;padding:22px;border:1px solid var(--line);border-radius:22px;background:var(--surface);
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px 12px;
+  margin:12px 0 14px;padding:0;border:0;border-radius:0;background:transparent;
 }
-#welcome .actions>button {min-height:49px;padding:11px 14px;border-radius:13px;font-size:14px}
-#welcome .actions #browse {margin:0}
+#welcome .actions>button {min-width:0;min-height:44px;padding:10px 14px;border-radius:10px;font-size:14px;font-weight:500;line-height:1.5;white-space:normal;overflow-wrap:anywhere}
+#welcome .actions #write {background:var(--accent);color:var(--on-accent);font-weight:600}
+#welcome .actions #browse {margin:0;border:0;background:transparent;color:var(--accent-ink)}
+#welcome .actions>button:focus-visible {outline:2px solid var(--accent-ink);outline-offset:3px}
 #welcome .actions :is(form,output,small) {grid-column:1/-1}
 #welcome .actions output:empty {display:none}
 #welcome .actions form {margin:0;padding:0;border:0;background:transparent}
+#welcome .actions button[type=submit] {min-height:44px;padding:10px 14px;border-radius:10px;background:var(--accent);color:var(--on-accent);font-weight:600}
+#welcome .actions .cancel-form {min-height:44px}
 #welcome .actions small {margin:2px 0 0;font-size:11px;line-height:1.7}
 #welcome .actions input:not([type=checkbox]),#welcome .actions select,#welcome .actions textarea {font-size:16px;border-radius:10px;padding:10px 12px}
 #welcome .actions .consent {line-height:1.75}
 #welcome .actions details {margin-top:14px}
 #welcome .actions summary {padding:8px 0;color:var(--accent-ink);font-size:13px;cursor:pointer}
-#welcome .sample-radar {padding:7px 18px;border:1px solid var(--line);border-radius:18px;background:var(--surface-2)}
-#welcome .sample-radar>summary {font-size:13px;color:var(--ink-2)}
+#welcome .sample-radar {padding:0;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent}
+#welcome .sample-radar>summary {display:list-item;min-height:44px;padding:12px 0;border-radius:8px;font-size:13px;font-weight:500;line-height:20px;color:var(--ink-2)}
+#welcome .sample-radar>summary:focus-visible {outline:2px solid var(--accent-ink);outline-offset:2px}
+@media(hover:hover) {
+  #welcome .actions #write:hover:not(:disabled) {background:var(--accent-hover,var(--accent-ink))}
+  #welcome .actions #browse:hover:not(:disabled) {background:transparent;text-decoration:underline;text-underline-offset:4px}
+}
 :root[data-theme=dark] .pajang-invitation-art {
   --pajang-ripple-ink:color-mix(in srgb,var(--accent-ink) 54%,transparent);
   --pajang-ripple-light:color-mix(in srgb,var(--ink) 25%,transparent);
@@ -201,18 +210,38 @@
   #gate .pajang-invitation-footer .ojjuda-guest-account-actions>a {padding:12px 10px;border-radius:12px}
   #gate .pajang-entry-access {margin-top:13px;font-size:10px}
   #welcome {width:calc(100% - 32px);margin:20px auto 28px}
-  #welcome .entry-intro {min-height:240px;padding:26px 24px;border-radius:22px}
-  #welcome .entry-intro h1 {max-width:100%;font-size:clamp(25px,6.8vw,31px);line-height:1.5}
+  #welcome .entry-intro {min-height:216px;padding:22px 20px;border-radius:16px}
+  #welcome .entry-intro h1 {max-width:100%;font-size:clamp(25px,6.8vw,31px);line-height:1.45}
   #welcome .entry-intro::before {background-position:center,right center;background-size:auto,auto 100%}
-  #welcome .actions {grid-template-columns:minmax(0,1fr);padding:18px;border-radius:20px}
+  #welcome .actions {grid-template-columns:minmax(0,1fr);gap:4px;padding:0;border-radius:0}
 }
 @media(max-width:360px) {
   .pajang-invitation-opening {padding:25px 21px 16px}
   #gate .pajang-entry-title {font-size:31px}
   .pajang-invitation-art {margin-top:10px}
   .pajang-invitation-footer {padding:17px 18px}
-  #welcome .entry-intro {padding:23px 20px}
+  #welcome .entry-intro {padding:20px 18px}
 }
 @media(prefers-reduced-motion:reduce) {
   .pajang-envelope,.pajang-water-ring {animation:none}
+}
+
+/* Verified app entry: keep the answer, not another illustrated entrance. */
+@media (display-mode: standalone), (display-mode: minimal-ui) {
+  /* The guest invitation renders only after Auth confirms no member. */
+  #gate .flight-scene { display:none!important; }
+  #welcome[data-member-entry="direct"] { margin-block:12px 20px; }
+  #welcome[data-member-entry="direct"] .entry-intro {
+    min-height:0;padding:6px 0 0;border:0;border-radius:0;
+    background:transparent;box-shadow:none;
+  }
+  #welcome[data-member-entry="direct"] .entry-intro::before,
+  #welcome[data-member-entry="direct"] .entry-scene,
+  #welcome[data-member-entry="direct"] .entry-intro .intro,
+  #welcome[data-member-entry="direct"] .sample-radar,
+  #welcome[data-member-entry="direct"] .cancel-form { display:none!important; }
+  #welcome[data-member-entry="direct"] .entry-intro h1 {
+    max-width:none;margin:6px 0;font-size:clamp(19px,4.6vw,25px);line-height:1.4;
+  }
+  #welcome[data-member-entry="direct"] .actions { margin:12px 0 0; }
 }

@@ -13,8 +13,10 @@ function rememberRound(user,answered,nextAt){
   }catch{/* Routing still works with storage disabled. */}
 }
 export async function sameMember(db) {
+  const expected=verifiedUser;
+  if(!expected)return false;
   const {data,error}=await db.auth.getSession();
-  return !error && !!verifiedUser && data.session?.user?.id===verifiedUser && !data.session.user.is_anonymous;
+  return !error && verifiedUser===expected && data.session?.user?.id===expected && !data.session.user.is_anonymous;
 }
 export function client(){
   // The Agit entry frame and its host share the same signed-in client.
@@ -57,16 +59,17 @@ export function showGate(message,login = false) {
     account.append(actions);gate.append(account);
   }else{
     const link=document.createElement('a');
-    link.href='/world.html';link.target='_top';link.textContent='아지트로 돌아가기';
+    link.href='/features/pajang/';link.target='_top';link.textContent='파장 처음으로';
     gate.append(link);
   }
 }
 export async function requireMember(action='entry',onSession,onResult) {
+  verifiedUser=undefined;
   try {
     const db=await client();
     const {data:{session}}=await db.auth.getSession();
     if(!session?.user||session.user.is_anonymous){
-      showGate('로그인한 오쭈다 회원만 이용할 수 있어요.',true);return;
+      showGate('만 19세 이상 회원만 이용할 수 있어요. 로그인해 주세요.',true);return;
     }
     const expected=session.user.id;
     if(typeof action==='function')action=action(expected);
@@ -80,30 +83,38 @@ export async function requireMember(action='entry',onSession,onResult) {
         else location.reload();
       }
     });
-    window.addEventListener('pagehide',()=>subscription.unsubscribe(),{once:true});
+    window.addEventListener('pagehide',event=>{
+      changed=true;verifiedUser=undefined;subscription.unsubscribe();
+      if(event.persisted)showGate('회원 정보를 다시 확인하고 있어요.');
+    },{once:true});
     window.addEventListener('pageshow',e=>{if(e.persisted)location.reload();});
-    onSession?.(db);
     const [identity,result]=await Promise.all([
-      db.auth.getUser(),Promise.resolve(db.rpc('pajang_member',{p_action:action,p_data:{}})).then(result=>{
-        if(!changed&&!result.error)onResult?.(result.data);
-        return result;
-      })
+      db.auth.getUser(),db.rpc('pajang_member',{p_action:action,p_data:{}})
     ]);
     if(changed)return;
     const user=identity.data?.user;
     if(identity.error||!user||user.is_anonymous||user.id!==expected){
       showGate('회원 정보를 다시 확인해 주세요.',true);return;
     }
-    verifiedUser=user.id;
     if(result.error){
       if(action==='state' && result.error.code==='42501' && result.error.message==='먼저 파장에 참여해 주세요.'){
+        const entry=await db.rpc('pajang_member',{p_action:'entry',p_data:{}});
+        if(changed)return;
+        if(entry.error||!entry.data)throw entry.error||Error('missing_member_response');
+        verifiedUser=user.id;
         rememberRound(user.id,false);
         return {joined:false};
       }
       throw result.error;
     }
+    if(!result.data)throw Error('missing_member_response');
+    verifiedUser=user.id;
+    onSession?.(db);
+    onResult?.(result.data);
     rememberRound(user.id,action==='state'?result.data?.me?.body:result.data?.body,result.data?.nextAt);
     if(changed)return;
     return result.data;
-  }catch(e){showGate(e.code==='42501'?'이 계정은 파장을 이용할 수 없어요. 만 19세 이상 회원 전용이에요.':'회원 정보를 확인하지 못했어요. 잠시 후 다시 열어주세요.');}
+  }catch(e){
+    showGate(e.code==='42501'?'이 계정은 파장을 이용할 수 없어요. 만 19세 이상 회원 전용이에요.':'회원 정보를 확인하지 못했어요. 잠시 후 다시 열어주세요.');
+  }
 }

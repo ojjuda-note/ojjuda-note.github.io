@@ -26,7 +26,13 @@ let editingId = null, composerUserId = null, moderator = false, moderatorRun = 0
 let feedMode = 'all', feedSort = 'latest', feedTerm = '';
 let nearbyPosition = null, nearbyOffset = 0, writingPosition = null, eventPosition = null;
 let stopLocationPreference = () => {}, writingLocationController = null;
-function locationIsEnabled() { return window.OjjudaLocation?.current(session?.user?.id)?.enabled !== false; }
+function parkJunior() {
+  return session?.user?.app_metadata?.park_guardian_account === true || session?.user?.role === 'park_junior';
+}
+function locationIsEnabled() {
+  return Boolean(authKnown && session?.user?.id && !session.user.is_anonymous
+    && window.OjjudaLocation?.current(session.user.id)?.enabled !== false);
+}
 function watchLocationPreference(userId) {
   stopLocationPreference(); stopLocationPreference = () => {};
   if (!userId || !window.OjjudaLocation) return;
@@ -70,6 +76,7 @@ function quietLocatedReload(tries = 0) {   // 허용된 위치가 늦게 도착�
   loadFeed(false, true);
 }
 let feedSnapshot = null, feedLoading = false, replyLoading = false;
+let feedRecoveryTimer = null;
 let noteState = null, noteStateRun = 0, noticeElement = null, featureMessage = null;
 const parkEmbedded = window.parent !== window && location.pathname.startsWith('/park/');
 const guestReturnKey = 'ojjuda.park.compose-login.v1';
@@ -105,6 +112,43 @@ const PHOTO_GROUPS = [
 ];
 const PHOTO_FIRST = PHOTO_GROUPS[0].first, PHOTO_LAST = PHOTO_GROUPS.at(-1).last;
 const FONT_CODES = ['default', 'round', 'serif', 'nanum-myeongjo', 'handwriting', 'heart', 'calligraphy', 'mono'];
+const FREE_FONT_CODES = ['default', 'round', 'serif'];
+const fontPurchaseRequests = new Map();
+async function ensureComposeFont(userId, epoch, run) {
+  const font = $('#compose-font').value;
+  if (FREE_FONT_CODES.includes(font)) return true;
+  const unchangedCard = editingId && cache.get(editingId);
+  if (unchangedCard?.style?.font === font && Date.parse(unchangedCard.style_until) > Date.now()) return true;
+  const current = () => session?.user?.id === userId && identityEpoch === epoch
+    && composerRun === run && !backdrop.hidden && $('#compose-font').value === font;
+  let failureMessage = '';
+  busy = true; setComposerInputs(); updateComposer();
+  try {
+    const licenses = await noteRpc('list_my_card_font_entitlements');
+    if (!current()) return false;
+    if (licenses.some(item => item.font === font && Date.parse(item.expires_at) > Date.now())) return true;
+    const label = $('#compose-font').selectedOptions[0].textContent.split(' · 10')[0];
+    if (!window.confirm(`${label} 글꼴을 10쭈로 구매할까요? 구매한 시각부터 1개월 동안 여러 카드에 사용할 수 있어요. 기간이 끝나면 카드 글꼴도 기본으로 돌아가며, 자동 갱신은 없어요.`)) return false;
+    const key = `${userId}:${font}`;
+    if (!fontPurchaseRequests.has(key)) fontPurchaseRequests.set(key, crypto.randomUUID());
+    const result = await noteRpc('purchase_card_font', { p_font: font, p_request_id: fontPurchaseRequests.get(key) });
+    if (!current()) return false;
+    fontPurchaseRequests.delete(key);
+    if (!result?.expires_at || Date.parse(result.expires_at) <= Date.now()) throw Error('Font entitlement expired');
+    void loadWorldBalance(userId);
+    return true;
+  } catch (error) {
+    if (current()) failureMessage = /Insufficient coins/i.test(error.message || '')
+      ? '쭈가 부족해요. 쭈를 충전하거나 기본 무료 글꼴을 골라 주세요.'
+      : '글꼴 이용권을 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.';
+    return false;
+  } finally {
+    if (session?.user?.id === userId && identityEpoch === epoch && composerRun === run) {
+      busy = false; setComposerInputs(); updateComposer();
+      if (failureMessage) composeMessage.textContent = failureMessage;
+    }
+  }
+}
 const SELF_HOSTED_FONTS = ['heart', 'nanum-myeongjo'];
 const EFFECT_CODES = ['none', 'sparkle', 'frame', 'rain', 'shimmer', 'rainbow', 'snow',
   'starlight', 'fireflies', 'petals', 'bubbles', 'aurora', 'confetti', 'sunbeams',
@@ -731,7 +775,7 @@ async function openCardVideo(thumb) {
   }
 }
 async function selectCardPhoto(file) {
-  if (!file || busy || !(kind === 'memo' || kind === 'comment') || (editingId && !cardPhotoEditPath)) return;
+  if (!file || busy || parkJunior() || !(kind === 'memo' || kind === 'comment') || (editingId && !cardPhotoEditPath)) return;
   cardMediaController?.abort();
   const controller = new AbortController(); cardMediaController = controller;
   const run = ++cardPhotoRun, composer = composerRun, epoch = identityEpoch;
@@ -779,7 +823,7 @@ function clearCardPhoto() {
 function syncCardPhotoAttach() {
   const attach = $('#card-photo-attach'), remove = $('#card-photo-remove');
   if (!attach || !remove) return;
-  const allowed = (!editingId || !!cardPhotoEditPath) && (kind === 'memo' || kind === 'comment');
+  const allowed = !parkJunior() && (!editingId || !!cardPhotoEditPath) && (kind === 'memo' || kind === 'comment');
   const previewUrl = cardPhotoUrl || (editingId && cardPhotoEditPath ? cardPhotoCache.get(editingId)?.url : null);
   const disabled = !allowed || busy || draftLoading;
   $('#card-photo-file').disabled = disabled;
@@ -960,8 +1004,9 @@ function inkOptions(style, width, cardTags) {
   return { width, inkColor, tags: cardTags, zoom: style.size === 'small' ? .85 : style.size === 'large' ? 1.12 : 1 };
 }
 function renderParkInk(canvas, body, options) {
-  if (!window.ParkCalligraphy.render(canvas, body, options)) return false;
-  const bounds = window.ParkCalligraphy.inkBounds?.(canvas);
+  const renderer = window.ParkCalligraphy;
+  if (!renderer?.render?.(canvas, body, options)) return false;
+  const bounds = renderer.inkBounds?.(canvas);
   let frame = canvas.previousElementSibling;
   if (!frame?.classList.contains('park-ink-box-frame')) {
     if (!bounds) return true;
@@ -1067,6 +1112,15 @@ function refreshExpandedBodies() {
     entry.full.hidden = !photoQuoteClipped(entry.photo, entry.quote, entry.tagRow);
   }
 }
+// Optional brush engine is not on the first-feed critical path.
+window.addEventListener('ojjuda:park-calligraphy-ready', () => {
+  for (const entry of quoteFitEntries) {
+    if (!entry.photo.isConnected || entry.photo.dataset.pendingBackground || !inkCards.has(entry.photo)) continue;
+    drawInkCard(entry.photo);
+  }
+  if (!backdrop.hidden) updateComposer();
+  requestTagFit();
+});
 function photoQuoteClipped(photo, quote, tagRow) {
   const ink = inkCards.get(photo);
   if (ink?.canvas.dataset.inkReady === 'true') return ink.body.length > 36 || ink.body.split('\n').length > 6;
@@ -1094,7 +1148,8 @@ function cardElement(card, compact = false, expanded = false, deferBackground = 
   const photo = node('span', 'photo');
   if (card.kind === 'event') photo.dataset.protectPhoto = String(!card.is_mine);
   const hiddenEvent = card.kind === 'event' && card.body == null;
-  const useInk = !hiddenEvent && style.font === 'calligraphy' && !!window.ParkCalligraphy && typeof card.body === 'string';
+  // Keep the original ink canvas even if its large renderer finishes loading later.
+  const useInk = !hiddenEvent && style.font === 'calligraphy' && typeof card.body === 'string';
   const key = hiddenEvent ? null : photoAssetKey(visiblePhoto);
   if (key && card.kind !== 'event' && document.documentElement.hasAttribute('data-park-webp')) {
     photo.dataset.imageSizes = compact ? 'min(67vw, 500px)' : 'min(100vw, 750px)';
@@ -1294,8 +1349,34 @@ function filteredFeed() {
   if (after) request = request.or(after);
   return request.order('created_at', { ascending: false }).order('id', { ascending: false }).limit(20);
 }
+const FEED_REQUEST_TIMEOUT_MS = 8500;
+async function feedWithinDeadline(pending, controller = null) {
+  let timer;
+  try {
+    return await Promise.race([
+      Promise.resolve(pending),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => {
+          const error = new Error('Park feed timed out');
+          error.name = 'TimeoutError';
+          reject(error);
+          controller?.abort();
+        }, FEED_REQUEST_TIMEOUT_MS);
+      })
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+async function getFeedCards(parameters) {
+  const controller = new AbortController();
+  // Reuse the same authenticated RPC boundary as other Park actions. This
+  // keeps fixture overrides and production read/abort behavior consistent.
+  return feedWithinDeadline(noteRpc('list_cards', parameters, controller.signal), controller);
+}
 async function loadFeed(more = false, quiet = false) {
   if (!client || (more && feedLoading)) return false;
+  if (feedRecoveryTimer !== null) { clearTimeout(feedRecoveryTimer); feedRecoveryTimer = null; }
   window.OjjudaParkFeedStarted = true;
   if (!more) feedDeferred = false;
   const searchContext = $('#feed-search-context');
@@ -1327,33 +1408,23 @@ async function loadFeed(more = false, quiet = false) {
     button.addEventListener('click', () => refreshNearbyPosition(button, version));
     list.replaceChildren(note, button); return true;
   }
-  // 위치를 이미 허용했으면 뒤에서 받아 와요. 카드 목록은 위치를 기다리지 않고 바로 불러와요(휴대폰이 위치를 잡는 데 몇 초씩 걸려요).
-  // 위치가 오면, 아직 첫 페이지를 보고 있을 때만 화면을 깜빡이지 않고 조용히 다시 불러 거리와 범위 안 이벤트를 더해요.
-  if (!more && feedMode === 'all' && !feedTerm && feedSort !== 'nearby' && !nearbyPosition && !quiet && !backgroundLocating) {
-    backgroundLocating = true;
-    positionIfAlreadyGranted().then(grantedPosition => {
-      backgroundLocating = false;
-      if (!grantedPosition || nearbyPosition) return;
-      nearbyPosition = grantedPosition;
-      quietLocatedReload();
-    }).catch(() => { backgroundLocating = false; });
-  }
+  // Public cards load before location warm-up, which starts after first paint.
   let data, error;
   if (feedMode === 'events') {
-    try { data = await noteRpc('list_my_events', {}); } catch (cause) { error = cause; }
+    try { data = await feedWithinDeadline(noteRpc('list_my_events', {})); } catch (cause) { error = cause; }
   } else if (feedMode === 'all' && !feedTerm) {
     try {
       const pendingOpening = !more && !quiet && feedSort === 'latest' && !nearbyPosition
         ? window.OjjudaParkOpening?.take?.(session?.user?.id) : undefined;
-      const opening = pendingOpening ? await pendingOpening : undefined;
+      const opening = pendingOpening ? await feedWithinDeadline(pendingOpening) : undefined;
       if (version !== feedRun) return false;
-      data = opening ? opening.data : await noteRpc('list_cards', { p_sort: feedSort === 'latest' ? 'recent' : feedSort,
+      data = opening ? opening.data : await getFeedCards({ p_sort: feedSort === 'latest' ? 'recent' : feedSort,
         p_lat: nearbyPosition?.latitude ?? null, p_lon: nearbyPosition?.longitude ?? null,
         p_radius_m: 30000, p_limit: 20,
         p_cursor: nearbySnapshot ? { offset: nearbyOffset, snapshot: nearbySnapshot } : { offset: nearbyOffset } });
     } catch (cause) { error = cause; }
   } else {
-    try { ({ data, error } = await filteredFeed()); } catch (cause) { error = cause; }
+    try { ({ data, error } = await feedWithinDeadline(filteredFeed())); } catch (cause) { error = cause; }
   }
   if (version !== feedRun) return false;
   feedLoading = false;
@@ -1364,6 +1435,16 @@ async function loadFeed(more = false, quiet = false) {
     banner(feedSort === 'nearby' && error?.name === 'GeolocationPositionError' ? '위치 권한을 확인해 주세요' : '노트 연결을 확인해 주세요');
     const retry = node('button', 'button', '다시 시도');
     retry.type = 'button'; retry.dataset.retryFeed = more ? 'more' : 'first'; list.append(retry);
+    // Retry one transient failure in place; never loop, overlap a newer load, or retry hidden screens.
+    if (!more && !quiet && (error?.name === 'TimeoutError' || error?.code === '57014'
+      || Number(error?.status) >= 500)) {
+      feedRecoveryTimer = setTimeout(() => {
+        feedRecoveryTimer = null;
+        if (version === feedRun && !feedLoading && !feed.hidden && !document.hidden) {
+          void loadFeed(false, true);
+        }
+      }, 1400);
+    }
     updateComposer(); return false;
   }
   ready = true; banner(feedMode === 'all' && feedSort === 'nearby' ? '현재 위치 기준 · 반경 30km' : '');
@@ -1410,6 +1491,28 @@ async function loadFeed(more = false, quiet = false) {
   updateComposer();
   consumeInitialCard();
   if (!stack.length) resumeGuestWriting(null);
+  // Location is optional; fetch it after cards have had time to paint.
+  if (!more && !quiet && feedMode === 'all' && !feedTerm && feedSort !== 'nearby'
+      && !nearbyPosition && !backgroundLocating && !document.hidden) {
+    backgroundLocating = true;
+    const locationEpoch = identityEpoch;
+    const locateAfterPaint = () => {
+      if (locationEpoch !== identityEpoch || version !== feedRun
+          || !locationIsEnabled() || nearbyPosition || document.hidden || !detail.hidden) {
+        backgroundLocating = false;
+        return;
+      }
+      void positionIfAlreadyGranted().then(grantedPosition => {
+        if (locationEpoch !== identityEpoch || version !== feedRun
+            || !grantedPosition || nearbyPosition || !locationIsEnabled()) return;
+        nearbyPosition = grantedPosition;
+        quietLocatedReload();
+      }).catch(() => {}).finally(() => { backgroundLocating = false; });
+    };
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => requestAnimationFrame(locateAfterPaint));
+    } else setTimeout(locateAfterPaint, 0);
+  }
   return true;
 }
 function locationErrorText(error) {
@@ -1435,9 +1538,10 @@ async function refreshNearbyPosition(button, version) {
 }
 async function currentPosition(fresh = false, enable = false, signal) {
   const service = window.OjjudaLocation, userId = session?.user?.id;
-  if (!service) throw Error('위치 기능을 불러오지 못했어요. 새로고침해 주세요.');
+  if (!authKnown || !userId || session.user.is_anonymous) throw Error('로그인 후 위치를 이용해 주세요.');
+  if (!service?.authorizePosition) throw Error('위치 기능을 불러오지 못했어요. 새로고침해 주세요.');
   const choice = await service.preference(client, userId);
-  const position = await service.readPosition({db:client,accountId:userId,fresh,allowDisabled:enable,signal});
+  const position = await service.readPosition({db:client,accountId:userId,fresh,allowDisabled:enable,signal,park:true});
   if (userId && userId !== session?.user?.id) throw Error('회원 정보를 다시 확인해 주세요.');
   if (enable && userId && !choice.enabled) await service.setPreference(client,userId,true,choice.version);
   return position;
@@ -1723,7 +1827,7 @@ async function toggleReaction(cardId, reaction) {
 }
 function shareCard(cardId) {
   if (!validCardId(cardId)) return;
-  const url = new URL('/world.html?place=park', location.origin); url.searchParams.set('card', cardId);
+  const url = new URL('/park/', location.origin); url.searchParams.set('card', cardId);
   const shareText = 'https://ojjuda.com';
   const run = showManagement('카드 공유'), epoch = identityEpoch, userId = session?.user?.id || null;
   let sharing = false, feedbackRun = 0;
@@ -1751,7 +1855,7 @@ function shareCard(cardId) {
       const share = managementButton('다른 앱으로 공유', async () => {
         if (!current() || sharing) return;
         sharing = true; share.disabled = true; ++feedbackRun;
-        try { await navigator.share({ title: '오쭈다 아지트 · 공원', text: shareText, url: url.href }); }
+        try { await navigator.share({ title: '오쭈다 공원', text: shareText, url: url.href }); }
         catch (error) { if (current() && error.name !== 'AbortError') managementMessage.textContent = '링크 복사를 이용해 주세요.'; }
         finally { if (current()) { sharing = false; share.disabled = false; } }
       }, true);
@@ -1809,7 +1913,7 @@ function shareCard(cardId) {
     const link = managementButton('링크만 공유', async () => {
       if (!current() || sharing) return;
       sharing = true; link.disabled = true; ++feedbackRun; managementMessage.textContent = '';
-      try { await navigator.share({ title: '오쭈다 아지트 · 공원', text: shareText, url: url.href }); }
+      try { await navigator.share({ title: '오쭈다 공원', text: shareText, url: url.href }); }
       catch (error) { if (current() && error.name !== 'AbortError') managementMessage.textContent = '링크 복사를 이용해 주세요.'; }
       finally { if (current()) { sharing = false; link.disabled = false; } }
     });
@@ -1938,7 +2042,7 @@ function setCardLocationSwitch(on, status, pending = false, failed = false) {
 function installFeatures() {
   const nickname = $('input[name="identity"][value="nickname"]');
   nickname.disabled = false; nickname.closest('label').classList.remove('disabled-choice');
-  nickname.closest('label').title = '선택하면 아지트 닉네임으로 공개됩니다';
+  nickname.closest('label').title = '선택하면 계정 닉네임이 표시돼요.';
   featureMessage = node('p', 'note-feature-message'); featureMessage.hidden = true;
   featureMessage.setAttribute('role', 'status'); featureMessage.setAttribute('aria-live', 'polite');
   noticeElement = node('aside', 'note-notice'); noticeElement.hidden = true;
@@ -2054,7 +2158,6 @@ function installFeatures() {
       getActive: () => tagTabOn ? 'tag' : feedSort, select: selectSort,
       enabled: () => feedMode === 'all' });
   }
-  $('#event-start').addEventListener('click', () => openComposer('event'));
   $('#event-photo-file').addEventListener('change', event => {
     const file = event.target.files?.[0]; event.target.value = '';
     if (file) void selectEventPhoto(file);
@@ -2612,7 +2715,7 @@ function updateComposer() {
   const selected = !isGuestComposer() && $('#compose-font').value === 'calligraphy';
   const convert = $('#convert-calligraphy');
   convert.setAttribute('aria-pressed', String(selected));
-  convert.textContent = selected ? '캘리그라피 해제' : '캘리그라피로 변환';
+  convert.textContent = selected ? '캘리그라피 해제' : '캘리그라피로 변환 · 10쭈 / 1개월';
   convert.disabled = busy || draftLoading || !authKnown;
   updatePaidSubmit();
   $('.compose-photo')?.classList.toggle('tags-chip', document.activeElement !== tags && !!tags.value.trim());
@@ -2712,6 +2815,10 @@ async function openComposer(mode, card = null, replyTo = null, pending = null) {
   if (busy || draftLoading) return;
   composeInkComposing = false;
   if (!authKnown && client) { message('계정을 확인하고 있어요. 잠시 후 다시 눌러 주세요.'); return; }
+  if (parkJunior() && (mode === 'event' || card?.kind === 'event')) {
+    message('공원 청소년 계정은 일반 카드와 답글을 쓸 수 있어요.');
+    return;
+  }
   fontBeforeConversion = 'default';
   const guest = !session?.user;
   if (guest && (card || !['new', 'memo', 'reply'].includes(mode))) {
@@ -2813,7 +2920,9 @@ async function openComposer(mode, card = null, replyTo = null, pending = null) {
     requestedDraftContent.background_key = randomDefaultBackground();
   if (draftStatus) draftStatus.hidden = true;
   setComposerInputs();
-  updateComposer(); backdrop.hidden = false; lockPage(true); updateComposer();
+  updateComposer(); backdrop.hidden = false; lockPage(true);
+  if (autoTagMode) refreshAutoTags();
+  updateComposer();
   $('.composer-body').scrollTop = 0;
   // Focus only while opening; later photo/location/render updates keep the
   // member's chosen field and caret, including native calligraphy input.
@@ -3046,6 +3155,8 @@ async function publishCard() {
     await publishGuestCard(body);
     return;
   }
+  if (!await ensureComposeFont(actionUserId, actionEpoch, actionComposerRun)) return;
+  if (session?.user?.id !== actionUserId || identityEpoch !== actionEpoch || composerRun !== actionComposerRun || backdrop.hidden) return;
   let draftToken = null, publishKind = kind, publishParent = parentId;
   recordDraft(); busy = true; setComposerInputs(); updateComposer();
   if (!editId && kind !== 'event' && draftController) {
@@ -3165,7 +3276,9 @@ async function publishCard() {
     busy = false; setComposerInputs();
     console.warn('Note publish:', error);
     updateComposer();
-    composeMessage.textContent = noteSpamMessage(error) || (/Invalid event (?:input|edit)/i.test(error?.message || '')
+    composeMessage.textContent = error?.code === 'guardian' || error?.message === 'park_guardian_location_required'
+      ? '보호자가 위치 이용에 동의한 뒤 다시 등록해 주세요.'
+      : noteSpamMessage(error) || (/Invalid event (?:input|edit)/i.test(error?.message || '')
       ? editId ? '이벤트 글·태그·사진을 확인해 주세요.' : '이벤트 글·태그·위치·반경·시간을 확인해 주세요.'
       : error?.code === 'EVENT_REJECTED' ? error.message
         : editId ? '수정하지 못했어요. 권한과 연결을 확인해 주세요' : '등록하지 못했어요. 다시 시도해 주세요');
@@ -3262,6 +3375,8 @@ async function publishCard() {
   }
 }
 function updateAuth() {
+  const juniorHelp = $('#park-junior-writing-help');
+  if (juniorHelp) juniorHelp.hidden = !parkJunior();
   const accountText = !authKnown ? '계정 확인 중'
     : session?.user ? (localStage ? '테스트 계정 연결됨' : `오쭈다 계정 연결됨${worldCoins === null ? '' : ` · ${worldCoins.toLocaleString('ko-KR')} ZU`}`)
       : (localStage ? '테스트 로그인 필요' : '대문에서 로그인해 주세요');
@@ -3371,7 +3486,7 @@ async function showNicknameChange() {
     const nickname = await fetchAccountNickname(userId);
     if (run !== managementRun || session?.user?.id !== userId) return;
     const form = node('form', 'note-account-form'); form.noValidate = true;
-    managementBody.replaceChildren(node('p', 'management-help', '아지트에서 사용하는 닉네임이에요.'), form);
+    managementBody.replaceChildren(node('p', 'management-help', '오쭈다 계정에서 사용하는 닉네임이에요.'), form);
     const input = accountField(form, 'note-new-nickname', '닉네임'); input.value = nickname;
     const syncLimit = () => { input.maxLength = textInputMaxLength(input.value, 12); };
     input.addEventListener('input', syncLimit); syncLimit();
@@ -3386,7 +3501,7 @@ async function showNicknameChange() {
         if (error) throw error;
         if (!data?.nickname) throw new Error('profile_unavailable');
         return data.nickname;
-      }, saved => { accountProfileRun++; accountNickname = saved; updateAuth(); accountSuccess('닉네임을 저장했어요. 아지트에서도 같은 닉네임을 써요.'); });
+      }, saved => { accountProfileRun++; accountNickname = saved; updateAuth(); accountSuccess('닉네임을 저장했어요.'); });
     });
   } catch {
     if (run !== managementRun || session?.user?.id !== userId) return;
@@ -3398,7 +3513,7 @@ function showPasswordChange() {
   const userId = session?.user?.id; if (!userId) return;
   const run = showManagement('비밀번호 변경');
   const form = node('form', 'note-account-form'); form.noValidate = true;
-  managementBody.append(node('p', 'management-help', '아지트에 로그인할 때 쓰는 비밀번호가 바뀌어요.'), form);
+  managementBody.append(node('p', 'management-help', '오쭈다 계정의 비밀번호가 바뀌어요.'), form);
   const password = accountField(form, 'note-new-password', '새 비밀번호', 'password'); password.minLength = 6;
   password.placeholder = '6자 이상';
   const confirmation = accountField(form, 'note-confirm-password', '새 비밀번호 확인', 'password');
@@ -3414,11 +3529,11 @@ function showPasswordChange() {
     }, () => { password.value = ''; confirmation.value = ''; accountSuccess('비밀번호를 바꿨어요. 다음 로그인부터 새 비밀번호를 써 주세요.'); });
   });
 }
-function leaveNoteAccount() { (parkEmbedded ? window.parent : window).location.assign('/'); }
+function leaveNoteAccount() { (parkEmbedded ? window.parent : window).location.assign('/park/'); }
 function showAccountLogout() {
   if (!session?.user) return;
   showManagement('로그아웃');
-  managementBody.append(node('p', 'management-help', '이 브라우저에서 아지트가 로그아웃돼요. 로그아웃할까요?'));
+  managementBody.append(node('p', 'management-help', '이 브라우저에서 오쭈다 계정을 로그아웃할까요?'));
   cancelManagement();
   managementFooter.append(managementButton('로그아웃', () => accountAction(async userId => {
     const { error } = await client.auth.signOut({ scope: 'local' });
@@ -3467,17 +3582,17 @@ async function showAccountDeletion() {
     if (run !== managementRun || session?.user?.id !== userId) return;
     const form = node('form', 'note-account-form'); form.noValidate = true;
     managementBody.replaceChildren(
-      node('p', 'management-help note-account-warning', '탈퇴하면 아지트 계정이 삭제돼요. 방·다이어리·사진·영상·친구·ZU와 공원의 카드·답글·이벤트가 삭제되며 되돌릴 수 없어요.'),
+      node('p', 'management-help note-account-warning', '탈퇴하면 오쭈다 계정이 삭제돼요. 방·다이어리·사진·영상·친구·ZU와 공원의 카드·답글·이벤트가 삭제되며 되돌릴 수 없어요.'),
       node('p', 'management-help', '계정정보는 1개월간 비공개 보관 후 삭제해요. 같은 이메일이나 전화번호로 3일(72시간) 동안 재가입할 수 없어요. 다른 사람의 방명록·댓글은 ‘탈퇴한 사용자’로 남아요.'), form);
     const input = accountField(form, 'note-delete-nickname', `확인을 위해 닉네임 ‘${nickname}’을 입력해 주세요`);
     const consentLabel = node('label', 'note-account-consent'), consent = node('input'); consent.type = 'checkbox';
-    consentLabel.append(consent, node('span', '', '아지트 계정과 모든 활동이 삭제되는 것을 확인했어요.')); form.append(consentLabel);
+    consentLabel.append(consent, node('span', '', '오쭈다 계정과 모든 활동이 삭제되는 것을 확인했어요.')); form.append(consentLabel);
     accountFormFooter(form, '탈퇴하기', true); input.focus();
     form.addEventListener('submit', event => {
       event.preventDefault();
       if (run !== managementRun || session?.user?.id !== userId) return;
       if (input.value.trim() !== nickname) { managementMessage.textContent = '닉네임이 맞지 않아요.'; input.focus(); return; }
-      if (!consent.checked) { managementMessage.textContent = '아지트 계정 탈퇴 안내를 확인해 주세요.'; consent.focus(); return; }
+      if (!consent.checked) { managementMessage.textContent = '오쭈다 계정 탈퇴 안내를 확인해 주세요.'; consent.focus(); return; }
       void accountAction(deleteNoteAccount);
     });
   } catch {
@@ -3563,8 +3678,24 @@ function noteSpamMessage(error) {
   const windowText = seconds % 60 === 0 ? `${seconds / 60}분` : `${seconds}초`;
   return `${windowText}에 ${amount(details.max_posts, 2)}개까지만 쓸 수 있어요. ${amount(details.retry_after_seconds, 1)}초 뒤 다시 시도해 주세요.`;
 }
-async function noteRpc(name, parameters = {}) {
-  const { data, error } = await query().rpc(name, parameters);
+async function noteRpc(name, parameters = {}, signal = null) {
+  if (parameters.p_lat != null || parameters.p_lon != null) {
+    const userId = session?.user?.id, epoch = identityEpoch;
+    try {
+      if (!authKnown || !userId || !window.OjjudaLocation?.authorizePosition)
+        throw Error('로그인 후 위치를 이용해 주세요.');
+      await window.OjjudaLocation.authorizePosition(client, userId, { park: true, signal });
+      if (epoch !== identityEpoch || userId !== session?.user?.id) throw Error('회원 정보를 다시 확인해 주세요.');
+    } catch (error) {
+      if (epoch !== identityEpoch || userId !== session?.user?.id) throw error;
+      nearbyPosition = null; writingPosition = null;
+      if (signal?.aborted || !['list_cards','get_card'].includes(name) || parameters.p_sort === 'nearby') throw error;
+      parameters = { ...parameters, p_lat: null, p_lon: null };
+    }
+  }
+  const pending = query().rpc(name, parameters);
+  const { data, error } = await (signal && typeof pending.abortSignal === 'function'
+    ? pending.abortSignal(signal) : pending);
   if (error) throw error;
   return data;
 }
@@ -3589,7 +3720,7 @@ async function managementAction(action, after) {
     const reason = error?.message || '';
     managementMessage.textContent = /parent_not_permanent/i.test(reason)
       ? '상위 카드가 모두 영구보관된 후에 답글을 영구보관할 수 있어요.'
-      : reason === 'coins' ? 'ZU 잔액이 부족해요. 아지트에서 잔액을 확인해 주세요.'
+      : reason === 'coins' ? 'ZU 잔액이 부족해요. 공원 상단에서 잔액을 확인해 주세요.'
         : reason === 'card_unavailable' ? '이 카드는 삭제되었거나 현재 영구보관할 수 없어요.'
           : '처리하지 못했어요. 로그인과 권한을 확인한 뒤 다시 시도해 주세요.';
   } finally {
@@ -3805,7 +3936,7 @@ function installManagement() {
   const blocks = managementButton('차단 목록', showBlocks); blocks.id = 'note-blocks'; blocks.hidden = true;
   const reports = managementButton('관리자 모드 열기', () => {
     if (!moderator || !session?.user) return;
-    (parkEmbedded ? window.parent : window).location.assign('/world.html?admin=note');
+    (parkEmbedded ? window.parent : window).location.assign('/admin/?from=park&admin=cards');
   }); reports.id = 'note-moderation'; reports.className = 'btn pri'; reports.hidden = true;
   $('#note-admin-entry').append(reports);
   const memberInfo = managementButton('내 회원정보', () => showMemberInfo()); memberInfo.id = 'note-member-info'; memberInfo.hidden = true;
@@ -3922,7 +4053,7 @@ text.addEventListener('input', () => { if (autoTagMode && document.activeElement
 text.addEventListener('focus', syncComposeInkDisplay);
 text.addEventListener('blur', syncComposeInkDisplay);
 text.addEventListener('compositionstart', () => { composeInkComposing = true; syncComposeInkDisplay(); });
-text.addEventListener('compositionend', () => { composeInkComposing = false; updateComposer(); });
+text.addEventListener('compositionend', () => { composeInkComposing = false; if (autoTagMode) refreshAutoTags(); updateComposer(); });
 tags.addEventListener('input', () => { noteTagEdit(); updateComposer(); recordDraft(); });
 tags.addEventListener('focus', () => updateComposer()); tags.addEventListener('blur', () => updateComposer());
 window.addEventListener('resize', () => { if (!backdrop.hidden) updateComposer(); requestTagFit(); });
@@ -3971,6 +4102,7 @@ function receiveAuth(current) {
   const firstSession = !authKnown;
   const changed = session?.user?.id !== current?.user?.id;
   session = current; authKnown = true;
+  window.OjjudaParkAccount?.syncIdentity();
   if (changed) {
     stopLocationPreference();writingLocationController?.abort();window.OjjudaLocation?.forget(previousUserId);
     accountNickname = null; accountProfileRun++;
@@ -4062,17 +4194,24 @@ notificationController = window.OjjudaNoteNotifications?.install({
   onGiftClaimed: userId => loadWorldBalance(userId),
   client, getUserId: () => session?.user?.id || null,
   onOpenCard: id => { window.OjjudaNoteNavigation?.leaveMy(); openCard(id); },
-  onOpenWorld: (type,id) => {const url=new URL('/world.html',location.origin);url.searchParams.set('notice',type);url.searchParams.set('target',id);(parkEmbedded ? window.parent : window).location.assign(url.href);},
+  canOpenWorldTarget: type => !parkJunior() && (type === 'friends' || type === 'message'),
+  allowInviteNavigation: false,
+  onOpenWorld: (type,id) => {
+    if (type === 'friends') window.OjjudaParkFull?.navigate('friends');
+    if (type === 'message') void window.OjjudaParkAccount?.messages()?.openMessage(id);
+  },
   onOpenInquiry: id => window.OjjudaNoteSupport?.open?.(id),
   onKeepCard: (id, cardKind) => confirmPermanent({ id, kind: cardKind })
 });
 if (client) {
-  client.auth.onAuthStateChange((_event, current) => {
+  client.auth.onAuthStateChange((event, current) => {
+    // Do not show a public guest entrance before the stored session is loaded.
+    if (event === 'INITIAL_SESSION' && !current?.user) return;
     authEventVersion++;
     receiveAuth(current);
   });
   const initialAuthVersion = authEventVersion;
-  client.auth.getSession().then(({ data, error }) => {
+  feedWithinDeadline(client.auth.getSession()).then(({ data, error }) => {
     if (authEventVersion !== initialAuthVersion) return;
     if (error) console.warn('Note Auth:', error);
     receiveAuth(error ? null : data?.session || null);

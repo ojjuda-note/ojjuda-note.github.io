@@ -171,16 +171,6 @@
       "label": "맞고"
     },
     {
-      "slug": "poker",
-      "target": "/world.html?game=poker",
-      "label": "세븐포커"
-    },
-    {
-      "slug": "roulette",
-      "target": "/world.html?game=roulette",
-      "label": "룰렛"
-    },
-    {
       "slug": "photo-territory",
       "target": "/world.html?game=photo_ttang",
       "label": "포토땅따먹기"
@@ -559,6 +549,11 @@
       "slug": "sitemap",
       "target": "/sitemap.html",
       "label": "사이트맵"
+    },
+    {
+      "slug": "park-story",
+      "target": "/features/guide/park.html",
+      "label": "오쭈다 공원 소개"
     }
   ]
 }

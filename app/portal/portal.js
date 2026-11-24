@@ -2,15 +2,18 @@
   'use strict';
 
   const $ = id => document.getElementById(id);
-  const destinations = { note: '/world.html?place=park', world: '/world.html', home: '/world.html?tab=home', board: '/world.html?tab=board', my: '/world.html?tab=my', photo: '/photo-ttang.html', byeolcheonji: '/byeolcheonji/', groups: '/groups/', pajang: '/features/pajang/' };
+  const destinations = { note: '/park/', world: '/world.html', home: '/world.html?tab=home', board: '/world.html?tab=board', my: '/world.html?tab=my', photo: '/photo-ttang.html', byeolcheonji: '/byeolcheonji/', groups: '/groups/', pajang: '/features/pajang/' };
   // The document linked from the checkbox and the recorded version must agree.
   // Keep the existing terms during the public notice period (Korea time).
   const termsVersion = Date.now() >= Date.parse('2026-11-20T00:00:00+09:00')
     ? '2026-11-20' : '2026-09-29-age14';
-  for (const link of document.querySelectorAll('[data-policy-document]')) {
-    const name = link.dataset.policyDocument;
-    if (name === 'terms' || name === 'privacy') {
-      link.href = termsVersion === '2026-11-20' ? `/${name}.html` : `/policies/2026-09-29/${name}.html`;
+  function setPolicyLinks(service) {
+    const context = service === 'note' ? '?from=park' : service === 'pajang' ? '?from=pajang' : '';
+    for (const link of document.querySelectorAll('[data-policy-document]')) {
+      const name = link.dataset.policyDocument;
+      if (name === 'terms' || name === 'privacy') {
+        link.href = (termsVersion === '2026-11-20' ? `/${name}.html` : `/policies/2026-09-29/${name}.html`) + context;
+      }
     }
   }
   if ($('policy-revision-note')) $('policy-revision-note').hidden = termsVersion === '2026-11-20';
@@ -31,13 +34,102 @@
   const nickname = $('nickname');
   const submit = $('auth-submit');
   let referral;
+  let verifiedGuardian = null, guardianCheck = 0;
+  let enrollmentOpen = false, enrollmentStatus;
+  function loadEnrollmentStatus() {
+    if (!client || enrollmentStatus) return;
+    enrollmentStatus = Promise.resolve().then(() => client.rpc('park_guardian_signup_open'))
+      .then(({ data, error }) => { enrollmentOpen = !error && data === true; })
+      .catch(() => { enrollmentOpen = false; })
+      .finally(() => {
+        if (parkSignup()) {
+          const group = $('signup-identity-slot').querySelector('[data-identity-prefix]');
+          if (group) group.dataset.parkSignup = String(enrollmentOpen);
+          syncParkSignup();
+          const code = $('signup-code');
+          if (code?.value && $('signup-birth')?.value && typeof window.Event === 'function')
+            code.dispatchEvent(new window.Event('input', { bubbles: true }));
+        }
+      });
+  }
+  function parkSignup() {
+    return authMode === 'signup' && (pendingDestination || entryDestination || returnQueryDestination) === 'note';
+  }
+  function parkBirth() {
+    return window.OjjudaIdentity.parseBirth($('signup-birth').value.trim(), $('signup-code').value.trim(), undefined, true, enrollmentOpen ? 12 : 14);
+  }
+  function guardianMatches(birth) {
+    return verifiedGuardian?.birth === birth && verifiedGuardian.code === $('park-guardian-code').value.trim().toLowerCase();
+  }
+  function resetGuardian() {
+    guardianCheck++;
+    verifiedGuardian = null;
+    $('park-guardian-status').textContent = '';
+    $('park-guardian-verify').disabled = false;
+  }
+  function enableReferral(active) {
+    if (active) referral ??= window.OjjudaSignupReferral?.mount($('signup-referral-slot'), client);
+    referral?.setActive(active);
+  }
+  function syncParkSignup() {
+    if (!parkSignup() || !window.OjjudaIdentity?.fields) return;
+    let birth;
+    try { birth = parkBirth(); } catch { /* Show only the birth fields until the date is valid. */ }
+    const junior = birth && birth.age < 14;
+    const ready = Boolean(birth && (!junior || guardianMatches(birth.birthDate)));
+    $('park-guardian-panel').hidden = !junior;
+    $('age-check-label').hidden = !birth || junior;
+    $('signup-phone').closest('.field').hidden = !ready;
+    $('signup-identity-slot').querySelector('.identity-hint').hidden = !ready;
+    for (const input of [nickname, email, password, passwordConfirm]) input.closest('.field').hidden = !ready;
+    $('policy-check').closest('.consent-field').hidden = !ready;
+    $('signup-referral-slot').hidden = !birth || junior;
+    enableReferral(Boolean(birth && !junior));
+    submit.hidden = !ready;
+  }
+  async function verifyGuardian() {
+    if (!client || !parkSignup() || !enrollmentOpen) return;
+    let birth;
+    try { birth = parkBirth(); } catch { return; }
+    if (birth.age >= 14) return;
+    resetGuardian();
+    const code = $('park-guardian-code').value.trim().toLowerCase();
+    const status = $('park-guardian-status');
+    if (!/^[a-f0-9]{64}$/.test(code)) {
+      status.textContent = '보호자가 받은 코드 64자리를 모두 붙여 넣어 주세요.';
+      $('park-guardian-code').focus();
+      return;
+    }
+    const request = guardianCheck;
+    $('park-guardian-verify').disabled = true;
+    status.textContent = '코드를 확인하고 있어요.';
+    try {
+      const { data, error } = await client.rpc('park_guardian_code_valid', { p_code: code });
+      if (request !== guardianCheck || !dialog.open || !parkSignup()) return;
+      if (error) throw error;
+      if (data !== true) {
+        status.textContent = '코드를 다시 확인해 주세요. 만료됐거나 이미 사용했다면 보호자가 새 코드를 요청할 수 있어요.';
+        return;
+      }
+      verifiedGuardian = { code, birth: birth.birthDate };
+      status.textContent = '확인했어요. 보호자가 신청한 이메일로 가입해 주세요.';
+      syncParkSignup();
+      email.focus();
+    } catch {
+      if (request === guardianCheck) status.textContent = '코드를 확인할 수 없어요. 잠시 후 다시 시도해 주세요.';
+    } finally {
+      if (request === guardianCheck) $('park-guardian-verify').disabled = false;
+    }
+  }
   function prepareSignupFields() {
     const slot = $('signup-identity-slot');
     if (!slot.hasChildNodes() && window.OjjudaIdentity?.fields) {
       slot.innerHTML = window.OjjudaIdentity.fields('signup');
     }
-    referral ??= window.OjjudaSignupReferral?.mount($('signup-referral-slot'), client);
-    referral?.setActive(true);
+    const group = slot.querySelector('[data-identity-prefix]');
+    if (group) group.dataset.parkSignup = String(parkSignup() && enrollmentOpen);
+    if (parkSignup()) { loadEnrollmentStatus(); syncParkSignup(); }
+    else enableReferral(true);
   }
   const forgot = $('forgot-trigger');
   const accountActions = $('account-actions');
@@ -192,6 +284,7 @@
       pajang: {key:'pajang', name:'파장', copy:'마음이 닿는 오늘의 한마디.', line:'답변으로 시작하는\n새로운 인연.'},
       world: {key:'agit', name:'아지트', copy:'취향이 모이는 우리의 아지트.', line:'가볍게 놀고,\n다정하게 나눠요.'}
     };
+    setPolicyLinks(destination);
     const space = spaces[destination] || spaces.world;
     dialog.setAttribute('data-entry-space', space.key);
     const text = (id, value) => { const element = $(id); if (element) element.textContent = value; };
@@ -202,7 +295,7 @@
     text('front-copy', space.copy);
     text('front-space', space.name);
     const browse = $('entry-browse');
-    if (browse) browse.href = destinationPath(destination || 'world') + (destination === 'note' ? '&guest=1' : '');
+    if (browse) browse.href = destinationPath(destination || 'world') + (destination === 'note' ? '?guest=1' : '');
     return space;
   }
 
@@ -210,14 +303,19 @@
     if (dialog.open && authMode === 'signup') signupNickname = nickname.value.trim();
     authViewVersion++;
     authMode = mode;
+    resetGuardian();
+    $('park-guardian-code').value = '';
+    $('park-guardian-panel').hidden = true;
+    $('age-check-label').hidden = false;
+    submit.hidden = false;
     $('guest-browse').hidden = mode !== 'login';
     const guestDestination = pendingDestination || entryDestination || returnQueryDestination || 'world';
     const entrySpace = syncEntryIdentity(guestDestination);
-    $('guest-browse').href = destinationPath(guestDestination) + (guestDestination === 'note' ? '&guest=1' : '');
+    $('guest-browse').href = destinationPath(guestDestination) + (guestDestination === 'note' ? '?guest=1' : '');
     const isSignup = mode === 'signup';
     if (isSignup) {
       prepareSignupFields();
-      window.OjjudaGrowthAttribution?.startSignup();
+      if (!parkSignup()) window.OjjudaGrowthAttribution?.startSignup();
     }
     else referral?.setActive(false);
     const isForgot = mode === 'forgot';
@@ -250,15 +348,20 @@
     $('password-confirm-label').textContent = isReset ? '새 비밀번호 확인' : '비밀번호 확인';
     password.autocomplete = isSignup || isReset ? 'new-password' : 'current-password';
     $('auth-title').textContent = isForgot ? '비밀번호 찾기' : isReset ? '새 비밀번호 설정' : isNickname ? '닉네임 정하기' : '오쭈다 ' + entrySpace.name;
-    $('auth-intro').textContent = isSignup ? (guestDestination === 'pajang' ? '만 19세 이상 회원만 파장을 이용할 수 있어요.' : '오쭈다 계정 하나로 함께해요.')
+    $('auth-intro').textContent = isSignup ? (parkSignup() ? '생년월일을 입력해 가입 방법을 확인해 주세요.' : guestDestination === 'pajang' ? '만 19세 이상 회원만 파장을 이용할 수 있어요.' : '오쭈다 계정 하나로 함께해요.')
       : isForgot ? '등록된 이메일·전화번호·생년월일·성별을 모두 입력해 주세요.'
         : isReset ? '새 비밀번호를 입력하고, 확인 칸에 한 번 더 입력해 주세요.'
-          : isNickname ? '아지트에서 사용할 닉네임을 정해 주세요.'
+          : isNickname ? '공원에서 사용할 닉네임을 정해 주세요.'
           : guestDestination === 'pajang' ? '만 19세 이상 회원만 이용할 수 있어요.' : '오쭈다 계정으로 함께해요.';
-    submit.firstChild.textContent = isSignup ? '회원가입 ' : isForgot ? '회원정보 확인 ' : isReset ? '확인 ' : isNickname ? '아지트 시작하기 ' : '로그인 ';
+    submit.firstChild.textContent = isSignup ? '회원가입 ' : isForgot ? '회원정보 확인 ' : isReset ? '확인 ' : isNickname ? '공원 시작하기 ' : '로그인 ';
     feedback.textContent = notice;
     if ((isSignup || isForgot) && !window.OjjudaIdentity?.fields) feedback.textContent = '회원정보 입력 화면을 불러오지 못했어요. 다시 시도해 주세요.';
     submit.disabled = busy || !client || ((isSignup || isForgot) && !window.OjjudaIdentity);
+    if (isSignup && window.OjjudaIdentity?.fields) {
+      $('signup-phone').closest('.field').hidden = false;
+      $('signup-identity-slot').querySelector('.identity-hint').hidden = false;
+      syncParkSignup();
+    }
   }
 
   function showDialog() {
@@ -276,7 +379,7 @@
       return;
     }
     submit.disabled = busy || (['signup', 'forgot'].includes(mode) && !window.OjjudaIdentity);
-    (mode === 'nickname' ? nickname : mode === 'reset' ? password : email).focus({ preventScroll: true });
+    (parkSignup() ? $('signup-birth') : mode === 'nickname' ? nickname : mode === 'reset' ? password : email)?.focus({ preventScroll: true });
   }
 
   function showState(title, body, buttonText = '로그인 화면으로') {
@@ -365,6 +468,12 @@
   }
 
   function goToDestination(key, replace = true) {
+    if (session?.user?.app_metadata?.park_guardian_account === true || session?.user?.role === 'park_junior') {
+      const card = key === 'note' ? returnCard : null;
+      clearReturnDestination();
+      location[replace ? 'replace' : 'assign']('/park/' + (card ? '?card=' + encodeURIComponent(card) : ''));
+      return;
+    }
     const path = destinationPath(key);
     if (key === 'note') {
       void enterNote(undefined, replace);
@@ -459,7 +568,7 @@
       nickname.value = profile.nickname;
       syncNicknameLimit();
       $('account-badge').textContent = `${profile.nickname}님`;
-      const notePath = destinations.note + (returnCard ? `&card=${encodeURIComponent(returnCard)}` : '');
+      const notePath = destinations.note + (returnCard ? `?card=${encodeURIComponent(returnCard)}` : '');
       clearReturnDestination();
       location[replace ? 'replace' : 'assign'](notePath);
     } catch (error) {
@@ -560,6 +669,24 @@
     feedback.textContent = '';
     const address = email.value.trim();
     const secret = password.value;
+    let guardianCode = null;
+    if (parkSignup()) {
+      try {
+        const birth = parkBirth();
+        if (birth.age < 14) {
+          if (!guardianMatches(birth.birthDate)) {
+            feedback.textContent = '보호자가 받은 가입 코드를 먼저 확인해 주세요.';
+            $('park-guardian-code').focus();
+            return;
+          }
+          guardianCode = verifiedGuardian.code;
+        }
+      } catch (error) {
+        feedback.textContent = error.message;
+        if (error.field) $(`signup-${error.field}`)?.focus();
+        return;
+      }
+    }
     const isPasswordReset = authMode === 'reset' || authMode === 'direct-reset';
     if (authMode === 'direct-reset' && (!recoveryGrant || Date.now() >= recoveryGrant.expiresAt)) {
       setAuthMode('forgot', messageFor('recovery_expired')); return;
@@ -611,15 +738,17 @@
     if (authMode === 'signup') {
       prepareSignupFields();
       try {
-        signupIdentity = window.OjjudaIdentity.read(form, 'signup');
-        if(window.OjjudaInvite?.pending()&&!referral)throw Error('추천인 입력 화면을 불러오지 못했어요. 새로고침한 뒤 다시 가입해 주세요.');
-        signupReferrer = referral?.read() || null;
+        signupIdentity = window.OjjudaIdentity.read(form, 'signup', true, parkSignup() ? 12 : 14);
+        if (!guardianCode) {
+          if(window.OjjudaInvite?.pending()&&!referral)throw Error('추천인 입력 화면을 불러오지 못했어요. 새로고침한 뒤 다시 가입해 주세요.');
+          signupReferrer = referral?.read() || null;
+        }
       } catch (error) {
         feedback.textContent = error.message;
         if (error.field) $(`signup-${error.field}`)?.focus();
         return;
       }
-      if (!$('age-check').checked) {
+      if (!guardianCode && !$('age-check').checked) {
         feedback.textContent = '만 14세 이상인지 확인해 주세요.';
         $('age-check').focus();
         return;
@@ -654,14 +783,16 @@
         dialog.close();
         goToDestination(destination);
       } else if (authMode === 'signup') {
-        await referral?.verify(signupReferrer);
+        if (!guardianCode) await referral?.verify(signupReferrer);
         if (!currentSignup()) return;
-        const name = await prepareSignupNickname(currentSignup);
+        const name = guardianCode ? ensureSignupNickname(true) : await prepareSignupNickname(currentSignup);
         if (!currentSignup() || !name) return;
         const destination = pendingDestination || entryDestination || 'world';
         const confirmationUrl = authReturnUrl(destination);
         let campaignMetadata = {};
-        try { campaignMetadata = await window.OjjudaGrowthAttribution?.signupMetadata() || {}; } catch {}
+        if (!guardianCode) {
+          try { campaignMetadata = await window.OjjudaGrowthAttribution?.signupMetadata() || {}; } catch {}
+        }
         if (!currentSignup()) return;
         const { data, error } = await client.auth.signUp({
           email: address,
@@ -669,12 +800,12 @@
           options: {
             data: {
               nickname: name,
-              terms_version: termsVersion,
+              terms_version: guardianCode ? 'park-guardian-v1' : termsVersion,
               agreed_at: new Date().toISOString(),
               birth_yymmdd: signupIdentity.birthSix,
               gender_code: signupIdentity.genderCode,
               phone_number: signupIdentity.phone,
-              age_14_or_older: true,
+              ...(guardianCode ? { park_signup: true, park_guardian_code: guardianCode } : { age_14_or_older: true }),
               ...campaignMetadata,
               ...(signupReferrer?.code ? {referrer_code:signupReferrer.code}
                 : signupReferrer ? { referrer_id: signupReferrer.id, referrer_nickname: signupReferrer.nickname } : {})
@@ -685,6 +816,8 @@
         if(!error)window.OjjudaInvite?.clear();
         if (!currentView()) return;
         if (error) throw error;
+        resetGuardian();
+        $('park-guardian-code').value = '';
         signupNickname = null;
         referral?.reset();
         for (const input of $('signup-identity-slot').querySelectorAll('input')) input.value = '';
@@ -693,7 +826,8 @@
           applySession(data.session);
           pendingDestination = null;
           dialog.close();
-          goToDestination(destination);
+          if (guardianCode) location.replace('/park/' + (returnCard ? '?card=' + encodeURIComponent(returnCard) : ''));
+          else goToDestination(destination);
         } else {
           rememberAfterEmail(destination, address);
           pendingDestination = null;
@@ -733,7 +867,12 @@
       if (!currentView()) return;
       duplicateNickname = nicknameTaken(error);
       if (authMode === 'direct-reset' && !/invalid_recovery_password|recovery_password_mismatch/.test(error.message || '')) setAuthMode('forgot', messageFor(error));
-      else feedback.textContent = messageFor(error);
+      else if (guardianCode && /database error|guardian/i.test(error?.message || '')) {
+        resetGuardian();
+        syncParkSignup();
+        feedback.textContent = '가입 정보를 확인해 주세요. 보호자가 신청한 이메일과 생년월일, 사용하지 않은 코드가 필요해요.';
+        $('park-guardian-code').focus();
+      } else feedback.textContent = messageFor(error);
     } finally {
       if (authViewVersion === requestView) {
         password.value = '';
@@ -762,11 +901,19 @@
     });
   });
   dialog.querySelector('[data-close-dialog]').addEventListener('click', () => dialog.close());
+  $('park-guardian-verify').addEventListener('click', verifyGuardian);
+  form.addEventListener('input', event => {
+    if (!parkSignup() || !['signup-birth', 'signup-code', 'park-guardian-code'].includes(event.target.id)) return;
+    resetGuardian();
+    feedback.textContent = '';
+    syncParkSignup();
+  });
   dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
   dialog.addEventListener('close', () => {
     // A login can close this dialog and immediately reopen it for a nickname retry.
     if (dialog.open) return;
     clearRecoveryGrant();
+    resetGuardian();
     recoveryCompleted = false;
     form.reset();
     signupNickname = null;

@@ -9,14 +9,46 @@
   const destinations = {
     hub: '/world.html?tab=hub',
     arcade: '/world.html?tab=arcade',
-    park: '/world.html?tab=park',
+    park: '/park/',
     my: '/world.html?tab=my',
     pajang: '/features/pajang/station.html?tab=profile',
-    admin: '/world.html?admin=overview' + (['park','pajang'].includes(from) ? '&from=' + from : '')
+    admin: ['park','pajang'].includes(from) ? '/admin/?from=' + from : '/world.html?admin=overview'
   };
   const section = script?.dataset.returnTo === 'admin' ? 'admin' : Object.hasOwn(destinations, from) ? from : script?.dataset.returnTo;
   const destination = destinations[section] || destinations.hub;
   const labels = { hub: '아지트로', arcade: '오락실로', park: '공원으로', my: '설정으로', pajang: '내 파장으로', admin: '관리자 모드로' };
+  const serviceDocument = from === 'park' || from === 'pajang';
+  const sharedPage = /^\/(?:terms\.html|privacy\.html|delete-account\.html|child-safety\.html|guide\.html|features\/guide\/creator\.html|policies\/(?:pajang-revision|2026-09-29\/(?:terms|privacy))\.html)$/;
+  if (serviceDocument) {
+    const serviceName = from === 'park' ? '공원' : '파장';
+    for (const link of document.querySelectorAll('a[href]')) {
+      if (link.getAttribute('href').startsWith('#')) continue;
+      const target = new URL(link.href, location.href);
+      if (target.origin !== new URL(location.href).origin && target.origin !== 'https://ojjuda.kr') continue;
+      if (sharedPage.test(target.pathname)) {
+        target.searchParams.set('from', from);
+        link.href = target.pathname + target.search + target.hash;
+      } else if (link.matches('.brand') || target.pathname === '/world.html') {
+        link.href = destination;
+        if (link.matches('.brand')) {
+          const name = link.querySelector('.brand-sub, strong');
+          if (name) name.textContent = name.classList.contains('brand-sub') ? serviceName : '오쭈다 ' + serviceName;
+          else link.textContent = '오쭈다 ' + serviceName;
+          link.setAttribute('aria-label', serviceName + '으로 돌아가기');
+        } else if (!link.hasAttribute('data-section-return')) link.textContent = '오쭈다 ' + serviceName;
+      } else if (target.pathname === '/sitemap.html') link.remove();
+    }
+  }
+  function previousIsLocal(href) {
+    if (!href) return false;
+    const previous = new URL(href);
+    if (previous.origin !== new URL(location.href).origin) return false;
+    if (!serviceDocument) return true;
+    if (previous.searchParams.get('from') === from && (sharedPage.test(previous.pathname) ||
+        previous.pathname.startsWith('/admin/') || previous.pathname.startsWith('/features/organization/'))) return true;
+    if (previous.pathname === '/') return previous.searchParams.get('next') === (from === 'park' ? 'note' : 'pajang');
+    return from === 'park' ? /^\/(park|note)\//.test(previous.pathname) : previous.pathname.startsWith('/features/pajang/');
+  }
   function hasPreviousPage() {
     // Navigation entries, when available, distinguish a same-site new tab from
     // a real previous page. history.length alone can include external sites.
@@ -25,10 +57,9 @@
       const index = navigation?.currentEntry?.index;
       if (Number.isInteger(index) && navigation.entries) {
         const previous = navigation.entries().find(entry => entry.index === index - 1);
-        return !!previous?.url && new URL(previous.url).origin === new URL(location.href).origin;
+        return previousIsLocal(previous?.url);
       }
-      return history.length > 1 && !!document.referrer &&
-        new URL(document.referrer).origin === new URL(location.href).origin;
+      return history.length > 1 && previousIsLocal(document.referrer);
     } catch { return false; }
   }
   const previousPage = hasPreviousPage();

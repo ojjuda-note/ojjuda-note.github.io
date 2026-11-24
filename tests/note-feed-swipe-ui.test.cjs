@@ -204,9 +204,11 @@ assert.ok(bootAt > 0);
       await page.evaluate(() => { delete window.OjjudaParkFull; });
       await page.locator('[data-sort="tag"]').click();
       await drag(-1, { hold: true });
-      assert.equal(await page.locator('.note-feed-peek').textContent(), '아지트');
+      assert.equal(await page.locator('.note-feed-peek').count(), 0);
       if (mobile) await touch('touchEnd', []); else await page.mouse.up();
-      await page.waitForURL('https://ojjuda.test/world.html');
+      await idle();
+      assert.equal(await active(), 'tag');
+      assert.equal(page.url(),'https://ojjuda.test/note/', 'the last standalone filter keeps the user in Park');
 
       // App navigation is available outside the feed, without overriding its
       // filter swipes or allowing a swipe to discard an open composer.

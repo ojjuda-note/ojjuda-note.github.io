@@ -186,17 +186,17 @@
   function missionMarkup(settings, date) {
     const today = missions(date), done = today.filter(id => isComplete(settings, id, date)).length;
     return `<section class="agit-quests" id="agit-missions" aria-label="오늘의 미션">
-      <header class="agit-section-head"><h2>오늘의 미션</h2><div class="agit-quest-summary"><span class="agit-quest-tally"><b>${done}</b><small>/ ${today.length}</small></span><div class="agit-quest-meter" role="progressbar" aria-valuemin="0" aria-valuemax="${today.length}" aria-valuenow="${done}" aria-label="미션 완료">${today.map((_,i)=>`<span class="${i<done?'is-on':''}"></span>`).join('')}</div></div></header>
+      <header class="agit-quest-head"><h2>오늘의 미션</h2><div class="agit-quest-summary"><div class="agit-quest-meter" role="progressbar" aria-valuemin="0" aria-valuemax="${today.length}" aria-valuenow="${done}" aria-valuetext="${today.length}개 중 ${done}개 완료" aria-label="미션 완료"><span style="width:${done/today.length*100}%" aria-hidden="true"></span></div><span class="agit-quest-tally" aria-hidden="true"><b>${done}</b><small>/ ${today.length}</small></span></div></header>
       <div class="agit-quest-grid">${today.map((id,i) => {
         const target=id==='visit'?visitTarget(date):null;
-        const [label,emoji]=target?[`${target.name} 페이지 들어가기`,'🚪']:
+        const [label]=target?[`${target.name} 페이지 들어가기`,'🚪']:
           id==='quiz'?(quizMode(date)==='chosung'?['초성 퀴즈','🔤']:['상식 퀴즈','💡']):missionLabels[id];
+        const compactLabel=target?`${target.name}방문`:id==='park'?'공원가기':id==='recommend'?'추천게임':id==='quiz'?label.replace(' ',''):label;
+        const displayLabel=target?target.name:id==='park'?'공원':compactLabel;
         const finished=isComplete(settings,id,date);
-        return `<button type="button" class="agit-quest-card agit-quest-card--${i+1}${finished?' is-done':''}" data-act="agit-task" data-v="${id}" aria-label="${finished?'완료한 미션':'오늘의 미션'}: ${label}">
-          <span class="agit-quest-number">0${i+1}</span>
-          <span class="agit-quest-emoji" aria-hidden="true">${finished?'✓':emoji}</span>
-          <strong class="agit-quest-name">${label}</strong>
-          <span class="agit-quest-arrow" aria-hidden="true">${finished?'✓':'↗'}</span>
+        return `<button type="button" class="agit-quest-card agit-quest-card--${i+1}${finished?' is-done':''}" data-act="agit-task" data-v="${id}" title="${label}" aria-label="${finished?'완료한 미션':'오늘의 미션'}: ${compactLabel}">
+          <span class="agit-quest-orb" aria-hidden="true"><img class="agit-quest-icon" src="/features/home/mission-icons/${id}.svg?v=20261121-mission-capsules1" width="32" height="32" alt="" decoding="async">${finished?'<span class="agit-quest-check">✓</span>':''}</span>
+          <span class="agit-quest-name">${displayLabel}</span>
         </button>`;
       }).join('')}</div></section>`;
   }
@@ -218,16 +218,11 @@
     const streak = visitStreak(settings, date);
     const [, month, day] = date.split('-');
     const weekday = ['일','월','화','수','목','금','토'][new Date(date+'T00:00:00Z').getUTCDay()];
-    const daily = Object.entries(games || {}).filter(([, r]) => r.test && !(r.age >= 19));
-    const lifeItems = daily.map(([id, item]) => ({id, item}));
-    const festivalPosition = lifeItems.findIndex(entry => entry.id === 'festival');
-    if (festivalPosition >= 0) {
-      const [festival] = lifeItems.splice(festivalPosition, 1);
-      lifeItems.splice(festivalPosition, 0, {id:'fanpages'});
-      lifeItems.push(festival);
-    } else {
-      lifeItems.push({id:'fanpages'});
-    }
+    const dailyItems = new Map(Object.entries(games || {}).filter(([, r]) => r.test && !(r.age >= 19)));
+    // The four daily destinations follow a fixed, easy-to-scan order.
+    const lifeItems = ['group', 'fanpages', 'restaurants', 'festival']
+      .filter(id => id === 'fanpages' || dailyItems.has(id))
+      .map(id => ({id, item: dailyItems.get(id)}));
     const dailyHints = {group:'함께하는 이야기',festival:'이번 주 어디 갈까?',restaurants:'맛있는 발견',tour:'가볍게 떠나요'};
     return `<div class="agit-hub" id="agit-hub-view" data-agit-hub data-agit-season="${theme.season}" data-agit-theme="${theme.key}">
       ${options.guest ? guestEntrance(theme) : `      <header class="agit-hero" aria-label="아지트">
@@ -253,32 +248,16 @@
       ${missionMarkup(settings,date)}
       <section class="agit-life" id="agit-daily" aria-label="일상"><header class="agit-section-head"><div><span class="agit-section-kicker">쉬어 가는 곳</span><h2>일상 둘러보기</h2></div></header>
         <div class="agit-life-grid">${lifeItems.map(({id,item},i) => {
-           if(id==='fanpages')return `<a class="agit-life-tile agit-life-tile--4" href="/features/fanpages/index.html" data-act="agit-fan" aria-label="팬페이지"><span class="agit-life-top"><span class="agit-life-tile-arrow" aria-hidden="true">↗</span></span><span class="agit-life-art"><img src="/features/home/daily-fanpages.webp" alt="" width="600" height="400" loading="lazy"></span><span class="agit-life-title"><strong>팬페이지</strong><small>좋아하는 이야기</small></span></a>`;
+           if(id==='fanpages')return `<a class="agit-life-tile agit-life-tile--4" href="/features/fanpages/index.html" data-act="agit-fan" aria-label="팬페이지"><span class="agit-life-top"><span class="agit-life-tile-arrow" aria-hidden="true">→</span></span><span class="agit-life-art"><img src="/features/home/daily-fanpages.webp" alt="" width="600" height="400" loading="lazy"></span><span class="agit-life-title"><strong>팬페이지</strong><small>좋아하는 이야기</small></span></a>`;
           if(!/^[a-z0-9_]+$/.test(id))return '';
           const cover=['group','restaurants','festival'].includes(id) ? `/features/home/daily-${id}.webp` : `/assets/design/games/${id}.svg`;
           return `<button type="button" class="agit-life-tile agit-life-tile--${id==='festival'?2:id==='group'?1:id==='restaurants'?3:i%4+1}" data-act="agit-daily" data-v="${id}" aria-label="${escapeHtml(item.name)}${item.memberOnly?' · 회원 전용':''}">
-            <span class="agit-life-top"><span class="agit-life-tile-arrow" aria-hidden="true">↗</span></span>
+            <span class="agit-life-top"><span class="agit-life-tile-arrow" aria-hidden="true">→</span></span>
             <span class="agit-life-art"><img src="${cover}" alt="" width="600" height="400" loading="lazy"></span>
             <span class="agit-life-title"><strong>${escapeHtml(item.name)}</strong><small>${item.memberOnly?'회원 전용':escapeHtml(dailyHints[id]||'구경하기')}</small></span>
           </button>`;
         }).join('')}</div>
       </section>
-      <a class="agit-place-banner agit-park-banner" href="/world.html?place=park" data-act="agit-park" aria-label="공원 둘러보기">
-        <img class="agit-place-art agit-park-art" src="/features/home/park-community-3d-20261119.webp" width="768" height="768" alt="" loading="lazy" decoding="async">
-        <span class="agit-place-copy agit-park-copy">
-          <span class="agit-place-brand agit-park-brand"><b>공원</b><small>일상 커뮤니티</small></span>
-          <strong class="agit-place-title agit-park-title">오늘의 이야기가<br>모이는 곳</strong>
-          <span class="agit-place-open agit-park-open">공원 둘러보기 <span aria-hidden="true">→</span></span>
-        </span>
-      </a>
-      <a class="agit-place-banner agit-pajang-banner" href="/features/pajang/" id="pajang-radar" data-pajang-launch aria-label="파장, 19세 이상 회원 소개팅, 오늘의 질문 보기">
-        <img class="agit-place-art agit-pajang-letter" src="/features/home/pajang-signal-3d-20261119.webp" width="768" height="768" alt="" loading="lazy" decoding="async">
-        <span class="agit-place-copy agit-pajang-copy">
-          <span class="agit-place-brand agit-pajang-brand"><b>파장</b><small>19+ 회원 소개팅</small></span>
-          <strong class="agit-place-title agit-pajang-title">답변으로 시작되는<br>설렘</strong>
-          <span class="agit-place-open agit-pajang-open">오늘의 질문 보기 <span aria-hidden="true">→</span></span>
-        </span>
-      </a>
       <nav class="agit-reading-grid" aria-label="바이오리듬과 운세">
         <a class="agit-reading-card agit-biorhythm-banner" href="/features/biorhythm/" aria-label="오늘의 바이오리듬, 5쭈, 같은 생일로 결제 후 24시간 이용">
           <img src="/features/home/daily-biorhythm.webp" width="600" height="400" alt="" loading="lazy">

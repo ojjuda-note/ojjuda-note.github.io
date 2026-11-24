@@ -32,3 +32,46 @@ h1,h2,p{margin:0}h1{font-size:clamp(24px,6vw,34px);letter-spacing:-.055em;line-h
 [hidden]{display:none!important}
 @media(max-width:390px){main{padding:16px 10px 30px}.intro,.board,.my-rank{padding:16px;border-radius:19px}.topbar{gap:7px;padding-inline:10px}.rank-row{grid-template-columns:38px minmax(0,1fr) auto;gap:8px;padding:9px}.rank-points{font-size:13px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important}}
+/* Reuse the exact calendar-selected seasonal/holiday theme of the Ojjuda site. */
+:root[data-world-theme]{background:var(--season-bg,#f6f7f1);color:#26354a}
+body{
+ background:radial-gradient(ellipse 75% 325px at 90% 0%,var(--season-soft,#e9f3eb) 0%,transparent 82%),var(--season-bg,#f6f7f1);
+}
+.topbar{background:var(--season-accent,#214e42)}
+main{position:relative;isolation:isolate}
+main::before{
+ content:"";position:absolute;pointer-events:none;z-index:-1;
+ top:-26px;right:-40px;width:min(48vw,340px);height:250px;
+ background-image:var(--hero-art);background-repeat:no-repeat;background-size:contain;background-position:top right;opacity:.22;
+}
+.intro,.board,.my-rank{
+ position:relative;isolation:isolate;overflow:hidden;
+ background:color-mix(in srgb,#fff 91%,var(--season-hero,#f7f8f4));
+ border-color:color-mix(in srgb,var(--season-accent,#245a48) 19%,#fff);
+}
+.intro::before,.board::before,.my-rank::before{
+ content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+ background-image:var(--hero-art);background-position:right -27px bottom -23px;
+ background-size:auto 180px;background-repeat:no-repeat;opacity:.13;
+}
+.intro>*,.board>*,.my-rank>*{position:relative;z-index:1}
+.eyebrow,.period{color:var(--season-accent,#916c30)}
+.chooser select{
+ background:color-mix(in srgb,var(--season-soft,#f3f8f0) 72%,#fff);
+ border-color:color-mix(in srgb,var(--season-accent,#245a48) 25%,#fff);
+ color:var(--season-accent,#164b39);
+}
+#ranking-refresh{
+ background:var(--season-soft,#edf6ec);
+ border-color:color-mix(in srgb,var(--season-accent,#245a48) 32%,#fff);
+ color:var(--season-accent,#285543);
+}
+.rank-row{background:rgba(255,255,255,.85);border-color:color-mix(in srgb,var(--season-accent,#245a48) 12%,#fff)}
+.rank-points,.rank-place{color:var(--season-accent,#22583e)}
+.rank-row.is-me,.my-rank .rank-row{background:var(--season-soft,#e8f5e7);border-color:var(--season-accent,#7aaf8d)}
+.me-tag{background:var(--season-accent,#2f7856)}
+@media(max-width:540px){
+ main::before{width:55vw;height:195px;right:-18px;opacity:.16}
+ .intro::before,.board::before,.my-rank::before{background-size:auto 145px;opacity:.11}
+}
+
