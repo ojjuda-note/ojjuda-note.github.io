@@ -24,6 +24,35 @@
     }
   };
   const url = new URL(location.href);
+  const playStoreKey = 'ojjuda:play-store:agit:v1';
+  let playStoreAgit = url.searchParams.get('play_store') === '1';
+  try {
+    if (playStoreAgit) sessionStorage.setItem(playStoreKey, '1');
+    else playStoreAgit = sessionStorage.getItem(playStoreKey) === '1';
+  } catch (_) {}
+  const playSafeDestinations = new Set([
+    '/games/certified-restaurants/',
+    '/games/festival-schedule/',
+    '/games/moonlit-tarot/',
+    '/games/starlit-saju/',
+    '/games/starlit-saju/compatibility.html'
+  ]);
+  function isPlaySafeBlockedUrl(value) {
+    let target;
+    try { target = new URL(value || location.href, location.href); } catch (_) { return true; }
+    if (target.origin !== location.origin) return false;
+    if (target.searchParams.has('game') || target.searchParams.get('tab') === 'arcade' ||
+        target.searchParams.get('place') === 'arcade') return true;
+    if (/^\/(?:arcade|games\/)/.test(target.pathname)) {
+      const path = target.pathname.replace(/index\.html$/, '');
+      return !playSafeDestinations.has(path) && !playSafeDestinations.has(target.pathname);
+    }
+    return false;
+  }
+  if (playStoreAgit && isPlaySafeBlockedUrl(location.href)) {
+    location.replace('/world.html?tab=hub&play_store=1');
+    return;
+  }
   const isPark = url.pathname === '/park' || url.pathname.startsWith('/park/') ||
     (url.pathname === '/world.html' && url.searchParams.getAll('game').length !== 1 &&
       (url.searchParams.get('place') === 'park' || url.searchParams.get('tab') === 'park'));
@@ -50,6 +79,67 @@
       document.head.appendChild(element);
     }
     element.content = content;
+  }
+
+  if (playStoreAgit) {
+    document.documentElement.dataset.playStoreAgit = 'true';
+    const safeStyle = document.createElement('style');
+    safeStyle.id = 'ojjuda-play-store-agit-safe-mode';
+    safeStyle.textContent = `
+      html[data-play-store-agit="true"] [data-tab="arcade"],
+      html[data-play-store-agit="true"] [data-place="arcade"],
+      html[data-play-store-agit="true"] [data-id="arcade"],
+      html[data-play-store-agit="true"] .wd-arcade,
+      html[data-play-store-agit="true"] a[href*="tab=arcade"],
+      html[data-play-store-agit="true"] a[href*="place=arcade"],
+      html[data-play-store-agit="true"] a[href*="/arcade/"],
+      html[data-play-store-agit="true"] a[href*="/games/"],
+      html[data-play-store-agit="true"] [data-act="game-open"],
+      html[data-play-store-agit="true"] [data-game],
+      html[data-play-store-agit="true"] [data-game-id],
+      html[data-play-store-agit="true"] [data-v] {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+      }
+      html[data-play-store-agit="true"] [data-tab="arcade"],
+      html[data-play-store-agit="true"] [data-place="arcade"],
+      html[data-play-store-agit="true"] [data-id="arcade"] {
+        aria-hidden: true;
+      }`;
+    document.head.appendChild(safeStyle);
+
+    const blockPlayStoreGameAction = event => {
+      const control = event.target?.closest?.('a[href],button,[role="button"],[data-act],[data-tab],[data-place]');
+      if (!control) return;
+      const action = control.dataset?.act || '';
+      const isArcadeControl = control.dataset?.tab === 'arcade' ||
+        control.dataset?.place === 'arcade' ||
+        control.dataset?.id === 'arcade' ||
+        action === 'game-open' ||
+        /오락실|게임 시작|게임 플레이|추천 게임/i.test((control.innerText || control.getAttribute('aria-label') || '').trim());
+      const href = control.getAttribute('href');
+      if (!isArcadeControl && !(href && isPlaySafeBlockedUrl(href))) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    };
+    document.addEventListener('click', blockPlayStoreGameAction, true);
+    document.addEventListener('auxclick', blockPlayStoreGameAction, true);
+    document.addEventListener('keydown', event => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      blockPlayStoreGameAction(event);
+    }, true);
+
+    const originalPushState = history.pushState.bind(history);
+    const originalReplaceState = history.replaceState.bind(history);
+    history.pushState = function (state, title, url) {
+      if (url && isPlaySafeBlockedUrl(url)) return;
+      return originalPushState(state, title, url);
+    };
+    history.replaceState = function (state, title, url) {
+      if (url && isPlaySafeBlockedUrl(url)) return;
+      return originalReplaceState(state, title, url);
+    };
   }
 
   // All URLs and names come from this allowlist; no login parameters are reused.
