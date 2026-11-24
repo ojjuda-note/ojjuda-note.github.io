@@ -20,6 +20,7 @@ html body .shell > .col > .main { width: min(100%, calc(2 * var(--park-card-max-
 @media(prefers-reduced-motion:reduce){.park-skeleton-quote,.park-skeleton-meta span{animation:none}}
 
 /* Card detail and its reply column. */
+html body .shell > .col > .main { container: park-content / inline-size; }
 .detail-screen .back-button {
   min-height: 40px;
   margin: 0 0 4px;
@@ -71,8 +72,8 @@ html body .shell > .col > .main { width: min(100%, calc(2 * var(--park-card-max-
   min-width: 0;
   max-width: none;
 }
-/* Keep the main card full-size before placing replies beside it. */
-@media (min-width: 1440px) {
+/* 750px original + 625px reply column + 16px gap. */
+@container park-content (min-width: 1391px) {
   .detail-screen { max-width: calc(var(--park-card-max-width) * 11 / 6 + 16px); }
   /* Four of the five reply-column units equal two thirds of the six-unit original. */
   .detail-screen .detail-layout { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); }
