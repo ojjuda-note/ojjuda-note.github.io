@@ -42,29 +42,28 @@ const button=(game)=>`<button class="gbtn" ${game==='matgo'?'data-act="matgo-ope
   card('photo_ttang').hidden=true;await delay();assert.deepEqual(keys('solo').slice(0,3),['mole','runner','screw'],'hiding restores three visible popular games');
   const before=calls;w.document.body.append(w.document.createElement('aside'));await delay();assert.equal(calls,before,'DOM changes do not refetch fresh data');
   assert.ok([...w.document.querySelectorAll('.gbtn')].every(b=>b.querySelectorAll('.arcade-badge').length<=1));
-  const adultMarkup=`<section data-arcade-adult><div data-arcade-games="adult">${['photo_ttang','roulette','poker','matgo'].map(button).join('')}</div></section>`;
+  const adultMarkup=`<section data-arcade-adult><div data-arcade-games="adult">${['photo_ttang','matgo'].map(button).join('')}</div></section>`;
   const adultCard=key=>[...list('adult').children].find(b=>(b.dataset.v||'matgo')===key);
   const adultPopular=()=>[...list('adult').querySelectorAll('.gbtn')].filter(b=>b.querySelector('.arcade-badge.popular')).map(b=>b.dataset.v||'matgo');
   clock=Date.parse('2026-10-31T12:00:00Z');
   games.push({game:'roulette',plays:100000},{game:'photo_ttang',plays:200000});
   w.document.body.insertAdjacentHTML('beforeend',adultMarkup);await w.OjjudaArcadePromotions.refresh(true);await delay();
-  assert.deepEqual(keys('adult'),['matgo','poker','roulette','photo_ttang'],'the two designated adult games lead their section');
-  assert.deepEqual(adultPopular(),['matgo','poker'],'exactly two fixed adult picks ignore unrelated play counts');
-  for(const key of ['matgo','poker']){
+  assert.deepEqual(keys('adult'),['matgo','photo_ttang'],'the designated game leads its section');
+  assert.deepEqual(adultPopular(),['matgo'],'fixed adult picks ignore unrelated play counts');
+  for(const key of ['matgo']){
    assert.equal(adultCard(key).querySelectorAll('.arcade-badge').length,1,'a new adult pick has only one badge');
    assert.equal(adultCard(key).getAttribute('aria-description'),'어른들 플레이 인기 지정 게임','manual designation never claims a measured play ranking');
   }
-  assert.equal(adultCard('roulette').querySelector('.arcade-badge').textContent,'신규','other adult games retain their real release dates');
   adultCard('matgo').hidden=true;await delay();
-  assert.deepEqual(adultPopular(),['poker'],'hiding a designated card does not promote a different adult game');
-  adultCard('matgo').hidden=false;await delay();assert.deepEqual(adultPopular(),['matgo','poker']);
+  assert.deepEqual(adultPopular(),[],'hiding a designated card does not promote a different adult game');
+  adultCard('matgo').hidden=false;await delay();assert.deepEqual(adultPopular(),['matgo']);
   list('adult').parentElement.remove();await delay();
   assert.equal(list('adult'),null,'promotions never recreate a revoked adult section');
   w.document.body.insertAdjacentHTML('beforeend',adultMarkup);await delay();
-  assert.deepEqual(adultPopular(),['matgo','poker'],'re-authentication restores the two badges on newly inserted cards');
+  assert.deepEqual(adultPopular(),['matgo'],'re-authentication restores the badge on newly inserted cards');
   clock=Date.parse('2026-12-01T00:00:00Z');games.splice(0);await w.OjjudaArcadePromotions.refresh(true);
-  assert.deepEqual(adultPopular(),['matgo','poker'],'fixed adult picks survive release expiry and an empty record response');
-  assert.equal(list('adult').querySelectorAll('.arcade-badge').length,2);
+  assert.deepEqual(adultPopular(),['matgo'],'fixed adult picks survive release expiry and an empty record response');
+  assert.equal(list('adult').querySelectorAll('.arcade-badge').length,1);
   assert.equal(list('solo').querySelectorAll('.arcade-badge.popular').length,0,'ordinary categories still require recorded plays');
   const yutCard=fs.readFileSync(path.join(__dirname,'../world.html'),'utf8').match(/<a class="gbtn" data-v="yut"[^>]*>[\s\S]*?<\/a>/)[0];
   list('multi').insertAdjacentHTML('beforeend',yutCard);await delay();
@@ -84,6 +83,6 @@ const button=(game)=>`<button class="gbtn" ${game==='matgo'?'data-act="matgo-ope
   assert.equal(calls,beforeSaves,'a hidden tab defers the ranking read');
   hidden=false;w.document.dispatchEvent(new w.Event('visibilitychange'));await delay();
   assert.equal(calls,beforeSaves+1,'the first visible read picks up all saved records');
-  console.log('PASS: recorded top threes, fixed adult popular pair, new badge precedence, access removal/reinsertion, exact expiry, focus, ties and cache');
+  console.log('PASS: recorded top threes, fixed adult popular pick, new badge precedence, access removal/reinsertion, exact expiry, focus, ties and cache');
  }finally{observers.forEach(o=>o.disconnect());await delay();w.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

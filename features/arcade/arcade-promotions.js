@@ -8,14 +8,13 @@
   chacha_rush:'2026-11-08T00:00:00+09:00',
   solitaire:'2026-11-06T00:00:00+09:00',
   archery:'2026-11-03T00:00:00+09:00',
-  roulette:'2026-10-31T00:00:00+09:00',
   mole:'2026-09-27T00:00:00+09:00',runner:'2026-09-27T00:00:00+09:00',stacker:'2026-09-27T00:00:00+09:00',breakout:'2026-09-27T00:00:00+09:00',screw:'2026-09-27T00:00:00+09:00',
   janggi:'2026-09-27T00:00:00+09:00',chess:'2026-09-27T00:00:00+09:00',billiards:'2026-09-27T00:00:00+09:00',
   spot:'2026-10-03T05:03:34+09:00',matgo:'2026-10-03T05:21:43+09:00',ttang:'2026-10-05T15:10:58+09:00',photo_ttang:'2026-10-05T21:58:56+09:00',
   tour:'2026-10-11T20:26:33+09:00',saetbyeol:'2026-10-13T00:41:20+09:00',mines:'2026-10-13T01:25:19+09:00',
-  tank:'2026-10-18T15:21:54+09:00',poker:'2026-10-21T09:05:39+09:00',sacheonseong:'2026-10-28T18:44:38+09:00',bang:'2026-10-29T12:51:03+09:00'
+  tank:'2026-10-18T15:21:54+09:00',sacheonseong:'2026-10-28T18:44:38+09:00',bang:'2026-10-29T12:51:03+09:00'
  });
- const adultPopular = Object.freeze(['matgo','poker']);
+ const adultPopular = Object.freeze(['matgo']);
  const canonical = key => ['carom4','carom3','pool8'].includes(key)?'billiards':key;
  const keyOf = button => canonical(button.dataset.act === 'matgo-open'?'matgo':button.dataset.v);
  const month = 30*24*60*60*1000, ttl = 5*60*1000, minReadInterval = 60000;
