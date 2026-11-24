@@ -7,7 +7,7 @@
   "routes": [
     {
       "slug": "agit",
-      "target": "/world.html?tab=hub",
+      "target": "/world.html?tab=hub&play_store=1",
       "label": "오쭈다 아지트"
     },
     {
