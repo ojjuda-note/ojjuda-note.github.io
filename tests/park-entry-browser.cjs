@@ -99,9 +99,14 @@ if(parent!==window){
       assert.equal(await page.locator('iframe').count(),0,'standalone Park is not embedded in another app');
       assert.equal(await page.locator('.bottomnav:visible').count(),1,'own navigation remains accessible on mobile');
       assert.equal(await page.evaluate(()=>document.documentElement.hasAttribute('data-park-embedded')),false);
-      await page.locator('.bottomnav [data-note-my]').click();
-      await page.locator('#note-my-screen').waitFor({state:'visible'});
-      assert.equal(await page.locator('#note-my-screen').isVisible(),true,'independent Park member menu remains usable');
+      const settingsButton=page.locator('.bottomnav [data-note-my]');
+      assert.equal(await settingsButton.innerText(),'설정');
+      await settingsButton.click();
+      const canonicalSettings=page.locator('[data-park-settings-root]');
+      await canonicalSettings.waitFor({state:'visible'});
+      assert.equal(new URL(page.url()).search,'','the settings button opens the canonical dialog in place');
+      await page.getByRole('button',{name:'관리창 닫기'}).click();
+      await canonicalSettings.waitFor({state:'hidden'});
       await page.goto(origin+'/park/?view=settings');
       await page.locator('[data-park-settings-root]').waitFor();
       assert.equal(await page.locator('[data-park-settings-root]').isVisible(),true,'legacy settings deep link opens in standalone Park');
