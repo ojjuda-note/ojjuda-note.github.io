@@ -207,7 +207,7 @@
   white-space: nowrap;
 }
 .group-writing-dialog .group-compose-toolbar svg { width: 20px; height: 20px; }
-.group-compose-tool:is([aria-expanded="true"],[aria-pressed="true"]) { background: #e9efe5; color: var(--green); }
+.group-compose-tool[aria-pressed="true"] { background: #e9efe5; color: var(--green); }
 .group-compose-context:not(:disabled)::after { content: '⌄'; margin-left: 8px; }
 .group-compose-tool[data-selected="true"]::after {
   content: '';
