@@ -15,6 +15,38 @@ def source_hashes():
             for p in sorted(assets)}
 
 
+def check_knit_preview(page):
+    # The neutral garment on the item card must have two connected sleeves,
+    # including when the worn pose places hair or a hand across its shoulder.
+    page.locator("#cats button").filter(has_text="상의").click()
+    selector = '#items button[aria-label="골지 니트"] canvas'
+    page.wait_for_function("""selector => {
+      const c = document.querySelector(selector);
+      return c && c.getContext('2d').getImageData(0,0,c.width,c.height).data.some((v,i)=>i%4===3 && v>96);
+    }""", arg=selector)
+    rows = page.locator(selector).evaluate("""c => {
+      const data = c.getContext('2d').getImageData(0,0,c.width,c.height).data;
+      return Array.from({length:c.height}, (_,y) => Array.from({length:c.width}, (_,x) =>
+        data[(y*c.width+x)*4+3]>96 ? '1' : '0').join(''));
+    }""")
+    ink = {(x, y) for y, row in enumerate(rows) for x, value in enumerate(row) if value == '1'}
+    total = len(ink)
+    largest = 0
+    while ink:
+        pending = [ink.pop()]
+        size = 0
+        while pending:
+            x, y = pending.pop()
+            size += 1
+            for point in ((x-1,y), (x+1,y), (x,y-1), (x,y+1)):
+                if point in ink:
+                    ink.remove(point)
+                    pending.append(point)
+        largest = max(size, largest)
+    if largest < total * .995:
+        raise RuntimeError("골지 니트 미리보기의 소매가 몸판에서 떨어져 있습니다.")
+
+
 def render(url, chromium, combinations):
     from playwright.sync_api import sync_playwright
     with sync_playwright() as runner:
@@ -35,6 +67,7 @@ def render(url, chromium, combinations):
             page.route("**/*", local)
         page.goto(url or "https://avatar.test/avatar-test/")
         page.wait_for_selector("#studio:not([inert]) #looks button")
+        check_knit_preview(page)
         buttons = page.locator("#looks button")
         names = buttons.all_text_contents()
         if not names or len(names) != len(set(names)):
