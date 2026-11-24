@@ -77,6 +77,16 @@ const cardId='00000000-0000-4000-8000-000000000001';
   // Run the actual card composer and its embedded navigation adapter.
   const preparePark=async frame=>{
    await frame.addScriptTag({content:read('note/calligraphy.js')});
+   // Record which inputs actually painted the raster, not merely the current form values.
+   await frame.evaluate(() => {
+    const renderer=window.ParkCalligraphy;
+    window.ParkCalligraphy={...renderer,render(canvas,body,options){
+     const rendered=renderer.render(canvas,body,options);
+     if(rendered&&canvas.id==='compose-ink-art')
+      canvas.dataset.fixtureInkInput=JSON.stringify([body,options.tags||[]]);
+     return rendered;
+    }};
+   });
    await frame.addScriptTag({content:read('note/composer-tools.js')});
    await frame.addScriptTag({content:note.slice(0,noteBoot)});
    await frame.evaluate(()=>{
@@ -96,10 +106,11 @@ const cardId='00000000-0000-4000-8000-000000000001';
    await frame.addScriptTag({content:read('park/integration.js')});
   };
   // Inspect a small raster sample so styling a textarea or creating an empty canvas cannot pass.
-  const waitForInk=async(selector,previous=null,accent=null)=>{
-   const result=await page.waitForFunction(({selector,previous,accent})=>{
+  const waitForInk=async(selector,previous=null,accent=null,paintedInput=null)=>{
+   const result=await page.waitForFunction(({selector,previous,accent,paintedInput})=>{
     const art=document.querySelector(selector);
     if(art?.dataset.inkReady!=='true'||!art.getBoundingClientRect().width)return false;
+    if(paintedInput!==null&&art.dataset.fixtureInkInput!==JSON.stringify(paintedInput))return false;
     const style=getComputedStyle(art);
     if(style.display==='none'||style.visibility==='hidden'||Number(style.opacity)===0)return false;
     const sample=document.createElement('canvas');sample.width=80;sample.height=60;
@@ -115,7 +126,7 @@ const cardId='00000000-0000-4000-8000-000000000001';
     }
     return inkPixels>10&&clearPixels>sample.width*sample.height*.5&&hash!==previous
      &&(accent===null||hasGold===accent)?hash:false;
-   },{selector,previous,accent});
+   },{selector,previous,accent,paintedInput});
    return result.jsonValue();
   };
   const checkPhotoBehindInk=async(selector,key)=>{
@@ -244,18 +255,19 @@ const cardId='00000000-0000-4000-8000-000000000001';
   assert.deepEqual(await composeInput.evaluate(input=>[input.value,input.selectionStart,input.selectionEnd]),
    [composedText,composedText.length,composedText.length],'finishing Korean composition keeps the text and cursor');
   await tagInput.focus();
-  await waitForInk('#compose-ink-art',multilineInk);
+  await waitForInk('#compose-ink-art',multilineInk,false,[composedText,[]]);
   await checkInlineInput('preview');
-  await composeInput.fill('고쳐 쓴 붓글씨');
+  const editedBody='고쳐 쓴 붓글씨';
+  await composeInput.fill(editedBody);
   await tagInput.fill('');
-  const editedInk=await waitForInk('#compose-ink-art',initialInk,false);
+  const editedInk=await waitForInk('#compose-ink-art',initialInk,false,[editedBody,[]]);
   assert.deepEqual(await page.evaluate(()=>[currentStyle().font,text.value]),['calligraphy','고쳐 쓴 붓글씨']);
   await tagInput.fill('#붓글씨');
-  const taggedInk=await waitForInk('#compose-ink-art',editedInk,true);
+  const taggedInk=await waitForInk('#compose-ink-art',editedInk,true,[editedBody,['붓글씨']]);
   await tagInput.fill('');
-  assert.equal(await waitForInk('#compose-ink-art',taggedInk),editedInk,'removing a tag restores the original lettering');
+  assert.equal(await waitForInk('#compose-ink-art',taggedInk,false,[editedBody,[]]),editedInk,'removing a tag restores the original lettering');
   await tagInput.fill('#붓글씨');
-  assert.equal(await waitForInk('#compose-ink-art',editedInk),taggedInk);
+  assert.equal(await waitForInk('#compose-ink-art',editedInk,true,[editedBody,['붓글씨']]),taggedInk);
   assert.equal(await page.locator('#compose-text').inputValue(),'고쳐 쓴 붓글씨');
   await page.locator('[data-compose-tool="box"]').click();
   const slider=page.locator('#compose-box-transparency'), number=page.locator('#compose-box-transparency-value');
