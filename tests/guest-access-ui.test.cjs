@@ -263,14 +263,28 @@ const cardId='00000000-0000-4000-8000-000000000001';
   assert.equal(await page.locator('#compose-text').inputValue(),'고쳐 쓴 붓글씨');
   await page.locator('[data-compose-tool="box"]').click();
   const slider=page.locator('#compose-box-transparency'), number=page.locator('#compose-box-transparency-value');
-  const boxColors=[];
+  const boxColors=[], brushSamples=[];
   for(const level of [0,50,100]){
    if(level===50)await number.fill('50');else await slider.press(level===0?'Home':'End');
    assert.equal(await slider.inputValue(),String(level));
    assert.equal(await number.inputValue(),String(level));
    boxColors.push(await readInkBox('.compose-photo'));
-   assert.equal(await waitForInk('#compose-ink-art'),taggedInk,'changing only the box preserves the strokes');
+   await waitForInk('#compose-ink-art',level===100?taggedInk:null);
+   brushSamples.push(await page.locator('#compose-ink-art').evaluateHandle(art=>
+    art.getContext('2d').getImageData(0,0,art.width,art.height).data));
   }
+  const preserved=await page.evaluate(([clear,half,solid])=>{
+   // The opaque light box needs no outline. Its solid brush pixels must match at every opacity.
+   let count=0;
+   for(let i=0;i<solid.length;i+=4){
+    if(solid[i+3]!==255)continue;
+    for(let c=i;c<i+4;c++)if(clear[c]!==solid[c]||half[c]!==solid[c])return 0;
+    count++;
+   }
+   return count;
+  },brushSamples);
+  for(const sample of brushSamples)await sample.dispose();
+  assert.ok(preserved>100,'changing the box can add a contrasting edge but preserves the painted strokes');
   assert.equal(boxColors[0][3],0);
   assert.ok(boxColors[1][3]>0&&boxColors[1][3]<255);
   assert.equal(boxColors[2][3],255);
