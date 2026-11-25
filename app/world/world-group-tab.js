@@ -5,7 +5,7 @@
     '/shared/viewport/mobile-viewport.css?v=20261106-source-folders1',
     '/groups/style.css?v=20261123-search-submit1',
     '/groups/composer.css?v=20261124-single-tab-highlight1',
-    '/features/groups/appearance.css?v=20261126-theme1',
+    '/features/groups/appearance.css?v=20261126-room-compact1',
     '/shared/share/page-share.css?v=20261123-park-share1',
     '/groups/navigation.css?v=20261126-group-password1'
   ];
@@ -31,7 +31,7 @@
         import('/groups/activities.js?v=20261126-theme1'),
         import('/groups/composer.js?v=20261126-theme1'),
         import('/shared/art/cozy-scenes.js?v=20261118-cozy100-1'),
-        import('/groups/app.js?v=20261126-group-password1')
+        import('/groups/app.js?v=20261126-room-compact1')
       ]);
       if (host === element) board = window.OjjudaGroups.mount(root);
     } catch {
