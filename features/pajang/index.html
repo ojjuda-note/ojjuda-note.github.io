@@ -49,7 +49,7 @@
   <link rel="stylesheet" href="/ju-coins/ju-coins.css?v=20261106-source-folders1">
   <link rel="stylesheet" href="./account-toolbar.css?v=20261126-service-navigation1">
   <link rel="stylesheet" href="./signal-purchase.css?v=20261119-signal-purchase1">
-  <link rel="stylesheet" href="./entry-design.css?v=20261122-app-skip-entry1">
+  <link rel="stylesheet" href="./entry-design.css?v=20261125-answer-options1">
   <link rel="stylesheet" href="/shared/share/page-share.css?v=20261119-main-invite1">
   <link rel="stylesheet" href="/shared/brand/service-header.css?v=20261119-main-invite1">
   <script src="/shared/auth/invite-referral.js?v=20261119-invite-referral1" defer></script>
@@ -57,7 +57,7 @@
   <script src="/app/world/world-themes.js?v=20261119-auto-theme1"></script>
   <script src="/app/world/world-weather.js?v=20261119-kma-current1" defer></script>
   <script type="module" src="./shell.mjs?v=20261126-adult-service1"></script>
-  <script type="module" src="./entry.mjs?v=20261125-public-pajang1"></script>
+  <script type="module" src="./entry.mjs?v=20261125-answer-options1"></script>
   <script src="/shared/analytics/growth-attribution.js?v=20261121-campaign1" defer></script>
 </head>
 <body>
@@ -84,14 +84,16 @@
   </main>
   <main id="welcome" hidden>
     <div class="entry-intro"><div class="entry-scene" aria-hidden="true"><div class="moon-study"></div></div><span class="entry-slot" id="slot-label">이번 질문</span>
-      <h1 id="entry-question">오늘의 질문</h1><p class="intro">한마디로 시작하는 새로운 인연.</p></div>
+      <h1 id="entry-question">오늘의 질문</h1></div>
     <section class="actions" aria-label="질문에 답하기">
       <button id="write" type="button" aria-expanded="false" aria-controls="answer-form">내 답변 쓰기</button>
       <button class="feed-shortcut" id="browse" type="button">모두의 답변 둘러보기 <span aria-hidden="true">→</span></button>
       <form id="answer-form" hidden>
         <fieldset id="join-fields" hidden disabled>
           <legend>파장 첫 참여</legend>
-          <label class="consent"><input name="consent" type="checkbox" required> 만 19세 이상이며 파장 회원에게 닉네임과 내가 선택한 공개 정보를 보여 주는 데 동의해요.</label>
+          <label class="consent"><input name="consent" type="checkbox" required> 만 19세 이상이며 파장 회원에게 닉네임·가입 성별과 선택한 정보를 공개하는 데 동의해요.</label>
+          <label for="account-gender">가입 성별</label>
+          <select id="account-gender" disabled><option value="">등록 정보 없음</option><option value="male">남성</option><option value="female">여성</option></select>
           <details><summary>공개 정보 선택</summary>
             <label>닉네임<input name="name" maxlength="12" autocomplete="nickname" placeholder="오쭈다 닉네임 사용"></label>
             <label>활동 지역 · 시·도<select name="province"><option value="">공개하지 않음</option></select></label>
@@ -100,8 +102,12 @@
           </details>
         </fieldset>
         <fieldset id="answer-fields">
-        <label for="mine">나의 답변</label>
-        <textarea id="mine" rows="3" maxlength="220" required placeholder="이번 질문에 대한 내 생각을 적어 주세요." aria-describedby="publication-note"></textarea>
+        <div class="pajang-answer-split">
+          <fieldset class="pajang-choices" id="sample-choices" hidden><legend>객관식</legend><div id="choice-list"></div></fieldset>
+          <div class="pajang-written"><label for="mine">주관식</label>
+        <textarea id="mine" rows="3" maxlength="220" required placeholder="직접 쓰기" aria-describedby="publication-note"></textarea>
+          <span class="answer-length" id="entry-count">0 / 220</span></div>
+        </div>
         <p class="publication-note" id="publication-note">질문과 답변은 질문이 올라온 날부터 최대 365일간 파장 회원에게 보여요.</p>
         </fieldset>
         <button type="submit">답변하기</button>

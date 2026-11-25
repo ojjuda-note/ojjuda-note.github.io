@@ -47,7 +47,6 @@ export function ProfileTastesFields({value,interest,onInterest,onChange,drafts,o
 }){
   return <div className="preference-editor">
     <div className="preference-section-heading"><h3>나를 표현하는 취향</h3><span>모두 선택 사항</span></div>
-    <p className="preference-help">선택한 취향과 프로필 그림은 파장 회원에게 공개돼요.</p>
     {profilePreferenceGroups.map(group=>{
       const key=group.key,selected=tasteLabels(value,key);
       return <details className="preference-group" key={key} name="profile-preference-group">
@@ -67,7 +66,7 @@ export function ProfileTastesFields({value,interest,onInterest,onChange,drafts,o
         </fieldset>
       </details>;
     })}
-    <details className="preference-group profile-art-choice"><summary><span><strong>대표 취향 · 프로필 그림</strong><small>{interests.find(option=>option.key===interest)?.name||"선택하지 않음"}</small></span><I n="chevron" s={16}/></summary>
+    <details className="preference-group profile-art-choice"><summary><span><strong>대표 취향 · 프로필 그림</strong><small>{interests.find(option=>option.key===interest)?.name||"자동 배정"}</small></span><I n="chevron" s={16}/></summary>
       <fieldset disabled={disabled} aria-label="대표 취향"><div className="interestgrid">{interests.map(option=><button type="button" key={option.key} aria-label={option.name} className={interest===option.key?"selected":""} aria-pressed={interest===option.key} onClick={()=>onInterest(interest===option.key?"":option.key)}><InterestArt interest={option.key}/>{option.name}</button>)}</div></fieldset>
     </details>
   </div>;

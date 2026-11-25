@@ -140,7 +140,7 @@ export default function NearbyRadar({station,sample,autoLocation,onLocationChang
         {pageCount>1&&<div className="dial-foot" style={{justifyContent:"flex-end"}}><div className="scope-pages"><button aria-label="이전 레이더 페이지" disabled={current===0} onClick={()=>setPage(current-1)}>‹</button>{current+1}/{pageCount}<button aria-label="다음 레이더 페이지" disabled={current+1===pageCount} onClick={()=>setPage(current+1)}>›</button></div></div>}
       </div>
       <div className="radar-details" aria-live="polite">
-        {person?<><div className="radar-kicker"><I n="signal" s={16}/>{rangeNames[person.range]} · {bearingLabel(person)}</div><div className="radar-identity"><InterestArt interest={person.interest} large/><div><h2>{person.name}</h2><p>{introDetails(person)}</p></div></div>
+        {person?<><div className="radar-kicker"><I n="signal" s={16}/>{rangeNames[person.range]} · {bearingLabel(person)}</div><div className="radar-identity"><InterestArt personId={person.id} interest={person.interest} large/><div><h2>{person.name}</h2><p>{introDetails(person)}</p></div></div>
           <div className="radar-answer-list" aria-label="이 회원의 최근 답변">{answers.map(answer=><article className="radar-answer" key={answer.day+"/"+answer.slot}>
             <div className="radar-answer-meta"><time dateTime={answer.day}>{answer.day.replaceAll("-", ".")} · {answer.slot==="am"?"오전":"오후"}</time>{answer.day===station.day&&answer.slot===station.slot&&<span>현재 질문</span>}</div>
             <h3 className="radar-answer-question">{answer.question}</h3><p className="radar-quote">{answer.body}</p>

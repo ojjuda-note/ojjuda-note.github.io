@@ -6,7 +6,7 @@ import {openPajangSupport,closePajangSupport} from "../lib/account-support.mjs";
 import {client} from "../../member.mjs";
 
 export type AccountAction="logout"|"withdraw";
-export type AccountSettingsAction=AccountAction|"edit"|"privateProfile"|"privatePhotos"|"visibility"|"answers"|"buySignals"|"help"|"delete";
+export type AccountSettingsAction=AccountAction|"edit"|"privateProfile"|"privatePhotos"|"answers"|"buySignals"|"help"|"delete";
 
 export function AccountSettings({profileId,onOpen}:{profileId:string;onOpen:(action:AccountSettingsAction)=>void}){
   const [admin,setAdmin]=useState({owner:"",allowed:false});
@@ -56,7 +56,6 @@ export function AccountSettings({profileId,onOpen}:{profileId:string;onOpen:(act
     <section className="ojjuda-settings-group" aria-labelledby="account-activity-title">
       <h2 className="ojjuda-settings-heading" id="account-activity-title">내 활동</h2>
       <div className="ojjuda-settings-list">
-        {row("visibility","답변 공개 설정")}
         {row("answers","내가 남긴 답변")}
         {row("buySignals","신호 구매")}
         <button type="button" className="ojjuda-settings-row" data-ju-charge-open aria-haspopup="dialog" aria-controls="ju-charge-dialog">

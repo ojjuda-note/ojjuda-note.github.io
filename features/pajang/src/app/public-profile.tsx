@@ -10,7 +10,7 @@ import {I} from "./icons";
 
 type Preferences=ReturnType<typeof emptyProfilePreferences>;
 type GroupKey="meeting_styles"|"relationship_values"|"affection_styles"|"life_priorities";
-type PreferenceRead={scope:string;status:"loading"|"ready"|"error";preferences:Preferences;version:number};
+type PreferenceRead={scope:string;status:"loading"|"ready"|"error";preferences:Preferences;gender?:string;version:number};
 const districts:Record<string,string[]>=regionCatalog;
 const provinces=Object.keys(districts);
 
@@ -33,7 +33,7 @@ function usePublicPreferences(viewer:string,person:string,revision=0,enabled=tru
         const {data,error}=await (typeof query.abortSignal==="function"?query.abortSignal(controller.signal):query);
         if(!active)return;
         if(error||data?.person!==person||!Number.isSafeInteger(data?.version)||data.version<0||!data.preferences)throw error||new Error("invalid profile");
-        setResult({scope,status:"ready",preferences:normalizeProfilePreferences(data.preferences),version:data.version});
+        setResult({scope,status:"ready",preferences:normalizeProfilePreferences(data.preferences),gender:data.gender,version:data.version});
       }catch{
         if(active)setResult({scope,status:"error",preferences:emptyProfilePreferences(),version:0});
       }
@@ -102,6 +102,7 @@ export function PublicProfilePreferences({viewer,person,revision=0,onEdit,onEdit
     <div className="preference-section-heading"><h3>공개 프로필</h3>{onEdit&&<button type="button" onClick={onEdit}>기본 정보 수정<I n="pencil" s={13}/></button>}</div>
     <ReadStatus read={read}/>
     {read.status==="ready"&&<>
+      {(read.gender==="male"||read.gender==="female")&&<p>성별 · {read.gender==="male"?"남성":"여성"}</p>}
       {selectedIntents.length>0&&<div className="public-intents"><h4>원하는 인연</h4><div className="preference-tags">{selectedIntents.map(intent=><span key={intent.key}>{intent.label}</span>)}</div></div>}
       <section className="public-profile-tastes" aria-label="나를 표현하는 취향">
         <div className="public-tastes-heading"><h4>나를 표현하는 취향</h4>{onEditTastes&&<button type="button" onClick={onEditTastes}>취향·그림 수정<I n="pencil" s={13}/></button>}</div>
