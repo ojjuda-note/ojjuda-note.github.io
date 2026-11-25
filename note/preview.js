@@ -564,14 +564,14 @@ const TAG_WORDS = [
 요청 수정 시계 메신저 수다 배달비 이체일 입꼬리 가격표 계산기 창가 창밖 옆자리 단톡방 밥상 그릇 문장 토요일 일요일 맞은편 TV 싱크대 숟가락
 전자레인지 곰탕 햇볕 셀카 주머니 장갑 조명 오타 단어 메뉴 습관 재료 포장 볶음밥 양배추 커버 스트레스 코드 챕터 우유 세제 옷걸이 첫눈 잔소리 입맛
 소식 양보 축하 생일 옷차림 냄새 주황빛 냉면 국 고장 결제 음악회 통장잔고 영어 국어 벚꽃 강아지풀 병아리 종이 딸기 책방 도서관 산더미 서른 음식 문제 창문 가게 공기
-위로 칭찬 혼잣말 앞날 질문 친절 준비 기억 시작 출발 결정 피곤 선택 안심 기대 긴장 인정 검색 대답 대화 인사 지원 실감`,
+위로 칭찬 혼잣말 앞날 질문 손질 필름 필름카메라 만년필 목도리 손뜨개 뜨개질 독서 독서모임 독립서점 동네책방 뜨개실 코바늘 북클럽 수업 도예 머그잔 텃밭 모종 상추 바질 씨앗 화분받침 구독 해지 이체 저축 공과금 전기요금 관리비 배터리 고사리 버섯 김밥 재즈 카메라 양말짝 손편지 한강 수영 기타줄 새우 배달앱 조깅 러닝 마라톤 완주 스케치 수채화 노을빛 보조배터리 옥상 물감 자전거 텀블러 장마철 친절 준비 기억 시작 출발 결정 피곤 선택 안심 기대 긴장 인정 검색 대답 대화 인사 지원 실감`,
   `혼자 성공 소리 옷 눈치 분위기 기회 간격 여유 계산 속도 결심 자존감 집중 장소 날짜 자리 바퀴 장면 타이밍 절반 결과 편지 모레 아침 점심 저녁 오후
 기분 가격 계획 밥 의자 손끝 조각 재촉 그리움 외로움 머리 밑단 접시 시간표 시각 단계 갈등 계절 페이지 일정 색 행복 토닥토닥 잠 부담 기운 어린이
-일상 옆구리 오랜만 자유 관심 깜빡 안전 고생 운동장 고구마 요가 장난감 동물원 어깨 목 마음 정신 짐 돈 느리게 자기비판 조급함 눈길`,
+일상 옆구리 오랜만 자유 관심 깜빡 안전 고생 운동장 고구마 요가 장난감 동물원 어깨 목 마음 정신 짐 돈 느리게 자기비판 조급함 눈길 작년 올해`,
   `하루 오늘 내일 어제 생각 시간 사람 일 말 몸 밤 낮 집 손 눈 문 길 물 차 끝 답 얘기 이야기 별일 매일 언젠가`
 ];
 const TAG_ACTIONS = new Set(`완벽 고백 걱정 고민 지각 면접 출근 퇴근 연락 운동 친절 감사 준비 공부 후회 기억 생각 시작 출발 축하 양보 결정 거절 사랑 피곤 실수 수다 통화 요리
-선택 청소 빨래 설거지 쇼핑 약속 안심 합격 연애 기대 긴장 지출 인정 검색 사과 부탁 대답 대화 샤워 발표 산책 전화 인사 지원 칭찬 실감`.split(/\s+/));
+선택 청소 빨래 설거지 쇼핑 약속 안심 합격 연애 기대 긴장 지출 인정 검색 사과 부탁 대답 대화 샤워 발표 산책 전화 인사 지원 칭찬 실감 손질 독서 구독 해지 이체 저축 조깅 완주 스케치`.split(/\s+/));
 const TAG_PARTICLE = /^(?:(?:들)?(?:에게서|에게|한테서|한테|께서|께|에서|으로부터|으로서|으로써|으로|에까지|에라도|에|부터|까지|처럼|보다|밖에|만큼|마다|조차|대로|이랑|랑|하고|이라도|라도|이나|나|이든|든|과|와|은|는|을|를|이|가|로|의|도|만|엔|에선|서|인|이다|이다가|이라|라|이라서|라서|이고|이고도|인데|인데도|인지는|인지|일수록|이니까|니까|이었던|였던|이었다|였다)?(?:에는|에도|까지|부터|은|는|에|도|만|요|만이라도)?)$/u;
 const TAG_PREDICATE = /^(?:하|한|할|함|해|했|합니|됩니|되|된|될|돼|됐)[가-힣]*$/u;
 const tagRanks = new Map(TAG_WORDS.flatMap((words, rank) =>
@@ -583,41 +583,95 @@ function standaloneTagName(token) {
       && !/^(?:그냥|정말|진짜|너무|조금|계속|다시|아직|벌써|누구|어디|이거|그거|저거|아무|아무것|함께|가끔|항상)$/u.test(token));
 }
 
+const TAG_COMPOUND = /(?:카메라|목도리|자전거|배터리|이어폰|충전기|키보드|마우스|머그잔|텀블러|키링|가방|노트북|도서관|미술관|박물관|책방|서점|빵집|맛집|시장|극장|공방|수업|전시회|음악회|공연장|클럽|동호회|연습장|산책로|산책길|등산로|운동장|정류장|기차역|공원|놀이터|목걸이|팔찌|반지|케이스|향수|운동화|티셔츠|스니커즈|강아지|고양이|강아지풀|꽃다발|나무|라떼|커피|케이크|샌드위치|파스타|볶음밥|김밥|국밥|국수|도시락|찌개|주스|쿠키|독서회|콘서트|동아리|음악제|영화제|전시관|망원경|현미경|에이드|스무디|청바지|카디건|보온병|휴게소|박람회)$/u;
+const TAG_UNKNOWN = /^([가-힣A-Za-z0-9]{2,18}?)(들)?(으로부터|에게서|한테서|에서는|에서도|에서|에게|한테|처럼|까지|부터|으로|이랑|에는|에선|엔|을|를|은|는|이|가|에|로|랑)(?:도|는|만)?$/u;
+const TAG_GENERIC = /^(?:누군가|누군|누구|무언가|무엇|무슨|어디|여기|저기|거기|자기|어떻게|하나|하루|누가|서로|요즘|지금|이번|지난|그때|가끔|한참|갑자기|나머지|한가운데|가운데|하나쯤|부분|결국|자꾸|괜히|역시|그래도|그렇게|이렇게|저렇게|어쩐지|아무것|이것|저것|그것|이곳|저곳|그곳|남들|평소|정도|다음|처음|마지막|나중|사이|그동안|아무|바로|잠깐|조금|한번|진짜|정말|그냥|드디어|아직|벌써|계속|다시|너무|모두|전부|대부분|내일|오늘|어제|누군가랑|이유|예전|며칠|나랑|당장|분들|때문|덕분|주변|다음번|오전|사실|예상|것밖|뿐만|[0-9]+(?:시|분|년|월|일)?)$/u;
+// Several verbal and adverbial endings look identical to noun particles.
+const TAG_NON_NOUN = /(?:대로|없이|같이|듯이|(?:다|냐|라|자|이|드|추|루|내|려|보|되|하|가|오|르|리|지|있|없)는|(?:다|려다|하나|어|려)가(?:도|는|만)?|(?:같|않|싶|좋|많|있|없|작|적|젊|높|짧|얇|남|맞|받|입|찾|먹|읽|넓|낮|늦|찍|깊|찮)(?:은|을)|(?:하|되|오|가|있|없|같|않|보|르|리|나|지|받|찾|먹|잡|놓|듣|웃|우|주)는|(?:려|다)기에|(?:하|리|보|쉬|알)기(?:로|엔)|으려|면서|느라)$/u;
+const TAG_BAD_STEM = /(?:려다|하다|되다|보다|하는|같은|이는|라는|려는|면서|느라|려다가|하다가|되다가|보다가|하기|리기|기기|말없|정신없|보기|잡기|전에|날에|때만큼|쪽으)$/u;
+const TAG_DETAILS = new Set('돈 밑단 어깨 접시 외로움 그리움 자존감 취향 목도리 밥'.split(' '));
+
+const TAG_TOPIC_CONTEXT = /(?:다|어요|아요|네요|더라|였어|했어|예요|이에요|을|를|에서|에게|한테)$/u;
+
+function tagCandidate(token, soleToken, nextToken) {
+  if (token.startsWith('#')) {
+    const tag = token.slice(1);
+    return tag.length <= 20 && /[가-힣A-Za-z]/u.test(tag) ? { tag, weight: 100, explicit: true } : null;
+  }
+
+  for (let end = Math.min(token.length, 20); end > 0; end--) {
+    const tag = token.slice(0, end), key = tag.toLowerCase(), ending = token.slice(end);
+    const tier = tagRanks.get(key);
+    const compound = tier === undefined && end >= 3 && TAG_COMPOUND.test(tag);
+    if (tier === undefined && !compound) continue;
+    if (!TAG_PARTICLE.test(ending) && !(TAG_ACTIONS.has(key) && TAG_PREDICATE.test(ending))) continue;
+    let weight = compound || tier === 0 ? 6 : TAG_DETAILS.has(key) ? 5 : tier === 1 ? 3 : 1;
+    if ((compound || tier === 0) && tag.length >= 3) weight++;
+    if (weight >= 5 && /^(?:을|를)$/u.test(ending)) weight++;
+    if (weight >= 5 && /^(?:랑|이랑|와|과|하고)$/u.test(ending)) weight--;
+    return { tag, weight };
+  }
+
+  if (/^[A-Z][A-Z0-9]{1,9}$/.test(token)) return { tag: token, weight: 6 };
+  const parsed = token.match(TAG_UNKNOWN);
+  if (parsed && !TAG_GENERIC.test(parsed[1]) && !TAG_NON_NOUN.test(token)) {
+    const tag = parsed[1], particle = parsed[3];
+    // Use the final consonant to keep 바나나를 and 만년필을 intact.
+    const last = tag.charCodeAt(tag.length - 1) - 0xac00;
+    const final = last >= 0 && last <= 11171 ? last % 28 : -1;
+    const wrongParticle = final >= 0 && (final === 0 ? /^(을|은|이|이랑|으로)$/u : /^(를|는|가|랑)$/u).test(particle);
+    // 는 is also the productive present-tense verb ending. Unknown stems need
+    // stronger evidence than that ending alone.
+    if ((particle !== '는' || TAG_TOPIC_CONTEXT.test(nextToken)) && !wrongParticle && !TAG_BAD_STEM.test(tag)) return { tag, weight: /^(?:을|를)$/u.test(particle) ? 7 : 6 };
+  }
+  if (/^[A-Z][A-Z0-9]{1,11}$/.test(token) || (soleToken && standaloneTagName(token))) {
+    return { tag: token, weight: 5 };
+  }
+  return null;
+}
+
 function suggestTags(body, limit = 5) {
-  const tokens = String(body || '').match(/[가-힣A-Za-z0-9]+/gu) || [];
-  const matches = new Map();
-  const unknown = [];
-  for (const token of tokens) {
-    let recognized = false;
-    for (let length = token.length; length > 0; length--) {
-      const stem = token.slice(0, length);
-      const key = stem.toLowerCase();
-      const rank = tagRanks.get(key);
-      if (rank === undefined) continue;
-      const ending = token.slice(length);
-      if (!TAG_PARTICLE.test(ending) && !(TAG_ACTIONS.has(key) && TAG_PREDICATE.test(ending))) continue;
-      if (!matches.has(key)) matches.set(key, { tag: stem, rank });
-      recognized = true;
-      break;
+  const tokens = [...String(body || '').matchAll(/(#[가-힣A-Za-z0-9_]+|[가-힣A-Za-z0-9]+)([^가-힣A-Za-z0-9#]*)/gu)];
+  const terms = tokens.map((match, i) => tagCandidate(match[1], tokens.length === 1,
+    /^[ \t]+$/.test(match[2]) ? tokens[i + 1]?.[1] || '' : ''));
+  // A repeated bare name also identifies a topic outside the vocabulary.
+  const mentions = new Map();
+  terms.forEach((item, pos) => {
+    const key = (item?.tag || tokens[pos][1]).toLowerCase();
+    mentions.set(key, (mentions.get(key) || 0) + 1);
+  });
+  terms.forEach((item, pos) => {
+    const tag = tokens[pos][1];
+    if (!item && mentions.get(tag.toLowerCase()) > 1 && !TAG_GENERIC.test(tag) && !/(?:도|를|랑|의|에|로)$/u.test(tag) && standaloneTagName(tag)) {
+      terms[pos] = { tag, weight: 6 };
     }
-    if (!recognized) unknown.push(token);
-  }
-  // A name outside the vocabulary can still be recognized by a noun particle.
-  for (const token of unknown) {
-    const name = token.match(/^([가-힣A-Za-z0-9]{2,14}?)(?:에서|에게|한테|이랑|으로부터|를|은|는|이|가)(?:도|는|만)?$/u)?.[1];
-    if (/(?:다가|기가|보는|가는|오는|하는|되는|있는|없는|같은|않은)$/u.test(token)) continue;
-    if (!name || /^(?:누구|요즘|지금|남들|지나|내일|오늘|자기|누군|누군가|하나|하루|거기|여기|저기|어디|이것|그것|저것|그곳|이곳|저곳|[0-9]+)$/u.test(name)
-      || /(?:다|하기|기기|하|되|리|르|오|가|같|않|싶|많|좋|작|적|늦|높|짧|낮|넓|찾|받|찍|읽|먹|남|닮|맞|젊|얇|입|싶은|하는|되는|있는|없는)$/u.test(name)) continue;
-    const key = name.toLowerCase();
-    if (!tagRanks.has(key) && !matches.has(key)) matches.set(key, { tag: name, rank: 1.5 });
-  }
-  if (!matches.size && tokens.length === 1 && standaloneTagName(tokens[0])) {
-    matches.set(tokens[0].toLowerCase(), { tag: tokens[0], rank: 1.5 });
-  }
-  if (!matches.size) return [];
-  const best = Math.min(...Array.from(matches.values(), item => item.rank));
-  return Array.from(matches.values()).filter(item => item.rank === best)
-    .slice(0, Math.min(limit, best === 2 ? 1 : 5)).map(item => item.tag);
+  });
+  // In a phrase such as '돈 걱정', the first noun has no particle. Spacing and
+  // punctuation distinguish a phrase from the last and first words of two sentences.
+  const paired = terms.map((item, i) => !!item && item.weight >= 3
+    && terms[i + 1]?.weight >= 3 && tokens[i][1] === item.tag && /^[ \t]+$/.test(tokens[i][2]));
+  const matches = new Map();
+  terms.forEach((item, pos) => {
+    if (!item) return;
+    const key = item.tag.toLowerCase();
+    const weight = item.weight + (paired[pos] || paired[pos - 1] ? 2 : 0);
+    const previous = matches.get(key);
+    if (previous) {
+      previous.count++;
+      previous.weight = Math.max(previous.weight, weight);
+      previous.explicit ||= !!item.explicit;
+    } else matches.set(key, { ...item, pos, count: 1, weight });
+  });
+  // Repetition helps a supporting noun, while everyday filler stays a last resort.
+  const ranked = [...matches.values()].map(item => ({
+    ...item, score: item.weight + (item.weight > 1 ? Math.min(item.count - 1, 2) * 3 : 0)
+  })).sort((a, b) => b.score - a.score || a.pos - b.pos);
+  if (!ranked.length) return [];
+  const cutoff = Math.min(5, ranked[0].score);
+  const selected = ranked.filter(item => item.score >= cutoff)
+    .slice(0, Math.min(limit, cutoff === 1 ? 1 : 5));
+  return selected.sort((a, b) => Number(!!b.explicit) - Number(!!a.explicit) || a.pos - b.pos)
+    .map(item => item.tag);
 }
 let autoTagMode = true, manualTags = [], rejectedTags = new Set(), autoTagsNow = [];
 // 일반 카드의 첨부 사진은 비공개 저장소에서 읽을 때마다 서명합니다.
