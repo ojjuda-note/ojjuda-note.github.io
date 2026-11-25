@@ -31,8 +31,8 @@
         const url = new URL('/park/', location.origin);
         for (const [href,as] of [
           [url.pathname + url.search,'document'],
-          ['/note/preview.js?v=20261125-literal-tags1','script'],
-          ['/park/design.css?v=20261125-reply-bottom1','style']
+          ['/note/preview.js?v=20261125-reply-tags2','script'],
+          ['/park/design.css?v=20261125-reply-tags2','style']
         ]) {
           const link = document.createElement('link');
           link.rel = 'prefetch'; link.as = as; link.href = href;
