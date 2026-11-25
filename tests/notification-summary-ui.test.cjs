@@ -206,6 +206,31 @@ test('group notifications identify the inviter and join only after acceptance',a
   }
 });
 
+test('a locked group notification retains its invitation through a wrong password and accepts on retry',async()=>{
+ const notice={id:'world:group_invite:'+uuid(710),target_id:uuid(710),kind:'group_invite',source:'world',created_at:'2026-11-06T00:00:00Z'};
+ const f=fixture({handle:(name,args)=>{
+  if(name==='group_invitation'){
+   const value=args.p_payload.password;
+   if(value==='정확함')return {data:{room_id:uuid(711)}};
+   return {data:{ok:false,reason:value?'password_incorrect':'password_required',message:value?'다시 입력해 주세요.':'그룹 비밀번호를 입력해 주세요.'}};
+  }
+  if(name==='app_notification_summary')return {data:{notifications:1,retention:0}};
+  if(name==='list_retention_alerts')return {data:[]};
+  if(name==='list_app_notifications')return {data:{items:[notice],unread_count:1,as_of:notice.created_at,has_more:false}};
+  return {data:null};
+ }});
+ try{
+  await f.boot();f.api.open();await settle();
+  const d=f.w.document,accept=d.querySelector('[data-group-invite-action=accept]');
+  accept.click();await settle();const input=d.querySelector('.nn-group-password input');
+  assert.equal(input.type,'password');assert.equal(d.activeElement,input);assert.deepEqual(f.openedGroups,[]);
+  input.value='틀림';accept.click();await settle();
+  assert.match(d.querySelector('.nn-status').textContent,/다시 입력/);assert.deepEqual(f.openedGroups,[]);
+  input.value='정확함';input.dispatchEvent(new f.w.KeyboardEvent('keydown',{key:'Enter',bubbles:true}));await settle();
+  assert.deepEqual(f.openedGroups,[uuid(711)]);assert.equal(f.api.isOpen(),false);
+ }finally{f.close();}
+});
+
 test('visit gifts need explicit confirmation even after mark-all; a repeated click sends one claim', async () => {
   const f=fixture(), pending=deferred(), created='2026-11-13T03:00:00Z';
   let read=false, claimed=false;

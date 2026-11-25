@@ -3,7 +3,7 @@
 let toolbarLoad=null, toolbarReady=false, earlyControl=null;
 function prepareToolbar(){
   if(toolbarLoad)return toolbarLoad;
-  toolbarLoad=import('./account-toolbar.mjs?v=20261126-adult-service1')
+  toolbarLoad=import('./account-toolbar.mjs?v=20261126-group-password1')
     .then(({installPajangToolbar})=>{
       installPajangToolbar();
       toolbarReady=true;

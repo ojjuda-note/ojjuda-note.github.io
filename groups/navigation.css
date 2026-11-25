@@ -55,3 +55,10 @@ body {min-height:100vh; min-height:100dvh}
 #directory .group-card.post {background:var(--paper); border-color:var(--line)}
 #directory .group-card-footer .metadata, #directory .group-description {color:var(--muted)}
 .group-room-hero h1, .group-room-hero .actions button {color:#263e33}
+
+.group-lock {display:inline-block;width:.92em;height:.92em;margin-right:.25em;vertical-align:-.02em}
+.group-access-form {display:grid;gap:10px;max-width:32rem}
+.group-access-form .error:empty {display:none}
+.group-access-status {margin:1rem;text-align:center;color:var(--muted)}
+:host([data-group-checking]) #app, :host([data-group-checking]) dialog,
+body[data-group-checking] #app, body[data-group-checking] .dialog {visibility:hidden}

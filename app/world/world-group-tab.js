@@ -7,7 +7,7 @@
     '/groups/composer.css?v=20261124-single-tab-highlight1',
     '/features/groups/appearance.css?v=20261126-theme1',
     '/shared/share/page-share.css?v=20261123-park-share1',
-    '/groups/navigation.css?v=20261126-theme1'
+    '/groups/navigation.css?v=20261126-group-password1'
   ];
   let host, owner, board, loading;
   const active = () => !!host && !host.hidden;
@@ -31,7 +31,7 @@
         import('/groups/activities.js?v=20261126-theme1'),
         import('/groups/composer.js?v=20261126-theme1'),
         import('/shared/art/cozy-scenes.js?v=20261118-cozy100-1'),
-        import('/groups/app.js?v=20261126-theme1')
+        import('/groups/app.js?v=20261126-group-password1')
       ]);
       if (host === element) board = window.OjjudaGroups.mount(root);
     } catch {
@@ -55,9 +55,10 @@
       document.getElementById('app').after(host);
       loading = load(host);
     }
+    if (active() && tab !== 'group') board?.suspend();
     if (host) host.hidden = tab !== 'group';
     document.documentElement.classList.toggle('world-group-open', active());
-    if (entering) window.scrollTo(0,0);
+    if (entering) { board?.resume(); window.scrollTo(0,0); }
   }
   document.addEventListener('click', event => {
     if (active() && event.target.closest?.('.topbar [data-share-page="groups"]') && board?.invite()) {
