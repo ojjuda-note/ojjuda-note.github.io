@@ -157,7 +157,8 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   const obsoleteAnswer=pendingModal?.kind==="answer" && (pendingModal.questionId!==s.question?.id ||
     (pendingModal.originalBody===undefined && Boolean(me?.body)));
   const modal=(pendingModal?.period && pendingModal.period!==period) || obsoleteAnswer ||
-    (pendingModal?.pastOwner&&pendingModal.pastOwner!==me?.id) ? null : pendingModal;
+    (pendingModal?.pastOwner&&pendingModal.pastOwner!==me?.id) ||
+    (pendingModal?.editTarget&&pendingModal.editTarget.owner!==me?.id) ? null : pendingModal;
   const editingAnswer=modal?.kind==="answer" && modal.originalBody!==undefined;
   const answerTitle=slotName+(editingAnswer?" 답변 수정":" 답변");
   const row=modal?.answer;
@@ -183,7 +184,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     document.addEventListener("visibilitychange",tick);
     return()=>{clearInterval(poll);clearTimeout(boundary);document.removeEventListener("visibilitychange",tick);};
   },[s.nextAt]);
-  useEffect(()=>{if(pendingModal&&!modal)dismiss();},[pendingModal,modal]);
+  useEffect(()=>{if(pendingModal&&!modal){historyEditDirty.current=false;dismiss();}},[pendingModal,modal]);
   useEffect(()=>{if(!toast)return;const t=setTimeout(()=>setToast(""),3500);return()=>clearTimeout(t);},[toast]);
   const [threadError,setThreadError]=useState("");
   async function readThread(id:string,replace=false){
@@ -293,7 +294,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     setError("");
     if(m.kind==="suggestion"&&(lock.current||pendingModal?.kind==="suggestion"||!me))return;
     if(m.kind==="answer"){
-      if(m.originalBody!==(me?.body||undefined))return;
+      if(me?.body)return;
       const next={...m,period,questionId:s.question?.id};
       if(!navigation.current?.open(next))setModal(next);
       return;
@@ -301,17 +302,25 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     const next=m.answer||m.kind==="signal"?{...m,period}:m;
     if(!navigation.current?.open(next))setModal(next);
   }
-  function editHistoryAnswer(answer:AnswerEditTarget,stack=false){
-    if(!liveRef.current.authenticated||answer.owner!==liveRef.current.me?.id||!canLeaveDialog())return;
-    const next:Modal={kind:"historyAnswer",editTarget:answer};
+  function editOwnAnswer(answer:AnswerEditTarget,stack=false){
+    const state=liveRef.current;
+    if(!state.authenticated||!state.me||answer.owner!==state.me.id||!canLeaveDialog())return;
+    const current=answer.day===state.day&&answer.slot===state.slot;
+    const next:Modal=current
+      ? {kind:"answer",period:state.day+"/"+state.slot,questionId:state.question?.id,originalBody:state.me.body||answer.body,editTarget:answer}
+      : {kind:"historyAnswer",editTarget:answer};
     setError("");
     if(!navigation.current?.open(next,null,{stack}))setModal(next);
+  }
+  function answerToday(){
+    if(!me?.body){open({kind:me?"answer":"setup"});return;}
+    editOwnAnswer({owner:me.id,day:s.day,slot:s.slot,question:themeText,body:me.body});
   }
   function answerPastQuestion(question:PastQuestion,stack=false){
     const owner=liveRef.current.me?.id;
     if(!owner||!liveRef.current.authenticated||!canLeaveDialog())return;
     if(question.answered){
-      if(question.canEdit&&typeof question.body==="string")editHistoryAnswer({...question,body:question.body,owner},stack);
+      if(question.canEdit&&typeof question.body==="string")editOwnAnswer({...question,body:question.body,owner},stack);
       return;
     }
     const next:Modal={kind:"pastAnswer",pastQuestion:question,pastOwner:owner};setError("");
@@ -433,7 +442,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
         <div className="letter-copy">
           <div className="letter-date">오늘의 질문 <time dateTime={s.day}>{s.day.replaceAll("-",".")} · {slotName}</time></div>
           <h1>{themeText}</h1>
-          <div className="letter-actions"><button className={me?.body?"secondary":"primary"} disabled={!ready} onClick={()=>open(me?{kind:"answer",originalBody:me.body||undefined}:{kind:"setup"})}>
+          <div className="letter-actions"><button className={me?.body?"secondary":"primary"} disabled={!ready} onClick={answerToday}>
             <I n="pencil" s={16}/>{me?.body?"내 답변 수정하기":"내 답변 쓰기"}
           </button>
           <button type="button" className="past-questions-open" aria-haspopup="dialog" disabled={!ready||!me} onClick={()=>open({kind:"pastQuestions",pastOwner:me?.id})}>
@@ -451,7 +460,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
         onSignal={answer=>open({kind:"signal",peer:answer.peer,answer})}
         onBuySignals={()=>open({kind:"buySignals"})}
         onChat={id=>void openHistoryChat(id)}
-        onEdit={answer=>{if(answer.own&&answer.peer===me?.id)editHistoryAnswer({...answer,owner:answer.peer});}}
+        onEdit={answer=>{if(answer.own&&answer.peer===me?.id)editOwnAnswer({...answer,owner:answer.peer});}}
         onPastQuestion={answer=>answerPastQuestion({day:answer.day,slot:answer.slot,question:answer.question})}
         onWrite={()=>open({kind:"answer"})}/>
         <aside className="today-rail">
@@ -516,12 +525,12 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     {modal.kind==="suggestion"&&me&&<QuestionSuggestionForm key={me.id} period={period} onBusyChange={accountBusy} onSaved={()=>{close();setToast("질문을 보냈어요. 고마워요!");}}/>}
     {(modal.kind==="logout"||modal.kind==="withdraw")&&<AccountActionForm action={modal.kind} close={close} onBusyChange={accountBusy}/>}
     {modal.kind==="answers"&&me&&<MyAnswers key={me.id+period} owner={me.id} answered={Boolean(me.body)} revision={historyRevision}
-      onEdit={answer=>editHistoryAnswer({...answer,owner:me.id},true)} onWrite={()=>open({kind:"answer"})}/>}
+      onEdit={answer=>editOwnAnswer({...answer,owner:me.id},true)} onWrite={()=>open({kind:"answer"})}/>}
     {modal.kind==="pastQuestions"&&me&&<PastQuestions key={me.id} owner={me.id} revision={historyRevision} onChoose={question=>answerPastQuestion(question,true)}/>}
     {modal.kind==="pastAnswer"&&modal.pastQuestion&&modal.pastOwner&&<PastAnswerForm
       key={modal.pastOwner+"/"+modal.pastQuestion.day+"/"+modal.pastQuestion.slot} question={modal.pastQuestion} owner={modal.pastOwner}
       onBusyChange={accountBusy} onDirtyChange={dirty=>{historyEditDirty.current=dirty;}}
-      onExisting={answer=>editHistoryAnswer(answer)} onMyAnswers={()=>open({kind:"answers"})}
+      onExisting={answer=>editOwnAnswer(answer)} onMyAnswers={()=>open({kind:"answers"})}
       onSaved={()=>{
         if(liveRef.current.me?.id!==modal.pastOwner)return false;
         setHistoryRevision(value=>value+1);dismiss();setToast("답변을 남겼어요.");void refresh();return true;
@@ -537,12 +546,13 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     {modal.kind==="answer"&&<><span className="modalicon"><I n="pencil"/></span><h2>{answerTitle}</h2><p className="questionbox">{themeText}</p>
       {editingAnswer&&<p className="sub">저장하면 공개 기간이 남아 있는 답변에 수정한 내용이 보여요. 공개 기간은 바뀌지 않아요.</p>}
       <Editor key={period+themeText} initial={modal.originalBody} choices={theme.answers} max={220} label="내 이야기" hint="평소 내 생각이나 행동을 편하게 적어 주세요."
+        onDraftChange={body=>{historyEditDirty.current=editingAnswer&&body.trim()!==modal.originalBody?.trim();}}
         publicationNote={!editingAnswer} submit={editingAnswer?"수정 저장하기":"답변하기"} busy={busy} onSave={async body=>{
           const origin=navigationId.current;
           const data={body,day:s.day,slot:s.slot,questionId:modal.questionId};
           const next=editingAnswer?await act("edit-answer",{...data,previousBody:modal.originalBody}):await act("answer",{...data,archive:true,publicationPolicy:"year-v1"});
           if(!next||origin!==navigationId.current)return;
-          dismiss();setToast(slotName+(editingAnswer?" 답변을 수정했어요.":" 답변을 저장했어요."));
+          historyEditDirty.current=false;dismiss();setToast(slotName+(editingAnswer?" 답변을 수정했어요.":" 답변을 저장했어요."));
         }}/>
     </>}
     {modal.kind==="signal"&&peer&&!(available===0&&s.purchasingEnabled)&&<><span className="modalicon"><I n="signal"/></span><h2>{peer.name}님{row?.received || signalsWith(s,peer.id).incoming?"의 신호 수락":"에게 신호 보내기"}</h2><p className="sub">{available?"서로 신호를 보내면 대화를 시작할 수 있어요.":"오늘의 신호를 모두 썼어요. 내일 다시 만나요."}</p><div className="questionbox">{row&&<small>{row.question}</small>}{peer.body||signalsWith(s,peer.id).incoming?.note}</div><Editor key={signalDraftKey(peer.id,row)} initial={signalDrafts.current.get(signalDraftKey(peer.id,row))} onDraftChange={value=>signalDrafts.current.set(signalDraftKey(peer.id,row),value)} max={120} label="함께 보낼 한마디 (선택)" hint="어떤 부분에 마음이 닿았나요?" submit={(row?.received || signalsWith(s,peer.id).incoming?"신호 수락하기":"신호 보내기")+" · 남은 "+available+"개"} busy={busy||available===0} optional onSave={note=>void deliver(peer.id,note,row)}/></>}

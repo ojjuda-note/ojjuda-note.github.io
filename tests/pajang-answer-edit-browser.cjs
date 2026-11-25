@@ -22,11 +22,12 @@ const sample = {
 // Only the transport and account are synthetic. The page runs the actual built
 // StationApp, its history controller and the production styles, without network writes.
 function installFixture(data) {
+  const currentCard=new URLSearchParams(location.search).get('fixture')==='current-card';
   const me = {id:data.owner,name:'보리',region:'서울특별시',interest:'book',body:data.currentBody};
   const state = {
     day:data.day,slot:data.slot,nextAt:new Date(Date.now()+3600000).toISOString(),authenticated:true,
     remaining:3,signals:[],messages:[],people:[],me,
-    question:{id:19,q:[data.currentQuestion],answers:[]},
+    question:{id:19,q:[data.currentQuestion],answers:currentCard?[data.currentBody,'함께 산책하며 이야기하고 싶어요.']:[]},
     locationEnabled:false,locationVersion:0,radarOn:false
   };
   const historyAnswers = [
@@ -34,10 +35,11 @@ function installFixture(data) {
     {day:data.publicDay,slot:data.publicSlot,question:data.publicQuestion,body:data.publicBody},
     {day:data.privateDay,slot:data.privateSlot,question:data.privateQuestion,body:data.privateBody}
   ];
+  const feedAnswer=historyAnswers[currentCard?0:1];
   const feed = [
-    {...historyAnswers[1],peer:data.owner,name:me.name,region:me.region,interest:me.interest,
+    {...feedAnswer,peer:data.owner,name:me.name,region:me.region,interest:me.interest,
       at:Date.parse('2026-11-17T10:00:00Z'),own:true,sent:false,received:false},
-    {...historyAnswers[1],peer:data.peer,name:'은하',region:'서울특별시',interest:'walk',
+    {...feedAnswer,peer:data.peer,name:'은하',region:'서울특별시',interest:'walk',
       at:Date.parse('2026-11-17T10:01:00Z'),body:'나무가 많은 동네 길이 생각나요.',own:false,sent:false,received:false}
   ];
   const listeners = new Set();
@@ -268,6 +270,39 @@ async function assertFits(page,dialog,width) {
       questionId:19,previousBody:sample.currentBody});
     assert.equal(await page.evaluate(()=>answerEditFixture.snapshot().state.me.body),revisedCurrent);
     assert.deepEqual(await page.evaluate(()=>answerEditFixture.unexpected),[]);
+
+    checkpoint='same-answer-editor';
+    await reset('?fixture=current-card');
+    const heroButton=page.getByRole('button',{name:'내 답변 수정하기',exact:true});
+    const cardButton=page.locator('#answers').getByRole('button',{name:'답변 수정',exact:true});
+    const write=today.getByRole('textbox',{name:'주관식',exact:true});
+    const save=today.getByRole('button',{name:'수정 저장하기',exact:true});
+    const close=today.getByRole('button',{name:'닫기',exact:true});
+    for(const button of [heroButton,cardButton]){
+      await button.click();
+      await today.waitFor();
+      assert.equal(await today.locator('.questionbox').textContent(),sample.currentQuestion);
+      assert.equal(await today.getByRole('radio').count(),2);
+      assert.ok(await today.getByRole('radio',{name:sample.currentBody,exact:true}).isChecked());
+      assert.equal(await write.inputValue(),'');
+      await close.click();
+      await today.waitFor({state:'hidden'});
+    }
+    await cardButton.click();
+    await today.getByRole('radio').nth(1).check();
+    await save.click();
+    await today.waitFor({state:'hidden'});
+    await heroButton.click();
+    assert.ok(await today.getByRole('radio').nth(1).isChecked());
+    await write.fill(revisedCurrent);
+    await save.click();
+    await today.waitFor({state:'hidden'});
+    await page.locator('#answers .answercard .quote').filter({hasText:revisedCurrent}).waitFor();
+    await cardButton.click();
+    assert.equal(await write.inputValue(),revisedCurrent);
+    assert.equal(await today.getByRole('radio',{checked:true}).count(),0);
+    await close.click();
+    assert.deepEqual(await page.evaluate(()=>answerEditFixture.calls.map(call=>call.action)),['edit-answer','edit-answer']);
 
     checkpoint='join-regression';
     await reset('?fixture=join&tab=profile');
