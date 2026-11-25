@@ -18,8 +18,8 @@ const state = {day:'2026-11-17',slot:'pm',question:{id:1,q:['처음 만난 날, 
   nextAt:new Date(Date.now()+3600000).toISOString(),authenticated:true,remaining:3,signals:[],messages:[],people:[],me};
 const base = {region:'서울특별시',day:'2026-11-17',slot:'am',at:1,sent:false,received:false,own:false};
 const rows = [
-  {...base,peer:'a',name:'은하',interest:'book',question:'쉬는 날을 같이 보낸다면 어디에 가고 싶나요?',body:'동네 책방에 들러서 서로에게 어울리는 책을 한 권씩 골라주고 싶어요.'},
-  {...base,peer:'b',name:'단비',interest:'walk',question:'쉬는 날을 같이 보낸다면 어디에 가고 싶나요?',body:'나란히 걸으면서 같은 풍경을 보고 웃을 때요.'},
+  {...base,peer:'a',gender:'male',name:'은하',interest:'book',question:'쉬는 날을 같이 보낸다면 어디에 가고 싶나요?',body:'동네 책방에 들러서 서로에게 어울리는 책을 한 권씩 골라주고 싶어요.'},
+  {...base,peer:'b',gender:'female',name:'단비',interest:'walk',question:'쉬는 날을 같이 보낸다면 어디에 가고 싶나요?',body:'나란히 걸으면서 같은 풍경을 보고 웃을 때요.'},
 ];
 const signalOffers=[[1,10,2],[3,28,2],[5,45,2],[10,85,1],[20,160,1],[30,225,1]]
   .map(([quantity,price,revision])=>({id:'signal_'+quantity,quantity,price,revision}));
@@ -785,7 +785,9 @@ async function checkNavigation(page){
     assert.equal(await page.evaluate(()=>window.artPending),true,'feed is usable with all artwork still pending');
     assert.equal(await page.evaluate(()=>window.authCalls),1);
     assert.deepEqual(await page.evaluate(()=>window.artCalls.slice().sort()),['book.webp','walk.webp']);
-    assert.deepEqual(await group.locator('label span').allTextContents(),['전체','','']);
+    assert.deepEqual(await cards.locator('.avatar').evaluateAll(nodes=>nodes.map(n=>n.dataset.genderTone).sort()),['female','male']);
+    assert.deepEqual(await group.getByRole('radio').evaluateAll(nodes=>nodes.map(node=>node.value)),['male','all','female']);
+    assert.deepEqual(await group.locator('label span').allTextContents(),['','','']);
     const dir=path.join(__dirname,'artifacts/pajang-discovery');
     await fs.mkdir(dir,{recursive:true});
     for(const width of [320,390,750,1080]){
@@ -795,10 +797,12 @@ async function checkNavigation(page){
       assert.ok(await answers.evaluate(el=>el.scrollWidth<=document.documentElement.clientWidth));
       const targets=await group.locator('label').evaluateAll(nodes=>nodes.map(node=>{
         const box=node.getBoundingClientRect(),text=node.querySelector('span');
-        return {left:box.left,right:box.right,width:box.width,height:box.height,font:parseFloat(getComputedStyle(text).fontSize)};
+        const dot=text.getBoundingClientRect(),style=getComputedStyle(text);
+        return {left:box.left,right:box.right,width:box.width,height:box.height,dot:dot.width,round:dot.width===dot.height&&style.borderRadius==='50%',outlined:parseFloat(style.outlineWidth)>0};
       }));
-      assert.ok(targets.every(box=>box.width>=44&&box.height>=44&&box.font>=14),
-        'gender choices have readable labels and full touch targets at '+width+'px: '+JSON.stringify(targets));
+      assert.ok(targets.every(box=>box.width>=44&&box.height>=44&&box.dot===18&&box.round),
+        'small circles retain full touch targets at '+width+'px: '+JSON.stringify(targets));
+      assert.deepEqual(targets.map(box=>box.outlined),[false,true,false]);
       assert.ok(targets.every(box=>box.left>=0&&box.right<=width+1),'gender choices fit at '+width+'px');
       await answers.screenshot({path:path.join(dir,'answers-'+width+'.png'),animations:'disabled'});
     }
@@ -830,8 +834,9 @@ async function checkNavigation(page){
     await selected('female');await cards.filter({hasText:rows[1].body}).waitFor();
     assert.deepEqual(await page.evaluate(n=>window.feedCalls.slice(n),calls),['female'],'one request per swipe');
     await answers.screenshot({path:path.join(dir,'answers-female.png'),animations:'disabled'});
-    await page.keyboard.press('ArrowLeft');await selected('male');
     await page.keyboard.press('ArrowLeft');await selected('all');
+    await page.keyboard.press('ArrowLeft');await selected('male');
+    await page.keyboard.press('ArrowRight');await selected('all');
     await page.evaluate(()=>{window.denied=true;});
     await radio('male').tap();await answers.getByRole('alert').waitFor();
     assert.equal(await cards.count(),0,'denial clears cached member content');

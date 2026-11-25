@@ -199,6 +199,34 @@ test('public Pajang preferences save atomically and relationship discovery prese
     assert.equal(await value('select gender_visibility_choice as value from pajang_private.people where id=$1',[person(2)]),false);
   });
 
+  await t.test('unset members appear immediately and an explicit hide covers cards, profile, filters and state',async()=>{
+    const discovery=read('20261117210000_pajang_discovery_gender.sql');
+    await db.exec(discovery.slice(discovery.indexOf('create function public.pajang_discovery_visibility'),
+      discovery.indexOf('create function public.pajang_discovery_feed')));
+    const radar=read('20261121165547_pajang_nearby_recent_answers.sql');
+    await db.exec(radar.slice(radar.indexOf('create function pajang_private.nearby_people'),radar.indexOf('revoke all on function')));
+    await db.exec(read('20261125110000_pajang_member_gender_defaults.sql'));
+    await db.exec(read('20261125114508_pajang_member_gender_borders.sql'));
+    const card=async(n,gender='all')=>(await feed('all',null,'latest',gender)).items.find(item=>item.peer===person(n));
+    const visibility=visible=>as(account(3),()=>rpc('pajang_discovery_visibility',[visible]));
+    assert.equal((await card(3,'female')).gender,'female');
+    assert.equal((await profile(person(3))).gender,'female');
+    assert.equal((await visibility(null)).visible,true);
+    assert.equal((await card(2)).gender,null,'a previous explicit hide survives migration');
+    assert.equal(await card(2,'male'),undefined);
+    await visibility(false);
+    assert.equal((await card(3)).gender,null);
+    assert.equal((await profile(person(3))).gender,null);
+    assert.equal(await card(3,'female'),undefined);
+    await as(account(3),()=>rpc('pajang_member',['answer',{day:today,slot:'pm',body:'함께 걷기',questionId:'synthetic-question',shareAccountGender:true}]));
+    assert.equal((await visibility(null)).hidden,true,'a stale posting client cannot undo a hide');
+    await visibility(true);
+    const state=await as(account(1),()=>rpc('pajang_member',['state',{}]));
+    assert.equal(state.people.find(p=>p.id===person(3)).gender,'female');
+    assert.equal(state.me.gender,'female');
+    await assert.rejects(as(account(1),()=>value('select pajang_private.visible_member_gender($1) as value',[person(3)])));
+  });
+
   await t.test('one save updates public fields and private exchange data atomically',async()=>{
     const current=await as(account(1),()=>rpc('pajang_profile_details',['mine',{}]));
     assert.equal(current.person,person(1));

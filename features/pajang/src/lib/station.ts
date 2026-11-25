@@ -62,12 +62,12 @@ export function themeFor(day: string, slot: Slot) {
   const index = 2 * days + (slot === "am" ? -1 : 0);
   return themes[(index % themes.length + themes.length) % themes.length];
 }
-export type Person = {id:string; name:string; age?:number|null; region:string; interest:string; body?:string; at?:number; range?:RadarBand; bearing?:number; sameCell?:boolean};
+export type Person = {gender?:string|null;id:string; name:string; age?:number|null; region:string; interest:string; body?:string; at?:number; range?:RadarBand; bearing?:number; sameCell?:boolean};
 export type NearbyAnswer = {day:string;slot:Slot;question:string;body:string;at:number;likeCount?:number;liked?:boolean};
 export type NearbyPerson = Person & {answers?:NearbyAnswer[]};
 export type Signal = {src:string;dst:string;day:string;note:string;at:number};
 export type Message = {id:string;src:string;dst:string;body:string;at:number};
-export type Station = {genderSharePending?:boolean;day:string;slot:Slot;question?:{id:number;q:string[];answers:string[]};nextAt:string;me:Person|null;people:Person[];nearbyPeople?:NearbyPerson[];signals:Signal[];messages:Message[];authenticated:boolean; remaining:number; freeRemaining?:number; paidRemaining?:number; purchasingEnabled?:boolean; radarOn?:boolean; radarDirectionOn?:boolean; locationEnabled?:boolean; locationVersion?:number; locationNotice?:string};
+export type Station = {day:string;slot:Slot;question?:{id:number;q:string[];answers:string[]};nextAt:string;me:Person|null;people:Person[];nearbyPeople?:NearbyPerson[];signals:Signal[];messages:Message[];authenticated:boolean; remaining:number; freeRemaining?:number; paidRemaining?:number; purchasingEnabled?:boolean; radarOn?:boolean; radarDirectionOn?:boolean; locationEnabled?:boolean; locationVersion?:number; locationNotice?:string};
 export const badges = (key:string) => interests.find(x=>x.key===key)||{key:"",name:"",bg:"#eae5ee"};
 export function introDetails(person:Pick<Person,"region"|"interest">) {
   return [person.region,badges(person.interest).name].filter(Boolean).join(" · ");
