@@ -87,7 +87,7 @@ async function fixture(t, {fields = {}, save, read, ready = true} = {}) {
       assert.ok(Object.hasOwn(args.p_data.preferences, 'relationship_intents'));
       const nextFields = copy(args.p_data.fields);
       if (Object.hasOwn(nextFields, 'height')) nextFields.height = Number(nextFields.height);
-      const next = {...state.profile, fields:nextFields, name:args.p_data.name.trim(), region:args.p_data.region,
+      const next = {...state.profile, ...(args.p_data.avatar ? {avatar:copy(args.p_data.avatar)} : {}), fields:nextFields, name:args.p_data.name.trim(), region:args.p_data.region,
         showAge:args.p_data.showAge, showGender:args.p_data.showGender,
         interest:args.p_data.interest, preferencesVersion:state.profile.preferencesVersion + 1,
         preferences:{...state.profile.preferences,...copy(args.p_data.preferences)}};
@@ -386,4 +386,42 @@ test('two submits while saving send one RPC and report success once', async t =>
   release();
   await waitFor(() => f.state.successes === 1, 'the pending save should finish once');
   assert.equal(f.saves().length, 1);
+});
+
+test('a single profile character persists with a separate backdrop and every short variant is on the left', async t => {
+  const f = await fixture(t);
+  const avatar = () => f.form().querySelector('[aria-label="내 캐릭터"]');
+  const stage = () => avatar().querySelector('[role="img"]');
+  assert.equal(stage().getAttribute('aria-label'), '흰 티와 청바지 전신형 · 배경 없음');
+  assert.equal(avatar().querySelectorAll('.pj-character-figure').length, 1);
+  assert.equal(f.button('배경 선택').getAttribute('aria-expanded'), 'false');
+  f.button('캐릭터 선택').click();
+  await turn();
+  const names = new Set();
+  for (let page = 1; page <= 13; page++) {
+    for (const pair of avatar().querySelectorAll('.pj-avatar-pair')) {
+      const buttons = [...pair.querySelectorAll('button')];
+      assert.deepEqual(buttons.map(b => b.textContent), ['대두형','전신형']);
+      names.add(pair.parentElement.querySelector('strong').textContent);
+    }
+    if (page < 13) { f.button('다음').click(); await turn(); }
+  }
+  assert.equal(names.size, 100);
+  await f.set('캐릭터 검색', '회색 후디');
+  f.button('회색 후디 대두형').click();
+  await turn();
+  f.button('배경 선택').click();
+  await turn();
+  f.button('장미 정원').click();
+  await turn();
+  assert.equal(avatar().querySelectorAll('.pj-character-figure').length, 1);
+  assert.equal(stage().getAttribute('aria-label'), '회색 후디 대두형 · 배경 장미 정원');
+  assert.equal(f.saves().length, 0);
+  f.submit();
+  await waitFor(() => f.state.successes === 1, 'avatar should save with profile');
+  assert.deepEqual(f.saves()[0].p_data.previousAvatar, {id:1,form:'full',bg:0});
+  assert.deepEqual(f.state.profile.avatar, {id:2,form:'mini',bg:2});
+  await f.reopen();
+  assert.equal(stage().getAttribute('aria-label'), '회색 후디 대두형 · 배경 장미 정원');
+  assert.equal(avatar().querySelectorAll('.pj-character-figure').length, 1);
 });
