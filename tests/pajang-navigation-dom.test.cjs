@@ -126,11 +126,11 @@ test('own portrait and matched chat reuse selected outfits with a fresh scene on
   await f.menu('내 파장');
   const portrait=doc.querySelector('.account-heading [role="img"]');
   assert.equal(portrait.dataset.genderTone,'male');
-  assert.match(portrait.style.backgroundImage,/avatars-male-20261125-26\.webp/);
+  assert.match(portrait.style.backgroundImage,/avatars-male-20261126-26\.webp/);
 
   w.Math.random=()=>0;
   await f.menu('마음함');
-  assert.match(doc.querySelector('.listperson .pj-character-portrait').style.backgroundImage,/avatars-20261125-26\.webp/);
+  assert.match(doc.querySelector('.listperson .pj-character-portrait').style.backgroundImage,/avatars-20261126-26\.webp/);
   await f.click('button','대화 열기');
   const scenery=()=>doc.querySelector('.pj-chat-scenery');
   const backdrop=()=>scenery()?.querySelector('.pj-chat-backdrop')?.style.backgroundImage;
@@ -139,7 +139,7 @@ test('own portrait and matched chat reuse selected outfits with a fresh scene on
   assert.match(firstScene,/avatar-bg-20261125-[1-8]\.webp/);
   assert.equal(scenery().getAttribute('aria-hidden'),'true');
   assert.match(scenery().querySelector('.pj-chat-peer .full').style.backgroundImage,/avatars-20261125-26\.webp/);
-  assert.match(scenery().querySelector('.pj-chat-self .full').style.backgroundImage,/avatars-male-20261125-26\.webp/);
+  assert.match(scenery().querySelector('.pj-chat-self .full').style.backgroundImage,/avatars-male-20261126-26\.webp/);
   assert.equal(doc.querySelector('.chatlog').contains(scenery()),false);
 
   w.Math.random=()=>.999;

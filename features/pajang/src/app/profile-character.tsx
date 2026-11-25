@@ -59,9 +59,10 @@ function characterSprite(id:number,form:ProfileAvatar["form"],high=false){
   if(id===hiddenCharacterId)return {image:'url("'+root+'avatar-tree-20261125.webp")',
     column:form==="mini"?0:1,row:0,columns:2,rows:1};
   const {slot:index,collection}=byId.get(id)!;
-  const prefix=collection==="male"?"avatars-male-20261125-":"avatars-20261125-";
+  const prefix=collection==="male"?"avatars-male-":"avatars-";
+  const revision=id>=202&&id<=205&&(collection==="male"||form==="mini")?"20261126":"20261125";
   const atlas=String(Math.floor(index/4)+1).padStart(2,"0");
-  return {image:'url("'+root+prefix+atlas+'.webp")',
+  return {image:'url("'+root+prefix+revision+'-'+atlas+'.webp")',
     column:(index%2)*2+(form==="mini"?0:1),row:Math.floor((index%4)/2),columns:4,rows:2};
 }
 // The widths are centered bounds of the painted artwork in each 312px atlas cell.
@@ -188,14 +189,15 @@ export function ProfileCharacter({avatar,collection,showGender,onChange,disabled
         {purchaseError&&<p className="error" role="alert">{purchaseError}</p>}
         <div className="pj-avatar-actions"><button type="button" className="primary" disabled={disabled} onClick={confirm}>{disabled?"구매 중…":"10쭈로 구매"}</button>
           <button type="button" disabled={disabled} onClick={()=>setPending(null)}>취소</button></div>
-      </div>:<><div className="pj-avatar-filters"><select aria-label="의상 분류" value={group} disabled={disabled} onChange={e=>{setGroup(e.target.value);setPage(0);}}>{groups.map(g=><option key={g}>{g}</option>)}</select>
+      </div>:<><div className="pj-avatar-filters"><select aria-label="의상 분류" value={group} disabled={disabled} onChange={e=>{setGroup(e.target.value);setPage(0);}}>{groups.map(g=><option key={g} value={g}>{g==="전체"?"전체 ("+collections[collection].length+"종)":g}</option>)}</select>
       <input aria-label="캐릭터 검색" type="search" placeholder="이름·색상·의상·분위기" onKeyDown={e=>{if(e.key==="Enter")e.preventDefault();}} value={query} disabled={disabled} onChange={e=>{setQuery(e.target.value);setPage(0);}}/></div>
+      {pageCount>1&&<div className="pj-avatar-pages"><button type="button" disabled={disabled||page===0} onClick={()=>setPage(page-1)}>이전</button><span>{page+1} / {pageCount}</span><button type="button" disabled={disabled||page+1===pageCount} onClick={()=>setPage(page+1)}>다음</button></div>}
       <div className="pj-avatar-grid" data-collection={collection==="male"?"남자":"여자"}>{filtered.slice(page*pageSize,(page+1)*pageSize).map(c=><div className="pj-avatar-card" key={c.id}>
         <div className="pj-avatar-pair" data-equal-frames={c.collection==="male"||c.slot>=100?true:undefined}>{(["mini","full"] as const).map(form=><button type="button" key={form} disabled={disabled} aria-pressed={avatar.id===c.id&&avatar.form===form} aria-label={c.name+" "+formName(form)} aria-haspopup="dialog" onClick={()=>setView({...avatar,id:c.id,form})}><Figure id={c.id} form={form} high={window.devicePixelRatio>2}/><span>{formName(form)}</span></button>)}</div>
         <button type="button" className="pj-outfit-name" aria-label={c.name+" 미리보기"} aria-haspopup="dialog" disabled={disabled}
           onClick={()=>setView({...avatar,id:c.id})}><strong>{c.name}</strong><small>{isFree(c.id)?"기본":owned.includes(c.id)?"보유":"10쭈"}</small></button></div>)}</div>
       {!filtered.length&&<p>검색 결과가 없어요.</p>}
-      {pageCount>1&&<div className="pj-avatar-pages"><button type="button" disabled={disabled||page===0} onClick={()=>setPage(page-1)}>이전</button><span>{page+1} / {pageCount}</span><button type="button" disabled={disabled||page+1===pageCount} onClick={()=>setPage(page+1)}>다음</button></div>}</>}
+      </>}
     </div>}
     {panel==="character"&&view&&viewIndex>=0&&!pending&&<CharacterViewer name={filtered[viewIndex].name} form={view.form}
       onForm={form=>setView({...view,form})} onClose={()=>setView(null)}

@@ -401,12 +401,16 @@ test('the female catalog has 102 outfits with the short variant on the left and 
   f.button('캐릭터 선택').click();
   await turn();
   assert.ok(!f.button('남자'));
+  const picker = avatar().querySelector(".pj-avatar-picker");
+  assert.equal(picker.querySelector("option:checked").textContent, "전체 (102종)");
+  assert.equal(picker.querySelector(".pj-avatar-pages + .pj-avatar-grid"), picker.querySelector(".pj-avatar-grid"));
   const names = new Set();
   for (let page = 1; page <= 13; page++) {
+    assert.equal(picker.querySelector(".pj-avatar-pages span").textContent, page+" / 13");
     for (const pair of avatar().querySelectorAll('.pj-avatar-pair')) {
       const buttons = [...pair.querySelectorAll('button')];
       assert.deepEqual(buttons.map(b => b.textContent), ['대두형','전신형']);
-      for(const button of buttons)assert.match(button.querySelector('.pj-character-figure').style.backgroundImage,/\/avatars-20261125-\d{2}\.webp/);
+      for(const button of buttons)assert.match(button.querySelector('.pj-character-figure').style.backgroundImage,/\/avatars-(?:20261125-\d{2}|20261126-26)\.webp/);
       names.add(pair.parentElement.querySelector('strong').textContent);
     }
     if (page < 13) { f.button('다음').click(); await turn(); }
@@ -474,7 +478,7 @@ test('102 male outfits reuse every existing backdrop and reopen on the saved pai
       const atlas = String(Math.floor(looks.length / 4) + 1).padStart(2,'0');
       for (const button of pair) {
         const figure = button.querySelector('.pj-character-figure');
-        assert.ok(figure.style.backgroundImage.includes('avatars-male-20261125-' + atlas + '.webp'));
+        assert.ok(figure.style.backgroundImage.includes('avatars-male-' + (atlas==='26'?'20261126':'20261125') + '-' + atlas + '.webp'));
         sprites.add(figure.style.backgroundImage + ' ' + figure.style.backgroundPosition);
       }
       looks.push(card.querySelector('strong').textContent);
@@ -489,7 +493,7 @@ test('102 male outfits reuse every existing backdrop and reopen on the saved pai
   await click(lastShort);
   await click('이 모습 선택');
   assert.equal(region().querySelectorAll('.pj-character-figure').length, 1);
-  assert.ok(stage().querySelector('.pj-character-figure').style.backgroundImage.includes('avatars-male-20261125-26.webp'));
+  assert.ok(stage().querySelector('.pj-character-figure').style.backgroundImage.includes('avatars-male-20261126-26.webp'));
   assert.ok(stage().getAttribute('aria-label').includes(chosenBackground));
   await click('배경 선택');
   assert.deepEqual(backgrounds(), sharedBackgrounds);
