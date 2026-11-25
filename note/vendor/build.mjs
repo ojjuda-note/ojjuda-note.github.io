@@ -99,3 +99,11 @@ for (const filename of [coreFile, aacFile, tusFile]) {
 }
 await writeFile(path.join(here, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
 console.log(JSON.stringify(manifest, null, 2));
+
+// The G2 QR opens the hosted Park page. Bundle the official bridge locally.
+await build({
+  ...common,
+  entryPoints: [path.resolve(here, '../glasses-even-g2.mjs')],
+  nodePaths: [path.join(here, 'node_modules')],
+  outfile: path.resolve(here, '../../park/even-g2.bundle.mjs'),
+});

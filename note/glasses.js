@@ -1,217 +1,235 @@
-// Browser preview and a device adapter share only the display contract below.
-// Coordinates remain in this closure and the POST RPC request; never put them
-// in URLs, DOM attributes, logs, storage, or an event sent to the device.
 (() => {
   'use strict';
-
-  const $ = id => document.getElementById(id);
-  const view = $('glass-view');
-  const cardPanel = $('glass-card');
-  const expanded = $('glass-expanded');
-  const idle = $('glass-idle');
-  const status = $('glass-status');
-  const prev = $('glass-prev');
-  const next = $('glass-next');
-  const locate = $('glass-locate');
+  const byId = id => document.getElementById(id);
+  const status = byId('glass-status');
+  const locate = byId('glass-locate');
+  const buttons = [byId('glass-first'), byId('glass-second')];
+  const service = window.OjjudaLocation;
   const config = window.OJJUDA_CONFIG;
-  const client = config?.supabaseUrl && config?.supabaseKey && window.supabase?.createClient
-    ? window.supabase.createClient(config.supabaseUrl, config.supabaseKey) : null;
-  const sampleCards = [
-    { id: 'sample-1', body: '오늘은 조금 천천히 걸어도 괜찮아. 오래 보고 싶었던 풍경을 만났거든.', distance_band: '근처' },
-    { id: 'sample-2', body: '길모퉁이에서 반가운 바람을 만났어요.\n좋은 하루가 되기를.', distance_band: '2km' },
-    { id: 'sample-3', body: '이 길을 지나는 사람에게 작은 응원을 보냅니다.', distance_band: '4km' }
-  ];
-  let cards = [];
-  let index = 0;
-  let isExpanded = false;
-  let batteryLevel = null;
-  let loadVersion = 0, locationController=null, stopLocationPreference=()=>{};
-  const service=window.OjjudaLocation;
-
-  function validLocation(latitude, longitude) {
-    return Number.isFinite(latitude) && latitude >= -90 && latitude <= 90
-      && Number.isFinite(longitude) && longitude >= -180 && longitude <= 180;
-  }
-  function safeDistanceLabel(value) {
-    return typeof value === 'string' && /^(?:근처|[1-9]\d{0,3}km)$/.test(value) ? value : '';
-  }
-  function oneLine(value) {
-    return String(value || '').replace(/\s+/g, ' ').trim();
-  }
-  function updateClock() {
-    $('glass-clock').textContent = new Intl.DateTimeFormat('ko-KR', {
-      hour: '2-digit', minute: '2-digit', hour12: false
-    }).format(new Date());
-    emitView();
-  }
-  function setBattery(level) {
-    // The browser's Battery API is the phone/computer battery, not necessarily
-    // the glasses battery. Only a device adapter may supply this value.
-    batteryLevel = Number.isFinite(level) && level >= 0 && level <= 100 ? Math.round(level) : null;
-    $('glass-battery').textContent = batteryLevel === null ? '안경 배터리 —' : `안경 배터리 ${batteryLevel}%`;
-    emitView();
-  }
-  function publicView() {
-    const card = cards[index];
-    return {
-      time: $('glass-clock').textContent,
-      battery: batteryLevel,
-      card: card ? {
-        id: card.id,
-        index: index + 1,
-        count: cards.length,
-        oneLine: oneLine(card.body),
-        body: card.body,
-        distance: card.distance_band
-      } : null,
-      expanded: isExpanded
-    };
-  }
-  function emitView() {
-    if (!view) return;
-    window.dispatchEvent(new CustomEvent('ojjuda:glasses-view', { detail: publicView() }));
+  const clock = new Intl.DateTimeFormat('ko-KR', {hour:'2-digit', minute:'2-digit', hourCycle:'h23'});
+  const samples = ['오늘은 조금 천천히 걸어도 괜찮아.', '길모퉁이에서 반가운 바람을 만났어요.', '이 길을 지나는 사람에게 작은 응원을 보내요.'];
+  let db, owner, hardware, tracking, stopPreference = () => {};
+  let rows = [], index = 0, expanded = false, sample = false, feedRun = 0;
+  let battery = null, charging = false, weather = null, speed = null, speedUntil = 0;
+  const brief = value => {
+    const chars = Array.from(value.replace(/\s+/g, ' ').trim());
+    return chars.length > 23 ? chars.slice(0, 22).join('') + '…' : chars.join('');
+  };
+  function model() {
+    const now = Date.now();
+    const cards = rows.slice(index, index + 2).map((row, offset) => ({
+      body: row.body, oneLine: brief(row.body), distance: row.distance, id: row.id,
+      index: index + offset + 1, count: rows.length
+    }));
+    return {time: clock.format(now), battery, charging, speed: now < speedUntil ? speed : null,
+      weather: weather && weather.expiresAt > now ? weather.text : '—° · 날씨 —',
+      cards, card: cards[0] || null, expanded, sample};
   }
   function render() {
-    const card = cards[index];
-    cardPanel.hidden = !card || isExpanded;
-    expanded.hidden = !card || !isExpanded;
-    idle.hidden = !!card;
-    if (!card && !idle.textContent) idle.textContent = '위치를 허용하면 근처 카드를 볼 수 있어요.';
-    if (card) {
-      const number = `${index + 1} / ${cards.length}`;
-      const distance = card.distance_band;
-      $('glass-number').textContent = number;
-      $('glass-expanded-number').textContent = number;
-      $('glass-distance').textContent = distance;
-      $('glass-expanded-distance').textContent = distance;
-      $('glass-line').textContent = oneLine(card.body);
-      $('glass-full').textContent = card.body;
-    }
-    prev.disabled = !card || index === 0;
-    next.disabled = !card || index >= cards.length - 1;
-    emitView();
+    const view = model();
+    byId('glass-sample').textContent = sample ? '최근 카드' : '예시 보기';
+    byId('glass-clock').textContent = view.time;
+    byId('glass-battery').textContent = (battery == null ? '—' : battery) + '%' + (charging ? ' ⚡' : '');
+    byId('glass-weather').textContent = view.weather;
+    byId('glass-speed').textContent = (view.speed ?? '—') + ' km/h';
+    buttons.forEach((button, n) => {
+      button.textContent = view.cards[n]?.oneLine || (n ? '—' : '표시할 카드가 없어요.');
+      button.disabled = !view.cards[n];
+    });
+    buttons[0].parentElement.hidden = expanded;
+    const full = byId('glass-full');
+    full.hidden = !expanded;
+    full.textContent = expanded ? view.card?.body || '' : '';
+    byId('glass-prev').disabled = !index;
+    byId('glass-next').disabled = index >= rows.length - 1;
+    window.dispatchEvent(new CustomEvent('ojjuda:glasses-view', {detail:view}));
   }
-  function setCards(rows, message = '') {
-    // Keep only safe display fields, even if a future RPC gains new columns.
-    cards = Array.isArray(rows) ? rows.map(row => ({
-      id: typeof row.id === 'string' ? row.id : '',
-      body: typeof row.body === 'string' ? row.body : '',
-      distance_band: safeDistanceLabel(row.distance_band)
-    })).filter(card => card.body && card.distance_band) : [];
-    index = 0;
-    isExpanded = false;
-    status.textContent = cards.length
-      ? (message || `가까운 카드 ${cards.length}개를 불러왔어요.`)
-      : '30km 안에 공개 카드가 없어요.';
-    idle.textContent = cards.length ? '' : '가까운 카드가 없어요.';
+  function setCards(data, message = '') {
+    const old = rows[index]?.id;
+    rows = (Array.isArray(data) ? data : []).filter(row =>
+      row && typeof row.body === 'string' && row.body.trim() && !row.tags?.includes('19금') &&
+      (!row.kind || row.kind === 'memo')
+    ).map(row => ({id:row.id, body:row.body,
+      distance: /^(근처|[1-9]\d{0,3}km)$/.test(row.distance_band || '') ? row.distance_band : ''}));
+    index = Math.max(0, rows.findIndex(row => row.id === old));
+    if (!old || rows[index]?.id !== old) expanded = false;
+    status.textContent = message || (rows.length ? '' : '표시할 공원 카드가 없어요.');
     render();
   }
   function move(delta) {
-    if (!cards.length) return;
-    index = Math.min(cards.length - 1, Math.max(0, index + Math.sign(delta)));
-    isExpanded = false;
+    index = Math.max(0, Math.min(rows.length - 1, index + Math.sign(delta)));
+    expanded = false;
     render();
   }
-  function select() {
-    if (!cards.length) return;
-    isExpanded = !isExpanded;
-    render();
-    (isExpanded ? $('glass-collapse') : $('glass-select')).focus({ preventScroll: true });
+  function select(offset = 0) {
+    if (!rows[index + offset]) return;
+    index += offset; expanded = !expanded; render();
+    byId(expanded ? 'glass-full' : 'glass-first').focus({preventScroll:true});
   }
-  async function loadNearby(latitude, longitude) {
-    if(client&&service){
-      try{
-        const {data:{session}}=await client.auth.getSession();
-        const accountId=session?.user?.is_anonymous?undefined:session?.user?.id;
-        if(!(await service.preference(client,accountId)).enabled){setCards([],'공원과 파장의 위치가 꺼져 있어요.');return;}
-      }catch{status.textContent='위치 설정을 확인하지 못했어요.';return;}
-    }
-
-    if (!validLocation(latitude, longitude)) {
-      status.textContent = '위치를 확인할 수 없어요.';
-      return;
-    }
-    if (!client) {
-      status.textContent = '노트 연결 설정을 확인해 주세요.';
-      return;
-    }
-    const version = ++loadVersion;
-    locate.disabled = true;
-    cards = [];
-    index = 0;
-    isExpanded = false;
-    idle.textContent = '가까운 카드를 불러오는 중이에요.';
+  function setBattery(level, isCharging = false) {
+    battery = Number.isFinite(level) && level >= 0 && level <= 100 ? Math.round(level) : null;
+    charging = isCharging === true;
     render();
-    status.textContent = '가까운 카드를 불러오는 중이에요.';
-    let result;
+  }
+  async function loadCards(position, expected = tracking) {
+    if (!db) return;
+    const run = ++feedRun;
     try {
-      // Isolated RPC boundary; adjust here if the final database contract changes.
-      result = await client.schema('ojjuda_note').rpc('list_cards', {
-        p_sort: 'nearby', p_lat: latitude, p_lon: longitude,
-        p_radius_m: 30000, p_limit: 30, p_cursor: null
+      const {data,error} = await db.schema('ojjuda_note').rpc('list_cards', {
+        p_sort:position ? 'nearby' : 'recent', p_lat:position?.latitude ?? null, p_lon:position?.longitude ?? null,
+        p_radius_m:30000, p_limit:30, p_cursor:{offset:0}
       });
-    } catch (_) {
-      result = { error: true };
+      if (run !== feedRun || expected !== tracking) return;
+      if (error) throw error;
+      setCards((data || []).filter(row => row.kind === 'memo'), position ? '가까운 공원 카드' : '최근 공원 카드');
+      if (!rows.length) status.textContent = position ? '근처에 공개 카드가 없어요.' : '공개 카드가 없어요.';
+    } catch {
+      if (run === feedRun && expected === tracking) setCards([], '카드를 불러오지 못했어요. 다시 시도해 주세요.');
     }
-    if (version !== loadVersion) return;
-    locate.disabled = false;
-    if (result.error) {
-      status.textContent = '가까운 카드를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';
-      return;
-    }
-    setCards(result.data, '가까운 순서로 카드를 보여드려요.');
   }
-  async function requestLocation() {
-    const requestVersion=++loadVersion;
-    locationController?.abort();const controller=new AbortController();locationController=controller;
-    locate.disabled=true;status.textContent='위치를 확인하고 있어요.';
+  function stopTracking() {
+    const old = tracking;
+    tracking = null; ++feedRun;
+    old?.controller.abort();
+    clearTimeout(old?.timer);
+    if (old?.native) void hardware?.stopLocation().catch(() => {});
+    weather = null; speed = null; speedUntil = 0;
+    locate.textContent = '내 위치로 보기'; locate.disabled = false;
+    render();
+  }
+  async function loadWeather(fix, active) {
+    const grid = service.weatherCell(fix);
+    if (!grid || active.weatherBusy) return;
+    const key = grid.nx + ',' + grid.ny;
+    if (active.grid !== key) weather = null;
+    if (active.grid === key && Date.now() < active.weatherRetry) return;
+    active.grid = key; active.weatherRetry = Date.now() + 60000; active.weatherBusy = true;
     try {
-      const {data:{session}}=await client.auth.getSession();
-      const accountId=session?.user?.is_anonymous?undefined:session?.user?.id;
-      if(!service)throw Error('위치 기능을 불러오지 못했어요. 새로고침해 주세요.');
-      const position=await service.readPosition({db:client,accountId,cache:false,signal:controller.signal,
-        onProgress:message=>{if(requestVersion===loadVersion)status.textContent=message;}});
-      if(requestVersion===loadVersion)await loadNearby(position.latitude,position.longitude);
-    }catch(error){if(requestVersion===loadVersion)status.textContent=error.message||'위치를 확인하지 못했어요.';}
-    finally{if(locationController===controller)locationController=null;if(requestVersion===loadVersion)locate.disabled=false;}
+      await service.authorizePosition(db, active.owner, {weather:true, signal:active.controller.signal});
+      if (tracking !== active) return;
+      const endpoint = new URL('/functions/v1/theme-weather', config.supabaseUrl);
+      endpoint.search = new URLSearchParams({nx:grid.nx, ny:grid.ny});
+      const response = await fetch(endpoint, {headers:{apikey:config.supabaseKey}, signal:active.controller.signal});
+      if (!response.ok) return;
+      const data = await response.json();
+      if (tracking !== active || data.source !== 'kma' || !(data.expiresAt > Date.now())) return;
+      const temp = Number.isFinite(data.temperature) ? data.temperature + '°' : '—°';
+      weather = {text:temp + ' · ' + (data.label || '날씨 —'), expiresAt:data.expiresAt};
+      active.weatherRetry = data.expiresAt;
+      render();
+    } catch { /* The unavailable field remains empty. */ }
+    finally { active.weatherBusy = false; }
   }
-  if(client&&service)void client.auth.getSession().then(({data:{session}})=>{
-    if(!session?.user||session.user.is_anonymous)return;
-    stopLocationPreference=service.observe(client,session.user.id,choice=>{
-      if(choice.enabled)return;
-      loadVersion++;locationController?.abort();locate.disabled=false;
-      setCards([],'공원과 파장의 위치가 꺼져 있어요.');
-    });
-  });
-  window.addEventListener('pagehide',()=>{locationController?.abort();stopLocationPreference();},{once:true});
+  function acceptFix(value, active) {
+    if (tracking !== active || !active || document.hidden) return;
+    const {latitude, longitude, accuracy, speed:meters} = value || {};
+    const at = value?.capturedAt ?? value?.timestamp ?? Date.now();
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || Math.abs(latitude)>90 ||
+        Math.abs(longitude)>180 || !Number.isFinite(at) || Date.now()-at > 30000 || at > Date.now()+2000) return;
+    if (active.lastFix && at < active.lastFix) return;
+    active.lastFix = at;
+    speed = Number.isFinite(meters) && meters >= 0 ? Math.round(meters * 36) / 10 : null;
+    speedUntil = Math.min(at, Date.now()) + 15000;
+    if (Date.now() >= active.nextFeed) {
+      active.nextFeed = Date.now()+60000;
+      void loadCards({latitude,longitude}, active);
+    }
+    void loadWeather({latitude,longitude,accuracy,capturedAt:at}, active);
+    render();
+  }
+  async function beginLocation() {
+    if (tracking) {
+      stopTracking(); setCards([]); void loadCards(null); return;
+    }
+    if (!owner || !db || !service) { status.textContent = '공원에 로그인한 뒤 위치를 켜 주세요.'; return; }
+    const active = {owner,controller:new AbortController(),nextFeed:0};
+    tracking = active; sample = false; ++feedRun; setCards([], '위치를 확인하고 있어요.');
+    locate.textContent = '위치 끄기';
+    const signal = active.controller.signal;
+    try {
+      const choice = await service.preference(db, owner, {refresh:true,signal});
+      if (!choice.enabled) throw Error('공원 설정에서 위치를 켜 주세요.');
+      await service.authorizePosition(db,owner,{park:true,signal});
+      if (tracking !== active) return;
+      if (hardware) {
+        active.native = true;
+        await hardware.startLocation(fix => acceptFix(fix, active));
+      } else {
+        const read = async () => {
+          const fix = await service.readPosition({db,accountId:active.owner,park:true,fresh:true,cache:false,signal});
+          acceptFix(fix,active);
+          if (tracking === active) active.timer = setTimeout(() => read().catch(fail), 8000);
+        };
+        await read();
+      }
+    } catch (error) { fail(error); }
+    function fail(error) {
+      if (tracking !== active) return;
+      stopTracking(); setCards([], error?.message || '위치를 확인하지 못했어요. 다시 시도해 주세요.');
+    }
+  }
 
-  locate.addEventListener('click', requestLocation);
-  $('glass-sample').addEventListener('click', () => {
-    ++loadVersion;locationController?.abort();
-    locate.disabled = false;
-    setCards(sampleCards, '예시 화면입니다. 실제 위치와 관계없는 샘플 카드예요.');
+  function recent() {
+    sample = false; stopTracking(); setCards([], '공원 카드를 불러오는 중…'); void loadCards(null);
+  }
+  byId('glass-sample').onclick = () => {
+    if (sample) { recent(); return; }
+    stopTracking(); sample = true;
+    setCards(samples.map((body,i) => ({body,id:'sample-'+i})), '예시 카드');
+  };
+  buttons.forEach((button,n) => {button.onclick=()=>select(n);});
+  byId('glass-full').onclick = () => select();
+  byId('glass-prev').onclick = () => move(-1);
+  byId('glass-next').onclick = () => move(1);
+  locate.onclick = beginLocation;
+  byId('glass-view').addEventListener('keydown', event => {
+    if (['ArrowLeft','ArrowRight'].includes(event.key)) { event.preventDefault(); move(event.key === 'ArrowLeft' ? -1 : 1); }
+    else if (event.key === 'Escape' && expanded) select();
   });
-  prev.addEventListener('click', () => move(-1));
-  next.addEventListener('click', () => move(1));
-  $('glass-select').addEventListener('click', select);
-  $('glass-collapse').addEventListener('click', select);
-  view.addEventListener('keydown', event => {
-    if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') { event.preventDefault(); move(-1); }
-    else if (event.key === 'ArrowRight' || event.key === 'ArrowDown') { event.preventDefault(); move(1); }
-    else if (event.key === 'Escape' && isExpanded) { event.preventDefault(); select(); }
+  window.OJJUDA_GLASS_PREVIEW = Object.freeze({setBattery,setCards,move,select,getView:model,
+    setLocation: fix => acceptFix(fix,tracking)});
+  let lastTick = '';
+  const timer = setInterval(() => {
+    const v = model();
+    const next = [v.time,v.speed,v.weather].join('|');
+    if (next !== lastTick) { lastTick = next; render(); }
+  }, 1000);
+  let subscription;
+  async function initFeed() {
+    try {
+      db = await window.OjjudaGetClient();
+      subscription = db.auth.onAuthStateChange((_event,session) => {
+        const id = session?.user && !session.user.is_anonymous ? session.user.id : null;
+        if (owner === id) return;
+        owner = id; stopPreference(); stopPreference = () => {};
+        // Wait until Supabase releases its auth lock.
+        setTimeout(() => {
+          if (owner !== id) return;
+          if (id && service) stopPreference = service.observe(db,id,choice => {
+            if (id === owner && tracking && !choice.enabled) recent();
+          });
+          recent();
+        }, 0);
+      }).data.subscription;
+    } catch { status.textContent = '공원에 연결하지 못했어요.'; }
+  }
+  async function connectG2() {
+    const message = byId('g2-status');
+    message.textContent = 'G2 연결을 기다리는 중…';
+    const hint = setTimeout(() => { message.textContent = 'Even Realities 앱의 개발자 모드에서 QR을 열어 주세요.'; }, 10000);
+    try {
+      const {attachEvenG2} = await import('/park/even-g2.bundle.mjs?v=20261125-even-g2-hud1');
+      hardware = await attachEvenG2(window.OJJUDA_GLASS_PREVIEW);
+      byId('g2-setup').hidden = true;
+      message.textContent = 'G2 화면을 열었어요.';
+    } catch { message.textContent = 'G2 연결을 확인하고 Even Realities 앱에서 QR을 다시 스캔해 주세요.'; }
+    finally { clearTimeout(hint); }
+  }
+  document.addEventListener('visibilitychange', () => { if (document.hidden && tracking) recent(); });
+  window.addEventListener('pagehide', event => {
+    if (tracking) { stopTracking(); setCards([]); }
+    if (!event.persisted) { clearInterval(timer); stopPreference(); subscription?.unsubscribe(); hardware?.dispose(); }
   });
-
-  // A native companion adapter may call these functions; the view event and
-  // getView return display text only, never raw coordinates or distance meters.
-  window.OJJUDA_GLASS_PREVIEW = Object.freeze({
-    setBattery,
-    setLocation: ({ latitude, longitude }) => loadNearby(latitude, longitude),
-    setCards,
-    move,
-    select,
-    getView: publicView
-  });
-  updateClock();
-  setInterval(updateClock, 30000);
-  render();
+  render(); void initFeed();
+  if (new URL(location.href).searchParams.get('g2') === '1') void connectG2();
 })();

@@ -20,7 +20,8 @@ function positionFrom(position,maxAccuracy=2000) {
   const {latitude,longitude,accuracy}=position.coords||{};
   if(!Number.isFinite(latitude)||!Number.isFinite(longitude)||!Number.isFinite(accuracy)||
       Math.abs(latitude)>90||Math.abs(longitude)>180||accuracy<0||accuracy>maxAccuracy)return null;
-  return {latitude,longitude,accuracy,capturedAt:Number.isFinite(position.timestamp)?position.timestamp:Date.now()};
+  return {latitude,longitude,accuracy,capturedAt:Number.isFinite(position.timestamp)?position.timestamp:Date.now(),
+    ...(Number.isFinite(position.coords.speed)&&position.coords.speed>=0?{speed:position.coords.speed}:{})};
 }
 function locate(geo,{signal,precise,timeout,fresh}) {
   return new Promise((resolve,reject)=>{
@@ -334,6 +335,6 @@ function forget(accountId){
   clearPosition(accountId);preferences.delete(accountId);
   for(const controller of active.get(accountId)||[])controller.abort();
 }
-root.OjjudaLocation={readPosition,readWeatherPosition,authorizePosition,preference,setPreference,acceptPreference,subscribe,observe,forget,
+root.OjjudaLocation={readPosition,readWeatherPosition,weatherCell,authorizePosition,preference,setPreference,acceptPreference,subscribe,observe,forget,
   current:accountId=>preferences.get(accountId),errorText:error=>error?.message||notices.unavailable};
 })(globalThis);

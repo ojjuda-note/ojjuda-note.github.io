@@ -60,7 +60,7 @@ test('proxy fetches KMA at the requested grid center and returns a short-lived o
     return response('DB08','눈');
   }});
   const first=await handler(get());assert.equal(first.status,200);
-  assert.deepEqual(await first.json(),{kind:'snow',expiresAt:NOW+10*MINUTE,source:'kma',observedAt:Date.parse('2026-11-19T03:10:00Z')});
+  assert.deepEqual(await first.json(),{temperature:3.5,label:'눈',kind:'snow',expiresAt:NOW+10*MINUTE,source:'kma',observedAt:Date.parse('2026-11-19T03:10:00Z')});
   assert.equal(first.headers.get('Access-Control-Allow-Origin'),'https://ojjuda.kr');assert.match(first.headers.get('Link'),/weather\.go\.kr/);
   assert.equal((await handler(get())).status,200);assert.equal(requests,1,'same grid shares one current observation');
 });
