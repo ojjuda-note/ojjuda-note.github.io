@@ -572,7 +572,7 @@
   function editCard(card) {
     actionScreen('카드 · 답글 수정', '관리자의 수정 이력과 사유는 작업 기록에 남습니다.', (form, actions) => {
       const body = field('글 내용', 'textarea', card.body, '최대 200자 · 줄바꿈 가능'); body.input.required = true; body.input.maxLength = 200; body.input.rows = 6;
-      const tags = field('태그', 'text', (card.tags || []).join(', '), '공백이나 쉼표로 구분해 최대 5개, 태그마다 20자 이내'); tags.input.maxLength = 120;
+      const tags = field('태그', 'text', (card.tags || []).join(', '), '공백이나 쉼표로 구분'); tags.input.maxLength = 4096;
       const reason = reasonField();
       const preview = el('section', 'na-edit-preview');
       const cardKind = card.kind || (card.center_lat != null ? 'event' : 'memo');
@@ -608,7 +608,7 @@
           if (value.length > 120) quote.style.fontSize = cardKind === 'comment' ? '15px' : '18px';
           else if (value.length > 70) quote.style.fontSize = cardKind === 'comment' ? '17px' : '22px';
         }
-        photoTags.replaceChildren(...selectedTags().slice(0, 5).map(tag => el('span', '', `#${tag}`)));
+        photoTags.replaceChildren(...selectedTags().map(tag => el('span', '', `#${tag}`)));
         cancelAnimationFrame(pendingMeasure);
         pendingMeasure = requestAnimationFrame(measurePreview);
       }
@@ -641,7 +641,7 @@
         const value = body.input.value.replace(/\r\n?/g, '\n').trim();
         const tagValues = selectedTags();
         body.input.setCustomValidity(!value ? '글 내용을 적어 주세요.' : [...value].length > 200 ? '글은 200자 이내로 적어 주세요.' : '');
-        tags.input.setCustomValidity(tagValues.length > 5 || tagValues.some(value => [...value].length > 20) ? '태그는 최대 5개이며, 각 20자 이내로 적어 주세요.' : '');
+        tags.input.setCustomValidity(tagValues.length > 256 || tagValues.some(value => [...value].length > 201) ? '태그의 길이를 확인해 주세요.' : '');
         if (!body.input.reportValidity() || !tags.input.reportValidity() || !validReason(reason.input)) return;
         perform('admin_edit_card', { p_card_id: card.id, p_body: value, p_tags: tagValues, p_reason: reason.input.value.trim() }, '카드를 수정했어요.', 'cards');
       });

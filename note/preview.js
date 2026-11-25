@@ -557,144 +557,24 @@ async function showMemberInfo(afterSave = null) {
 }
 // 자동 태그: 본문에 나온 낱말만 고르고, 직접 쓴 태그와 지운 태그를 우선한다.
 // The scheduled publisher uses the same tiers and Korean word boundaries (see the regression test).
-const TAG_WORDS = [
-  `누리호 면접 지각 NASA 게임대상 만두 붉은사막 스쿼시 안세영 이력서 출근 퇴근 단감 레이더 로봇 반도체 보드게임 붕어빵 빨래 새잎 설거지 슬리퍼 올빼미
-우산 운동화 이불 이어폰 청소 친구 카드값 하늘다람쥐 향수 강아지 고양이 그림 기타 꽃 노을 답장 독감 동료 둥지 등산 메일 발표 부모님 비밀번호 사직서
-사진 샤워 아이스크림 알람 양말 월급 월세 이직 책 커피 통장 퍼즐 합격 해킹 화분 회의 가계부 가족 과자 국물 국수 귤 김치 냉장고 노래 늦잠 단풍 달걀
-도시락 떡볶이 라면 로켓 목성 문단속 미술관 박물관 빵집 산불 산책길 상사 세탁기 쓰레기 안경 야식 열쇠 위성 초콜릿 카레 허리 화성 간식 고분 과일 구름
-드라마 메시지 바람 서점 유물 주식 축제 택배 햇빛 햇살 계단 농담 무역 베개 병원 빵 사진첩 시험 영화 자료 전시 전화 정류장 출근길 충전기 퇴근길 휴가
-휴대폰 디저트 레시피 배드민턴 버스 서류 소파 숙제 신발 야구 여행 지하철 책상 편의점 AI 공연 마트 말투 반찬 비 알림 엘리베이터 장바구니 카페 골목
-동네 문자 보안 수출 아빠 엄마 영상 침대 파일 한글 할인 고백 금요일 메모 소금 아버지 안부 운동 월요일 눈물 라디오 배달 연애 짝사랑 맛집 약 연락
-우승 거절 게임 공부 사랑 장보기 후회 반려동물 설렘 시장 통화 가을 겨울 봄 여름 요리 우주 음료 음악 지도 취업 감사 걱정 마우스 산책 서운함 우편물
-주말 하늘 고민 기후 다툼 사과 식당 약속 공원 모기 새벽 업무 오해 지출 만남 저녁밥 취미 부탁 쇼핑 절약 회사 휴식 건강 대전 부산 서울 스마트폰 제주
-청주 10대 20대 30대 40대 50대 60대 과학 첫인사 행사 모임 상담 집안일 퇴직 실수 응원 취향 식비 잔고 월급날 김치찌개 완벽 점심시간 점심때
-요청 수정 시계 메신저 수다 배달비 이체일 입꼬리 가격표 계산기 창가 창밖 옆자리 단톡방 밥상 그릇 문장 토요일 일요일 맞은편 TV 싱크대 숟가락
-전자레인지 곰탕 햇볕 셀카 주머니 장갑 조명 오타 단어 메뉴 습관 재료 포장 볶음밥 양배추 커버 스트레스 코드 챕터 우유 세제 옷걸이 첫눈 잔소리 입맛
-소식 양보 축하 생일 옷차림 냄새 주황빛 냉면 국 고장 결제 음악회 통장잔고 영어 국어 벚꽃 강아지풀 병아리 종이 딸기 책방 도서관 산더미 서른 음식 문제 창문 가게 공기
-위로 칭찬 혼잣말 앞날 질문 버튼 순간 말동무 손잡이 성격 용기 재생 어린이집 유치원 학교 학원 운동회 소풍 나들이 우체국 우체통 우표 엽서 서류봉투 손글씨 문방구 문구점 연필 공책 독서록 메모장 책갈피 서재 소설 에세이 시집 작가 동화책 만화책 동네친구 동창 조카 손주 할머니 할아버지 언니 동생 형제 자매 사촌 생일선물 기념일 집들이 자취방 자취 이사 보증금 식재료 순두부 두부 김치볶음밥 만둣국 비빔밥 떡국 된장찌개 감자 오이 토마토 바나나 자몽 사과주스 딸기우유 식빵 소금빵 토스트 베이글 샐러드 캠핑 피크닉 물병 돗자리 배낭 강변 바닷가 해변 파도 숲길 산길 정원 장미 민들레 정원수 미용실 이발 머리카락 염색 일기 스티커 산책로 헬스장 사물함 경조사 안부인사 야근 회식 휴게실 인수인계 출근버스 정기권 환승 막내 수험생 시험지 면접관 생일케이크 우연 여전히 천천히 그날 초조 서론 설명 해명 집안 다행 보람 아쉬움 결정권 문고리 잠금 막차 마감 기한 빨랫감 연습 일정표 미안 고마움 답답 뿌듯 불안 서운 감정 잠버릇 어릴적 웃음 표정 음정 안도 안정 심정 고마워 꿈 선택지 기쁨 어색 하루치 보답 안타까움 손질 필름 필름카메라 만년필 목도리 손뜨개 뜨개질 독서 독서모임 독립서점 동네책방 뜨개실 코바늘 북클럽 수업 도예 머그잔 텃밭 모종 상추 바질 씨앗 화분받침 구독 해지 이체 저축 공과금 전기요금 관리비 배터리 고사리 버섯 김밥 재즈 카메라 양말짝 손편지 한강 수영 기타줄 새우 배달앱 조깅 러닝 마라톤 완주 스케치 수채화 노을빛 보조배터리 옥상 물감 자전거 텀블러 장마철 친절 준비 기억 시작 출발 결정 피곤 선택 안심 기대 긴장 인정 검색 대답 대화 인사 지원 실감`,
-  `혼자 성공 소리 옷 눈치 분위기 기회 간격 여유 계산 속도 결심 자존감 집중 장소 날짜 자리 바퀴 장면 타이밍 절반 결과 편지 모레 아침 점심 저녁 오후
-기분 가격 계획 밥 의자 손끝 조각 재촉 그리움 외로움 머리 밑단 접시 시간표 시각 단계 갈등 계절 페이지 일정 색 행복 토닥토닥 잠 부담 기운 어린이
-일상 옆구리 오랜만 자유 관심 깜빡 안전 고생 운동장 고구마 요가 장난감 동물원 어깨 목 마음 정신 짐 돈 느리게 자기비판 조급함 눈길 작년 올해`,
-  `하루 오늘 내일 어제 생각 시간 사람 일 말 몸 밤 낮 집 손 눈 문 길 물 차 끝 답 얘기 이야기 별일 매일 언젠가`
-];
-const TAG_ACTIONS = new Set(`완벽 고백 걱정 고민 지각 면접 출근 퇴근 연락 운동 친절 감사 준비 공부 후회 기억 생각 시작 출발 축하 양보 결정 거절 사랑 피곤 실수 수다 통화 요리
-선택 청소 빨래 설거지 쇼핑 약속 안심 합격 연애 기대 긴장 지출 인정 검색 사과 부탁 대답 대화 샤워 발표 산책 전화 인사 지원 칭찬 실감 결제 연습 이야기 얘기 말 초조 서운 어색 미안 답답 뿌듯 불안 설명 고생 위로 다정 손질 독서 구독 해지 이체 저축 조깅 완주 스케치`.split(/\s+/));
-const TAG_PARTICLE = /^(?:(?:들)?(?:에게서|에게|한테서|한테|께서|께|에서|으로부터|으로서|으로써|으로|에까지|에라도|에|부터|까지|처럼|보다|밖에|만큼|마다|조차|대로|이랑|랑|하고|이라도|라도|이나|나|이든|든|과|와|은|는|을|를|이|가|로|의|도|만|엔|에선|서|인|이다|이다가|이라|라|이라서|라서|이고|이고도|인데|인데도|인지는|인지|일수록|이니까|니까|이었던|였던|이었다|였다)?(?:에는|에도|까지|부터|은|는|에|도|만|요|만이라도)?)$/u;
-const TAG_PREDICATE = /^(?:하|한|할|함|해|했|합니|됩니|되|된|될|돼|됐)[가-힣]*$/u;
-const tagRanks = new Map(TAG_WORDS.flatMap((words, rank) =>
-  words.split(/\s+/).map(word => [word.toLowerCase(), rank])));
-
-function standaloneTagName(token) {
-  return /^[A-Za-z][A-Za-z0-9]{1,13}$/.test(token) ||
-    (/^[가-힣]{2,10}$/u.test(token) && !/(?:다|요|어|아|했|네|지|까|고|게|서|는|은|면|든|만|야|죠|래|니|다가|려다가|지만|려고)$/u.test(token)
-      && !/^(?:그냥|정말|진짜|너무|조금|계속|다시|아직|벌써|누구|어디|이거|그거|저거|아무|아무것|함께|가끔|항상)$/u.test(token));
-}
-
-const TAG_COMPOUND = /(?:카메라|목도리|자전거|배터리|이어폰|충전기|키보드|마우스|머그잔|텀블러|키링|가방|노트북|도서관|미술관|박물관|책방|서점|빵집|맛집|시장|극장|공방|수업|전시회|음악회|공연장|클럽|동호회|연습장|산책로|산책길|등산로|운동장|정류장|기차역|공원|놀이터|목걸이|팔찌|반지|케이스|향수|운동화|티셔츠|스니커즈|강아지|고양이|강아지풀|꽃다발|나무|라떼|커피|케이크|샌드위치|파스타|볶음밥|김밥|국밥|국수|도시락|찌개|주스|쿠키|독서회|콘서트|동아리|음악제|영화제|전시관|망원경|현미경|에이드|스무디|청바지|카디건|보온병|휴게소|박람회)$/u;
-const TAG_UNKNOWN = /^([가-힣A-Za-z0-9]{2,18}?)(들)?(으로부터|에게서|한테서|에서는|에서도|에서|에게|한테|처럼|까지|부터|으로|이랑|에는|에선|엔|을|를|은|는|이|가|에|로|랑)(?:도|는|만)?$/u;
-const TAG_GENERIC = /^(?:누군가|누군|누구|무언가|무엇|무슨|어디|여기|저기|거기|자기|어떻게|하나|하루|누가|서로|요즘|지금|이번|지난|그때|가끔|한참|갑자기|나머지|한가운데|가운데|하나쯤|부분|결국|자꾸|괜히|역시|그래도|그렇게|이렇게|저렇게|어쩐지|아무것|이것|저것|그것|이곳|저곳|그곳|남들|평소|정도|다음|처음|마지막|나중|사이|그동안|아무|바로|잠깐|조금|한번|진짜|정말|그냥|드디어|아직|벌써|계속|다시|너무|모두|전부|대부분|내일|오늘|어제|누군가랑|이유|예전|며칠|나랑|당장|분들|때문|덕분|주변|다음번|오전|사실|예상|것밖|뿐만|[0-9]+(?:시|분|년|월|일)?)$/u;
-// Several verbal and adverbial endings look identical to noun particles.
-const TAG_NON_NOUN = /(?:대로|없이|같이|듯이|(?:다|냐|라|자|이|드|추|루|내|려|보|되|하|가|오|르|리|지|있|없)는|(?:다|려다|하나|어|려)가(?:도|는|만)?|(?:같|않|싶|좋|많|있|없|작|적|젊|높|짧|얇|남|맞|받|입|찾|먹|읽|넓|낮|늦|찍|깊|찮)(?:은|을)|(?:하|되|오|가|있|없|같|않|보|르|리|나|지|받|찾|먹|잡|놓|듣|웃|우|주)는|(?:려|다)기에|(?:하|리|보|쉬|알)기(?:로|엔)|으려|면서|느라)$/u;
-const TAG_BAD_STEM = /(?:려다|하다|되다|보다|하는|같은|이는|라는|려는|면서|느라|려다가|하다가|되다가|보다가|하기|리기|기기|말없|정신없|보기|잡기|전에|날에|때만큼|쪽으)$/u;
-const TAG_DETAILS = new Set('돈 밑단 어깨 접시 외로움 그리움 자존감 취향 목도리 밥'.split(' '));
-
-const TAG_TOPIC_CONTEXT = /(?:다|어요|아요|네요|더라|였어|했어|예요|이에요|을|를|에서|에게|한테)$/u;
-
-function tagCandidate(token, soleToken, nextToken) {
-  if (token.startsWith('#')) {
-    const tag = token.slice(1);
-    return tag.length <= 20 && /[가-힣A-Za-z]/u.test(tag) ? { tag, weight: 100, explicit: true } : null;
-  }
-
-  for (let end = Math.min(token.length, 20); end > 0; end--) {
-    const tag = token.slice(0, end), key = tag.toLowerCase(), ending = token.slice(end);
-    const tier = tagRanks.get(key);
-    const compound = tier === undefined && end >= 3 && TAG_COMPOUND.test(tag);
-    if (tier === undefined && !compound) continue;
-    const derived = (key === '우연' && ending === '히') || (key === '안정' && ending.startsWith('적'));
-    if (!TAG_PARTICLE.test(ending) && !derived && !(TAG_ACTIONS.has(key) && TAG_PREDICATE.test(ending))) continue;
-    let weight = compound || tier === 0 ? 6 : TAG_DETAILS.has(key) ? 5 : tier === 1 ? 3 : 1;
-    if ((compound || tier === 0) && tag.length >= 3) weight++;
-    if (weight >= 5 && /^(?:을|를)$/u.test(ending)) weight++;
-    if (weight >= 5 && /^(?:랑|이랑|와|과|하고)$/u.test(ending)) weight--;
-    return { tag, weight };
-  }
-
-  if (/^[A-Z][A-Z0-9]{1,9}$/.test(token)) return { tag: token, weight: 6 };
-  const duration = token.match(/^([1-9][0-9]?(?:분|시간|초|시|주|개월|년|살))(?:에|이|가|은|는|을|를|만|쯤|째|까지|부터)?$/u);
-  if (duration) return { tag: duration[1], weight: 3 };
-  if (TAG_EXPRESSIONS.has(token)) return { tag: token, weight: 3 };
-  const parsed = token.match(TAG_UNKNOWN);
-  if (parsed && !TAG_GENERIC.test(parsed[1]) && !TAG_NON_NOUN.test(token)) {
-    const tag = parsed[1], particle = parsed[3];
-    // Use the final consonant to keep 바나나를 and 만년필을 intact.
-    const last = tag.charCodeAt(tag.length - 1) - 0xac00;
-    const final = last >= 0 && last <= 11171 ? last % 28 : -1;
-    const wrongParticle = final >= 0 && (final === 0 ? /^(을|은|이|이랑|으로)$/u : /^(를|는|가|랑)$/u).test(particle);
-    // 는 is also the productive present-tense verb ending. Unknown stems need
-    // stronger evidence than that ending alone.
-    if ((particle !== '는' || TAG_TOPIC_CONTEXT.test(nextToken)) && !wrongParticle && !TAG_BAD_STEM.test(tag)) return { tag, weight: /^(?:을|를)$/u.test(particle) ? 7 : 6 };
-  }
-  if (/^[A-Z][A-Z0-9]{1,11}$/.test(token) || (soleToken && standaloneTagName(token))) {
-    return { tag: token, weight: 5 };
-  }
-  if (nextToken && /^(?:먹었다|먹었어|먹으러|먹고|마셨다|마셨어|마시러|샀다|샀어|사러|찍었다|찍었어|찍으러|읽었다|읽었어|읽으러|보러|보냈다|신었다|입었다|키우기|만들었다|갔다|다녀왔다|탔다)$/u.test(nextToken) && standaloneTagName(token)
-    && !TAG_GENERIC.test(token) && !TAG_NON_NOUN.test(token)
-    && !/(?:부터|까지|라도|보다|려고|으로|보다가|면서|다가|다시|마저|만큼|을|를|에|로|도|만|와|며|씩|뿐|히|리|쪽)$/u.test(token)) {
-    return { tag: token, weight: 3 };
-  }
-  return null;
-}
-
-const TAG_SUPPORT = new Set('마음 생각 시간 밤 낮 집 손 눈 문 길 물 차 끝 답 얘기 이야기 별일 내일 사람 일 말 몸 하루'.split(' '));
-const TAG_EXPRESSIONS = new Set('아쉽네 아쉽다 아쉬운 부끄럽다 기뻤다 신났다 씁쓸했다 울컥했다 뿌듯하다 잠깐만요 괜찮다고 귀엽다 웃었다 고마웠다 고맙다고 그립다 쉬었다 지쳤다 지쳤나 느긋하게 말똥말똥하다 재밌었다 고생했다 보고싶다 설렌다 고마워요 반갑다 힘들다 반가웠다 걷다 좋아진다 망설였다 괜찮아 설렜다 춥다 따뜻하다 속상했다 외롭다 시원하다 후련하다'.split(' '));
-
-function suggestTags(body, limit = 5) {
-  const tokens = [...String(body || '').matchAll(/(#[가-힣A-Za-z0-9_]+|[가-힣A-Za-z0-9]+)([^가-힣A-Za-z0-9#]*)/gu)];
-  const terms = tokens.map((match, i) => tagCandidate(match[1], tokens.length === 1,
-    /^[ \t]+$/.test(match[2]) ? tokens[i + 1]?.[1] || '' : ''));
-  // A repeated bare name also identifies a topic outside the vocabulary.
-  const mentions = new Map();
-  terms.forEach((item, pos) => {
-    const key = (item?.tag || tokens[pos][1]).toLowerCase();
-    mentions.set(key, (mentions.get(key) || 0) + 1);
-  });
-  terms.forEach((item, pos) => {
-    const tag = tokens[pos][1];
-    if (!item && mentions.get(tag.toLowerCase()) > 1 && !TAG_GENERIC.test(tag) && !/(?:도|를|랑|의|에|로)$/u.test(tag) && standaloneTagName(tag)) {
-      terms[pos] = { tag, weight: 6 };
-    }
-  });
-  // In a phrase such as '돈 걱정', the first noun has no particle. Spacing and
-  // punctuation distinguish a phrase from the last and first words of two sentences.
-  const paired = terms.map((item, i) => !!item && item.weight >= 3
-    && terms[i + 1]?.weight >= 3 && tokens[i][1] === item.tag && /^[ \t]+$/.test(tokens[i][2]));
-  const matches = new Map();
-  terms.forEach((item, pos) => {
-    if (!item) return;
-    const key = item.tag.toLowerCase();
-    const weight = item.weight + (paired[pos] || paired[pos - 1] ? 2 : 0);
-    const previous = matches.get(key);
-    if (previous) {
-      previous.count++;
-      previous.weight = Math.max(previous.weight, weight);
-      previous.explicit ||= !!item.explicit;
-    } else matches.set(key, { ...item, pos, count: 1, weight });
-  });
-  // Repetition helps a supporting noun, while everyday filler stays a last resort.
-  const ranked = [...matches.values()].map(item => ({
-    ...item, score: item.weight + (item.weight > 1 ? Math.min(item.count - 1, 2) * 3 : 0)
-  })).sort((a, b) => b.score - a.score || a.pos - b.pos);
-  if (!ranked.length) return [];
-  // Fill the next slots with supporting words from the same body.
-  const selected = [];
-  for (const item of ranked) {
-    if (selected.length >= Math.min(limit, 5)) break;
-    if (selected.length === 0 || item.score >= 5 || (selected.length < 3 && item.score >= 3)
-      || (selected.length < 2 && TAG_SUPPORT.has(item.tag))) selected.push(item);
-  }
-  return selected.sort((a, b) => Number(!!b.explicit) - Number(!!a.explicit) || a.pos - b.pos)
-    .map(item => item.tag);
+const MAX_CARD_TAGS = 256; // A 200-character body fits even when every character is a word.
+const MAX_TAG_TEXT = 4096;
+let wordTagger, wordTaggerLoading, tagAnalysis, pendingTagSubmit = null;
+function analyzeTagBody(body) {
+  if (tagAnalysis?.body === body) return tagAnalysis.result;
+  if (!body.trim()) return Promise.resolve([]);
+  wordTaggerLoading ??= import('/note/park-word-engine.mjs?v=1')
+    .then(module => module.loadTagger()).then(ready => wordTagger = ready)
+    .catch(error => { wordTaggerLoading = null; throw error; });
+  const result = wordTaggerLoading.then(analyze => analyze(body))
+    .catch(() => noteRpc('suggest_card_tags', { p_body: body }))
+    .then(words => {
+      if (!Array.isArray(words)) throw Error('자동 태그를 불러오지 못했어요.');
+      return words;
+    });
+  tagAnalysis = { body, result };
+  result.catch(() => { if (tagAnalysis?.result === result) tagAnalysis = null; });
+  return result;
 }
 let autoTagMode = true, manualTags = [], rejectedTags = new Set(), autoTagsNow = [];
 // 일반 카드의 첨부 사진은 비공개 저장소에서 읽을 때마다 서명합니다.
@@ -1032,21 +912,42 @@ function initialComposerTags(raw = '') {
   if (!editingId && kind !== 'event' && tagList(feedTerm).includes('19금') && !values.includes('19금')) values.unshift('19금');
   return values.join(', ');
 }
-function refreshAutoTags() {   // 내가 쓴 태그 + 남은 자리에 자동 태그 (모두 5개까지)
-  const mine = manualTags, room = Math.max(0, 5 - mine.length);
-  autoTagsNow = room > 0 ? suggestTags(text.value, 12).filter(t => !mine.includes(t) && !rejectedTags.has(t)).slice(0, room) : [];
-  tags.value = [...mine, ...autoTagsNow].join(', ');
+function setAutoTags(words) {
+  const mine = new Set(manualTags.map(tag => tag.toLowerCase()));
+  autoTagsNow = words.filter(t => !mine.has(t.toLowerCase()) && !rejectedTags.has(t.toLowerCase()));
+  tags.value = [...manualTags, ...autoTagsNow].join(', ');
 }
-function noteTagEdit() {   // 직접 쓴 태그를 우선하고, 다섯 자리를 넘으면 자동 태그부터 빼요
+async function refreshAutoTags() {
+  const body = text.value, run = composerRun;
+  if (!autoTagMode || maskedTextLength(body) > 200) return false;
+  try {
+    const words = body.trim() ? (wordTagger ? wordTagger(body) : await analyzeTagBody(body)) : [];
+    if (!autoTagMode || run !== composerRun || text.value !== body || backdrop.hidden) return false;
+    const before = tags.value;
+    setAutoTags(words);
+    if (before !== tags.value) { updateComposer(); recordDraft(); }
+    return true;
+  } catch { return false; }
+}
+function noteTagEdit() {
   const now = tagList(tags.value);
-  const previousAuto = new Set(autoTagsNow);
-  const mine = now.filter(t => !previousAuto.has(t)).slice(0, 5);
-  const keepAuto = now.filter(t => previousAuto.has(t)).slice(0, 5 - mine.length);
-  const kept = now.filter(t => !previousAuto.has(t) || keepAuto.includes(t)).slice(0, 5);
-  for (const t of autoTagsNow) if (!kept.includes(t)) rejectedTags.add(t);
-  manualTags = kept.filter(t => !previousAuto.has(t));
-  autoTagsNow = kept.filter(t => previousAuto.has(t));
-  if (now.length > 5) tags.value = kept.join(', ');
+  const kept = new Set(now);
+  const previous = new Set(autoTagsNow);
+  for (const t of previous) if (!kept.has(t)) rejectedTags.add(t.toLowerCase());
+  manualTags = now.filter(t => !previous.has(t));
+  autoTagsNow = now.filter(t => previous.has(t));
+}
+function restoreTagChoices(body, saved) {
+  manualTags = tagList(saved); rejectedTags = new Set(); autoTagsNow = [];
+  if (!autoTagMode || !body.trim()) return;
+  const run = composerRun, mine = manualTags;
+  analyzeTagBody(body).then(words => {
+    if (run !== composerRun || manualTags !== mine || text.value !== body || tags.value !== saved) return;
+    const generated = new Set(words);
+    manualTags = mine.filter(t => !generated.has(t));
+    autoTagsNow = mine.filter(t => generated.has(t));
+    rejectedTags = new Set(words.filter(t => !mine.includes(t)).map(t => t.toLowerCase()));
+  }).catch(() => {});
 }
 function shownName(card) {
   const name = card.display_name;
@@ -1105,6 +1006,8 @@ async function refreshReplyArchiveNotice(parent, run) {
 function fitTagRow(row) {
   if (!row?.clientWidth) return;
   row.classList.remove('tags-wrap');
+  const many = row.childElementCount > 5;
+  row.classList.toggle('tags-many', many);
   let fits = false;
   for (let step = 0; step <= 5; step++) {
     row.style.setProperty('--tag-font', `${11 - step * .5}px`);
@@ -1112,7 +1015,7 @@ function fitTagRow(row) {
     row.style.setProperty('--tag-gap', `${6 - step * .6}px`);
     if (row.scrollWidth <= row.clientWidth + 1) { fits = true; break; }
   }
-  row.classList.toggle('tags-wrap', !fits);
+  row.classList.toggle('tags-wrap', !many && !fits);
   const frame = row.closest('.card-photo-frame, .compose-photo') || row.closest('.photo');
   frame?.style.setProperty('--card-tags-height', `${row.childElementCount ? row.offsetHeight : 0}px`);
 }
@@ -1295,7 +1198,7 @@ function cardElement(card, compact = false, expanded = false, deferBackground = 
   const body = hiddenEvent ? '범위 안에서만 보이는 이벤트' : typeof card.body === 'string' ? card.body : '';
   fillCardQuote(quote, body);
   const tagRow = node('span', 'card-tags');
-  const cardTags = Array.isArray(card.tags) ? card.tags.slice(0, 5) : [];
+  const cardTags = Array.isArray(card.tags) ? card.tags : [];
   for (const tag of cardTags) {
     const chip = node('span', '', `#${tag}`); chip.dataset.tag = tag; chip.setAttribute('role', 'button'); chip.title = `#${tag} 태그로 찾기`;
     chip.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); searchTagFn?.(tag); });
@@ -2709,11 +2612,11 @@ function restoreLocalComposer() {
   if (!content || content.kind !== kind || content.editingId !== editingId
     || !Number.isFinite(age) || age < 0 || age > 7 * 86400000
     || typeof content.body !== 'string' || maskedTextLength(content.body) > 200
-    || typeof content.tags !== 'string' || content.tags.length > 120
+    || typeof content.tags !== 'string' || content.tags.length > MAX_TAG_TEXT * 4
     || !content.style || typeof content.style !== 'object') {
     clearLocalComposer(); return false;
   }
-  text.value = content.body; tags.value = initialComposerTags(content.tags); manualTags = tagList(tags.value); rejectedTags = new Set(); autoTagsNow = [];
+  text.value = content.body; tags.value = initialComposerTags(content.tags); restoreTagChoices(text.value, tags.value);
   backgroundKey = photoAssetKey(content.backgroundKey) || backgroundKey;
   window.OjjudaDecorations?.setStyle(content.style);
   $('#compose-font').value = FONT_CODES.includes(content.style.font) ? content.style.font : 'default';
@@ -2750,7 +2653,7 @@ function restoreDraft(content) {
   kind = content.kind; parentId = content.parent_id; backgroundKey = content.background_key;
   $('.composer').dataset.mode = kind === 'memo' ? 'memo-new' : kind;
   $('#note-photo-pick').hidden = kind !== 'memo';
-  text.value = content.body; tags.value = initialComposerTags(content.tags); manualTags = tagList(tags.value); rejectedTags = new Set(); autoTagsNow = [];
+  text.value = content.body; tags.value = initialComposerTags(content.tags); restoreTagChoices(text.value, tags.value);
   const style = content.style && typeof content.style === 'object' ? content.style : {};
   window.OjjudaDecorations?.setStyle(style);
   $('#compose-font').value = FONT_CODES.includes(style.font) ? style.font : 'default';
@@ -2819,7 +2722,7 @@ function installDrafts() {
 
 function parsedTags(raw = tags.value) {
   const values = tagList(raw);
-  return values.length <= 5 && values.every(value => maskedTextLength(value) <= 20)
+  return values.length <= MAX_CARD_TAGS && maskedTextLength(raw) <= MAX_TAG_TEXT && values.every(value => maskedTextLength(value) <= 201)
     && new Set(values).size === values.length ? values : null;
 }
 function validEventBody(value) {
@@ -2839,7 +2742,7 @@ function isGuestComposer() {
 }
 function updateComposer() {
   text.maxLength = textInputMaxLength(text.value, 200);
-  tags.maxLength = textInputMaxLength(tags.value, 120);
+  tags.maxLength = textInputMaxLength(tags.value, MAX_TAG_TEXT);
   const selected = !isGuestComposer() && $('#compose-font').value === 'calligraphy';
   const convert = $('#convert-calligraphy');
   convert.setAttribute('aria-pressed', String(selected));
@@ -2850,7 +2753,7 @@ function updateComposer() {
   syncQuickChoices();
   syncCardPhotoAttach();
   const visual = currentStyle();
-  const previewTags = tagList(tags.value).slice(0, 5);
+  const previewTags = tagList(tags.value);
   syncComposeInk(selected, visual, previewTags);
   if (!backdrop.hidden && text.parentNode === $('.compose-photo')) resizeComposerText();
   $('#compose-count').textContent = `${maskedTextLength(text.value)} / 200자`;
@@ -2860,7 +2763,7 @@ function updateComposer() {
   if (composerTools) syncComposerTools();
   else $('#compose-more>summary').textContent = extra ? '꾸미기 · 추가 설정 (선택됨)' : '꾸미기 · 추가 설정';
   const values = parsedTags();
-  $('#compose-tag-display').replaceChildren(...previewTags.map(value => node('span', '', `#${value.slice(0, 20)}`)));
+  $('#compose-tag-display').replaceChildren(...previewTags.map(value => node('span', '', `#${value}`)));
   fitTagRow($('#compose-tag-display'));
   const overflows = !backdrop.hidden && !!text.value.trim()
     && (composerPhotoOverflows() || cardPhotoOverflows(text.value, previewTags));
@@ -2887,7 +2790,7 @@ function updateComposer() {
   } else if (!canWrite()) composeMessage.textContent = writingMessage();
   else if (maskedTextLength(text.value) > 200) composeMessage.textContent = '글은 200자 이내로 작성해 주세요';
   else if (kind === 'event' && !validEventBody(text.value)) composeMessage.textContent = '이벤트 내용을 입력해 주세요.';
-  else if (!values) composeMessage.textContent = '태그는 중복 없이 5개까지, 각 20자 이내';
+  else if (!values) composeMessage.textContent = '태그의 길이와 중복을 확인해 주세요';
   else if (kind === 'comment' && replyDueChecking) composeMessage.textContent = '상위 카드 공개 종료일 확인 중';
   else if (kind !== 'event' && !editingId && !writingPosition) composeMessage.textContent = composerTools
     ? '아래 위치 아이콘을 눌러 위치를 켜 주세요.' : '위치를 켜고 확인한 뒤 등록할 수 있어요.';
@@ -3042,6 +2945,7 @@ async function openComposer(mode, card = null, replyTo = null, pending = null) {
   const identityMode = editingId ? (card.identity_mode === 'nickname' ? 'nickname' : 'anonymous') : readComposerSettings().identity;
   $(`input[name="identity"][value="${identityMode}"]`).checked = true;
   setGenderInputs(true);
+  tagAnalysis = null;
   autoTagMode = !guest && !editingId; manualTags = tagList(tags.value); rejectedTags = new Set(); autoTagsNow = [];
   clearLocalComposer();
   requestedDraftContent = draftContent();
@@ -3236,9 +3140,15 @@ async function publishGuestCard(body) {
 }
 async function publishCard() {
   if (busy || submit.disabled || !client || !ready) return;
-  if (autoTagMode && tagList(tags.value).length <= 5) {
+  if (autoTagMode) {
+    const run = composerRun;
+    if (pendingTagSubmit === run) return;
+    pendingTagSubmit = run;
     noteTagEdit();
-    refreshAutoTags();
+    const analyzed = await refreshAutoTags();
+    if (pendingTagSubmit === run) pendingTagSubmit = null;
+    if (run !== composerRun || backdrop.hidden || busy) return;
+    if (!analyzed) { composeMessage.textContent = '자동 태그를 확인하지 못했어요. 다시 등록해 주세요.'; return; }
   }
   let body = text.value.replace(/\r\n?/g, '\n').trim(), values = parsedTags();
   if (!body || maskedTextLength(body) > 200 || !values) return;
