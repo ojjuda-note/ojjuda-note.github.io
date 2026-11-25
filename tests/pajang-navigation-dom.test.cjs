@@ -104,7 +104,9 @@ test('opening a chat from a feed profile returns to that feed instead of a fixed
   await f.until(()=>f.byText('#answers .person strong','라온'));
   assert.match(w.document.querySelector('#answers .person .pj-character-portrait').style.backgroundImage,/avatars-20261125-03\.webp/);
   await f.click('#answers .person strong','라온');await f.until(()=>f.modal());
-  assert.match(f.modal().querySelector('.pj-character-portrait').style.backgroundImage,/avatars-20261125-03\.webp/);
+  const expanded=f.modal().querySelector('.pj-character-preview');
+  assert.match(expanded.getAttribute('aria-label'),/대두형/);
+  assert.match(expanded.querySelector('.pj-character-preview-art').style.backgroundImage,/avatars-20261125-03\.webp/);
   await f.click('dialog button','대화 열기');
   await f.until(()=>w.document.querySelector('.composer'));
   assert.match(w.document.querySelector('.chatheader .pj-character-portrait').style.backgroundImage,/avatars-20261125-03\.webp/);
@@ -177,7 +179,11 @@ test('members who hide gender wear the neutral tree on every public surface',asy
   await f.until(()=>f.byText('#answers .person strong','라온'));
   treePortrait('#answers .person');
   await f.click('#answers .person strong','라온');await f.until(()=>f.modal());
-  treePortrait('dialog');await f.click('dialog button','대화 열기');
+  const expanded=f.modal().querySelector('.pj-character-preview');
+  assert.match(expanded.getAttribute('aria-label'),/나무/);
+  assert.equal(expanded.getAttribute('data-gender-tone'),null);
+  assert.match(expanded.querySelector('.pj-character-preview-art').style.backgroundImage,/avatar-tree-20261125\.webp/);
+  await f.click('dialog button','대화 열기');
   await f.until(()=>doc.querySelector('.composer'));
   treePortrait('.chatheader');
   for(const side of ['peer','self']){

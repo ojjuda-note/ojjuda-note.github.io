@@ -447,6 +447,9 @@ footer,.footerbrand {color:var(--ink-2)}
 .pj-avatar-scenes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.pj-avatar-scenes button{min-width:0;overflow:hidden;padding:3px;font-size:12px}.pj-avatar-swatch{display:block;height:36px;overflow:hidden;border-radius:5px;background:#f4f7f8}.pj-avatar-swatch img{width:100%;height:100%;object-fit:cover;transform:scale(1.12);filter:blur(2px)}
 
 .account-heading h1:has(.pj-character-portrait){display:flex;align-items:center;gap:10px}
+.pj-character-preview{box-sizing:border-box;display:inline-grid;place-items:center;vertical-align:middle;width:100px;height:100px;overflow:hidden;border-radius:50%;background:var(--surface-2,#f2eeeb);box-shadow:inset 0 0 0 1px var(--line,#d7dfe0)}
+.pj-character-preview[data-gender-tone]{box-shadow:inset 0 0 0 3px var(--pajang-gender-tone)}
+.pj-character-preview-art{display:block;background-repeat:no-repeat}
 .pj-character-portrait{background-color:var(--surface-2,#f2eeeb);background-repeat:no-repeat}
 .radar-scope .scope-person>.pj-character-portrait,.scope-self>.pj-character-portrait{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .scope-person-name:not([hidden]),.scope-self:has(.pj-character-portrait)>.scope-self-name{position:absolute;right:0;bottom:0;display:grid;place-items:center;min-width:1em;height:1em;padding:0 1px;border-radius:50%;background:var(--surface,#fff);color:var(--ink,#24333a);font-weight:700;pointer-events:none}

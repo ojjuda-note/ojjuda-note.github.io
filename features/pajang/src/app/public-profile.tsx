@@ -96,14 +96,14 @@ export function ProfileForm({person,isNew,onSave,busy}:{person:Person|null;isNew
   </form>;
 }
 
-export function PublicProfilePreferences({viewer,person,avatarId,children,revision=0,onEdit,onEditTastes}:{viewer:string;person:string;avatarId?:number;children:ReactNode;revision?:number;onEdit?:()=>void;onEditTastes?:()=>void}){
+export function PublicProfilePreferences({viewer,person,avatarId,children,fullBodyPreview=false,revision=0,onEdit,onEditTastes}:{viewer:string;person:string;avatarId?:number;children:ReactNode;fullBodyPreview?:boolean;revision?:number;onEdit?:()=>void;onEditTastes?:()=>void}){
   const read=usePublicPreferences(viewer,person,revision);
   const displayId=read.avatarId??avatarId;
   const gender=displayId===hiddenCharacterId?undefined:profileGender(read.gender);
   const selectedIntents=relationshipIntents.filter(intent=>read.preferences.relationship_intents.includes(intent.key));
   const selectedGroups=profilePreferenceGroups.map(group=>({...group,labels:tasteLabels(read.preferences,group.key as GroupKey)})).filter(group=>group.labels.length);
   return <>
-    <CharacterPortrait id={displayId} gender={read.gender} large/>
+    <CharacterPortrait id={displayId} gender={read.gender} large fullBodyPreview={fullBodyPreview}/>
     {children}
     <section className="public-preference-summary" data-gender-tone={gender?.tone} aria-label="공개 프로필">
       <div className="preference-section-heading"><h3>공개 프로필</h3>{onEdit&&<button type="button" onClick={onEdit}>기본 정보 수정<I n="pencil" s={13}/></button>}</div>

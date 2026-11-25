@@ -64,18 +64,30 @@ function Figure({id,form}:{id:number;form:ProfileAvatar["form"]}){
   }}/>;
 }
 
-export function CharacterPortrait({id,gender,large=false}:{id?:number;gender?:string|null;large?:boolean}){
+export function CharacterPortrait({id,gender,large=false,fullBodyPreview=false}:{id?:number;gender?:string|null;large?:boolean;fullBodyPreview?:boolean}){
   const selected=isDisplayId(id)?id:defaultAvatar.id;
   const sprite=characterSprite(selected,"mini");
   const top=femaleMiniTop[selected-1]??113;
+  const visibleGender=selected===hiddenCharacterId?undefined:profileGender(gender);
+  const name=characterName(selected)+(fullBodyPreview?" 대두형 전신":" 대두형 상반신");
+  const label=visibleGender?name+" · "+visibleGender.name:name;
+  const width=sprite.columns*312,height=sprite.rows*492;
+  if(fullBodyPreview){
+    // Center the painted figure, leaving room for hair and shoes inside the circle.
+    const cropTop=top-5;
+    const scale=86/(492-cropTop);
+    return <span className="pj-character-preview" role="img" aria-label={label} data-gender-tone={visibleGender?.tone}>
+      <span className="pj-character-preview-art" aria-hidden="true" style={{
+        width:312*scale,height:86,backgroundImage:sprite.image,backgroundSize:(width*scale)+"px "+(height*scale)+"px",
+        backgroundPosition:(-sprite.column*312*scale)+"px "+(-(sprite.row*492+cropTop)*scale)+"px"
+      }}/>
+    </span>;
+  }
   const size=Math.round((488-top)*0.65);
   const x=sprite.column*312+(312-size)/2;
   const y=sprite.row*492+top-9;
-  const width=sprite.columns*312,height=sprite.rows*492;
-  const visibleGender=selected===hiddenCharacterId?undefined:profileGender(gender);
-  const name=characterName(selected)+" 대두형 상반신";
   return <span className={"avatar pj-character-portrait"+(large?" large":"")} role="img" data-gender-tone={visibleGender?.tone}
-    aria-label={visibleGender?name+" · "+visibleGender.name:name} style={{
+    aria-label={label} style={{
       backgroundImage:sprite.image,backgroundSize:(width/size*100)+"% "+(height/size*100)+"%",
       backgroundPosition:(x/(width-size)*100)+"% "+(y/(height-size)*100)+"%"
     }}/>;
