@@ -369,6 +369,9 @@ async function checkCharacterViewer(page,editor) {
     assert.match(await conversationCard.locator('.answer-intents').textContent(),/친구/);
     for(const width of [320,390]){
       await page.setViewportSize({width,height:844});
+      const badge=await conversationCard.locator('.pj-character-portrait').boundingBox();
+      assert.equal(badge.width,34,'the answer avatar stays compact');
+      assert.equal(badge.height,34);
       await assertNoOverflow(page,'relationship filters at '+width+'px');
       await answers.screenshot({path:path.join(artifacts,'relationship-feed-'+width+'.png'),animations:'disabled'});
     }
@@ -412,7 +415,7 @@ async function checkCharacterViewer(page,editor) {
         return text.left+text.width/2;
       });
       assert.ok(Math.abs(textCenter-(circle.x+circle.width/2))<=1,'nickname text is centered beneath the circle');
-      assert.ok(Math.abs(circle.width-Math.min(name.width,600))<=1,'the circle fills the available content width');
+      assert.ok(Math.abs(circle.width-Math.min(name.width,200))<=1,'public profile portraits fit a 200px circle');
       assert.ok(Math.abs(circle.width-circle.height)<=1,'the portrait remains circular at both screen widths');
       assert.ok(Math.abs(art.height-circle.height*.86)<=1,'the body scales with the circle');
       assert.ok(Math.abs(circle.x+circle.width/2-(name.x+name.width/2))<=1,'the circle is centered across the dialog content');
@@ -450,6 +453,10 @@ async function checkCharacterViewer(page,editor) {
       await assertNoOverflow(page,'unified profile at '+width+'px');
       const box=await form.dialog.boundingBox();
       assert.ok(box&&box.x>=-1&&box.x+box.width<=width+1,'unified profile editor fits '+width);
+      const stage=await form.dialog.locator('.pj-avatar-stage').boundingBox();
+      assert.ok(Math.abs(stage.height-844*.24)<=1,'the profile editor uses its original 24svh preview');
+      const actions=await form.dialog.locator('.pj-avatar-actions').boundingBox();
+      assert.ok(actions.y>=box.y&&actions.y+actions.height<=box.y+box.height,'both picker buttons fit below the preview');
       await form.dialog.screenshot({path:path.join(artifacts,'unified-profile-'+width+'.png'),animations:'disabled'});
     }
     const intentions=form.dialog.getByRole('group',{name:'원하는 인연',exact:true});

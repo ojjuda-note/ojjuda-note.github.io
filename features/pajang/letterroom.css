@@ -149,7 +149,7 @@ body {background:var(--bg);color:var(--pajang-text)}
 #answers .answercard {display:block;padding:19px 22px;border:0;border-radius:0;box-shadow:none}
 #answers .answercard+.answercard {border-top:1px solid var(--line)}
 #answers .answercard .person {gap:9px;text-align:left}
-#answers .answercard .avatar {width:102px;height:102px}
+#answers .answercard .avatar {width:34px;height:34px}
 #answers .answercard .person small {color:var(--muted);font-size:13px}
 #answers .answercard .quote {padding:0;margin:14px 0 10px;color:var(--pajang-text);font:400 clamp(16px,1.6vw,19px)/1.8 var(--sans);letter-spacing:-.02em}
 #answers .answer-foot {border:0;padding:0}
@@ -429,7 +429,7 @@ footer,.footerbrand {color:var(--ink-2)}
 
 /* The profile displays one finished avatar. Pose variants share each catalog card. */
 .pj-avatar{--avatar-line:#ccdce3;--avatar-ink:#304c5e;min-width:0;margin:0 0 14px;color:var(--avatar-ink)}
-.pj-avatar-stage{grid-template-columns:minmax(0,1fr);container-type:size;position:relative;isolation:isolate;display:grid;place-items:center;height:clamp(468px,72svh,645px);overflow:hidden;border-radius:14px;background:#f4f7f8}
+.pj-avatar-stage{grid-template-columns:minmax(0,1fr);container-type:size;position:relative;isolation:isolate;display:grid;place-items:center;height:clamp(156px,24svh,215px);overflow:hidden;border-radius:14px;background:#f4f7f8}
 .pj-avatar-backdrop{position:absolute;z-index:-1;inset:-16px;background-position:center;background-size:cover;filter:blur(7px)}
 .pj-character-figure{display:block;aspect-ratio:312/492;background-size:400% 200%;background-repeat:no-repeat;flex:none}
 .pj-avatar-stage>.pj-character-figure{height:min(95cqh,calc(98cqw / var(--pj-ratio)));align-self:end}
@@ -451,11 +451,9 @@ footer,.footerbrand {color:var(--ink-2)}
 .account-heading h1:has(.pj-character-portrait){display:flex;align-items:center;gap:10px}
 .pj-character-preview{box-sizing:border-box;display:grid;place-items:center;width:100%;aspect-ratio:1;margin-inline:auto;overflow:hidden;border-radius:50%;background:var(--surface-2,#f2eeeb);box-shadow:inset 0 0 0 1px var(--line,#d7dfe0)}
 .pj-character-preview[data-gender-tone]{box-shadow:inset 0 0 0 3px var(--pajang-gender-tone)}
-.pj-portrait-open{width:min(100%,600px);margin-inline:auto}.dialog:has(.pj-portrait-open){width:min(calc(100% - 24px),660px)}
+.pj-portrait-open{width:min(100%,200px);margin-inline:auto}
 .pj-character-preview-art{display:block;height:86%;background-repeat:no-repeat}
 .dialog .pj-portrait-open + h2{padding-right:0;text-align:center}
-.account-heading .pj-character-portrait{width:clamp(100px,31vw,147px);height:auto;aspect-ratio:1}.listperson .pj-character-portrait{width:clamp(88px,28vw,147px);height:auto;aspect-ratio:1}
-.chatheader .pj-character-portrait{width:clamp(50px,15vw,74px);height:auto;aspect-ratio:1}.avatar.large.pj-character-portrait{width:clamp(84px,24vw,150px);height:auto;aspect-ratio:1}
 .pj-character-portrait{background-color:var(--surface-2,#f2eeeb);background-repeat:no-repeat}
 .radar-scope .scope-person>.pj-character-portrait,.scope-self>.pj-character-portrait{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .scope-person-name:not([hidden]),.scope-self:has(.pj-character-portrait)>.scope-self-name{position:absolute;right:0;bottom:0;display:grid;place-items:center;min-width:1em;height:1em;padding:0 1px;border-radius:50%;background:var(--surface,#fff);color:var(--ink,#24333a);font-weight:700;pointer-events:none}
