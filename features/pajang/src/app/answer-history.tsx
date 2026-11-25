@@ -20,8 +20,8 @@ type Order = "recommend"|"latest"|"local";
 type Gender = "male"|"all"|"female";
 const genderOptions = [
   {value:"all", text:"전체", label:"성별 전체"},
-  {value:"male", text:"남성", label:"남성 답변"},
-  {value:"female", text:"여성", label:"여성 답변"},
+  {value:"male", text:"", label:"남성 답변"},
+  {value:"female", text:"", label:"여성 답변"},
 ] as const;
 declare global {
   interface Window {
@@ -156,7 +156,7 @@ function GenderSwitch({value,onChange}:{value:Gender;onChange:(next:Gender)=>voi
     }}
     onPointerCancel={cancel} onLostPointerCapture={e=>{if(e.target===e.currentTarget)cancel();}}
     onClickCapture={e=>{if(e.detail && suppressClick.current){e.preventDefault();e.stopPropagation();suppressClick.current=false;}}}>
-    {genderOptions.map(option=><label key={option.value} className={"answer-gender "+option.value} data-lit={lit===option.value} title={option.label}>
+    {genderOptions.map(option=><label key={option.value} className={"answer-gender "+option.value} data-lit={lit===option.value}>
       <input type="radio" name="answer-gender" value={option.value} aria-label={option.label}
         checked={value===option.value} onChange={()=>onChange(option.value)}/><span aria-hidden="true">{option.text}</span>
     </label>)}

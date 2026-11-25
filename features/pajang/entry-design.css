@@ -260,3 +260,12 @@
 .answer-length{align-self:flex-end;color:var(--ink-2);font-size:12px}
 #welcome .actions button[type=submit]:disabled{opacity:.55;cursor:default}
 @media(max-width:500px){.pajang-answer-split{gap:8px}.pajang-choices .pajang-option,#welcome .actions .pajang-option{gap:5px;padding:8px}}
+
+.pajang-screen-reader{position:absolute!important;width:1px!important;height:1px!important;margin:-1px!important;padding:0!important;overflow:hidden!important;clip-path:inset(50%);white-space:nowrap;border:0!important}
+[data-gender-tone="male"],.answer-gender.male{--pajang-gender-tone:#5591c7}
+[data-gender-tone="female"],.answer-gender.female{--pajang-gender-tone:#c67a97}
+.dialog:has(>.public-preference-summary[data-gender-tone="male"])>.avatar{outline:3px solid #5591c7;outline-offset:2px}
+.dialog:has(>.public-preference-summary[data-gender-tone="female"])>.avatar{outline:3px solid #c67a97;outline-offset:2px}
+#join-fields[data-gender-tone="male"],#join-fields[data-gender-tone="female"],.unified-public-profile[data-gender-tone],.exchange-facts[data-gender-tone]{border-inline-start:3px solid var(--pajang-gender-tone);padding-inline-start:12px}
+.answer-genders .answer-gender:is(.male,.female) span::before{background:color-mix(in srgb,var(--pajang-gender-tone) 70%,var(--surface,#fff));border-color:var(--pajang-gender-tone)}
+.answer-genders .answer-gender:is(.male,.female)[data-lit=true] span::before{background:var(--pajang-gender-tone);outline:2px solid var(--ink,#382f35);outline-offset:-2px}

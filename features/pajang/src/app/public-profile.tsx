@@ -1,3 +1,4 @@
+import {profileGender} from "../lib/station";
 import {useEffect,useState} from "react";
 import {type Person} from "../lib/station";
 import {
@@ -65,7 +66,7 @@ export function ProfileForm({person,isNew,onSave,busy}:{person:Person|null;isNew
   const disabled=busy||!choicesReady;
   function submit(event:React.FormEvent){
     event.preventDefault();if(disabled)return;
-    onSave({name:name.trim(),region,consent,profilePerson:person?.id??null,
+    onSave({name:name.trim(),region,consent,...(isNew?{shareAccountGender:consent}:{}),profilePerson:person?.id??null,
       preferences:{relationship_intents:preferences.relationship_intents},preferencesVersion:read.version});
   }
   return <form className="profileform public-profile-form" onSubmit={submit}>
@@ -89,20 +90,21 @@ export function ProfileForm({person,isNew,onSave,busy}:{person:Person|null;isNew
         onClick={()=>setPreferences({...preferences,relationship_intents:preferences.relationship_intents.includes(intent.key)?preferences.relationship_intents.filter(key=>key!==intent.key):[...preferences.relationship_intents,intent.key]})}>
         {intent.label}</button>)}</div>
     </fieldset>}
-    {isNew&&<label className="checkrow"><input type="checkbox" required disabled={busy} checked={consent} onChange={event=>setConsent(event.target.checked)}/><span>만 19세 이상이며 파장 회원에게 닉네임과 내가 선택한 공개 정보를 보여 주는 데 동의해요.</span></label>}
+    {isNew&&<label className="checkrow"><input type="checkbox" required disabled={busy} checked={consent} onChange={event=>setConsent(event.target.checked)}/><span>만 19세 이상이며 파장 회원에게 닉네임·가입 성별과 선택한 정보를 공개하는 데 동의해요.</span></label>}
     <button className="primary wide" disabled={disabled||(isNew&&!consent)}>{isNew?"회원 채널 시작하기":"프로필 저장"}<I n="arrow" s={16}/></button>
   </form>;
 }
 
 export function PublicProfilePreferences({viewer,person,revision=0,onEdit,onEditTastes}:{viewer:string;person:string;revision?:number;onEdit?:()=>void;onEditTastes?:()=>void}){
   const read=usePublicPreferences(viewer,person,revision);
+  const gender=profileGender(read.gender);
   const selectedIntents=relationshipIntents.filter(intent=>read.preferences.relationship_intents.includes(intent.key));
   const selectedGroups=profilePreferenceGroups.map(group=>({...group,labels:tasteLabels(read.preferences,group.key as GroupKey)})).filter(group=>group.labels.length);
-  return <section className="public-preference-summary" aria-label="공개 프로필">
+  return <section className="public-preference-summary" data-gender-tone={gender?.tone} aria-label="공개 프로필">
     <div className="preference-section-heading"><h3>공개 프로필</h3>{onEdit&&<button type="button" onClick={onEdit}>기본 정보 수정<I n="pencil" s={13}/></button>}</div>
     <ReadStatus read={read}/>
     {read.status==="ready"&&<>
-      {(read.gender==="male"||read.gender==="female")&&<p>성별 · {read.gender==="male"?"남성":"여성"}</p>}
+      {gender&&<span className="pajang-screen-reader">성별 {gender.name}</span>}
       {selectedIntents.length>0&&<div className="public-intents"><h4>원하는 인연</h4><div className="preference-tags">{selectedIntents.map(intent=><span key={intent.key}>{intent.label}</span>)}</div></div>}
       <section className="public-profile-tastes" aria-label="나를 표현하는 취향">
         <div className="public-tastes-heading"><h4>나를 표현하는 취향</h4>{onEditTastes&&<button type="button" onClick={onEditTastes}>취향·그림 수정<I n="pencil" s={13}/></button>}</div>
