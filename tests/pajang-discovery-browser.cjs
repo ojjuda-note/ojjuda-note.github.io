@@ -13,13 +13,13 @@ const startupDelayMs=180;
 const feature = path.resolve(__dirname, '../features/pajang');
 const origin = 'https://pajang.test';
 const project = '/features/pajang/';
-const me = {id:'me',name:'보리',age:29,region:'서울특별시',interest:'coffee',body:'같이 걸을래요.',at:1};
+const me = {id:'me',name:'보리',age:29,gender:'male',avatarId:200,region:'서울특별시',interest:'coffee',body:'같이 걸을래요.',at:1};
 const state = {day:'2026-11-17',slot:'pm',question:{id:1,q:['처음 만난 날, 어떤 이야기를 나누고 싶나요?']},
   nextAt:new Date(Date.now()+3600000).toISOString(),authenticated:true,remaining:3,signals:[],messages:[],people:[],me};
 const base = {region:'서울특별시',day:'2026-11-17',slot:'am',at:1,sent:false,received:false,own:false};
 const rows = [
-  {...base,peer:'a',name:'은하',interest:'book',question:'쉬는 날을 같이 보낸다면 어디에 가고 싶나요?',body:'동네 책방에 들러서 서로에게 어울리는 책을 한 권씩 골라주고 싶어요.'},
-  {...base,peer:'b',name:'단비',interest:'walk',question:'쉬는 날을 같이 보낸다면 어디에 가고 싶나요?',body:'나란히 걸으면서 같은 풍경을 보고 웃을 때요.'},
+  {...base,peer:'a',gender:'male',avatarId:102,name:'은하',interest:'book',question:'쉬는 날을 같이 보낸다면 어디에 가고 싶나요?',body:'동네 책방에 들러서 서로에게 어울리는 책을 한 권씩 골라주고 싶어요.'},
+  {...base,peer:'b',gender:'female',avatarId:9,name:'단비',interest:'walk',question:'쉬는 날을 같이 보낸다면 어디에 가고 싶나요?',body:'나란히 걸으면서 같은 풍경을 보고 웃을 때요.'},
 ];
 const signalOffers=[[1,10,2],[3,28,2],[5,45,2],[10,85,1],[20,160,1],[30,225,1]]
   .map(([quantity,price,revision])=>({id:'signal_'+quantity,quantity,price,revision}));
@@ -194,7 +194,7 @@ async function checkPeopleLayout(view) {
       const dotBox=dot?box(dot):null,dotCss=dot?getComputedStyle(dot):null;
       return {name:node.getAttribute('aria-label'),box:rect,inside:inside(rect),compact:node.classList.contains('scope-person-compact'),
         initial:name?.textContent.trim(),nameVisible:visible(name),nameFits:!!name&&inside(box(name)),font:name?Number.parseFloat(getComputedStyle(name).fontSize):0,
-        circle:Math.abs(rect.width-rect.height)<1&&(radius==='50%'||Number.parseFloat(radius)>=rect.width/2-.5),icons:node.querySelectorAll('svg,.scope-person-avatar').length,
+        circle:Math.abs(rect.width-rect.height)<1&&(radius==='50%'||Number.parseFloat(radius)>=rect.width/2-.5),portrait:visible(node.querySelector('.pj-character-portrait')),
         transparentTarget:clear(css.backgroundColor)&&css.backgroundImage==='none'&&css.boxShadow==='none'&&['Top','Right','Bottom','Left'].every(edge=>clear(css['border'+edge+'Color'])||Number.parseFloat(css['border'+edge+'Width'])===0),
         dot:dotBox&&{...dotBox,visible:visible(dot),inside:inside(dotBox),filled:!clear(dotCss.backgroundColor),
           circle:Math.abs(dotBox.width-dotBox.height)<.5&&(dotCss.borderRadius==='50%'||Number.parseFloat(dotCss.borderRadius)>=dotBox.width/2-.5),
@@ -209,10 +209,10 @@ async function checkPeopleLayout(view) {
     return {people,overlaps};
   });
   assert.ok(result.people.every(p=>p.inside&&p.box.width>=24&&p.box.height>=24),'every person keeps a generous touch target inside the dial: '+JSON.stringify(result.people));
-  assert.ok(result.people.every(p=>p.initial&&Array.from(p.initial).length===1&&p.circle&&p.icons===0),'every person keeps one initial and no person icon');
+  assert.ok(result.people.every(p=>p.initial&&Array.from(p.initial).length===1&&p.circle),'every person keeps an initial and a circular hit target');
   assert.ok(result.people.every(p=>p.compact?
-    !p.nameVisible&&p.transparentTarget&&p.dot?.visible&&p.dot.inside&&p.dot.filled&&p.dot.circle&&p.dot.centered&&p.dot.width>=8&&p.dot.width<=14&&p.dot.width<p.box.width/2:
-    p.nameVisible&&p.nameFits&&p.font>=12&&!p.dot?.visible),'crowded people show only small dots; separate people show readable initials: '+JSON.stringify(result.people));
+    !p.nameVisible&&!p.portrait&&p.transparentTarget&&p.dot?.visible&&p.dot.inside&&p.dot.filled&&p.dot.circle&&p.dot.centered&&p.dot.width>=8&&p.dot.width<=14&&p.dot.width<p.box.width/2:
+    p.portrait&&p.nameVisible&&p.nameFits&&p.font>=12&&!p.dot?.visible),'crowded people show small dots; separate people show their portrait and initial: '+JSON.stringify(result.people));
   assert.deepEqual(result.overlaps,[],'person markers and the self marker do not cover one another');
 }
 
@@ -332,7 +332,7 @@ function clientFixture(hash) {
     const mode=flightCheck||sessionStorage.fixtureMode||'member';
     // Pajang person IDs and Auth user IDs deliberately differ, including for administrators.
     const accepted=sessionStorage.accepted==='yes';
-    const friend={id:'peer1',name:'라온',age:28,interest:'walk',region:'경기도',body:'함께 걸어요.',range:15,bearing:315};
+    const friend={id:'peer1',name:'라온',age:28,avatarId:9,interest:'walk',region:'경기도',body:'함께 걸어요.',range:15,bearing:315};
     const offered={id:'peer2',name:'유진',age:30,interest:'book',region:'서울특별시'};
     const nearDirection={id:'near-northwest',name:'가온',interest:'walk',region:'서울특별시',body:'가까운 공원에서 걸어요.',range:1,bearing:315};
     const sameCell=[
@@ -602,8 +602,11 @@ async function checkNavigation(page){
   await heading('주변 레이더').waitFor();
   await page.locator('.scope-person').filter({hasText:'라'}).click();
   await page.getByRole('button',{name:'공개 정보 보기'}).click();
+  const beforeProfile=page.viewportSize();
+  await page.setViewportSize({width:320,height:568});
   await page.getByRole('dialog').getByRole('button',{name:'대화 열기',exact:true}).click();
   await page.getByRole('textbox',{name:'메시지',exact:true}).waitFor();
+  await page.setViewportSize(beforeProfile);
   assert.ok(page.url().includes('chat=peer1'));
   await page.getByRole('button',{name:'뒤로가기',exact:true}).click();
   await heading('주변 레이더').waitFor();
@@ -666,6 +669,9 @@ async function checkNavigation(page){
       if(pathname==='/shared/location/location.js')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../../shared/location/location.js'))});
       if(pathname==='/shared/content/text-length.mjs')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../../shared/content/text-length.mjs'))});
       const file=pathname.slice(project.length)||'index.html';
+      if(/^assets\/(?:avatars(?:-male)?-20261125-\d{2}|avatar-bg-20261125-[1-8]|avatar-tree-20261125)\.webp$/.test(file)){
+        return route.fulfill({contentType:'image/webp',body:await fs.readFile(path.join(feature,file))});
+      }
       if(legacyLocationPage&&file==='location.mjs')return route.fulfill({contentType:'text/javascript',body:'export async function prepareLocation(state){return state;}'});
       if(!['station.html','station.css','support.css','radar-motion.css','member.mjs','member-main.mjs','load-station.mjs','location.mjs','letterroom.css','dialog-surface.css','assets/favicon.svg','shell.css','entry-design.css','entry-design.mjs','shell.mjs','account-toolbar.mjs','account-toolbar.css','signal-purchase.css','index.html','entry.mjs','preview.mjs','preview.css','questions.mjs','regions.json','dialog.mjs','feed.html'].includes(file))return route.abort();
       const mime={html:'text/html',css:'text/css',mjs:'text/javascript',json:'application/json',svg:'image/svg+xml'}[path.extname(file).slice(1)];
@@ -782,10 +788,14 @@ async function checkNavigation(page){
     assert.equal(await answers.locator('.history-heading .feednumber').count(),0,'remove distracting answer total from the heading');
     assert.equal(await page.evaluate(()=>window.feedCalls.length),1,'first feed read is shared with the UI');
     assert.equal(await answers.getByRole('heading',{name:rows[0].question}).count(),1);
-    assert.equal(await page.evaluate(()=>window.artPending),true,'feed is usable with all artwork still pending');
     assert.equal(await page.evaluate(()=>window.authCalls),1);
-    assert.deepEqual(await page.evaluate(()=>window.artCalls.slice().sort()),['book.webp','walk.webp']);
-    assert.deepEqual(await group.locator('label span').allTextContents(),['전체','남성','여성']);
+    assert.deepEqual(await page.evaluate(()=>window.artCalls),[],'member portraits do not request private interest illustrations');
+    const portraits=await cards.locator('.pj-character-portrait').evaluateAll(nodes=>nodes.map(n=>[n.dataset.genderTone,getComputedStyle(n).backgroundImage]));
+    assert.equal(portraits.length,2);
+    assert.match(portraits.find(([gender])=>gender==='male')[1],/avatars-male-20261125-01\.webp/);
+    assert.match(portraits.find(([gender])=>gender==='female')[1],/avatars-20261125-03\.webp/);
+    assert.deepEqual(await group.getByRole('radio').evaluateAll(nodes=>nodes.map(node=>node.value)),['male','all','female']);
+    assert.deepEqual(await group.locator('label span').allTextContents(),['','','']);
     const dir=path.join(__dirname,'artifacts/pajang-discovery');
     await fs.mkdir(dir,{recursive:true});
     for(const width of [320,390,750,1080]){
@@ -795,10 +805,13 @@ async function checkNavigation(page){
       assert.ok(await answers.evaluate(el=>el.scrollWidth<=document.documentElement.clientWidth));
       const targets=await group.locator('label').evaluateAll(nodes=>nodes.map(node=>{
         const box=node.getBoundingClientRect(),text=node.querySelector('span');
-        return {left:box.left,right:box.right,width:box.width,height:box.height,font:parseFloat(getComputedStyle(text).fontSize)};
+        const dot=text.getBoundingClientRect(),style=getComputedStyle(text);
+        return {left:box.left,right:box.right,width:box.width,height:box.height,dot:dot.width,center:dot.left+dot.width/2,round:dot.width===dot.height&&style.borderRadius==='50%',outlined:parseFloat(style.outlineWidth)>0};
       }));
-      assert.ok(targets.every(box=>box.width>=44&&box.height>=44&&box.font>=14),
-        'gender choices have readable labels and full touch targets at '+width+'px: '+JSON.stringify(targets));
+      assert.ok(targets.every(box=>box.width>=44&&box.height>=44&&box.dot===18&&box.round),
+        'small circles retain full touch targets at '+width+'px: '+JSON.stringify(targets));
+      assert.deepEqual(targets.slice(1).map((box,i)=>box.center-targets[i].center),[36,36]);
+      assert.deepEqual(targets.map(box=>box.outlined),[false,true,false]);
       assert.ok(targets.every(box=>box.left>=0&&box.right<=width+1),'gender choices fit at '+width+'px');
       await answers.screenshot({path:path.join(dir,'answers-'+width+'.png'),animations:'disabled'});
     }
@@ -830,8 +843,9 @@ async function checkNavigation(page){
     await selected('female');await cards.filter({hasText:rows[1].body}).waitFor();
     assert.deepEqual(await page.evaluate(n=>window.feedCalls.slice(n),calls),['female'],'one request per swipe');
     await answers.screenshot({path:path.join(dir,'answers-female.png'),animations:'disabled'});
-    await page.keyboard.press('ArrowLeft');await selected('male');
     await page.keyboard.press('ArrowLeft');await selected('all');
+    await page.keyboard.press('ArrowLeft');await selected('male');
+    await page.keyboard.press('ArrowRight');await selected('all');
     await page.evaluate(()=>{window.denied=true;});
     await radio('male').tap();await answers.getByRole('alert').waitFor();
     assert.equal(await cards.count(),0,'denial clears cached member content');
@@ -851,6 +865,7 @@ async function checkNavigation(page){
     await revise.click();
     assert.equal(await editor.getByLabel('내 이야기').inputValue(),me.body);
     await editor.getByLabel('내 이야기').fill('취소할 내용');
+    page.once('dialog',dialog=>dialog.accept());
     await editor.getByRole('button',{name:'닫기'}).click();
     await revise.click();
     assert.equal(await editor.getByLabel('내 이야기').inputValue(),me.body);
@@ -1087,6 +1102,24 @@ async function checkNavigation(page){
     await selectMenu('마음함');await page.goBack();
     await page.getByText('안녕하세요!',{exact:true}).waitFor();
     assert.equal(await composer.inputValue(),'반가워요, 라온님.');
+    const scenery=page.locator('.pj-chat-scenery');
+    const visibleRoom=await scenery.evaluate(scene=>{
+      const peer=scene.querySelector('.pj-chat-peer .full'),self=scene.querySelector('.pj-chat-self .full');
+      function character(el){
+        let alpha=1;
+        for(let at=el;at&&at!==scene.parentElement;at=at.parentElement)alpha*=Number(getComputedStyle(at).opacity);
+        const rect=el.getBoundingClientRect();
+        return {center:rect.x+rect.width/2,height:rect.height,alpha};
+      }
+      return {peer:character(peer),self:character(self),pointer:getComputedStyle(scene).pointerEvents,
+        blur:getComputedStyle(scene.querySelector('.pj-chat-backdrop')).filter};
+    });
+    assert.ok(visibleRoom.peer.center<visibleRoom.self.center,'the peer is on the left and I am on the right');
+    for(const figure of [visibleRoom.peer,visibleRoom.self]){
+      assert.ok(figure.height>40&&figure.alpha>0&&figure.alpha<1,'both figures are visible and translucent');
+    }
+    assert.equal(visibleRoom.pointer,'none');
+    assert.match(visibleRoom.blur,/blur\([1-9]/);
     await capture('chat-mobile');
     const send=page.getByRole('button',{name:'메시지 보내기'});
     await page.evaluate(()=>window.failReply=true);
@@ -1114,6 +1147,13 @@ async function checkNavigation(page){
     await page.waitForURL('**/*chat=peer2');
     await page.getByText('두 사람의 대화가 열렸어요.').waitFor();
     await selectMenu('내 파장');await page.getByRole('heading',{name:'내 파장'}).waitFor();
+    const portrait=page.locator('.account-heading [role="img"]');
+    assert.equal(await portrait.getAttribute('data-gender-tone'),'male');
+    assert.match(await portrait.evaluate(el=>getComputedStyle(el).backgroundImage),/avatars-male-20261125-25\.webp/);
+    assert.ok(await portrait.evaluate(el=>{
+      const style=getComputedStyle(el),box=el.getBoundingClientRect();
+      return box.width>0&&Math.abs(box.width-box.height)<2&&parseFloat(style.borderRadius)>0;
+    }),'the selected upper-body portrait remains circular');
     await expectHeaderClean();
     assert.equal(await page.getByRole('link',{name:'아지트 가기',exact:true}).count(),0);
     assert.equal(await accountHome.getAttribute('href'),'/world.html?tab=hub');
@@ -1125,10 +1165,7 @@ async function checkNavigation(page){
     const ownAnswers=page.getByRole('dialog',{name:'내가 남긴 답변',exact:true});
     await ownAnswers.getByText('내 책방 답변').waitFor();
     await ownAnswers.getByRole('button',{name:'닫기',exact:true}).click();
-    await settings.getByRole('button',{name:'답변 공개 설정',exact:true}).click();
-    const visibility=page.getByRole('dialog',{name:'답변 공개 설정',exact:true});
-    assert.equal(await visibility.getByRole('switch',{name:'성별 필터에 내 답변 표시'}).isChecked(),false);
-    await visibility.getByRole('button',{name:'닫기',exact:true}).click();
+    assert.equal(await settings.getByRole('switch',{name:'성별 숨기기'}).count(),0);
     await settings.getByRole('button',{name:'파장 기록 삭제',exact:true}).click();
     const deletion=page.getByRole('dialog',{name:'파장 기록 삭제',exact:true});
     await deletion.getByRole('button',{name:'취소',exact:true}).click();
@@ -1138,7 +1175,7 @@ async function checkNavigation(page){
     for(const label of ['이용약관','개인정보처리방침'])assert.equal(await settings.getByRole('link',{name:label,exact:true}).getAttribute('target'),null);
     const accountPage=page.locator('.station-account');
     assert.deepEqual(await settings.locator('[aria-labelledby="account-activity-title"] .ojjuda-settings-label').allTextContents(),
-      ['답변 공개 설정','내가 남긴 답변','신호 구매','쭈 충전'],'signal purchase stays directly above coin charging in My Pajang activities');
+      ['내가 남긴 답변','신호 구매','쭈 충전'],'signal purchase stays directly above coin charging in My Pajang activities');
     assert.equal(await settings.getByRole('button',{name:'쭈 충전',exact:true}).getAttribute('aria-controls'),'ju-charge-dialog','settings exposes the shared coin charge dialog');
     const helpMenu=settings.locator('details').filter({has:page.locator('summary').filter({hasText:'도움말'})});
     const helpRows=helpMenu.locator(':scope > .ojjuda-settings-body > .ojjuda-settings-row');
@@ -1156,7 +1193,7 @@ async function checkNavigation(page){
       assert.ok(await settings.evaluate(el=>el.scrollWidth<=document.documentElement.clientWidth));
       assert.ok(await accountHome.evaluate(el=>el.getBoundingClientRect().height>=44));
       const rows=await topRows.evaluateAll(readRowBounds);
-      assert.equal(rows.length,15,'the 15 top-level settings rows include the Help summary and one unified profile editor');
+      assert.equal(rows.length,14,'the 14 top-level settings rows include the Help summary and one unified profile editor');
       for(const [index,row] of rows.entries()){
         assert.ok(row.height>=44,`settings row ${index+1} has a full touch target at ${width}px`);
         assert.ok(row.left>=0&&row.right<=width+1,'settings rows stay within the viewport');
@@ -1175,7 +1212,7 @@ async function checkNavigation(page){
         assert.ok(row.left>=0&&row.right<=width+1,'expanded Help children stay within the viewport');
         if(index)assert.ok(row.top>=childRows[index-1].bottom-1,'Help children stack vertically without overlap');
       }
-      assert.equal(await topRows.count(),15,'expanding Help never counts nested actions as top-level settings');
+      assert.equal(await topRows.count(),14,'expanding Help never counts nested actions as top-level settings');
       await helpMenu.locator('summary').click();
       assert.equal(await helpMenu.evaluate(el=>el.open),false);
       for(const index of [0,1])assert.equal(await helpRows.nth(index).isVisible(),false,'closing Help hides both children again');

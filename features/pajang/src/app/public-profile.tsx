@@ -1,4 +1,5 @@
-import {useEffect,useState} from "react";
+import {profileGender} from "../lib/station";
+import {useEffect,useState,type ReactNode} from "react";
 import {type Person} from "../lib/station";
 import {
   relationshipIntents,profilePreferenceGroups,emptyProfilePreferences,normalizeProfilePreferences,
@@ -7,10 +8,11 @@ import regionCatalog from "../../regions.json";
 import {textInputMaxLength} from "../../../../shared/content/text-length.mjs";
 import {tasteLabels} from "./profile-tastes";
 import {I} from "./icons";
+import {CharacterPortrait,hiddenCharacterId} from "./profile-character";
 
 type Preferences=ReturnType<typeof emptyProfilePreferences>;
 type GroupKey="meeting_styles"|"relationship_values"|"affection_styles"|"life_priorities";
-type PreferenceRead={scope:string;status:"loading"|"ready"|"error";preferences:Preferences;version:number};
+type PreferenceRead={scope:string;status:"loading"|"ready"|"error";preferences:Preferences;gender?:string;avatarId?:number;version:number};
 const districts:Record<string,string[]>=regionCatalog;
 const provinces=Object.keys(districts);
 
@@ -33,7 +35,7 @@ function usePublicPreferences(viewer:string,person:string,revision=0,enabled=tru
         const {data,error}=await (typeof query.abortSignal==="function"?query.abortSignal(controller.signal):query);
         if(!active)return;
         if(error||data?.person!==person||!Number.isSafeInteger(data?.version)||data.version<0||!data.preferences)throw error||new Error("invalid profile");
-        setResult({scope,status:"ready",preferences:normalizeProfilePreferences(data.preferences),version:data.version});
+        setResult({scope,status:"ready",preferences:normalizeProfilePreferences(data.preferences),gender:data.gender,avatarId:data.avatarId,version:data.version});
       }catch{
         if(active)setResult({scope,status:"error",preferences:emptyProfilePreferences(),version:0});
       }
@@ -89,25 +91,32 @@ export function ProfileForm({person,isNew,onSave,busy}:{person:Person|null;isNew
         onClick={()=>setPreferences({...preferences,relationship_intents:preferences.relationship_intents.includes(intent.key)?preferences.relationship_intents.filter(key=>key!==intent.key):[...preferences.relationship_intents,intent.key]})}>
         {intent.label}</button>)}</div>
     </fieldset>}
-    {isNew&&<label className="checkrow"><input type="checkbox" required disabled={busy} checked={consent} onChange={event=>setConsent(event.target.checked)}/><span>만 19세 이상이며 파장 회원에게 닉네임과 내가 선택한 공개 정보를 보여 주는 데 동의해요.</span></label>}
+    {isNew&&<label className="checkrow"><input type="checkbox" required disabled={busy} checked={consent} onChange={event=>setConsent(event.target.checked)}/><span>만 19세 이상이며 파장 회원에게 닉네임·가입 성별과 선택한 정보를 공개하는 데 동의해요.</span></label>}
     <button className="primary wide" disabled={disabled||(isNew&&!consent)}>{isNew?"회원 채널 시작하기":"프로필 저장"}<I n="arrow" s={16}/></button>
   </form>;
 }
 
-export function PublicProfilePreferences({viewer,person,revision=0,onEdit,onEditTastes}:{viewer:string;person:string;revision?:number;onEdit?:()=>void;onEditTastes?:()=>void}){
+export function PublicProfilePreferences({viewer,person,avatarId,children,fullBodyPreview=false,revision=0,onEdit,onEditTastes}:{viewer:string;person:string;avatarId?:number;children:ReactNode;fullBodyPreview?:boolean;revision?:number;onEdit?:()=>void;onEditTastes?:()=>void}){
   const read=usePublicPreferences(viewer,person,revision);
+  const displayId=read.avatarId??avatarId;
+  const gender=displayId===hiddenCharacterId?undefined:profileGender(read.gender);
   const selectedIntents=relationshipIntents.filter(intent=>read.preferences.relationship_intents.includes(intent.key));
   const selectedGroups=profilePreferenceGroups.map(group=>({...group,labels:tasteLabels(read.preferences,group.key as GroupKey)})).filter(group=>group.labels.length);
-  return <section className="public-preference-summary" aria-label="공개 프로필">
-    <div className="preference-section-heading"><h3>공개 프로필</h3>{onEdit&&<button type="button" onClick={onEdit}>기본 정보 수정<I n="pencil" s={13}/></button>}</div>
-    <ReadStatus read={read}/>
-    {read.status==="ready"&&<>
-      {selectedIntents.length>0&&<div className="public-intents"><h4>원하는 인연</h4><div className="preference-tags">{selectedIntents.map(intent=><span key={intent.key}>{intent.label}</span>)}</div></div>}
-      <section className="public-profile-tastes" aria-label="나를 표현하는 취향">
-        <div className="public-tastes-heading"><h4>나를 표현하는 취향</h4>{onEditTastes&&<button type="button" onClick={onEditTastes}>취향·그림 수정<I n="pencil" s={13}/></button>}</div>
-        {selectedGroups.length?selectedGroups.map(group=><div key={group.key} className="public-preference-group"><h5>{group.label}</h5><div className="preference-tags">{group.labels.map(label=><span key={label}>{label}</span>)}</div></div>):
-          <p className="preference-help">{onEditTastes?"취향·그림 수정에서 나와 맞는 보기를 골라 보세요.":"아직 선택한 취향이 없어요."}</p>}
-      </section>
-    </>}
-  </section>;
+  return <>
+    <CharacterPortrait id={displayId} gender={read.gender} large fullBodyPreview={fullBodyPreview}/>
+    {children}
+    <section className="public-preference-summary" data-gender-tone={gender?.tone} aria-label="공개 프로필">
+      <div className="preference-section-heading"><h3>공개 프로필</h3>{onEdit&&<button type="button" onClick={onEdit}>기본 정보 수정<I n="pencil" s={13}/></button>}</div>
+      <ReadStatus read={read}/>
+      {read.status==="ready"&&<>
+        {gender&&<span className="pajang-screen-reader">성별 {gender.name}</span>}
+        {selectedIntents.length>0&&<div className="public-intents"><h4>원하는 인연</h4><div className="preference-tags">{selectedIntents.map(intent=><span key={intent.key}>{intent.label}</span>)}</div></div>}
+        <section className="public-profile-tastes" aria-label="나를 표현하는 취향">
+          <div className="public-tastes-heading"><h4>나를 표현하는 취향</h4>{onEditTastes&&<button type="button" onClick={onEditTastes}>취향 수정<I n="pencil" s={13}/></button>}</div>
+          {selectedGroups.length?selectedGroups.map(group=><div key={group.key} className="public-preference-group"><h5>{group.label}</h5><div className="preference-tags">{group.labels.map(label=><span key={label}>{label}</span>)}</div></div>):
+            <p className="preference-help">{onEditTastes?"취향 수정에서 나와 맞는 보기를 골라 보세요.":"아직 선택한 취향이 없어요."}</p>}
+        </section>
+      </>}
+    </section>
+  </>;
 }

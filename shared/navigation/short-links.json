@@ -23,7 +23,8 @@
     {
       "slug": "pajang",
       "target": "/features/pajang/",
-      "label": "파장 만나기"
+      "label": "오쭈다 파장",
+      "publishEntry": true
     },
     {
       "slug": "biorhythm",

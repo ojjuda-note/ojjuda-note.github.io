@@ -1,3 +1,5 @@
+import {ProfileCharacter,avatarForCollection,defaultAvatar,sameAvatar,validAvatar,type AvatarCollection,type ProfileAvatar} from "./profile-character";
+import {profileGender} from "../lib/station";
 import {useEffect, useRef, useState} from "react";
 import regionCatalog from "../../regions.json";
 import {maskedTextLength,textInputMaxLength} from "../../../../shared/content/text-length.mjs";
@@ -7,7 +9,7 @@ import {ProfileTastesFields,blankTasteDrafts,addTaste,prepareTastes,tastePatch} 
 export type ExchangeKind = "profile"|"photos";
 type Fields = Partial<Record<"relationship"|"job"|"region"|"religion"|"height"|"mbti"|"bloodType"|"skills"|"hobbies"|"drinking"|"smoking"|"bio",string|number>>;
 export type SharedProfile = {fields: Fields; age:number|null; gender:string|null};
-type MyProfile = SharedProfile & {showAge:boolean; showGender:boolean;person:string;name:string;region:string;interest:string;preferences:ProfilePreferences;preferencesVersion:number};
+type MyProfile = SharedProfile & {avatar:ProfileAvatar;storedAvatar:ProfileAvatar;avatarCollection:AvatarCollection|null;showAge:boolean; showGender:boolean;person:string;name:string;region:string;interest:string;preferences:ProfilePreferences;preferencesVersion:number};
 type SavedProfile = MyProfile & {masking?:Partial<Record<keyof Fields,{submitted:unknown;saved:unknown}>>};
 
 function confirmedMask(receipt:SavedProfile["masking"],key:keyof Fields,submitted:string,saved:string) {
@@ -25,7 +27,7 @@ export async function exchange<T>(action:string, options:{p_peer?:string; p_kind
 
 async function profileDetails(action:"mine"|"save",person:string,data:object={}):Promise<SavedProfile>{
   const db=await window.OjjudaGetClient();
-  const {data:profile,error}=await db.rpc("pajang_profile_details",{p_action:action,p_data:data});
+  const {data:profile,error}=await db.rpc("pajang_profile_details",{p_action:action,p_data:{...data,avatarCatalog:2}});
   if(error)throw Object.assign(new Error(error.message),{code:error.code});
   if(!profile||profile.person!==person||typeof profile.name!=="string"||typeof profile.region!=="string"||!profile.fields||typeof profile.fields!=="object"||Array.isArray(profile.fields)
     ||typeof profile.showAge!=="boolean"||typeof profile.showGender!=="boolean"||typeof profile.interest!=="string"
@@ -33,7 +35,12 @@ async function profileDetails(action:"mine"|"save",person:string,data:object={})
     ||!Array.isArray(profile.preferences?.relationship_intents)
     ||!profilePreferenceGroups.every(group=>Array.isArray(profile.preferences?.[group.key])&&Array.isArray(profile.preferences?.custom?.[group.key])))
     throw new Error(action==="save"?"저장 결과를 확인하지 못했어요. 다시 시도해 주세요.":"프로필을 불러오지 못했어요. 다시 시도해 주세요.");
-  return {...profile,preferences:normalizeProfilePreferences(profile.preferences)};
+  const storedAvatar=profile.avatar===undefined?defaultAvatar:profile.avatar;
+  if(!validAvatar(storedAvatar))throw new Error("캐릭터 정보를 확인하지 못했어요.");
+  const collection=profile.avatarCollection===undefined?profileGender(profile.gender)?.tone:profile.avatarCollection;
+  const avatarCollection=collection==="male"||collection==="female"?collection:null;
+  return {...profile,storedAvatar,avatarCollection,avatar:avatarForCollection(storedAvatar,avatarCollection),
+    preferences:normalizeProfilePreferences(profile.preferences)};
 }
 
 const regions:Record<string,string[]>=regionCatalog;
@@ -68,18 +75,21 @@ function RegionField({value,onChange,label="사는 지역"}:{value:string;onChan
 export function PeerProfile({profile}:{profile:SharedProfile}) {
   const items:[string,string][]=[];
   if(profile.age!=null)items.push(["나이",`만 ${profile.age}세`]);
-  if(profile.gender)items.push(["성별",profile.gender]);
+  const gender=profileGender(profile.gender);
+  if(gender)items.push(["성별",gender.name]);
   for(const field of labels) {
     const val=profile.fields[field.key];
     if(val!==undefined&&val!==null&&String(val).trim())items.push([field.label,String(val)+(field.key==="height"?" cm":field.key==="bloodType"?"형":"")]);
   }
-  return items.length?<dl className="exchange-facts">{items.map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>:<p className="sub">상대가 교환용 프로필에 작성한 항목이 아직 없어요.</p>;
+  return items.length?<dl className="exchange-facts" data-gender-tone={gender?.tone}>{items.map(([label,value])=><div key={label} className={label==="성별"?"pajang-screen-reader":undefined}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>:<p className="sub">상대가 교환용 프로필에 작성한 항목이 아직 없어요.</p>;
 }
 
 export function ExchangeProfileEditor({profileId,focusTastes=false,onSaved}:{profileId:string;focusTastes?:boolean;onSaved:(profile:SavedProfile)=>void}) {
+  const originalVisibility=useRef<Pick<MyProfile,"showAge"|"showGender">|null>(null);
   const [profile,setProfile]=useState<MyProfile|null>(null);
   const [drafts,setDrafts]=useState(blankTasteDrafts);
   const [error,setError]=useState(""),[retry,setRetry]=useState(0),[busy,setBusy]=useState(false);
+  const originalAvatar=useRef<ProfileAvatar>(defaultAvatar);
   const saving=useRef(false),mounted=useRef(false);
   const errorMessage=useRef<HTMLParagraphElement>(null);
   const tastes=useRef<HTMLElement>(null),privateDetails=useRef<HTMLDetailsElement>(null),focusedTastes=useRef(false);
@@ -88,7 +98,7 @@ export function ExchangeProfileEditor({profileId,focusTastes=false,onSaved}:{pro
     mounted.current=true;
     let current=true;
     setError("");setProfile(null);setDrafts(blankTasteDrafts());focusedTastes.current=false;
-    profileDetails("mine",profileId).then(value=>{if(current)setProfile(value);})
+    profileDetails("mine",profileId).then(value=>{if(current){originalAvatar.current=value.avatar;originalVisibility.current=value;setProfile(value);}})
       .catch(()=>{if(current)setError("내 프로필을 불러오지 못했어요.");});
     return ()=>{current=false;mounted.current=false;};
   },[profileId,retry]);
@@ -121,10 +131,15 @@ export function ExchangeProfileEditor({profileId,focusTastes=false,onSaved}:{pro
     saving.current=true;setBusy(true);setError("");
     const fields=Object.fromEntries(Object.entries(profile.fields).map(([k,v])=>[k,String(v??"").trim()]).filter(([,v])=>v));
     if(fields.height)fields.height=String(Number(fields.height));
+    const visibilityPatch={
+      ...(profile.showAge!==originalVisibility.current?.showAge?{showAge:profile.showAge}:{}),
+      ...(profile.showGender!==originalVisibility.current?.showGender?{showGender:profile.showGender}:{}),
+    };
     try {
       const saved=await profileDetails("save",profileId,{profilePerson:profileId,
+        ...(!sameAvatar(profile.avatar,originalAvatar.current)?{avatar:profile.avatar,previousAvatar:profile.storedAvatar}:{}),
         name:profile.name.trim(),region:profile.region,
-        fields,showAge:profile.showAge,showGender:profile.showGender,interest:profile.interest,
+        fields,...visibilityPatch,interest:profile.interest,
         preferences:{...tastePatch(prepared.preferences),relationship_intents:prepared.preferences.relationship_intents},
         preferencesVersion:profile.preferencesVersion});
       const changed=labels.filter(({key})=>{
@@ -140,16 +155,18 @@ export function ExchangeProfileEditor({profileId,focusTastes=false,onSaved}:{pro
       if(saved.region!==profile.region)changed.push("공개 활동 지역");
       if(JSON.stringify([...saved.preferences.relationship_intents].sort())!==
         JSON.stringify([...prepared.preferences.relationship_intents].sort()))changed.push("원하는 인연");
-      if(saved.showAge!==profile.showAge)changed.push("나이 공개 설정");
-      if(saved.showGender!==profile.showGender)changed.push("성별 공개 설정");
+      if(visibilityPatch.showAge!==undefined&&saved.showAge!==visibilityPatch.showAge)changed.push("나이 공개 설정");
+      if(visibilityPatch.showGender!==undefined&&saved.showGender!==visibilityPatch.showGender)changed.push("성별 공개 설정");
+      if(!sameAvatar(profile.avatar,originalAvatar.current)&&!sameAvatar(profile.avatar,saved.storedAvatar))changed.push("캐릭터·배경");
       if(changed.length)
         throw new Error(`${changed.join(", ")} 항목이 저장되지 않았어요. 입력 내용은 이 창에 남겨 뒀어요.`);
-      if(mounted.current){setProfile(saved);setDrafts(blankTasteDrafts());onSaved(saved);}
+      if(mounted.current){originalAvatar.current=saved.avatar;originalVisibility.current=saved;setProfile(saved);setDrafts(blankTasteDrafts());onSaved(saved);}
     } catch(err) {
       if(mounted.current)setError(err instanceof Error?err.message:"저장하지 못했어요. 다시 시도해 주세요.");
     } finally {saving.current=false;if(mounted.current)setBusy(false);}
   }
-  return <><h2>내 프로필 수정</h2><p className="sub">닉네임·활동 지역·취향은 파장 회원에게 공개되고, 상세 정보는 프로필 교환을 승인한 상대에게만 보여요.</p>
+  const gender=profileGender(profile?.gender);
+  return <><h2>내 프로필 수정</h2>
     {error&&!profileReady&&<p className="error" role="alert">{error} <button className="quiet" onClick={()=>setRetry(n=>n+1)}>다시 시도</button></p>}
     {!profileReady&&!error&&<p className="sub" role="status">회원정보와 취향을 확인하고 있어요.</p>}
     {profileReady&&profile&&<form className="profileform exchange-editor unified-profile-editor" onSubmit={save} onInvalidCapture={event=>{
@@ -158,9 +175,10 @@ export function ExchangeProfileEditor({profileId,focusTastes=false,onSaved}:{pro
       if(input.name==="height"&&privateDetails.current)privateDetails.current.open=true;
       setError(input.name==="height"?"키는 1~300cm 사이의 숫자로 입력해 주세요.":"입력한 내용을 확인해 주세요.");
     }}>
-      <fieldset className="unified-public-profile" disabled={busy}>
+      <ProfileCharacter avatar={profile.avatar} collection={profile.avatarCollection} showGender={profile.showGender} disabled={busy} onChange={avatar=>{setError("");setProfile(current=>current?{...current,avatar}:current);}}/>
+      <fieldset className="unified-public-profile" data-gender-tone={profile.showGender?gender?.tone:undefined} disabled={busy}>
         <legend>공개 프로필</legend>
-        <p className="exchange-hint">파장 회원에게 보이는 정보</p>
+        {gender&&<span className="pajang-screen-reader">가입 성별 {gender.name}</span>}
         <label>닉네임<input name="nickname" required value={profile.name}
           maxLength={textInputMaxLength(profile.name,12)}
           onChange={e=>{setError("");setProfile(current=>current?{...current,name:e.target.value}:current);}}/></label>
@@ -186,13 +204,13 @@ export function ExchangeProfileEditor({profileId,focusTastes=false,onSaved}:{pro
       </section>
       </fieldset>
       <details ref={privateDetails} className="unified-private-profile" open>
-        <summary><span><strong>교환 후 공개 정보</strong><small>상대가 승인한 뒤에만 공개</small></span></summary>
+        <summary><span><strong>나이·성별 및 교환 정보</strong></span></summary>
         <div className="unified-private-fields">
           <fieldset disabled={busy}><legend>나이·성별 공개 선택</legend>
-            <label className="exchange-check"><input type="checkbox" disabled={profile.age==null} checked={profile.age!=null&&profile.showAge} onChange={e=>setProfile(current=>current?{...current,showAge:e.target.checked}:current)}/><span>나이</span><b>{profile.age==null?"연동 정보 없음":`만 ${profile.age}세`}</b></label>
-            <label className="exchange-check"><input type="checkbox" disabled={!profile.gender} checked={!!profile.gender&&profile.showGender} onChange={e=>setProfile(current=>current?{...current,showGender:e.target.checked}:current)}/><span>성별</span><b>{profile.gender||"연동 정보 없음"}</b></label>
+            <label className="exchange-check"><input type="checkbox" disabled={profile.age==null} checked={profile.showAge} onChange={e=>setProfile(current=>current?{...current,showAge:e.target.checked}:current)}/><span>나이</span><b>{profile.age==null?"연동 정보 없음":`만 ${profile.age}세 · 교환 후`}</b></label>
+            <label className="exchange-check"><input type="checkbox" disabled={!profile.gender} checked={profile.showGender} onChange={e=>setProfile(current=>current?{...current,showGender:e.target.checked}:current)}/><span>성별</span>{gender?<span className="pajang-screen-reader">{gender.name}</span>:<b>연동 정보 없음</b>}</label>
           </fieldset>
-          <fieldset className="exchange-grid" disabled={busy}><legend>상세 정보 (선택)</legend>
+          <fieldset className="exchange-grid" disabled={busy}><legend>교환 후 공개 정보 (선택)</legend>
             {labels.filter(field=>field.key!=="bio").map(({key,label,options,limit})=>{
               const value=String(profile.fields[key]??"");
               if(key==="region")return <RegionField key={key} value={value} onChange={v=>change(key,v)}/>;

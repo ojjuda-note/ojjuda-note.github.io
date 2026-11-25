@@ -104,6 +104,7 @@
     void flush();
   }
   function initialFeature() {
+    if (/^\/pajang(?:\/index\.html|\/)?$/.test(location.pathname)) return 'pajang';
     if (/^\/features\/pajang(?:\/(?:index|station|feed)\.html|\/)?$/.test(location.pathname)) return 'pajang';
     if (Object.hasOwn(FORTUNE_PAGES,location.pathname)) return FORTUNE_PAGES[location.pathname];
     const params = new URL(location.href).searchParams;

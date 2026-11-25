@@ -122,7 +122,9 @@ export function buildSeasonalIcons({outputRoot, sourceRoot = REPO, date = new Da
   textOutputs.set(installPath, install);
   const scriptRevision = 'app-icons-' + createHash('sha256').update(identity).update(install).digest('hex').slice(0, 12);
 
-  for (const relative of ENTRIES) {
+  const entries = [...ENTRIES];
+  if (existsSync(join(outputRoot, 'pajang/index.html'))) entries.push('pajang/index.html');
+  for (const relative of entries) {
     const file = join(outputRoot, relative);
     let html = reviseAssetURLs(readFileSync(file, 'utf8'), iconPaths, revision);
     html = reviseAssetURLs(html, RUNTIMES.map((path) => '/' + path), scriptRevision);

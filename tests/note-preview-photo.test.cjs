@@ -71,7 +71,7 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
   const guestComposerSource = source.slice(source.indexOf('function isGuestComposer()'),source.indexOf('\nfunction updateComposer()'));
   const publishSource = source.slice(source.indexOf('async function publishCard()'),source.indexOf('\nfunction updateAuth()'));
   const autoTagSource = source.slice(source.indexOf('const TAG_WORDS'),source.indexOf('// 일반 카드의 첨부 사진'));
-  const refreshSource = source.slice(source.indexOf('function refreshAutoTags()'),source.indexOf('function noteTagEdit()'));
+  const refreshSource = source.slice(source.indexOf('function refreshAutoTags()'),source.indexOf('function shownName('));
   const tagListSource = source.match(/^const tagList = .*;$/m)[0];
   const parsedTagsSource = source.slice(source.indexOf('function parsedTags('),source.indexOf('function validEventBody('));
   const publishFromPreview = async ({body='미리보기 사진 유지',background='42',kind='memo',parent=null,attachment=false,draftBackground=background,withDraft=true}={}) => {

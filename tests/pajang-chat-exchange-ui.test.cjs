@@ -48,7 +48,7 @@ async function fixture(t,options={}){
   w.exchangePeer="22222222-2222-4222-8222-222222222222";
   w.OjjudaGetClient=async()=>({
     rpc:async(name,args)=>{
-      if(name==="pajang_profile_preferences")return {data:{person:w.exchangePeer,version:0,
+      if(name==="pajang_profile_preferences")return {data:{person:w.exchangePeer,avatarId:200,version:0,
         preferences:{relationship_intents:["friendship"],meeting_styles:["deep_talk"],relationship_values:[],affection_styles:[],life_priorities:[],
           custom:{meeting_styles:[],relationship_values:[],affection_styles:[],life_priorities:[]}}},error:null};
       assert.equal(name,"pajang_exchange");
@@ -172,6 +172,7 @@ test("accepted profile opens public and exchange-only details in one view, never
   assert.match(combined.textContent,/상대/);
   assert.match(combined.textContent,/서울특별시/);
   await waitFor(()=>combined.textContent.includes("친구"),"public preferences are included");
+  assert.match(combined.querySelector(".pj-character-portrait").style.backgroundImage,/avatars-male-20261125-25\.webp/);
   assert.match(combined.textContent,/서점 직원/);
   assert.match(combined.textContent,/상대가 승인한 정보/);
   assert.ok(combined.querySelector(".public-preference-summary"));

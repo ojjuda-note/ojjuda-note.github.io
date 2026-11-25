@@ -36,7 +36,7 @@
     "ojjuda.kr"
   ],
   "url": "https://ojjuda.kr/",
-  "description": "오쭈다 아지트는 게임과 일상을 즐기는 온라인 공간입니다. 오쭈다 공원에서 익명카드로 이야기를 나누고, 오쭈다 파장에서 질문과 취향으로 인연을 만나보세요. 타로·사주와 팬페이지도 함께 즐겨요.",
+  "description": "오쭈다 아지트에서 게임을 즐기고 그룹과 팬페이지에서 이야기를 나눠 보세요. 오늘의 타로·사주와 전국 맛집·축제 일정도 확인할 수 있어요.",
   "inLanguage": "ko-KR",
   "creator": {
     "@type": "Person",
@@ -60,12 +60,12 @@
     {
       "@type": "WebPage",
       "name": "오쭈다 공원",
-      "url": "https://ojjuda.kr/features/guide/park.html"
+      "url": "https://ojjuda.kr/park/"
     },
     {
       "@type": "WebPage",
       "name": "오쭈다 파장",
-      "url": "https://ojjuda.kr/features/pajang/"
+      "url": "https://ojjuda.kr/pajang/"
     }
   ]
 }
@@ -82,7 +82,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <title>오쭈다 아지트 | 게임·타로·사주·익명카드</title>
-<meta name="description" content="오쭈다 아지트는 게임과 일상을 즐기는 온라인 공간입니다. 오쭈다 공원에서 익명카드로 이야기를 나누고, 오쭈다 파장에서 질문과 취향으로 인연을 만나보세요. 타로·사주와 팬페이지도 함께 즐겨요.">
+<meta name="description" content="오쭈다 아지트에서 게임을 즐기고 그룹과 팬페이지에서 이야기를 나눠 보세요. 오늘의 타로·사주와 전국 맛집·축제 일정도 확인할 수 있어요.">
 <link rel="canonical" href="https://ojjuda.kr/world.html">
 <link rel="icon" href="/icon-192.png?v=seasonal-v1-autumn-d0c431c01ed9" type="image/png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=seasonal-v1-autumn-d0c431c01ed9">
@@ -137,7 +137,7 @@
 <script src="/shared/games/world-game-rankings.js?v=20261123-ranking-retry1" defer></script>
 <link rel="stylesheet" href="/park/world-park-notes.css?v=20261119-auto-theme1">
 <link rel="stylesheet" href="/park/card-grid.css?v=20261124-park-450">
-<script src="/park/world-park-notes.js?v=20261125-compound-tags2" defer></script>
+<script src="/park/world-park-notes.js?v=20261125-body-compounds1" defer></script>
 
 <!-- 서버 연결 도구 -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2" defer></script>
@@ -284,7 +284,7 @@
 <meta property="og:site_name" content="오쭈다 아지트">
 <meta property="og:url" content="https://ojjuda.kr/world.html">
 <meta property="og:title" content="오쭈다 아지트 | 게임·타로·사주·익명카드">
-<meta property="og:description" content="오쭈다 아지트는 게임과 일상을 즐기는 온라인 공간입니다. 오쭈다 공원에서 익명카드로 이야기를 나누고, 오쭈다 파장에서 질문과 취향으로 인연을 만나보세요. 타로·사주와 팬페이지도 함께 즐겨요.">
+<meta property="og:description" content="오쭈다 아지트에서 게임을 즐기고 그룹과 팬페이지에서 이야기를 나눠 보세요. 오늘의 타로·사주와 전국 맛집·축제 일정도 확인할 수 있어요.">
 <meta property="og:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
@@ -292,7 +292,7 @@
 <meta property="og:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="오쭈다 아지트 | 게임·타로·사주·익명카드">
-<meta name="twitter:description" content="오쭈다 아지트는 게임과 일상을 즐기는 온라인 공간입니다. 오쭈다 공원에서 익명카드로 이야기를 나누고, 오쭈다 파장에서 질문과 취향으로 인연을 만나보세요. 타로·사주와 팬페이지도 함께 즐겨요.">
+<meta name="twitter:description" content="오쭈다 아지트에서 게임을 즐기고 그룹과 팬페이지에서 이야기를 나눠 보세요. 오늘의 타로·사주와 전국 맛집·축제 일정도 확인할 수 있어요.">
 <meta name="twitter:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
 <link rel="stylesheet" href="/shared/games/multiplayer-entry.css?v=20261109-unified-multiplayer-ui2">
@@ -676,7 +676,7 @@ async function Oa(t,e,o){adminMutationPending++;t&&(t.disabled=!0);try{await e()
 const sectionReleases={
   hub:{name:'아지트',version:Go,manifest:'/version.json'},
   arcade:{name:'오락실',version:'1.3.16',manifest:'/features/arcade/version.json'},
-  park:{name:'공원',version:'1.9.5',manifest:'/park/version.json'}
+  park:{name:'공원',version:'1.9.8',manifest:'/park/version.json'}
 };
 function releaseSection(){
  const tab=worldMainTab();

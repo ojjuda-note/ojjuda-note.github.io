@@ -69,7 +69,8 @@ test('both public Pajang entries share the brand and the real wallet/notificatio
   for(const filename of ['index.html','station.html']){
     const dom=new JSDOM(fs.readFileSync(path.join(root,'features/pajang',filename),'utf8'));
     const document=dom.window.document;
-    assert.equal(document.querySelector('.ojjuda-service-home').getAttribute('href'),'./');
+    const home = filename === 'index.html' ? '/pajang/' : './';
+    assert.equal(document.querySelector('.ojjuda-service-home').getAttribute('href'),home);
     assert.equal(document.querySelector('.ojjuda-service-name').textContent,'파장');
     assert.equal(document.querySelector('.ojjuda-service-logo').getAttribute('viewBox'),'-16 -16 544 544');
     assert.equal(document.querySelectorAll('.pajang-mast [data-notifications-open]').length,1);

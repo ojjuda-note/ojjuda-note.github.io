@@ -62,7 +62,7 @@ export function themeFor(day: string, slot: Slot) {
   const index = 2 * days + (slot === "am" ? -1 : 0);
   return themes[(index % themes.length + themes.length) % themes.length];
 }
-export type Person = {id:string; name:string; age?:number|null; region:string; interest:string; body?:string; at?:number; range?:RadarBand; bearing?:number; sameCell?:boolean};
+export type Person = {avatarId?:number;gender?:string|null;id:string; name:string; age?:number|null; region:string; interest:string; body?:string; at?:number; range?:RadarBand; bearing?:number; sameCell?:boolean};
 export type NearbyAnswer = {day:string;slot:Slot;question:string;body:string;at:number;likeCount?:number;liked?:boolean};
 export type NearbyPerson = Person & {answers?:NearbyAnswer[]};
 export type Signal = {src:string;dst:string;day:string;note:string;at:number};
@@ -92,4 +92,10 @@ export function signalsWith(s:Station,id:string):Relationship {
     signalIndexes.set(s,peers);
   }
   return peers.get(id)??unrelated;
+}
+
+export function profileGender(value?:string|null) {
+  if(value==="male"||value==="남성"||value==="남")return {tone:"male",name:"남성"} as const;
+  if(value==="female"||value==="여성"||value==="여")return {tone:"female",name:"여성"} as const;
+  return undefined;
 }

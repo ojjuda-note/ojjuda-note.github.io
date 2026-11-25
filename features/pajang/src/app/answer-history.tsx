@@ -1,13 +1,13 @@
 import {useEffect, useMemo, useRef, useState, type PointerEvent} from "react";
 import {signalsWith, type Slot, type Station} from "../lib/station";
 import {relationshipIntents,type RelationshipIntentKey} from "../lib/profile-preferences.mjs";
-import {InterestArt} from "./interest-art";
+import {CharacterPortrait} from "./profile-character";
 import {I} from "./icons";
 import QuestionCarousel from "./question-carousel";
 import {AnswerLike,useAnswerLikes} from "./answer-likes";
 
 export type DiscoveryAnswer = {
-  peer:string; name:string; region:string; interest:string;
+  peer:string; avatarId?:number; gender?:string|null; name:string; region:string; interest:string;
   day:string; slot:Slot; at:number; question:string; body:string;
   own:boolean; sent:boolean; received:boolean;
   liked?:boolean; likeCount?:number;
@@ -19,9 +19,9 @@ type Result = {key:string; items:DiscoveryAnswer[]; total:number|null; next:Curs
 type Order = "recommend"|"latest"|"local";
 type Gender = "male"|"all"|"female";
 const genderOptions = [
-  {value:"all", text:"전체", label:"성별 전체"},
-  {value:"male", text:"남성", label:"남성 답변"},
-  {value:"female", text:"여성", label:"여성 답변"},
+  {value:"male", label:"남성 답변"},
+  {value:"all", label:"성별 전체"},
+  {value:"female", label:"여성 답변"},
 ] as const;
 declare global {
   interface Window {
@@ -156,9 +156,9 @@ function GenderSwitch({value,onChange}:{value:Gender;onChange:(next:Gender)=>voi
     }}
     onPointerCancel={cancel} onLostPointerCapture={e=>{if(e.target===e.currentTarget)cancel();}}
     onClickCapture={e=>{if(e.detail && suppressClick.current){e.preventDefault();e.stopPropagation();suppressClick.current=false;}}}>
-    {genderOptions.map(option=><label key={option.value} className={"answer-gender "+option.value} data-lit={lit===option.value} title={option.label}>
+    {genderOptions.map(option=><label key={option.value} className={"answer-gender "+option.value} data-lit={lit===option.value}>
       <input type="radio" name="answer-gender" value={option.value} aria-label={option.label}
-        checked={value===option.value} onChange={()=>onChange(option.value)}/><span aria-hidden="true">{option.text}</span>
+        checked={value===option.value} onChange={()=>onChange(option.value)}/><span aria-hidden="true"/>
     </label>)}
   </div>;
 }
@@ -264,11 +264,12 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
         }}
         renderAnswers={answers=>answers.map(row=>{
         const relation=signalsWith(station,row.peer);
+        const author=row.peer===station.me?.id?station.me:row;
         const sent=row.sent||!!relation.outgoing, received=row.received||!!relation.incoming, matched=sent&&received;
         const intents=relationshipIntents.filter(intent=>row.relationship_intents?.includes(intent.key));
         return <article key={rowKey(row)} className="answercard">
           <button className="person" onClick={()=>onProfile(row)}>
-            <InterestArt interest={row.interest}/>
+            <CharacterPortrait id={author.avatarId??row.avatarId} gender={author.gender}/>
             <span><strong>{row.name}{row.own?" · 내 답변":""}</strong>{row.region&&<small>{row.region}</small>}</span>
           </button>
           <p className="quote">{row.body}</p>

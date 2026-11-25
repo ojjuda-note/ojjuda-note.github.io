@@ -55,7 +55,8 @@ test('real visits and all five missions persist independently of game preview',a
     const context={
       sectionReleases:{park:JSON.parse(fs.readFileSync(path.join(__dirname,'../park/version.json'),'utf8'))},
       Date:class extends Date{constructor(...args){super(...(args.length?args:[instant]));}},
-      window:{OjjudaAdminPreview:{isEnabled:()=>preview},OjjudaParkNotes:{install(options){parkOptions=options;return{open:mode=>parkOpens.push(mode)};}}},
+      document:new EventTarget(),
+      window:Object.assign(new EventTarget(),{OjjudaAdminPreview:{isEnabled:()=>preview},OjjudaParkNotes:{install(options){parkOptions=options;return{open:mode=>parkOpens.push(mode)};}}}),
       D:{online:true,user:{id:'member-a'}},$:model,pi:model,g:{tab:'hub'},_r:{spot:{name:'틀린그림찾기'},group:{name:'그룹',test:true}},
       sr:{tab:action=>{context.g.tab=action.tab;}},
       localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value)},
@@ -187,7 +188,8 @@ test('mission completion is backed up immediately and navigation waits for cloud
   let resolveSave,localWrites=0;
   const context={
     D:{online:true,user:{id:'member-a'}},
-    window:{OjjudaAgitHub:{...hub,visitTarget:()=>({id:'group'}),complete:(state,id)=>hub.complete(state,id,date),mergeProgress:(a,b)=>hub.mergeProgress(a,b,date)}},
+    document:new EventTarget(),
+      window:Object.assign(new EventTarget(),{OjjudaAgitHub:{...hub,visitTarget:()=>({id:'group'}),complete:(state,id)=>hub.complete(state,id,date),mergeProgress:(a,b)=>hub.mergeProgress(a,b,date)}}),
     localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value)},
     ua:'member-a',de:{priv:'old-cloud'},pi:model,pc:false,no:JSON.stringify,
     mi:current=>({priv:{settings:current.settings}}),

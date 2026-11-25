@@ -8,7 +8,7 @@
     return `<details class="my-menu-group" data-my-group="park"><summary class="my-menu-summary"><span class="my-menu-icon" aria-hidden="true">▤</span><span class="my-menu-copy"><span class="my-menu-title">공원 활동</span></span></summary><div class="my-menu-body park-menu-actions">${[['feed','공원 카드'],['saved','메모함'],['mine','내 카드'],['events','내 이벤트'],['event-new','이벤트 만들기'],['settings','회원정보'],['blocked','공원 차단 목록'],['glasses','스마트 글래스 미리보기']].map(([action,label])=>`<button type="button" class="btn" data-park-action="${action}">${label}</button>`).join('')}</div></details>`;
   }
   window.OjjudaParkNotes = {menuMarkup,install(app) {
-    const frameVersion = '20261125-compound-tags2' + (app.version ? '-' + app.version : '');
+    const frameVersion = '20261125-body-compounds1' + (app.version ? '-' + app.version : '');
     let frame=null,panel=null,owner=null,routed=false,initial=window.performance?.getEntriesByType?.('navigation')[0]?.type!=='back_forward',pending=null,overlayOpen=false,composerOpen=false,cardOpen=false,stopFrameNavigation=()=>{};
     let cacheTimer=null,frameVisible=false,pendingSnapshot=null;
     let currentNavigation='feed';
@@ -31,8 +31,8 @@
         const url = new URL('/park/', location.origin);
         for (const [href,as] of [
           [url.pathname + url.search,'document'],
-          ['/note/preview.js?v=20261125-compound-tags2','script'],
-          ['/park/design.css?v=20261120-photo-tag-gap1','style']
+          ['/note/preview.js?v=20261125-body-compounds1','script'],
+          ['/park/design.css?v=20261125-reply-tags2','style']
         ]) {
           const link = document.createElement('link');
           link.rel = 'prefetch'; link.as = as; link.href = href;

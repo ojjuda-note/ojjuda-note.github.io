@@ -16,7 +16,7 @@ LAUNCH_ROUTES = {
         "icons": "/",
     },
     "park": {
-        "start": "/world.html?place=park",
+        "start": "/park/",
         "manifest": "/park/manifest.webmanifest",
         "id": "/world.html?place=park",
         "scope": "/",

@@ -71,12 +71,20 @@ test('generated entry pages preserve canonical destinations and work without scr
       const url = new URL(route.target, origin);
       const file = path.join(directory, url.pathname, url.pathname.endsWith('/') ? 'index.html' : '');
       fs.mkdirSync(path.dirname(file), {recursive:true});
-      fs.writeFileSync(file, '<!doctype html><title>Destination fixture</title>');
+      fs.writeFileSync(file, route.publishEntry ? read('features/pajang/index.html') : '<!doctype html><title>Destination fixture</title>');
     }
     assert.equal(buildShortLinks(directory, catalog), routes.size);
     assert.equal(buildShortLinks(directory, catalog), routes.size, 'repeat builds are safe');
     for (const {slug} of catalog.routes) {
       const output = fs.readFileSync(path.join(directory, slug, 'index.html'), 'utf8');
+      if (slug === 'pajang') {
+        assert.match(output, /<link rel="canonical" href="https:\/\/ojjuda\.kr\/pajang\/">/);
+        assert.match(output, /<base href="\/features\/pajang\/">/);
+        assert.match(output, /id="gate"/);
+        assert.match(output, /src="\.\/entry\.mjs/);
+        assert.doesNotMatch(output, /noindex|short-link\.js|http-equiv="refresh"/);
+        continue;
+      }
       assert.match(output, /<noscript><meta http-equiv="refresh"/);
       assert.match(output, /<meta name="robots" content="noindex,follow">/);
       assert.match(output, /<link rel="canonical"/);

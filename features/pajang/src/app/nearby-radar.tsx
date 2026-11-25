@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { introDetails, themeFor, type NearbyAnswer, type NearbyPerson, type Station } from "../lib/station";
+import { introDetails, profileGender, themeFor, type NearbyAnswer, type NearbyPerson, type Station } from "../lib/station";
 import { compassDirections, directionName, radarPosition, rangeNames, type RadarBand, type RadarCell } from "../lib/radar";
 import {radarBands as bands, radarMarkers} from "../lib/radar-markers";
-import {InterestArt} from "./interest-art";
+import {CharacterPortrait,hiddenCharacterId} from "./profile-character";
 import { I } from "./icons";
 import { useCompass } from "./use-compass";
 import {readLocationCell} from "../../location.mjs";
@@ -123,12 +123,14 @@ export default function NearbyRadar({station,sample,autoLocation,onLocationChang
               <circle cx={anchor.x} cy={anchor.y} r=".65"/>
             </g>)}
           </svg>
-          <span className="scope-self">나</span>
+          <span className="scope-self">{station.me&&<CharacterPortrait id={station.me.avatarId}/>}<span className="scope-self-name">나</span></span>
           {markers.map(({person:p,x,y,anchor,compact})=>{
-            const label=p.name+", "+bearingLabel(p)+", "+rangeNames[p.range];
+            const gender=p.avatarId===hiddenCharacterId?undefined:profileGender(p.gender);
+            const label=p.name+(gender?", "+gender.name:"")+", "+bearingLabel(p)+", "+rangeNames[p.range];
             const picked=p.id===person?.id;
-            return <button key={p.id} type="button" className={"scope-person"+(!anchor?" scope-same-cell":"")+(compact?" scope-person-compact":"")+(picked?" picked":"")} style={{left:x+"%",top:y+"%"}}
+            return <button key={p.id} type="button" data-gender-tone={gender?.tone} className={"scope-person"+(!anchor?" scope-same-cell":"")+(compact?" scope-person-compact":"")+(picked?" picked":"")} style={{left:x+"%",top:y+"%"}}
               aria-label={label+", 답변 보기"} aria-pressed={picked} onClick={()=>setSelected(p.id)}>
+              {!compact&&<CharacterPortrait id={p.avatarId}/>}
               <span className="scope-person-name" aria-hidden="true" hidden={compact}>{Array.from(p.name.trim())[0]}</span>
               {compact&&<span className="scope-person-dot" aria-hidden="true"/>}
             </button>;
@@ -140,7 +142,7 @@ export default function NearbyRadar({station,sample,autoLocation,onLocationChang
         {pageCount>1&&<div className="dial-foot" style={{justifyContent:"flex-end"}}><div className="scope-pages"><button aria-label="이전 레이더 페이지" disabled={current===0} onClick={()=>setPage(current-1)}>‹</button>{current+1}/{pageCount}<button aria-label="다음 레이더 페이지" disabled={current+1===pageCount} onClick={()=>setPage(current+1)}>›</button></div></div>}
       </div>
       <div className="radar-details" aria-live="polite">
-        {person?<><div className="radar-kicker"><I n="signal" s={16}/>{rangeNames[person.range]} · {bearingLabel(person)}</div><div className="radar-identity"><InterestArt interest={person.interest} large/><div><h2>{person.name}</h2><p>{introDetails(person)}</p></div></div>
+        {person?<><div className="radar-kicker"><I n="signal" s={16}/>{rangeNames[person.range]} · {bearingLabel(person)}</div><div className="radar-identity"><CharacterPortrait id={person.avatarId} gender={person.gender} large/><div><h2>{person.name}</h2><p>{introDetails(person)}</p></div></div>
           <div className="radar-answer-list" aria-label="이 회원의 최근 답변">{answers.map(answer=><article className="radar-answer" key={answer.day+"/"+answer.slot}>
             <div className="radar-answer-meta"><time dateTime={answer.day}>{answer.day.replaceAll("-", ".")} · {answer.slot==="am"?"오전":"오후"}</time>{answer.day===station.day&&answer.slot===station.slot&&<span>현재 질문</span>}</div>
             <h3 className="radar-answer-question">{answer.question}</h3><p className="radar-quote">{answer.body}</p>

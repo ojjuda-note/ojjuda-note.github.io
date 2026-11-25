@@ -100,7 +100,6 @@ function composer(t, { kind = 'memo', edit = false, guest = false } = {}) {
     writingPosition = eventPosition = { latitude: 37, longitude: 127 };
     backdrop.hidden = false;
     text.value = ${JSON.stringify(ORIGINAL)}; tags.value = ${guest ? "''" : "'검사태그'"};
-    autoTagMode = !isGuestComposer() && !editingId; manualTags = tagList(tags.value);
     document.querySelector('input[name="gender"][value="private"]').checked = true;
     setComposerInputs(); updateComposer();`);
   if (!guest && !edit && kind !== 'event') {
@@ -361,27 +360,30 @@ for (const view of ['inquiries', 'feedback']) {
   });
 }
 
-test('Park member compose input suggests intact compound tags and preserves manual and dismissed tags', async t => {
+test('Park writer preserves whole compound tags and respects removal during retry', async t => {
   const f = composer(t);
   const text = f.document.getElementById('compose-text'), tags = f.document.getElementById('compose-tags');
-  f.run("manualTags = ['사용자태그']; rejectedTags = new Set(); autoTagsNow = [];");
-  const inputBody = body => {
-    text.value = body;
-    text.dispatchEvent(new f.window.Event('input', { bubbles: true }));
+  const input = (element, value) => {
+    element.value = value;
+    element.dispatchEvent(new f.window.Event('input', { bubbles: true }));
   };
-  for (const [body, expected] of [
-    ['완벽은 없다', '완벽'], ['목걸이 샀어', '목걸이'], ['목걸이를 샀어', '목걸이'],
+  input(tags, '검사태그');
+  for (const [body, tag] of [
     ['돈가스 먹었다', '돈가스'], ['돈가스를 먹었다', '돈가스'],
     ['돈까스 먹었다', '돈까스'], ['돈까스를 먹었다', '돈까스'],
-    ['떡볶이 먹었어', '떡볶이'], ['사랑니가 아파서 병원에 갔다', '사랑니, 병원']
+    ['사랑니 뽑았다', '사랑니'], ['사랑니를 뽑았다', '사랑니'],
+    ['사랑니', '사랑니']
   ]) {
-    inputBody(body);
-    assert.equal(tags.value, '사용자태그, '+expected, body);
+    input(text, body);
+    assert.equal(tags.value, '검사태그, ' + tag, body);
   }
-  tags.value = '사용자태그, 병원';
-  tags.dispatchEvent(new f.window.Event('input', { bubbles: true }));
-  inputBody('사랑니가 아파서 병원에 갔다.');
-  assert.equal(tags.value, '사용자태그, 병원');
+  input(text, '사랑니 뽑았다. 돈가스 먹었다.');
+  assert.equal(tags.value, '검사태그, 사랑니, 돈가스');
+  input(tags, '검사태그, 돈가스, 직접태그');
+  f.setError(NETWORK);
   await f.send();
-  assert.deepEqual(f.writes.at(-1).args.p_tags, ['사용자태그','병원']);
+  assert.equal(tags.value, '검사태그, 직접태그, 돈가스');
+  f.setError(null);
+  await f.send();
+  assert.deepEqual(f.writes.at(-1).args.p_tags, ['검사태그', '직접태그', '돈가스']);
 });

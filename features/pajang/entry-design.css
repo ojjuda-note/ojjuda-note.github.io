@@ -228,8 +228,6 @@
 
 /* Verified app entry: keep the answer, not another illustrated entrance. */
 @media (display-mode: standalone), (display-mode: minimal-ui) {
-  /* The guest invitation renders only after Auth confirms no member. */
-  #gate .flight-scene { display:none!important; }
   #welcome[data-member-entry="direct"] { margin-block:12px 20px; }
   #welcome[data-member-entry="direct"] .entry-intro {
     min-height:0;padding:6px 0 0;border:0;border-radius:0;
@@ -245,3 +243,40 @@
   }
   #welcome[data-member-entry="direct"] .actions { margin:12px 0 0; }
 }
+
+/* One question, two ways to answer, shared by the entry page and member dialog. */
+.pajang-answer-split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0}
+.pajang-answer-split:has(.pajang-choices[hidden]){grid-template-columns:1fr}
+.pajang-choices{margin:0;padding:0;border:0;min-width:0}
+.pajang-choices legend,.pajang-written>label{display:block;padding:0;margin:0 0 8px;font-size:15px;font-weight:700}
+.pajang-written{display:flex;flex-direction:column;min-width:0}
+#welcome .pajang-written textarea,.dialog .pajang-written textarea{flex:1;width:100%;min-height:5em;margin:0}
+.pajang-choices .pajang-option,#welcome .actions .pajang-option{display:flex;align-items:center;gap:8px;min-height:44px;padding:8px 10px;margin:0 0 6px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:500 14px/1.45 var(--sans,system-ui,sans-serif);overflow-wrap:anywhere;cursor:pointer}
+.pajang-option:last-child{margin-bottom:0}
+.pajang-choices .pajang-option:has(:checked),#welcome .actions .pajang-option:has(:checked){border-color:var(--accent);background:var(--accent-soft)}
+#welcome .actions .pajang-option input,.dialog .pajang-option input{width:16px;height:16px;min-height:0;margin:0;padding:0;flex:none;accent-color:var(--accent)}
+.answer-length{align-self:flex-end;color:var(--ink-2);font-size:12px}
+#welcome .actions button[type=submit]:disabled{opacity:.55;cursor:default}
+@media(max-width:500px){.pajang-answer-split{gap:8px}.pajang-choices .pajang-option,#welcome .actions .pajang-option{gap:5px;padding:8px}}
+
+.pajang-screen-reader{position:absolute!important;width:1px!important;height:1px!important;margin:-1px!important;padding:0!important;overflow:hidden!important;clip-path:inset(50%);white-space:nowrap;border:0!important}
+[data-gender-tone="male"],.answer-gender.male{--pajang-gender-tone:#5591c7}
+[data-gender-tone="female"],.answer-gender.female{--pajang-gender-tone:#c67a97}
+.dialog:has(>.public-preference-summary[data-gender-tone="male"])>.avatar{outline:3px solid #5591c7;outline-offset:2px}
+.dialog:has(>.public-preference-summary[data-gender-tone="female"])>.avatar{outline:3px solid #c67a97;outline-offset:2px}
+#join-fields[data-gender-tone="male"],#join-fields[data-gender-tone="female"],.unified-public-profile[data-gender-tone],.exchange-facts[data-gender-tone]{border-inline-start:3px solid var(--pajang-gender-tone);padding-inline-start:12px}
+
+.avatar[data-gender-tone]{outline:3px solid var(--pajang-gender-tone);outline-offset:1px}
+.radar-scope .scope-person[data-gender-tone]:not(.scope-person-compact){border:3px solid var(--pajang-gender-tone)}
+.radar-scope .scope-person-compact[data-gender-tone] .scope-person-dot{background:var(--pajang-gender-tone);border-color:var(--pajang-gender-tone)}
+#answers .answer-genders{background:none;border:0;padding:0;gap:0}
+#answers .answer-genders::before,#answers .answer-gender span::before{display:none}
+#answers .answer-gender{display:grid;place-items:center;width:44px;height:44px}
+#answers .answer-gender.all{--pajang-gender-tone:#93989e}
+#answers .answer-gender span{display:block;width:18px;height:18px;min-width:0;min-height:0;padding:0;border:0;border-radius:50%;background:var(--pajang-gender-tone);outline:0;box-shadow:none}
+/* Keep the full touch targets while drawing the outer dots closer to the center. */
+#answers .answer-gender:first-child span{transform:translateX(8px)}
+#answers .answer-gender:last-child span{transform:translateX(-8px)}
+#answers .answer-gender[data-lit=true] span{outline:2px solid var(--ink,#34363b);outline-offset:3px}
+#answers .answer-gender:has(input:focus-visible){outline:2px dashed var(--ink,#34363b);outline-offset:-3px;border-radius:9px}
+@media(forced-colors:active){#answers .answer-gender span{forced-color-adjust:none}#answers .answer-gender[data-lit=true] span{outline-color:CanvasText}}

@@ -114,7 +114,7 @@ async function fixture(t, {mode='station', body='기존 답변', chat=false, set
                 assert.equal(data.profilePerson,me.id);
                 assert.equal(data.preferencesVersion,state.preferencesVersion);
                 assert.ok(Object.hasOwn(data.preferences,'relationship_intents'));
-                state.exchange = {...state.exchange,showAge:data.showAge,showGender:data.showGender,fields:maskValues(data.fields)};
+                state.exchange = {...state.exchange,showAge:data.showAge??state.exchange.showAge,showGender:data.showGender??state.exchange.showGender,fields:maskValues(data.fields)};
                 if(state.exchange.fields.height)state.exchange.fields.height=Number(state.exchange.fields.height);
                 state.preferences={...state.preferences,...maskValues(data.preferences)};state.preferencesVersion++;
                 Object.assign(state.server.me,{name:mask(data.name),region:data.region,
@@ -407,7 +407,7 @@ for (const scenario of [{joined:false,view:'write',action:'join'},{joined:true,v
     w.scrollTo=()=>{};
     w.fetch=async url=>{assert.match(url,/regions\.json/);return {ok:true,json:async()=>({'서울특별시':[]})};};
     const state = w.entryFixture = {
-      entry:{joined:scenario.joined,body:'',nickname:'가'.repeat(11)+'❤️❤️',day:'2026-11-19',slot:'am',nextAt:new Date(Date.now()+3600000).toISOString(),question:{id:9,q:['함께 무엇을 하고 싶나요?']}},
+      entry:{joined:scenario.joined,body:'',nickname:'가'.repeat(11)+'❤️❤️',day:'2026-11-19',slot:'am',nextAt:new Date(Date.now()+3600000).toISOString(),accountGender:'female',question:{id:9,q:['함께 무엇을 하고 싶나요?'],answers:['산책해요.','책을 읽어요.']}},
       db:{auth:{getSession:async()=>({data:{session:{user:{id:'auth-member'}}}})}},
       calls:[],handoffs:[],reject:true,
       async call(action,data){
@@ -419,7 +419,16 @@ for (const scenario of [{joined:false,view:'write',action:'join'},{joined:true,v
     await w.eval('(async()=>{\n'+await bundleEntry()+'\n})()');
     const form = document.querySelector('#answer-form'), mine=document.querySelector('#mine');
     assert.equal(form.hidden,false);
-    mine.value='작성 중인 답변';
+    if(scenario.view!=='feed'){
+      const choice=form.querySelector('input[name="sample-answer"]');
+      assert.ok(choice,'the current question supplies its own options');
+      choice.click();
+      assert.equal(mine.required,false);
+      assert.equal(form.querySelector('[type="submit"]').disabled,false);
+    }
+    mine.value='작성 중인 답변';mine.dispatchEvent(new w.Event('input',{bubbles:true}));
+    assert.equal(form.querySelector('input[name="sample-answer"]:checked'),null);
+    if(!scenario.joined)assert.equal(document.getElementById('join-fields').dataset.genderTone,'female');
     if(!scenario.joined){
       assert.equal(form.elements.namedItem('name').maxLength,15,'a masked member nickname can still be edited');
       form.elements.namedItem('name').value='새 금칙';form.elements.consent.checked=true;

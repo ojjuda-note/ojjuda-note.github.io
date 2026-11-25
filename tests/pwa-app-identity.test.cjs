@@ -21,6 +21,7 @@ test('entry routes select the right app without accepting arbitrary icon or inst
     ['/world.html?tab=park', 'park'], ['/world.html?tab=park&game=chess', 'agit'],
     ['/world.html?place=park&game=chess&game=mines', 'park'],
     ['/park/', 'park'], ['/park/index.html', 'park'],
+    ['/pajang/', 'pajang'], ['/pajang/index.html', 'pajang'],
     ['/features/pajang/', 'pajang'], ['/features/pajang/station.html', 'pajang'],
     ['/?auth=login&next=https://other.example/&icon=https://other.example/icon.png', 'agit']
   ]) {
@@ -142,15 +143,20 @@ test('installed Agit, Park and Pajang authenticate before displaying their entra
   if (css !== null) {
     assert.match(css, /@media \(display-mode: standalone\), \(display-mode: minimal-ui\)/,
       'the quick entry applies to installed app display modes');
-    assert.ok(css.includes('#gate .flight-scene { display:none!important; }'),
-      'the logged-in app cannot flash a public airplane scene while loading');
+    assert.doesNotMatch(css, /#gate\s+\.flight-scene\s*\{[^}]*display\s*:\s*none/i,
+      'installed Pajang shows its loading illustration during member verification');
     assert.ok(css.includes('#welcome[data-member-entry="direct"] .sample-radar'),
       'the installed member answer keeps public invitation examples out of the way');
   }
-  for (const html of [pajangEntry, pajangMain]) {
-    assert.match(html, /entry-design\.css\?v=20261122-app-skip-entry1/);
+  for (const html of [pajangEntry,pajangMain]) {
+    assert.match(html, /class="flight-scene"/);
+    assert.match(html, /class="flight-caption pajang-screen-reader" role="status">파장을 열고 있어요\.<\/p>/);
   }
-  assert.match(pajangEntry, /entry\.mjs\?v=20261126-adult-service1/);
+  const versionedEntryStyle = /href="(\.\/entry-design\.css\?v=\d{8}-[a-z0-9-]+)"/;
+  assert.match(pajangEntry, versionedEntryStyle);
+  assert.equal(pajangMain.match(versionedEntryStyle)?.[1], pajangEntry.match(versionedEntryStyle)[1],
+    'both Pajang pages load the same version of the entry styles');
+  assert.match(pajangEntry, /<script type="module" src="\.\/entry\.mjs\?v=\d{8}-[a-z0-9-]+"><\/script>/);
   assert.match(read('park/index.html'), /note\/preview\.js\?v=\d{8}-[a-z0-9-]+/, 'Park loads a versioned composer');
   assert.match(world, /agit-welcome\.js\?v=20261122-member-app-start1/);
 });

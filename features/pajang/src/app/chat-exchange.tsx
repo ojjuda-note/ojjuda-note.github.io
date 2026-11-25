@@ -16,8 +16,8 @@ const categories:{kind:ExchangeKind;label:string}[]=[{kind:"profile",label:"프�
 // Render the conversation notice and the compact buttons in their own slots.
 // Both share one authenticated server state: no duplicate polling or client-side
 // message counter can override the server's five-messages-each consent gate.
-export function ChatExchange({peer,name,owner,region,lastMessage,children}:{
-  peer:string;name:string;owner:string;region?:string;lastMessage?:string;children:(parts:ChatExchangeParts)=>ReactNode;
+export function ChatExchange({peer,name,owner,region,avatarId,lastMessage,children}:{
+  peer:string;name:string;owner:string;region?:string;avatarId?:number;lastMessage?:string;children:(parts:ChatExchangeParts)=>ReactNode;
 }) {
   const [state,setState]=useState<ExchangeState|null>(null);
   const [looking,setLooking]=useState<ExchangeKind|null>(null);
@@ -135,8 +135,9 @@ export function ChatExchange({peer,name,owner,region,lastMessage,children}:{
     <p className="chat-exchange-safety"><I n="shield" s={15}/><span>프로필은 회원이 직접 작성한 미검증 정보입니다. 실제와 다를 수 있으니 사기·금전 요구에 주의하세요.</span></p>
     {looking&&current[looking]==="accepted"&&<div className="chat-exchange-details" role="region" aria-label={"교환한 "+(looking==="photos"?"사진":"프로필")}>
       {looking==="photos"?<SharedExchangePhotos key={peer} peer={peer}/>:<div className="unified-peer-profile">
-        <h3>{name}</h3>{region&&<p className="sub">{region}</p>}
-        <PublicProfilePreferences viewer={owner} person={peer}/>
+        <PublicProfilePreferences viewer={owner} person={peer} avatarId={avatarId}>
+          <h3>{name}</h3>{region&&<p className="sub">{region}</p>}
+        </PublicProfilePreferences>
         <h4>교환 후 공개 정보</h4>
         {current.peerProfile?<PeerProfile profile={current.peerProfile}/>:<p className="sub">작성된 상세 정보가 아직 없어요.</p>}
       </div>}
