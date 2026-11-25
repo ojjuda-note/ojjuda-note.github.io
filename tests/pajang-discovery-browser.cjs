@@ -860,6 +860,7 @@ async function checkNavigation(page){
     await revise.click();
     assert.equal(await editor.getByLabel('내 이야기').inputValue(),me.body);
     await editor.getByLabel('내 이야기').fill('취소할 내용');
+    page.once('dialog',dialog=>dialog.accept());
     await editor.getByRole('button',{name:'닫기'}).click();
     await revise.click();
     assert.equal(await editor.getByLabel('내 이야기').inputValue(),me.body);
