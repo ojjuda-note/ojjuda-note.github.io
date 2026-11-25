@@ -133,7 +133,7 @@
     const userNow = () => getUserId() || null;
     const current = (run, user) => run === identityRun && user === identity && user === userNow();
     const currentView = (run, user, view) => current(run, user) && view === viewRun && !layer.hidden;
-    const focusables = () => [...panel.querySelectorAll('button:not(:disabled),a[href],[tabindex="0"]')].filter(item => !item.hidden && item.getClientRects().length);
+    const focusables = () => [...panel.querySelectorAll('button:not(:disabled),input:not(:disabled),a[href],[tabindex="0"]')].filter(item => !item.hidden && item.getClientRects().length);
     function keepFocus() {
       if (layer.hidden) return;
       const active = document.activeElement;
@@ -427,14 +427,29 @@
     async function respondInvite(item, action) {
       if (saving || loading || !identity || identity !== userNow() || !items.some(value => value.id === item.id && ['group_invite','drinking_invite'].includes(value.kind))) return;
       const run=identityRun,user=identity,view=viewRun;
+      const row=[...rows.children].find(node=>node.dataset.notificationId===item.id);
+      const field=action==='accept'&&item.kind==='group_invite'?row?.querySelector('input[type=password]'):null;
+      if(field&&!field.reportValidity())return;
       saving=true;status.textContent='초대를 처리하고 있어요.';updateControls();keepFocus();
       try {
         const drinking=item.kind==='drinking_invite';
         const {data,error}=drinking
           ? await client.rpc('arcade_friend_invite',{p_action:action,p_id:item.target_id})
-          : await client.rpc('group_invitation',{p_action:action,p_payload:{id:item.target_id}});
+          : await client.rpc('group_invitation',{p_action:action,p_payload:{id:item.target_id,...(field?{password:field.value}:{})}});
         if(error)throw error;
         if(!current(run,user))return;
+        if(!drinking&&action==='accept'&&data?.ok===false&&data.reason?.startsWith('password_')){
+          if(!currentView(run,user,view)||!row?.isConnected)return;
+          let input=field;
+          if(!input){
+            const label=el('label','그룹 비밀번호 ','nn-group-password');
+            input=el('input');input.type='password';input.required=true;input.autocomplete='current-password';
+            input.maxLength=72;input.setAttribute('autocapitalize','none');input.spellcheck=false;
+            label.append(input);row.querySelector('.nn-actions').before(label);
+            input.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.isComposing){event.preventDefault();void respondInvite(item,'accept');}});
+          }
+          status.textContent=data.message||'그룹 비밀번호를 입력해 주세요.';input.focus();input.select();return;
+        }
         announceRead(run,user);
         if(!currentView(run,user,view))return;
         saving=false;

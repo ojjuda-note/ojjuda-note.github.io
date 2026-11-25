@@ -1,10 +1,11 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {PGlite}=require('@electric-sql/pglite');
+const {pgcrypto}=require('@electric-sql/pglite/contrib/pgcrypto');
 const migrations=path.join(__dirname,'../supabase/migrations');
 const migration=suffix=>fs.readFileSync(path.join(migrations,fs.readdirSync(migrations).find(n=>n.endsWith(suffix))),'utf8');
 const uid=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 test('member invitations: private notifications, explicit acceptance, shared links and revocation',async()=>{
-const db=new PGlite();try{
+const db=new PGlite({extensions:{pgcrypto}});try{
 await db.exec(`create role anon;create role authenticated;create schema auth;create schema storage;create schema ojjuda_account_deletion;create schema ojjuda_restaurants_internal;
 create table auth.users(id uuid primary key,is_anonymous boolean default false,deleted_at timestamptz,banned_until timestamptz);
 create table public.profiles(id uuid primary key references auth.users(id),nickname text,created_at timestamptz not null default now());
@@ -125,5 +126,6 @@ assert.equal(olderRecent.length,10);assert.equal(new Set([...recentPage.slice(0,
 await db.exec('reset role');
 await require('./helpers/group-age-scenarios.cjs')({db,assert,as,api,board,val,uid,migration});
 await require('./helpers/group-activity-scenarios.cjs')({db,assert,as,board,uid,migration});
+await require('./helpers/group-password-scenarios.cjs')({db,assert,as,api,board,val,uid,migration});
 }finally{await db.close();}
 });
