@@ -107,3 +107,11 @@ await build({
   nodePaths: [path.join(here, 'node_modules')],
   outfile: path.resolve(here, '../../park/even-g2.bundle.mjs'),
 });
+
+// The dictionary loads only when Park needs to tag a new post.
+const { cp } = await import('node:fs/promises');
+const tagger = 'garu-ko-0.14.0';
+for (const asset of ['dist/browser.js', 'dist/core.js', 'dist/normalize.js', 'pkg', 'models/base.gmdl',
+  'models/NOTICE.md', 'models/bulk-provenance.json', 'models/licenses', 'LICENSE', 'NOTICE']) {
+  await cp(path.join(here, 'node_modules/garu-ko', asset), path.join(here, tagger, asset), { recursive: true });
+}

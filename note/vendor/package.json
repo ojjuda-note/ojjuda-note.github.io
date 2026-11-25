@@ -8,6 +8,7 @@
   "dependencies": {
     "@evenrealities/even_hub_sdk": "0.0.16",
     "@mediabunny/aac-encoder": "1.66.2",
+    "garu-ko": "0.14.0",
     "mediabunny": "1.66.2",
     "tus-js-client": "4.3.1"
   },
