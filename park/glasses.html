@@ -24,7 +24,7 @@
 <meta name="twitter:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
   <link rel="icon" href="/favicon.svg?v=20261022-agit-logo2" type="image/svg+xml">
-  <link rel="stylesheet" href="/note/glasses.css?v=20261125-even-g2-replies1">
+  <link rel="stylesheet" href="/note/glasses.css?v=20261125-g2-public1">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261022-agit-logo2">
 <script src="/shared/navigation/section-back.js?v=20261123-independent-park1" data-return-to="park" defer></script></head>
 <body>
@@ -44,8 +44,298 @@
     <div class="controls">
       <button type="button" id="glass-prev" disabled>이전</button>
       <button type="button" id="glass-next" disabled>다음</button>
-      <button type="button" id="glass-locate">내 위치로 보기</button>
+      <select id="glass-area" aria-label="날씨와 가까운 카드를 볼 지역">
+        <option value="">지역 선택</option>
+        <optgroup label="서울특별시">
+          <option value="37.57,126.982,60,127">종로구</option>
+          <option value="37.561,127,60,127">중구</option>
+          <option value="37.536,126.968,60,126">용산구</option>
+          <option value="37.561,127.039,61,127">성동구</option>
+          <option value="37.536,127.085,62,126">광진구</option>
+          <option value="37.572,127.042,61,127">동대문구</option>
+          <option value="37.604,127.095,62,128">중랑구</option>
+          <option value="37.586,127.02,61,127">성북구</option>
+          <option value="37.637,127.028,61,128">강북구</option>
+          <option value="37.666,127.05,61,129">도봉구</option>
+          <option value="37.651,127.058,61,129">노원구</option>
+          <option value="37.6,126.931,59,127">은평구</option>
+          <option value="37.576,126.939,59,127">서대문구</option>
+          <option value="37.561,126.911,59,127">마포구</option>
+          <option value="37.514,126.869,58,126">양천구</option>
+          <option value="37.548,126.852,58,126">강서구</option>
+          <option value="37.493,126.89,58,125">구로구</option>
+          <option value="37.449,126.904,59,124">금천구</option>
+          <option value="37.524,126.898,58,126">영등포구</option>
+          <option value="37.51,126.942,59,125">동작구</option>
+          <option value="37.475,126.954,59,125">관악구</option>
+          <option value="37.481,127.035,61,125">서초구</option>
+          <option value="37.515,127.05,61,126">강남구</option>
+          <option value="37.512,127.108,62,126">송파구</option>
+          <option value="37.527,127.126,62,126">강동구</option>
+        </optgroup>
+        <optgroup label="부산광역시">
+          <option value="35.103,129.035,97,74">중구</option>
+          <option value="35.095,129.026,97,74">서구</option>
+          <option value="35.136,129.059,98,75">동구</option>
+          <option value="35.088,129.07,98,74">영도구</option>
+          <option value="35.16,129.055,97,75">부산진구</option>
+          <option value="35.202,129.086,98,76">동래구</option>
+          <option value="35.133,129.087,98,75">남구</option>
+          <option value="35.194,128.992,96,76">북구</option>
+          <option value="35.16,129.166,99,75">해운대구</option>
+          <option value="35.101,128.977,96,74">사하구</option>
+          <option value="35.24,129.094,98,77">금정구</option>
+          <option value="35.209,128.983,96,76">강서구</option>
+          <option value="35.173,129.082,98,76">연제구</option>
+          <option value="35.142,129.115,99,75">수영구</option>
+          <option value="35.149,128.993,96,75">사상구</option>
+          <option value="35.241,129.224,100,77">기장군</option>
+        </optgroup>
+        <optgroup label="대구광역시">
+          <option value="35.866,128.608,89,90">중구</option>
+          <option value="35.884,128.638,90,91">동구</option>
+          <option value="35.869,128.561,88,90">서구</option>
+          <option value="35.843,128.6,89,90">남구</option>
+          <option value="35.883,128.585,89,91">북구</option>
+          <option value="35.855,128.633,89,90">수성구</option>
+          <option value="35.827,128.535,88,90">달서구</option>
+          <option value="35.772,128.433,86,88">달성군</option>
+          <option value="36.24,128.575,88,99">군위군</option>
+        </optgroup>
+        <optgroup label="인천광역시">
+          <option value="37.471,126.624,54,125">중구</option>
+          <option value="37.471,126.645,54,125">동구</option>
+          <option value="37.461,126.653,54,124">미추홀구</option>
+          <option value="37.407,126.68,55,123">연수구</option>
+          <option value="37.445,126.734,56,124">남동구</option>
+          <option value="37.504,126.724,55,125">부평구</option>
+          <option value="37.535,126.74,56,126">계양구</option>
+          <option value="37.543,126.678,55,126">서구</option>
+          <option value="37.744,126.49,51,130">강화군</option>
+          <option value="37.444,126.639,54,124">옹진군</option>
+        </optgroup>
+        <optgroup label="광주광역시">
+          <option value="35.143,126.925,60,74">동구</option>
+          <option value="35.149,126.893,59,74">서구</option>
+          <option value="35.119,126.91,59,73">남구</option>
+          <option value="35.171,126.914,59,75">북구</option>
+          <option value="35.136,126.796,57,74">광산구</option>
+        </optgroup>
+        <optgroup label="대전광역시">
+          <option value="36.324,127.435,68,100">동구</option>
+          <option value="36.323,127.423,68,100">중구</option>
+          <option value="36.352,127.386,67,100">서구</option>
+          <option value="36.359,127.358,67,101">유성구</option>
+          <option value="36.344,127.418,68,100">대덕구</option>
+        </optgroup>
+        <optgroup label="울산광역시">
+          <option value="35.566,129.335,102,84">중구</option>
+          <option value="35.541,129.332,102,84">남구</option>
+          <option value="35.502,129.419,104,83">동구</option>
+          <option value="35.58,129.364,103,85">북구</option>
+          <option value="35.531,129.297,101,84">울주군</option>
+        </optgroup>
+        <optgroup label="세종특별자치시">
+          <option value="36.48,127.289,66,103">세종특별자치시</option>
+        </optgroup>
+        <optgroup label="경기도">
+          <option value="37.301,127.012,60,121">수원시장안구</option>
+          <option value="37.255,126.974,60,120">수원시권선구</option>
+          <option value="37.283,127.038,61,121">수원시팔달구</option>
+          <option value="37.256,127.049,61,120">수원시영통구</option>
+          <option value="37.447,127.148,63,124">성남시수정구</option>
+          <option value="37.428,127.139,63,124">성남시중원구</option>
+          <option value="37.38,127.121,62,123">성남시분당구</option>
+          <option value="37.735,127.036,61,130">의정부시</option>
+          <option value="37.384,126.934,59,123">안양시만안구</option>
+          <option value="37.39,126.953,59,123">안양시동안구</option>
+          <option value="37.497,126.787,57,125">부천시원미구</option>
+          <option value="37.48,126.8,57,125">부천시소사구</option>
+          <option value="37.528,126.796,57,126">부천시오정구</option>
+          <option value="37.476,126.867,58,125">광명시</option>
+          <option value="36.989,127.115,62,114">평택시</option>
+          <option value="37.901,127.063,61,134">동두천시</option>
+          <option value="37.299,126.847,58,121">안산시상록구</option>
+          <option value="37.317,126.814,57,121">안산시단원구</option>
+          <option value="37.635,126.834,57,128">고양시덕양구</option>
+          <option value="37.656,126.777,56,129">고양시일산동구</option>
+          <option value="37.672,126.753,56,129">고양시일산서구</option>
+          <option value="37.426,126.99,60,124">과천시</option>
+          <option value="37.592,127.132,62,127">구리시</option>
+          <option value="37.633,127.219,64,128">남양주시</option>
+          <option value="37.147,127.08,62,118">오산시</option>
+          <option value="37.377,126.805,57,123">시흥시</option>
+          <option value="37.359,126.938,59,122">군포시</option>
+          <option value="37.342,126.97,60,122">의왕시</option>
+          <option value="37.536,127.217,64,126">하남시</option>
+          <option value="37.231,127.204,64,119">용인시처인구</option>
+          <option value="37.278,127.117,62,120">용인시기흥구</option>
+          <option value="37.319,127.1,62,121">용인시수지구</option>
+          <option value="37.757,126.782,56,131">파주시</option>
+          <option value="37.275,127.443,68,121">이천시</option>
+          <option value="37.005,127.282,65,115">안성시</option>
+          <option value="37.612,126.718,55,128">김포시</option>
+          <option value="37.197,126.834,57,119">화성시</option>
+          <option value="37.415,127.258,65,123">광주시</option>
+          <option value="37.782,127.048,61,131">양주시</option>
+          <option value="37.892,127.202,64,134">포천시</option>
+          <option value="37.295,127.64,71,121">여주시</option>
+          <option value="38.093,127.077,61,138">연천군</option>
+          <option value="37.829,127.512,69,133">가평군</option>
+          <option value="37.489,127.49,69,125">양평군</option>
+        </optgroup>
+        <optgroup label="충청북도">
+          <option value="36.584,127.512,69,106">청주시상당구</option>
+          <option value="36.637,127.483,69,107">청주시서원구</option>
+          <option value="36.618,127.359,67,106">청주시흥덕구</option>
+          <option value="36.644,127.488,69,107">청주시청원구</option>
+          <option value="36.988,127.928,76,114">충주시</option>
+          <option value="37.13,128.193,81,118">제천시</option>
+          <option value="36.487,127.732,73,103">보은군</option>
+          <option value="36.304,127.574,71,99">옥천군</option>
+          <option value="36.172,127.786,74,97">영동군</option>
+          <option value="36.782,127.583,71,110">증평군</option>
+          <option value="36.853,127.438,68,111">진천군</option>
+          <option value="36.812,127.789,74,111">괴산군</option>
+          <option value="36.937,127.693,72,113">음성군</option>
+          <option value="36.982,128.368,84,115">단양군</option>
+        </optgroup>
+        <optgroup label="충청남도">
+          <option value="36.804,127.152,63,110">천안시동남구</option>
+          <option value="36.876,127.157,63,112">천안시서북구</option>
+          <option value="36.444,127.121,63,102">공주시</option>
+          <option value="36.331,126.615,54,100">보령시</option>
+          <option value="36.787,127.005,60,110">아산시</option>
+          <option value="36.782,126.452,51,110">서산시</option>
+          <option value="36.184,127.101,62,97">논산시</option>
+          <option value="36.272,127.251,65,99">계룡시</option>
+          <option value="36.891,126.63,54,112">당진시</option>
+          <option value="36.106,127.49,69,95">금산군</option>
+          <option value="36.273,126.912,59,99">부여군</option>
+          <option value="36.077,126.694,55,94">서천군</option>
+          <option value="36.456,126.804,57,103">청양군</option>
+          <option value="36.598,126.663,55,106">홍성군</option>
+          <option value="36.68,126.851,58,107">예산군</option>
+          <option value="36.743,126.3,48,109">태안군</option>
+        </optgroup>
+        <optgroup label="전북특별자치도">
+          <option value="35.809,127.122,63,89">전주시완산구</option>
+          <option value="35.826,127.136,63,89">전주시덕진구</option>
+          <option value="35.965,126.739,56,92">군산시</option>
+          <option value="35.945,126.96,60,91">익산시</option>
+          <option value="35.567,126.858,58,83">정읍시</option>
+          <option value="35.413,127.392,68,80">남원시</option>
+          <option value="35.801,126.883,59,88">김제시</option>
+          <option value="35.843,127.15,63,89">완주군</option>
+          <option value="35.789,127.427,68,88">진안군</option>
+          <option value="36.004,127.663,72,93">무주군</option>
+          <option value="35.644,127.523,70,85">장수군</option>
+          <option value="35.608,127.285,66,84">임실군</option>
+          <option value="35.371,127.14,63,79">순창군</option>
+          <option value="35.433,126.704,56,80">고창군</option>
+          <option value="35.729,126.736,56,87">부안군</option>
+        </optgroup>
+        <optgroup label="전라남도">
+          <option value="34.809,126.394,50,67">목포시</option>
+          <option value="34.757,127.664,73,66">여수시</option>
+          <option value="34.948,127.489,70,70">순천시</option>
+          <option value="35.013,126.713,56,71">나주시</option>
+          <option value="34.938,127.698,73,70">광양시</option>
+          <option value="35.318,126.99,61,78">담양군</option>
+          <option value="35.279,127.294,66,77">곡성군</option>
+          <option value="35.199,127.465,69,75">구례군</option>
+          <option value="34.608,127.287,66,62">고흥군</option>
+          <option value="34.768,127.082,62,66">보성군</option>
+          <option value="35.061,126.989,61,72">화순군</option>
+          <option value="34.679,126.909,59,64">장흥군</option>
+          <option value="34.639,126.769,57,63">강진군</option>
+          <option value="34.57,126.601,54,61">해남군</option>
+          <option value="34.797,126.699,56,66">영암군</option>
+          <option value="34.987,126.484,52,71">무안군</option>
+          <option value="35.063,126.519,52,72">함평군</option>
+          <option value="35.274,126.514,52,77">영광군</option>
+          <option value="35.299,126.787,57,77">장성군</option>
+          <option value="34.308,126.757,57,56">완도군</option>
+          <option value="34.484,126.266,48,59">진도군</option>
+          <option value="34.79,126.382,50,66">신안군</option>
+        </optgroup>
+        <optgroup label="경상북도">
+          <option value="36.006,129.362,102,94">포항시남구</option>
+          <option value="36.039,129.368,102,95">포항시북구</option>
+          <option value="35.853,129.227,100,91">경주시</option>
+          <option value="36.137,128.116,80,96">김천시</option>
+          <option value="36.565,128.732,91,106">안동시</option>
+          <option value="36.117,128.347,84,96">구미시</option>
+          <option value="36.803,128.626,89,111">영주시</option>
+          <option value="35.97,128.941,95,93">영천시</option>
+          <option value="36.408,128.161,81,102">상주시</option>
+          <option value="36.584,128.189,81,106">문경시</option>
+          <option value="35.822,128.743,91,90">경산시</option>
+          <option value="36.35,128.699,90,101">의성군</option>
+          <option value="36.433,129.059,96,103">청송군</option>
+          <option value="36.664,129.115,97,108">영양군</option>
+          <option value="36.412,129.368,102,103">영덕군</option>
+          <option value="35.644,128.736,91,86">청도군</option>
+          <option value="35.723,128.265,83,87">고령군</option>
+          <option value="35.916,128.285,83,91">성주군</option>
+          <option value="35.993,128.404,85,93">칠곡군</option>
+          <option value="36.655,128.455,86,107">예천군</option>
+          <option value="36.89,128.735,90,113">봉화군</option>
+          <option value="36.99,129.403,102,115">울진군</option>
+          <option value="37.481,130.904,127,127">울릉군</option>
+        </optgroup>
+        <optgroup label="경상남도">
+          <option value="35.254,128.64,90,77">창원시의창구</option>
+          <option value="35.198,128.703,91,76">창원시성산구</option>
+          <option value="35.197,128.568,89,76">창원시마산합포구</option>
+          <option value="35.221,128.58,89,76">창원시마산회원구</option>
+          <option value="35.133,128.71,91,75">창원시진해구</option>
+          <option value="35.177,128.11,81,75">진주시</option>
+          <option value="34.851,128.435,87,68">통영시</option>
+          <option value="35,128.067,80,71">사천시</option>
+          <option value="35.226,128.892,95,77">김해시</option>
+          <option value="35.501,128.749,92,83">밀양시</option>
+          <option value="34.877,128.623,90,69">거제시</option>
+          <option value="35.332,129.039,97,79">양산시</option>
+          <option value="35.319,128.264,83,78">의령군</option>
+          <option value="35.269,128.409,86,77">함안군</option>
+          <option value="35.542,128.495,87,83">창녕군</option>
+          <option value="34.97,128.325,85,71">고성군</option>
+          <option value="34.835,127.894,77,68">남해군</option>
+          <option value="35.064,127.753,74,73">하동군</option>
+          <option value="35.412,127.876,76,80">산청군</option>
+          <option value="35.517,127.727,74,82">함양군</option>
+          <option value="35.684,127.912,77,86">거창군</option>
+          <option value="35.564,128.168,81,84">합천군</option>
+        </optgroup>
+        <optgroup label="제주특별자치도">
+          <option value="33.496,126.533,53,38">제주시</option>
+          <option value="33.252,126.513,52,33">서귀포시</option>
+        </optgroup>
+        <optgroup label="강원특별자치도">
+          <option value="37.879,127.732,73,134">춘천시</option>
+          <option value="37.339,127.922,76,122">원주시</option>
+          <option value="37.749,128.878,92,131">강릉시</option>
+          <option value="37.522,129.117,97,127">동해시</option>
+          <option value="37.161,128.988,95,119">태백시</option>
+          <option value="38.204,128.594,87,141">속초시</option>
+          <option value="37.447,129.167,98,125">삼척시</option>
+          <option value="37.694,127.891,75,130">홍천군</option>
+          <option value="37.489,127.987,77,125">횡성군</option>
+          <option value="37.181,128.464,86,119">영월군</option>
+          <option value="37.368,128.392,84,123">평창군</option>
+          <option value="37.378,128.663,89,123">정선군</option>
+          <option value="38.144,127.316,65,139">철원군</option>
+          <option value="38.103,127.71,72,139">화천군</option>
+          <option value="38.107,127.992,77,139">양구군</option>
+          <option value="38.067,128.173,80,138">인제군</option>
+          <option value="38.378,128.47,85,145">고성군</option>
+          <option value="38.073,128.621,88,138">양양군</option>
+        </optgroup>
+      </select>
+      <button type="button" id="glass-locate" hidden>내 위치로 보기</button>
       <button type="button" id="glass-sample">예시 보기</button>
+      <button type="button" id="glass-retry" hidden>카드 다시 불러오기</button>
     </div>
     <p id="glass-status" class="status" role="status"></p>
     <p id="glass-signin" class="status" hidden><a class="back-link" href="/park/">공원 로그인</a></p>
@@ -57,6 +347,6 @@
   </main>
   <script src="/config.js?v=20261111-shared-member-auth1"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
-  <script src="/note/glasses.js?v=20261125-even-g2-replies1" defer></script>
+  <script src="/note/glasses.js?v=20261125-g2-public1" defer></script>
 </body>
 </html>

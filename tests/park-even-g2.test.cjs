@@ -8,7 +8,7 @@ const root=path.resolve(__dirname,'..');
 const row=(id,body,band,extra={})=>({id,body,distance_band:band,kind:'memo',tags:[],...extra});
 const cards=[row('a','첫 카드','근처'),row('b','둘째 카드','2km'),row('c','먼 카드','12km'),row('z','숨김','근처',{tags:['19금']})];
 
-async function setup({granted=false,user='member',replies,weather,nearby=cards}={}) {
+async function setup({granted=false,user='member',replies,weather,nearby=cards,recent=[row('pub','공개 원글',null)],publicItems=[]}={}) {
   const elements=new Map(), window=new EventTarget();
   const get=id=>{
     if(!elements.has(id))elements.set(id,Object.assign(new EventTarget(),{parentElement:{},textContent:'',focus(){},hidden:false}));
@@ -21,8 +21,14 @@ async function setup({granted=false,user='member',replies,weather,nearby=cards}=
   const calls=[];
   const db={auth:{onAuthStateChange(cb){
     auth=cb;cb('INITIAL_SESSION',user?{user:{id:user}}:null);return {data:{subscription:{unsubscribe(){}}}};
-  }},schema(){return {rpc(name,params){calls.push({name,params});return {abortSignal(){
-    if(name==='list_cards')return Promise.resolve({data:nearby});
+  }},schema(){return {from(table){
+    assert.equal(table,'public_cards');
+    const query={select(){return query;},eq(){return query;},not(){return query;},lte(){return query;},
+      order(){return query;},limit(){return query;},abortSignal(){return Promise.resolve({data:publicItems,count:publicItems.length});}};
+    return query;
+  },rpc(name,params){calls.push({name,params});return {abortSignal(){
+    if(name==='list_cards')return Promise.resolve({data:params.p_sort==='recent' ? recent : nearby});
+    if(name==='get_card')return Promise.resolve({data:{kind:'memo',tags:[]}});
     return replies ? replies(params) : Promise.resolve({data:{items:[],total:0,next:null}});
   }};}};}};
   window.OjjudaGetClient=async()=>db;
@@ -42,10 +48,10 @@ async function setup({granted=false,user='member',replies,weather,nearby=cards}=
 
 test('nearby only, no prompt on entry, consented weather, stale speed and location off',async()=>{
   const {get,hud,calls,revoke,advance,signOut}=await setup();
-  assert.equal(calls.length,0);
+  assert.deepEqual(calls.map(c=>c.params.p_sort),['recent']);
+  assert.equal(get('glass-first-body').textContent,'공개 원글');
   await get('glass-locate').onclick();await delay(0);
-  assert.equal(calls[0].params.p_sort,'nearby');
-  assert.deepEqual(calls.map(c=>c.params.p_sort),['nearby']);
+  assert.deepEqual(calls.map(c=>c.params.p_sort),['recent','nearby']);
   assert.equal(get('glass-first-body').textContent,'첫 카드');
   assert.equal(get('glass-first-distance').textContent,'1km 이내');
   assert.equal(get('glass-second-distance').textContent,'2km 이내');
@@ -57,13 +63,45 @@ test('nearby only, no prompt on entry, consented weather, stale speed and locati
   advance(16000);assert.equal(get('glass-speed').textContent,'— km/h');
   revoke();assert.equal(hud.getView().card,null);assert.equal(get('glass-first-distance').textContent,'');
   get('glass-sample').onclick();assert.equal(hud.getView().sample,true);
-  signOut();assert.equal(hud.getView().card,null);assert.equal(get('glass-weather').textContent,'날씨 · 로그인 필요');
+  signOut();assert.equal(hud.getView().card,null);assert.equal(get('glass-weather').textContent,'날씨 · 지역 선택');
 });
 test('existing permission starts nearby cards and preserves a temperature-only KMA observation',async()=>{
   const {get,hud,calls,perm}=await setup({granted:true,weather:async()=>({ok:true,json:async()=>({source:'kma',temperature:0,label:'',expiresAt:Date.now()+60000})})});
-  assert.equal(calls.length,1);assert.equal(get('glass-weather').textContent,'0°C');
+  assert.deepEqual(calls.map(c=>c.params.p_sort),['recent','nearby']);assert.equal(get('glass-weather').textContent,'0°C');
   perm.state='denied';perm.dispatchEvent(new Event('change'));assert.equal(hud.getView().card,null);
-  const guest=await setup({user:null,granted:true});assert.equal(guest.calls.length,0);
+  const guest=await setup({user:null,granted:true});
+  assert.deepEqual(guest.calls.map(c=>[c.params.p_sort,c.params.p_lat]),[['recent',null]]);
+});
+
+test('signed-out visitor reads real cards and replies, and selects a public district for weather and distance without GPS',async()=>{
+  const {get,hud,calls,window}=await setup({user:null,publicItems:[row('r','공개 답카드',null)]});
+  const loc=window.OjjudaLocation;
+  for(const key of ['authorizePosition','preference','readPosition','weatherCell'])loc[key]=()=>assert.fail('guest device location');
+  assert.equal(get('glass-locate').hidden,true);
+  assert.equal(get('glass-first-distance').textContent,'');
+  hud.select();await delay(0);hud.move(1);
+  assert.equal(hud.getView().reader.body,'공개 답카드');
+  hud.select();
+  const select=get('glass-area');select.value='37.57,126.982,60,127';
+  select.selectedOptions=[{value:select.value,textContent:'종로구'}];
+  select.onchange();await delay(0);
+  assert.equal(get('glass-weather').textContent,'종로구 · -2°C · 눈');
+  assert.equal(get('glass-status').textContent,'종로구 기준 · 가까운 순');
+  assert.equal(calls.at(-1).params.p_lat,37.57);
+  assert.equal(get('glass-first-distance').textContent,'1km 이내');
+  select.value='';select.selectedOptions=[];select.onchange();await delay(0);
+  assert.equal(get('glass-first-body').textContent,'공개 원글');
+  assert.equal(get('glass-weather').textContent,'날씨 · 지역 선택');
+});
+
+test('a district without nearby cards keeps its weather and shows clearly marked recent cards',async()=>{
+  const {get}=await setup({user:null,nearby:[]});
+  const area=get('glass-area');
+  area.selectedOptions=[{value:'37.57,126.982,60,127',textContent:'종로구'}];
+  area.onchange();await delay(0);
+  assert.match(get('glass-status').textContent,/30km 이내 카드 없음.*최신순/);
+  assert.equal(get('glass-first-distance').textContent,'');
+  assert.match(get('glass-weather').textContent,/종로구/);
 });
 test('visible replies use their own bands, paginate, retry and discard stale responses',async()=>{
   let mode='pages',finish,attempt=0;

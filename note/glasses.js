@@ -3,6 +3,7 @@
   const byId = id => document.getElementById(id);
   const status = byId('glass-status');
   const locate = byId('glass-locate');
+  const areaSelect = byId('glass-area');
   const buttons = [byId('glass-first'), byId('glass-second')];
   const service = window.OjjudaLocation;
   const config = window.OJJUDA_CONFIG;
@@ -11,7 +12,8 @@
   let db, owner, hardware, tracking, stopPreference = () => {};
   let rows = [], index = 0, thread = null, sample = false, feedRun = 0, autoRun = 0;
   let battery = null, charging = false, weather = null, speed = null, speedUntil = 0;
-  let weatherHint = '날씨 · 위치 필요', permission, autoPaused = false;
+  let weatherHint = '날씨 · 지역 선택', permission, autoPaused = false;
+  let source = 'recent', feedRequest;
   const dist = band => {
     if (band === '근처') return '1km 이내';
     return typeof band === 'string' && /^[1-9]\d{0,4}km$/.test(band) ? band + ' 이내' : '거리 미확인';
@@ -31,7 +33,8 @@
       const t = thread, reply = t.items[t.at-1];
       const label = t.error ? '다시 시도 ↓' : t.total === null ? '답카드 확인 중' :
         t.total ? '답카드 ' + t.total + '개 ↓' : '답카드 없음';
-      reader = {title:reply ? '답카드 ' + t.at + '/' + t.total + (t.error ? ' · 다시 시도 ↓' : '') : '원글 · '+label,
+      reader = {title:(reply ? '답카드 ' + t.at + '/' + t.total + (t.error ? ' · 다시 시도 ↓' : '') : '원글 · '+label)
+          + (t.public && t.total > 1 ? ' · 최신순' : ''),
         body:reply?.body ?? cards[0].body, distance:reply?.distance ?? cards[0].distance,
         prev:t.at>0, next:t.at<t.items.length || (!t.busy && (!!t.next || t.error))};
     }
@@ -43,13 +46,14 @@
     const view = model();
     byId('glass-sample').textContent = sample ? '예시 닫기' : '예시 보기';
     byId('glass-signin').hidden = owner !== null;
+    locate.hidden = !owner;
     byId('glass-clock').textContent = view.time;
     byId('glass-battery').textContent = (battery == null ? '—' : battery) + '%' + (charging ? ' ⚡' : '');
     byId('glass-weather').textContent = view.weather;
     byId('glass-speed').textContent = (view.speed ?? '—') + ' km/h';
     buttons.forEach((button,n) => {
       const slot = n ? 'second' : 'first', card = view.cards[n];
-      byId('glass-'+slot+'-body').textContent = card?.oneLine ?? (n ? '—' : '근처 공원 카드');
+      byId('glass-'+slot+'-body').textContent = card?.oneLine ?? (n ? '—' : '공원 카드');
       byId('glass-'+slot+'-distance').textContent = card?.distance ?? '';
       button.disabled = !card;
     });
@@ -67,17 +71,41 @@
     window.dispatchEvent(new CustomEvent('ojjuda:glasses-view', {detail:view}));
   }
   function closeThread() { thread?.controller.abort(); thread = null; }
-  function setCards(data, message = '') {
+  function setCards(data, message = '', order = 'recent') {
+    if (source !== order) { closeThread(); index = 0; }
+    source = order;
     const old = rows[index]?.id;
     const keepPosition = !!thread || index > 0;
     rows = (Array.isArray(data) ? data : []).filter(row =>
       row && typeof row.body === 'string' && row.body.trim() && !row.tags?.includes('19금') &&
       (!row.kind || row.kind === 'memo')
-    ).map(row => ({id:row.id, body:row.body, distance:dist(row.distance_band)}));
+    ).map(row => ({id:row.id, body:row.body, distance:order === 'recent' ? '' : dist(row.distance_band)}));
     index = keepPosition ? Math.max(0,rows.findIndex(row=>row.id===old)) : 0;
     if (!old || rows[index]?.id !== old) closeThread();
     status.textContent = message;
+    byId('glass-retry').hidden = true;
     render();
+  }
+  async function publicReplies(t) {
+    const api = db.schema('ojjuda_note');
+    const signal = t.controller.signal;
+    if (!t.next) {
+      const parent = await api.rpc('get_card', {p_id:t.id}).abortSignal(signal);
+      if (parent.error) throw parent.error;
+      if (!parent.data || parent.data.kind !== 'memo' || parent.data.tags?.includes('19금')) return null;
+    }
+    const snapshot = t.snapshot || new Date().toISOString();
+    let query = api.from('public_cards').select('id,body,created_at', {count:t.next ? undefined : 'exact'})
+      .eq('parent_id',t.id).eq('kind','comment').not('tags','cs','{19금}').lte('created_at',snapshot);
+    if (t.next) {
+      const {created_at,id} = t.next;
+      query = query.or('created_at.lt.'+created_at+',and(created_at.eq.'+created_at+',id.lt.'+id+')');
+    }
+    const {data,count,error} = await query.order('created_at',{ascending:false}).order('id',{ascending:false})
+      .limit(21).abortSignal(signal);
+    if (error) throw error;
+    const items = data.slice(0,20);
+    return {items, snapshot, total:count ?? t.total, next:data.length>20 ? items.at(-1) : null};
   }
   async function readReplies(t, advance=false) {
     if (t.busy) return;
@@ -89,6 +117,8 @@
           {id:'sample-r1',body:'저도 이 길을 좋아해요.',distance_band:'근처'},
           {id:'sample-r2',body:'다음엔 저도 걸어볼게요.',distance_band:'3km'}] : [];
         result = {items,total:items.length,next:null};
+      } else if (t.public) {
+        result = await publicReplies(t);
       } else {
         const {data,error} = await db.schema('ojjuda_note').rpc('glasses_replies',{
           p_parent:t.id,p_lat:t.fix.latitude,p_lon:t.fix.longitude,p_after:t.next,p_snapshot:t.snapshot
@@ -103,9 +133,10 @@
       }
       const seen = new Set(t.items.map(row=>row.id));
       for (const row of result.items) if (row.body && !seen.has(row.id)) {
-        t.items.push({id:row.id,body:row.body,distance:dist(row.distance_band)}); seen.add(row.id);
+        t.items.push({id:row.id,body:row.body,distance:t.public ? '' : dist(row.distance_band)}); seen.add(row.id);
       }
-      t.total = Math.max(t.items.length,result.total); t.next = result.next; t.snapshot = result.snapshot;
+      t.total = result.next ? Math.max(t.items.length,result.total) : t.items.length;
+      t.next = result.next; t.snapshot = result.snapshot;
       if (advance && t.at<t.items.length) ++t.at;
     } catch { if (thread===t) t.error=true; }
     finally { t.busy=false; if (thread===t || !thread) render(); }
@@ -121,9 +152,9 @@
   }
   function select(offset = 0) {
     if (thread) { closeThread(); render(); byId('glass-first').focus({preventScroll:true}); return; }
-    if (!rows[index+offset] || (!sample && !tracking?.fix)) return;
+    if (!rows[index+offset]) return;
     index+=offset;
-    thread={id:rows[index].id,owner,fix:tracking?.fix,controller:new AbortController(),items:[],
+    thread={id:rows[index].id,owner,fix:tracking?.fix,public:!sample && source!=='nearby',controller:new AbortController(),items:[],
       at:0,total:null,next:null,snapshot:null,busy:false,error:false};
     void readReplies(thread);
     byId('glass-full').focus({preventScroll:true});
@@ -133,40 +164,55 @@
     charging = isCharging === true;
     render();
   }
-  async function loadCards(position, expected) {
-    if (!db || !position || tracking !== expected) return;
+  async function loadCards(position, expected, note = '') {
+    if (!db || tracking !== expected || sample || document.hidden) return;
+    feedRequest?.abort();
+    const request = new AbortController();
+    feedRequest = request;
     const run = ++feedRun;
+    const order = position ? (expected.area ? 'area' : 'nearby') : 'recent';
+    const current = () => run===feedRun && expected===tracking && !request.signal.aborted;
     try {
       const cards=[], snapshot=new Date().toISOString();
       for (let offset=0; offset<=5000 && cards.length<30; offset+=30) {
         const {data,error}=await db.schema('ojjuda_note').rpc('list_cards',{
-          p_sort:'nearby', p_lat:position.latitude, p_lon:position.longitude,
+          p_sort:position ? 'nearby' : 'recent', p_lat:position?.latitude ?? null, p_lon:position?.longitude ?? null,
           p_radius_m:30000, p_limit:30, p_cursor:{offset,snapshot}
-        }).abortSignal(expected.controller.signal);
-        if (run!==feedRun || expected!==tracking) return;
+        }).abortSignal(request.signal);
+        if (!current()) return;
         if (error) throw error;
         cards.push(...(data || []).filter(row=>row.kind==='memo'));
         if (!data || data.length<30) break;
       }
-      setCards(cards.slice(0,30),'가까운 순');
-      if (!rows.length) status.textContent = '30km 이내에 공개 카드가 없어요.';
+      if (position && !cards.length) {
+        return loadCards(null,expected,'30km 이내 카드 없음');
+      }
+      const label = order==='area' ? expected.area.label+' 기준 · 가까운 순' : order==='nearby' ? '가까운 순' : '공개 카드 · 최신순';
+      setCards(cards.slice(0,30),[note,label].filter(Boolean).join(' · '),order);
+      if (!rows.length) status.textContent = '아직 공개 카드가 없어요.';
     } catch {
-      if (run === feedRun && expected === tracking) setCards([], '카드를 불러오지 못했어요. 다시 시도해 주세요.');
+      if (!current()) return;
+      if (position) return loadCards(null,expected,'가까운 카드 조회 지연');
+      status.textContent = '카드를 불러오지 못했어요. 다시 시도해 주세요.';
+      byId('glass-retry').hidden = false;
+    } finally {
+      if (feedRequest===request) feedRequest=null;
     }
   }
   function stopTracking() {
     const old = tracking;
     tracking = null; ++feedRun;
+    feedRequest?.abort(); feedRequest=null;
     old?.controller.abort();
     clearTimeout(old?.timer);
     if (old?.native) void hardware?.stopLocation().catch(() => {});
     weather = null; speed = null; speedUntil = 0;
-    weatherHint = owner === null ? '날씨 · 로그인 필요' : '날씨 · 위치 필요';
+    weatherHint = '날씨 · 지역 선택';
     locate.textContent = '내 위치로 보기'; locate.disabled = false;
     render();
   }
   async function loadWeather(fix, active) {
-    let grid = service.weatherCell(fix);
+    let grid = active.area || service.weatherCell(fix);
     // Some G2 fixes omit accuracy. Use an already-permitted browser grid when available.
     if (!grid && active.native && !Number.isFinite(fix.accuracy) && service.readWeatherPosition) {
       if (active.gridFallbackPending || Date.now() < (active.gridFallbackRetry || 0)) return;
@@ -193,7 +239,7 @@
     weatherHint='날씨 확인 중';
     const current=()=>tracking===active && active.weatherRequest===request;
     try {
-      await service.authorizePosition(db,active.owner,{weather:true,signal:request.signal});
+      if (!active.area) await service.authorizePosition(db,active.owner,{weather:true,signal:request.signal});
       if (!current()) return;
       if (request.signal.aborted) throw Error('weather_timeout');
       const endpoint=new URL('/functions/v1/theme-weather',config.supabaseUrl);
@@ -203,7 +249,7 @@
       const data=await response.json();
       if (!current()) return;
       if (data.source!=='kma' || !(data.expiresAt>Date.now()) || (!Number.isFinite(data.temperature)&&!data.label)) throw Error('weather');
-      weather={text:[Number.isFinite(data.temperature) ? data.temperature+'°C' : '',data.label].filter(Boolean).join(' · '),expiresAt:data.expiresAt};
+      weather={text:[active.area?.label,Number.isFinite(data.temperature) ? data.temperature+'°C' : '',data.label].filter(Boolean).join(' · '),expiresAt:data.expiresAt};
       active.weatherRetry=data.expiresAt; weatherHint='날씨 갱신 중';
     } catch(error) {
       if (current()) weatherHint=error?.code==='disabled'?'날씨 · 위치 사용 제한':'기상청 응답 대기';
@@ -231,14 +277,17 @@
     render();
   }
   async function beginLocation(automatic = false) {
+    if (tracking?.area && !automatic) { areaSelect.value=''; stopTracking(); }
     if (tracking) {
       if (!automatic) { autoPaused=true; resetFeed(); }
       return;
     }
-    if (!owner || !db || !service) { status.textContent = '공원에 로그인한 뒤 위치를 켜 주세요.'; return; }
+    if (!owner || !db || !service) return;
     autoPaused=false;
     const active = {owner,controller:new AbortController(),nextFeed:0};
-    tracking = active; sample = false; ++feedRun; setCards([], '위치를 확인하고 있어요.');
+    tracking = active; sample = false; ++feedRun;
+    if (source!=='recent') setCards([], '위치를 확인하고 있어요.');
+    else status.textContent='위치를 확인하고 있어요.';
     locate.textContent = '위치 끄기'; weatherHint='날씨 · 위치 확인 중'; render();
     const signal = active.controller.signal;
     try {
@@ -260,13 +309,42 @@
     } catch (error) { fail(error); }
     function fail(error) {
       if (tracking !== active) return;
-      stopTracking(); setCards([], error?.message || '위치를 확인하지 못했어요. 다시 시도해 주세요.');
+      resetFeed(error?.message || '위치를 확인하지 못했어요.');
     }
   }
 
-  function resetFeed() {
+  function resetFeed(note = '') {
     ++autoRun; sample=false; stopTracking();
-    setCards([],owner===null ? '공원 로그인 후 내 위치로 가까운 카드를 볼 수 있어요.' : '내 위치로 보기를 눌러 주세요.');
+    setCards([],note || '공개 카드 불러오는 중');
+    if (!document.hidden) void loadCards(null,tracking,note);
+  }
+  function chooseArea() {
+    const option=areaSelect.selectedOptions?.[0];
+    if (!option?.value) { resetFeed(); return; }
+    const [latitude,longitude,nx,ny]=option.value.split(',').map(Number);
+    if (![latitude,longitude,nx,ny].every(Number.isFinite)) return;
+    ++autoRun; stopTracking(); sample=false; autoPaused=true;
+    const area={label:option.textContent,latitude,longitude,nx,ny};
+    const active={area,owner,controller:new AbortController()};
+    tracking=active;
+    if (source!=='recent') setCards([],'지역 카드 불러오는 중');
+    const refresh=()=>{
+      if (tracking!==active || document.hidden) return;
+      void loadCards(area,active);
+      void loadWeather(null,active);
+      active.timer=setTimeout(refresh,60000);
+    };
+    refresh(); render();
+  }
+  const areaKey = option => option?.value ? option.parentElement.label+'/'+option.textContent : '';
+  function restoreGuestArea() {
+    if (owner!==null) return false;
+    try {
+      const saved=localStorage.getItem('ojjuda:g2-public-area');
+      const option=saved && Array.from(areaSelect.options).find(option=>areaKey(option)===saved);
+      if (!option) return false;
+      areaSelect.value=option.value; chooseArea(); return true;
+    } catch { return false; }
   }
   async function autoLocate() {
     const run=++autoRun, id=owner;
@@ -285,18 +363,29 @@
   }
   function permissionChanged() {
     if (permission?.state==='granted') { void autoLocate(); return; }
-    if (tracking && !tracking.native) resetFeed();
+    if (tracking && !tracking.native && !tracking.area) resetFeed();
   }
   byId('glass-sample').onclick = () => {
-    if (sample) { resetFeed(); void autoLocate(); return; }
+    if (sample) { if (areaSelect.value) chooseArea(); else {resetFeed(); void autoLocate();} return; }
     ++autoRun; stopTracking(); sample=true;
-    setCards(samples.map((body,i)=>({body,id:'sample-'+i,distance_band:['근처','2km','4km'][i]})), '예시 카드 · 가까운 순');
+    setCards(samples.map((body,i)=>({body,id:'sample-'+i,distance_band:['근처','2km','4km'][i]})), '예시 카드 · 가까운 순','sample');
   };
   buttons.forEach((button,n) => {button.onclick=()=>select(n);});
   byId('glass-full').onclick = () => select();
   byId('glass-prev').onclick = () => move(-1);
   byId('glass-next').onclick = () => move(1);
   locate.onclick = () => { ++autoRun; return beginLocation(); };
+  areaSelect.onchange = () => {
+    if (owner===null) {
+      try {
+        const key=areaKey(areaSelect.selectedOptions?.[0]);
+        if (key) localStorage.setItem('ojjuda:g2-public-area',key);
+        else localStorage.removeItem('ojjuda:g2-public-area');
+      } catch { /* Region selection also works without browser storage. */ }
+    }
+    chooseArea();
+  };
+  byId('glass-retry').onclick = () => { void loadCards(tracking?.area || tracking?.fix,tracking); };
   byId('glass-view').addEventListener('keydown', event => {
     if (['ArrowLeft','ArrowRight'].includes(event.key)) { event.preventDefault(); move(event.key === 'ArrowLeft' ? -1 : 1); }
     else if (event.key === 'Escape' && thread) select();
@@ -316,12 +405,15 @@
       subscription = db.auth.onAuthStateChange((_event,session) => {
         const id = session?.user && !session.user.is_anonymous ? session.user.id : null;
         if (owner === id) return;
-        owner = id; autoPaused=false; resetFeed(); stopPreference(); stopPreference = () => {};
+        owner = id; autoPaused=false; ++autoRun; sample=false; stopTracking(); closeThread();
+        areaSelect.value=''; setCards([], '공개 카드 불러오는 중');
+        stopPreference(); stopPreference = () => {};
         // Wait until Supabase releases its auth lock.
         setTimeout(() => {
           if (owner !== id) return;
+          if (!sample && !tracking && !restoreGuestArea()) void loadCards(null,tracking);
           if (id && service) stopPreference = service.observe(db,id,choice => {
-            if (id === owner && tracking && !choice.enabled) resetFeed();
+            if (id === owner && tracking && !tracking.area && !choice.enabled) resetFeed();
           });
           void autoLocate();
         }, 0);
@@ -341,12 +433,17 @@
     finally { clearTimeout(hint); }
   }
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) { ++autoRun; if (tracking) resetFeed(); }
-    else void autoLocate();
+    if (document.hidden) {
+      ++autoRun;
+      if (!sample) { stopTracking(); closeThread(); setCards([]); }
+    } else if (!sample) {
+      if (areaSelect.value) chooseArea();
+      else { void loadCards(null,tracking); void autoLocate(); }
+    }
   });
   window.addEventListener('pagehide', event => {
     ++autoRun; closeThread();
-    if (tracking) resetFeed();
+    stopTracking();
     if (!event.persisted) { clearInterval(timer); stopPreference(); permission?.removeEventListener('change',permissionChanged); subscription?.unsubscribe(); hardware?.dispose(); }
   });
   render(); void initFeed();
