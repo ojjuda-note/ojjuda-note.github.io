@@ -13,13 +13,18 @@ function observation(code='DB05',label='비',at='11.19.(목) 12:10'){
 }
 const response=(...args)=>new Response(observation(...args),{headers:{'Content-Type':'text/html;charset=UTF-8'}});
 
-test('installed G2 WebViews can read only named public district cells with the project key',async()=>{
+test('installed G2 accepts a current KMA cell or a legacy district, with a project key',async()=>{
   const {createHandler}=await api;
   const handler=createHandler({now:()=>NOW,publishableKeys:[KEY],fetch:async()=>response()});
   const origin={Origin:'https://installed.example'};
   const valid=await handler(get('district=60%2C127',origin));
   assert.equal(valid.status,200); assert.equal(valid.headers.get('Access-Control-Allow-Origin'),'*');
   assert.equal((await handler(get('district=60%2C127',{...origin,apikey:''}))).status,401);
+  assert.equal((await handler(get('cell=61%2C126',origin))).status,200);
+  assert.equal((await handler(get('cell=61%2C126',origin,'OPTIONS'))).headers.get('Access-Control-Allow-Origin'),'*');
+  assert.equal((await handler(get('cell=61%2C126',{...origin,apikey:''}))).status,401);
+  assert.equal((await handler(get('cell=150,254',origin))).status,403);
+  assert.equal((await handler(get('cell=61,126&lat=37',origin))).status,403);
   for (const query of ['nx=60&ny=127','district=1,253','district=60,127&lat=37.5']) {
     assert.equal((await handler(get(query,origin))).status,403);
   }

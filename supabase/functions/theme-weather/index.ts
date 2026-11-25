@@ -142,11 +142,14 @@ export function createHandler({fetch:request=fetch,now=Date.now,publishableKeys=
     const origin=req.headers.get('origin')||'';
     const url=new URL(req.url);
     const district=url.searchParams.get('district')||'';
-    // Only fixed public district reference cells are available to packaged WebViews.
     const publicDistrict=url.searchParams.size===1 && districtCells.has(district);
+    // Installed WebViews have no fixed Origin. This route accepts a KMA grid only.
+    const cell=url.searchParams.get('cell')||'';
+    const [cx,cy]=cell.split(',').map(Number);
+    const publicCell=url.searchParams.size===1 && /^\d{1,3},\d{1,3}$/.test(cell) && validGrid(cx,cy);
     const headers=new Headers({'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','Vary':'Origin, apikey'});
-    if(origin&&!publicDistrict&&!ORIGINS.has(origin))return new Response('{"error":"Origin not allowed"}',{status:403,headers});
-    if(publicDistrict)headers.set('Access-Control-Allow-Origin','*');
+    if(origin&&!publicDistrict&&!publicCell&&!ORIGINS.has(origin))return new Response('{"error":"Origin not allowed"}',{status:403,headers});
+    if(publicDistrict||publicCell)headers.set('Access-Control-Allow-Origin','*');
     else if(origin)headers.set('Access-Control-Allow-Origin',origin);
     headers.set('Access-Control-Allow-Methods','GET, OPTIONS');
     headers.set('Access-Control-Allow-Headers','accept, apikey, authorization');
@@ -155,7 +158,8 @@ export function createHandler({fetch:request=fetch,now=Date.now,publishableKeys=
     if(!publishableKeys.length)return new Response('{"error":"Weather unavailable"}',{status:503,headers});
     if(!keyMatches(req.headers.get('apikey')||'',publishableKeys))return new Response('{"error":"Unauthorized"}',{status:401,headers});
     let grid: Grid;
-    if(publicDistrict) {
+    if(publicCell) grid={nx:cx,ny:cy};
+    else if(publicDistrict) {
       const [nx,ny]=district.split(',').map(Number); grid={nx,ny};
     } else {
       try{grid=requestedGrid(url);}catch{return new Response('{"error":"KMA weather grid required"}',{status:400,headers});}

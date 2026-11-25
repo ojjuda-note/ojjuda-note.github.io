@@ -8,6 +8,7 @@ on:
       - 'note/glasses*'
       - 'note/vendor/package*.json'
       - 'park/glasses.html'
+      - 'shared/location/location.js'
       - 'scripts/build-park-even-app.mjs'
       - '.github/workflows/park-even-g2.yml'
 permissions:

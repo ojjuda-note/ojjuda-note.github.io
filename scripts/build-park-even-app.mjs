@@ -23,12 +23,13 @@ await writeFile(join(output,'index.html'),`<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1"><title>오쭈다 공원</title>
 <link rel="stylesheet" href="./glasses.css"></head><body>
 ${main}
-<script src="./even-g2.js"></script><script src="./supabase.js"></script><script src="./boot.js"></script><script src="./glasses.js"></script>
+<script src="./even-g2.js"></script><script src="./location.js"></script><script src="./supabase.js"></script><script src="./boot.js"></script><script src="./glasses.js"></script>
 </body></html>`);
 const {build}=createRequire(resolve('note/vendor/package.json'))('esbuild');
 await build({entryPoints:['park/even-g2.bundle.mjs'],outfile:join(output,'even-g2.js'),bundle:true,
   format:'iife',globalName:'OjjudaEvenG2',platform:'browser',target:'es2020',minify:true});
 for (const [from,to] of [['note/glasses.css','glasses.css'],['note/even-app/boot.js','boot.js'],
+  ['shared/location/location.js','location.js'],
   [join(tools,'node_modules/@supabase/supabase-js/dist/umd/supabase.js'),'supabase.js']]) {
   await copyFile(from,join(output,to));
 }

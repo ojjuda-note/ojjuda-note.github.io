@@ -37,6 +37,12 @@ function simplePage(view) {
 }
 
 const attemptedStartup = new WeakSet();
+export async function readPhonePosition() {
+  const bridge = await waitForEvenAppBridge();
+  const fix = await bridge.getAppLocation({accuracy:AppLocationAccuracy.High, timeoutMs:12000});
+  if (!fix) throw Error('휴대폰의 위치 기능과 Even 앱의 위치 권한을 확인해 주세요.');
+  return fix;
+}
 export async function attachEvenG2(hud) {
   let timer;
   const bridge = await Promise.race([waitForEvenAppBridge(),new Promise((_, reject) => {

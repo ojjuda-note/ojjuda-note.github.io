@@ -81,6 +81,11 @@ try{if(root.top&&root.location?.origin&&root.top.location.origin===root.location
 // https://www.weather.go.kr/w/resources/js/app-2021/app-index.js (convertDfsGrid)
 function weatherCell(position){
   if(!freshPosition(position,5000))return null;
+  return weatherGrid(position);
+}
+function weatherGrid(position){
+  if(!Number.isFinite(position?.latitude)||Math.abs(position.latitude)>=90||
+     !Number.isFinite(position.longitude)||Math.abs(position.longitude)>180)return null;
   const rad=Math.PI/180,re=6371.00877/5,lat1=30*rad,lat2=60*rad;
   const sn=Math.log(Math.cos(lat1)/Math.cos(lat2))/Math.log(Math.tan(Math.PI/4+lat2/2)/Math.tan(Math.PI/4+lat1/2));
   const sf=Math.pow(Math.tan(Math.PI/4+lat1/2),sn)*Math.cos(lat1)/sn;
@@ -335,6 +340,9 @@ function forget(accountId){
   clearPosition(accountId);preferences.delete(accountId);
   for(const controller of active.get(accountId)||[])controller.abort();
 }
-root.OjjudaLocation={readPosition,readWeatherPosition,weatherCell,authorizePosition,preference,setPreference,acceptPreference,subscribe,observe,forget,
+root.OjjudaLocation={readPosition,readWeatherPosition,weatherCell,weatherGrid,
+  readGuestPosition:options=>measurePosition(options,()=>{}),
+  authorizePosition,preference,setPreference,acceptPreference,subscribe,observe,forget,
   current:accountId=>preferences.get(accountId),errorText:error=>error?.message||notices.unavailable};
 })(globalThis);
+

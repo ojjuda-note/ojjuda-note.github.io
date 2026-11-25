@@ -3,18 +3,18 @@
   const byId = id => document.getElementById(id);
   const status = byId('glass-status');
   const locate = byId('glass-locate');
-  const areaSelect = byId('glass-area');
+  const installed = !!document.documentElement?.dataset?.evenApp;
   const buttons = [byId('glass-first'), byId('glass-second')];
   const service = window.OjjudaLocation;
   const config = window.OJJUDA_CONFIG;
   const clock = new Intl.DateTimeFormat('ko-KR', {hour:'2-digit', minute:'2-digit', hourCycle:'h23'});
   const samples = ['오늘은 조금 천천히 걸어도 괜찮아.', '길모퉁이에서 반가운 바람을 만났어요.', '이 길을 지나는 사람에게 작은 응원을 보내요.'];
   let db, owner, hardware, tracking, stopPreference = () => {};
-  let rows = [], index = 0, thread = null, sample = false, feedRun = 0, autoRun = 0;
+  let rows = [], index = 0, thread = null, sample = false, feedRun = 0;
   let battery = null, charging = false, weather = null, speed = null, speedUntil = 0;
-  let weatherHint = '날씨 · 지역 선택', permission, autoPaused = false;
+  let weatherHint = '날씨 · 현재 위치', permission, autoPaused = false;
   let source = 'recent', feedRequest;
-  let paused = false, resumeLocation = false;
+  let paused = false;
   const dist = band => {
     if (band === '근처') return '1km 이내';
     return typeof band === 'string' && /^[1-9]\d{0,4}km$/.test(band) ? band + ' 이내' : '거리 미확인';
@@ -53,7 +53,7 @@
     status.hidden = paused;
     byId('glass-sample').textContent = sample ? '예시 닫기' : '예시 보기';
     byId('glass-signin').hidden = owner !== null || !!document.documentElement?.dataset?.evenApp;
-    locate.hidden = !owner;
+    locate.hidden = sample;
     byId('glass-clock').textContent = view.time;
     byId('glass-battery').textContent = (battery == null ? '—' : battery) + '%' + (charging ? ' ⚡' : '');
     byId('glass-weather').textContent = view.weather;
@@ -190,7 +190,7 @@
     if (!card) return;
     if (!parent) index+=offset;
     thread={id:card.id,card,parent,depth:(parent?.depth || 0)+1,owner,fix:parent?.fix ?? tracking?.fix,
-      public:parent?.public ?? (!sample && source!=='nearby'),controller:new AbortController(),items:[],
+      public:parent?.public ?? (!sample && (!owner || source!=='nearby')),controller:new AbortController(),items:[],
       at:0,total:null,next:null,snapshot:null,busy:false,error:false};
     void readReplies(thread,!!parent);
     byId('glass-full').focus({preventScroll:true});
@@ -206,7 +206,7 @@
     const request = new AbortController();
     feedRequest = request;
     const run = ++feedRun;
-    const order = position ? (expected.area ? 'area' : 'nearby') : 'recent';
+    const order = position ? 'nearby' : 'recent';
     const current = () => run===feedRun && expected===tracking && !request.signal.aborted;
     try {
       const cards=[], snapshot=new Date().toISOString();
@@ -223,7 +223,7 @@
       if (position && !cards.length) {
         return loadCards(null,expected,'30km 이내 카드 없음');
       }
-      const label = order==='area' ? expected.area.label+' 기준 · 가까운 순' : order==='nearby' ? '가까운 순' : '공개 카드 · 최신순';
+      const label = order==='nearby' ? '현재 위치 · 가까운 순' : '공개 카드 · 최신순';
       setCards(cards.slice(0,30),[note,label].filter(Boolean).join(' · '),order);
       if (!rows.length) status.textContent = '아직 공개 카드가 없어요.';
     } catch {
@@ -241,23 +241,13 @@
     feedRequest?.abort(); feedRequest=null;
     old?.controller.abort();
     clearTimeout(old?.timer);
-    if (old?.native) void hardware?.stopLocation().catch(() => {});
     weather = null; speed = null; speedUntil = 0;
-    weatherHint = '날씨 · 지역 선택';
-    locate.textContent = '내 위치로 보기'; locate.disabled = false;
+    weatherHint = autoPaused ? '날씨 · 위치 꺼짐' : '날씨 · 현재 위치';
+    locate.textContent = '현재 위치 확인'; locate.disabled = false;
     render();
   }
   async function loadWeather(fix, active) {
-    let grid = active.area || service.weatherCell(fix);
-    // Some G2 fixes omit accuracy. Use an already-permitted browser grid when available.
-    if (!grid && active.native && !Number.isFinite(fix.accuracy) && service.readWeatherPosition) {
-      if (active.gridFallbackPending || Date.now() < (active.gridFallbackRetry || 0)) return;
-      active.gridFallbackPending=true; active.gridFallbackRetry=Date.now()+60000;
-      try { grid=await service.readWeatherPosition({db,accountId:active.owner,signal:active.controller.signal}); }
-      catch { /* Keep the accuracy/permission hint if neither source returns a grid. */ }
-      finally { active.gridFallbackPending=false; }
-      if (tracking!==active || active.lastFix>fix.capturedAt && active.grid) return;
-    }
+    const grid = active.native && fix.accuracy == null ? service.weatherGrid(fix) : service.weatherCell(fix);
     if (!grid) {
       active.weatherRequest?.abort(); active.weatherRequest=null; active.grid=null; weather=null;
       weatherHint=Number.isFinite(fix.accuracy) && fix.accuracy<=5000 ? '국내 관측 지역 밖' : '날씨 · 위치 확인 중';
@@ -275,18 +265,17 @@
     weatherHint='날씨 확인 중';
     const current=()=>tracking===active && active.weatherRequest===request;
     try {
-      if (!active.area) await service.authorizePosition(db,active.owner,{weather:true,signal:request.signal});
+      if (active.owner) await service.authorizePosition(db,active.owner,{weather:true,signal:request.signal});
       if (!current()) return;
       if (request.signal.aborted) throw Error('weather_timeout');
       const endpoint=new URL('/functions/v1/theme-weather',config.supabaseUrl);
-      endpoint.search=new URLSearchParams(document.documentElement?.dataset?.evenApp && active.area ?
-        {district:grid.nx+','+grid.ny} : {nx:grid.nx,ny:grid.ny});
+      endpoint.search=new URLSearchParams(installed ? {cell:key} : {nx:grid.nx,ny:grid.ny});
       const response=await fetch(endpoint,{headers:{apikey:config.supabaseKey},signal:request.signal});
       if (!response.ok) throw Error('weather');
       const data=await response.json();
       if (!current()) return;
       if (data.source!=='kma' || !(data.expiresAt>Date.now()) || (!Number.isFinite(data.temperature)&&!data.label)) throw Error('weather');
-      weather={text:[active.area?.label,Number.isFinite(data.temperature) ? data.temperature+'°C' : '',data.label].filter(Boolean).join(' · '),expiresAt:data.expiresAt};
+      weather={text:['현재 위치',Number.isFinite(data.temperature) ? data.temperature+'°C' : '',data.label].filter(Boolean).join(' · '),expiresAt:data.expiresAt};
       active.weatherRetry=data.expiresAt; weatherHint='날씨 갱신 중';
     } catch(error) {
       if (current()) weatherHint=error?.code==='disabled'?'날씨 · 위치 사용 제한':'기상청 응답 대기';
@@ -303,124 +292,92 @@
         Math.abs(longitude)>180 || !Number.isFinite(at) || Date.now()-at > 30000 || at > Date.now()+2000) return;
     if (active.lastFix && at < active.lastFix) return;
     active.lastFix = at;
-    active.fix = {latitude,longitude};
+    // Guests use the public feed's distance bands. Keep the precise fix on the phone.
+    active.fix = active.owner ? {latitude,longitude} :
+      {latitude:Math.round(latitude*1000)/1000, longitude:Math.round(longitude*1000)/1000};
     speed = Number.isFinite(meters) && meters >= 0 ? Math.round(meters * 36) / 10 : null;
     speedUntil = Math.min(at, Date.now()) + 15000;
     if (Date.now() >= active.nextFeed) {
       active.nextFeed = Date.now()+60000;
-      void loadCards({latitude,longitude}, active);
+      void loadCards(active.fix, active);
     }
     void loadWeather({latitude,longitude,accuracy,capturedAt:at}, active);
     render();
   }
-  async function beginLocation(automatic = false) {
-    if (paused) return;
-    if (tracking?.area && !automatic) { areaSelect.value=''; stopTracking(); }
-    if (tracking) {
-      if (!automatic) { autoPaused=true; resetFeed(); }
-      return;
-    }
-    if (!owner || !db || !service) return;
-    autoPaused=false;
-    const active = {owner,controller:new AbortController(),nextFeed:0};
-    tracking = active; sample = false; ++feedRun;
-    if (source!=='recent') setCards([], '위치를 확인하고 있어요.');
-    else status.textContent='위치를 확인하고 있어요.';
-    locate.textContent = '위치 끄기'; weatherHint='날씨 · 위치 확인 중'; render();
-    const signal = active.controller.signal;
+  let locationFailed = false;
+  async function beginLocation() {
+    if (paused || document.hidden || sample || tracking || !db || owner === undefined || !service) return;
+    const active = {owner, native:installed, controller:new AbortController(), nextFeed:0};
+    tracking=active; locationFailed=false;
+    locate.textContent='위치 끄기'; weatherHint='현재 위치 확인 중'; render();
+    if (!rows.length || source!=='recent') void loadCards(null,active,'위치 확인 중');
+    const signal=active.controller.signal;
     try {
-      const choice = await service.preference(db, owner, {refresh:true,signal});
-      if (!choice.enabled) throw Error('공원 설정에서 위치를 켜 주세요.');
-      await service.authorizePosition(db,owner,{park:true,signal});
-      if (tracking !== active) return;
-      if (hardware && !automatic) {
-        active.native = true;
-        await hardware.startLocation(fix => acceptFix(fix, active));
-      } else {
-        const read = async () => {
-          const fix = await service.readPosition({db,accountId:active.owner,park:true,fresh:true,cache:false,signal});
-          acceptFix(fix,active);
-          if (tracking === active) active.timer = setTimeout(() => read().catch(fail), 8000);
-        };
-        await read();
+      if (owner) {
+        const choice=await service.preference(db,owner,{refresh:true,signal});
+        if (!choice.enabled) throw Error('공원 설정에서 위치를 켜 주세요.');
+        await service.authorizePosition(db,owner,{park:true,signal});
       }
-    } catch (error) { fail(error); }
+      if (tracking!==active) return;
+      async function read() {
+        let fix;
+        if (installed) fix=await window.OjjudaEvenG2.readPhonePosition();
+        else if (active.owner) fix=await service.readPosition({db,accountId:active.owner,park:true,fresh:true,cache:false,signal});
+        else fix=await service.readGuestPosition({fresh:true,signal});
+        if (tracking!==active || signal.aborted) return;
+        const at=fix?.capturedAt ?? fix?.timestamp ?? Date.now();
+        if (!Number.isFinite(fix?.latitude) || !Number.isFinite(fix?.longitude) ||
+            Math.abs(fix.latitude)>90 || Math.abs(fix.longitude)>180 || !Number.isFinite(at) ||
+            Date.now()-at>30000 || at>Date.now()+2000 || (fix.accuracy!=null && (!Number.isFinite(fix.accuracy) || fix.accuracy<0 || fix.accuracy>5000)))
+          throw Error('현재 위치를 확인하지 못했어요.');
+        acceptFix(fix,active);
+        if (tracking===active) active.timer=setTimeout(()=>read().catch(fail),10000);
+      }
+      await read();
+    } catch(error) { fail(error); }
     function fail(error) {
-      if (tracking !== active) return;
-      resetFeed(error?.message || '위치를 확인하지 못했어요.');
+      if (tracking!==active) return;
+      locationFailed=true;
+      resetFeed(error?.message || '위치 권한을 확인해 주세요.');
+      weatherHint='날씨 · 위치 확인 필요'; render();
     }
   }
 
   function resetFeed(note = '') {
-    ++autoRun; sample=false; stopTracking();
+    sample=false; stopTracking();
     setCards([],note || '공개 카드 불러오는 중');
     if (!document.hidden) void loadCards(null,tracking,note);
   }
-  function chooseArea() {
-    if (paused) return;
-    const option=areaSelect.selectedOptions?.[0];
-    if (!option?.value) { resetFeed(); return; }
-    const [latitude,longitude,nx,ny]=option.value.split(',').map(Number);
-    if (![latitude,longitude,nx,ny].every(Number.isFinite)) return;
-    ++autoRun; stopTracking(); sample=false; autoPaused=true;
-    const area={label:option.textContent,latitude,longitude,nx,ny};
-    const active={area,owner,controller:new AbortController()};
-    tracking=active;
-    if (source!=='recent') setCards([],'지역 카드 불러오는 중');
-    const refresh=()=>{
-      if (tracking!==active || document.hidden) return;
-      void loadCards(area,active);
-      void loadWeather(null,active);
-      active.timer=setTimeout(refresh,60000);
-    };
-    refresh(); render();
-  }
-  const areaKey = option => option?.value ? option.parentElement.label+'/'+option.textContent : '';
-  function restoreGuestArea() {
-    if (owner!==null) return false;
-    try {
-      const saved=localStorage.getItem('ojjuda:g2-public-area');
-      const option=saved && Array.from(areaSelect.options).find(option=>areaKey(option)===saved);
-      if (!option) return false;
-      areaSelect.value=option.value; chooseArea(); return true;
-    } catch { return false; }
-  }
-  async function autoLocate() {
-    const run=++autoRun, id=owner;
-    if (!id || !service || sample || paused || tracking || autoPaused || document.hidden) return;
-    try {
-      const allowed=await navigator.permissions?.query({name:'geolocation'});
-      if (run!==autoRun || id!==owner || !allowed) return;
-      if (permission!==allowed) {
-        permission?.removeEventListener('change',permissionChanged);
-        permission=allowed; allowed.addEventListener('change',permissionChanged);
-      }
-      if (allowed.state!=='granted') return;
-      const choice=await service.preference(db,id,{refresh:true});
-      if (run===autoRun && id===owner && !tracking && !sample && !document.hidden && choice.enabled && allowed.state==='granted') void beginLocation(true);
-    } catch { /* Manual location also supports companion apps without a Permissions API. */ }
+  function autoLocate() {
+    if (!autoPaused && !locationFailed) void beginLocation();
   }
   function permissionChanged() {
-    if (permission?.state==='granted') { void autoLocate(); return; }
-    if (tracking && !tracking.native && !tracking.area) resetFeed();
+    if (permission?.state==='granted') { locationFailed=false; autoLocate(); }
+    else if (tracking && !installed) {
+      locationFailed=true; resetFeed('휴대폰 설정에서 위치를 허용해 주세요.');
+      weatherHint='날씨 · 위치 확인 필요'; render();
+    }
+  }
+  if (!installed && navigator.permissions?.query) {
+    navigator.permissions.query({name:'geolocation'}).then(result=>{
+      permission=result; permission.addEventListener('change',permissionChanged);
+    }).catch(()=>{});
   }
   function togglePower() {
     paused=!paused;
     if (paused) {
-      resumeLocation=!!tracking && !tracking.area;
-      ++autoRun; stopTracking(); closeThread();
+      stopTracking(); closeThread();
       if (!sample) setCards([]);
     } else if (!sample) {
-      if (areaSelect.value) chooseArea();
-      else if (resumeLocation && owner) { void beginLocation(); }
-      else { resetFeed(); void autoLocate(); }
+      autoLocate();
+      if (!tracking) void loadCards(null,tracking);
     }
     render();
   }
   byId('glass-power').onclick = togglePower;
   byId('glass-sample').onclick = () => {
-    if (sample) { if (areaSelect.value) chooseArea(); else {resetFeed(); void autoLocate();} return; }
-    ++autoRun; stopTracking(); sample=true;
+    if (sample) { resetFeed(); autoLocate(); return; }
+    stopTracking(); sample=true;
     setCards(samples.map((body,i)=>({body,id:'sample-'+i,distance_band:['근처','2km','4km'][i]})), '예시 카드 · 가까운 순','sample');
   };
   buttons.forEach((button,n) => {button.onclick=()=>select(n);});
@@ -429,18 +386,11 @@
   byId('glass-back').onclick = back;
   byId('glass-prev').onclick = () => move(-1);
   byId('glass-next').onclick = () => move(1);
-  locate.onclick = () => { ++autoRun; return beginLocation(); };
-  areaSelect.onchange = () => {
-    if (owner===null) {
-      try {
-        const key=areaKey(areaSelect.selectedOptions?.[0]);
-        if (key) localStorage.setItem('ojjuda:g2-public-area',key);
-        else localStorage.removeItem('ojjuda:g2-public-area');
-      } catch { /* Region selection also works without browser storage. */ }
-    }
-    chooseArea();
+  locate.onclick = () => {
+    if (tracking) { autoPaused=true; resetFeed('위치 꺼짐'); return; }
+    autoPaused=false; locationFailed=false; return beginLocation();
   };
-  byId('glass-retry').onclick = () => { void loadCards(tracking?.area || tracking?.fix,tracking); };
+  byId('glass-retry').onclick = () => { void loadCards(tracking?.fix,tracking); };
   byId('glass-view').addEventListener('keydown', event => {
     if (['ArrowLeft','ArrowRight'].includes(event.key)) { event.preventDefault(); move(event.key === 'ArrowLeft' ? -1 : 1); }
     else if (event.key === 'Escape' && thread) back();
@@ -460,17 +410,17 @@
       subscription = db.auth.onAuthStateChange((_event,session) => {
         const id = session?.user && !session.user.is_anonymous ? session.user.id : null;
         if (owner === id) return;
-        owner = id; autoPaused=false; resumeLocation=false; ++autoRun; sample=false; stopTracking(); closeThread();
-        areaSelect.value=''; setCards([], '공개 카드 불러오는 중');
+        owner = id; autoPaused=false; locationFailed=false; sample=false; stopTracking(); closeThread();
+        setCards([], '공개 카드 불러오는 중');
         stopPreference(); stopPreference = () => {};
         // Wait until Supabase releases its auth lock.
         setTimeout(() => {
           if (owner !== id) return;
-          if (!sample && !tracking && !restoreGuestArea()) void loadCards(null,tracking);
           if (id && service) stopPreference = service.observe(db,id,choice => {
-            if (id === owner && tracking && !tracking.area && !choice.enabled) resetFeed();
+            if (id===owner && tracking && !choice.enabled) { locationFailed=true; resetFeed('위치 사용 제한'); }
           });
-          void autoLocate();
+          autoLocate();
+          if (!sample && !tracking) void loadCards(null,tracking);
         }, 0);
       }).data.subscription;
     } catch { status.textContent = '공원에 연결하지 못했어요.'; }
@@ -485,7 +435,7 @@
     message.textContent = 'G2 연결을 기다리는 중…';
     let stage = 'SDK';
     try {
-      const sdk = await import('/park/even-g2.bundle.mjs?v=20261125-g2-connect2');
+      const sdk = await import('/park/even-g2.bundle.mjs?v=20261125-g2-gps1');
       if (typeof sdk?.attachEvenG2 !== 'function') throw Error('SDK');
       stage = 'BRIDGE';
       hardware = await sdk.attachEvenG2(window.OJJUDA_GLASS_PREVIEW);
@@ -503,15 +453,15 @@
   byId('g2-reconnect').onclick = connectG2;
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
-      ++autoRun;
+
       if (!sample) { stopTracking(); closeThread(); setCards([]); }
     } else if (!sample) {
-      if (areaSelect.value) chooseArea();
-      else { void loadCards(null,tracking); void autoLocate(); }
+      autoLocate();
+      if (!tracking) void loadCards(null,tracking);
     }
   });
   window.addEventListener('pagehide', event => {
-    ++autoRun; closeThread();
+    closeThread();
     stopTracking();
     if (!event.persisted) { clearInterval(timer); stopPreference(); permission?.removeEventListener('change',permissionChanged); subscription?.unsubscribe(); hardware?.dispose(); }
   });
