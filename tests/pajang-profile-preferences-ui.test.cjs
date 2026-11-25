@@ -285,12 +285,26 @@ async function openGroup(dialog,label) {
     assert.equal(await filters.getByRole('button',{name:'전체',exact:true}).getAttribute('aria-pressed'),'true');
 
     // A profile opened from an answer displays only that member's chosen public information.
-    await answers.locator('.answercard').filter({hasText:'서로 책을 골라 주고 싶어요.'}).getByRole('button',{name:/은하/}).click();
+    await conversationCard.locator('.pj-character-portrait').click();
     const publicMember=page.getByRole('dialog').getByRole('region',{name:'공개 프로필',exact:true});
     await publicMember.getByRole('heading',{name:'나를 표현하는 취향',exact:true}).waitFor();
     await publicMember.locator('.preference-tags').getByText('별 보며 걷기',{exact:true}).waitFor();
-    assert.match(await page.getByRole('dialog').locator('.pj-character-portrait').evaluate(el=>el.style.backgroundImage),/avatars-male-20261125-05\.webp/,
-      'the opened public profile uses the current portrait even when its feed card was older');
+    const dialog=page.getByRole('dialog');
+    const preview=dialog.locator('.pj-character-preview');
+    assert.match(await preview.locator('.pj-character-preview-art').evaluate(el=>el.style.backgroundImage),/avatars-male-20261125-05\.webp/,
+      'the opened profile uses the current character even when its feed card was older');
+    for(const width of [320,390]){
+      await page.setViewportSize({width,height:844});
+      const circle=await preview.boundingBox(),art=await preview.locator('.pj-character-preview-art').boundingBox();
+      const name=await dialog.getByRole('heading',{name:'은하',exact:true}).boundingBox();
+      assert.equal(circle.width,200);assert.equal(circle.height,200);
+      assert.equal(art.height,172);
+      assert.ok(Math.abs(circle.x+circle.width/2-(name.x+name.width/2))<=1,'the circle is centered across the dialog content');
+      assert.equal(await preview.evaluate(el=>getComputedStyle(el).borderRadius),'50%');
+      assert.ok(circle.y+circle.height<=name.y+1,'the circle sits above the name');
+      assert.ok(art.width>0&&art.height>art.width&&art.y>=circle.y&&art.y+art.height<=circle.y+circle.height,
+        'the complete illustrated figure fits vertically inside the circle');
+    }
     assert.equal(await publicMember.getByText('만남 스타일',{exact:true}).isVisible(),true,'a peer\'s public tastes are visible without opening an editor or disclosure');
     assert.ok((await page.evaluate(()=>window.preferenceFixture.reads)).some(read=>read.peer==='22222222-2222-4222-8222-222222222222'));
     await page.getByRole('dialog').screenshot({path:path.join(artifacts,'public-member-profile.png'),animations:'disabled'});
