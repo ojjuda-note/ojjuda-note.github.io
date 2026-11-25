@@ -18,8 +18,8 @@ const state = {day:'2026-11-17',slot:'pm',question:{id:1,q:['처음 만난 날, 
   nextAt:new Date(Date.now()+3600000).toISOString(),authenticated:true,remaining:3,signals:[],messages:[],people:[],me};
 const base = {region:'서울특별시',day:'2026-11-17',slot:'am',at:1,sent:false,received:false,own:false};
 const rows = [
-  {...base,peer:'a',gender:'male',name:'은하',interest:'book',question:'쉬는 날을 같이 보낸다면 어디에 가고 싶나요?',body:'동네 책방에 들러서 서로에게 어울리는 책을 한 권씩 골라주고 싶어요.'},
-  {...base,peer:'b',gender:'female',name:'단비',interest:'walk',question:'쉬는 날을 같이 보낸다면 어디에 가고 싶나요?',body:'나란히 걸으면서 같은 풍경을 보고 웃을 때요.'},
+  {...base,peer:'a',gender:'male',avatarId:102,name:'은하',interest:'book',question:'쉬는 날을 같이 보낸다면 어디에 가고 싶나요?',body:'동네 책방에 들러서 서로에게 어울리는 책을 한 권씩 골라주고 싶어요.'},
+  {...base,peer:'b',gender:'female',avatarId:9,name:'단비',interest:'walk',question:'쉬는 날을 같이 보낸다면 어디에 가고 싶나요?',body:'나란히 걸으면서 같은 풍경을 보고 웃을 때요.'},
 ];
 const signalOffers=[[1,10,2],[3,28,2],[5,45,2],[10,85,1],[20,160,1],[30,225,1]]
   .map(([quantity,price,revision])=>({id:'signal_'+quantity,quantity,price,revision}));
@@ -194,7 +194,7 @@ async function checkPeopleLayout(view) {
       const dotBox=dot?box(dot):null,dotCss=dot?getComputedStyle(dot):null;
       return {name:node.getAttribute('aria-label'),box:rect,inside:inside(rect),compact:node.classList.contains('scope-person-compact'),
         initial:name?.textContent.trim(),nameVisible:visible(name),nameFits:!!name&&inside(box(name)),font:name?Number.parseFloat(getComputedStyle(name).fontSize):0,
-        circle:Math.abs(rect.width-rect.height)<1&&(radius==='50%'||Number.parseFloat(radius)>=rect.width/2-.5),icons:node.querySelectorAll('svg,.scope-person-avatar').length,
+        circle:Math.abs(rect.width-rect.height)<1&&(radius==='50%'||Number.parseFloat(radius)>=rect.width/2-.5),portrait:visible(node.querySelector('.pj-character-portrait')),
         transparentTarget:clear(css.backgroundColor)&&css.backgroundImage==='none'&&css.boxShadow==='none'&&['Top','Right','Bottom','Left'].every(edge=>clear(css['border'+edge+'Color'])||Number.parseFloat(css['border'+edge+'Width'])===0),
         dot:dotBox&&{...dotBox,visible:visible(dot),inside:inside(dotBox),filled:!clear(dotCss.backgroundColor),
           circle:Math.abs(dotBox.width-dotBox.height)<.5&&(dotCss.borderRadius==='50%'||Number.parseFloat(dotCss.borderRadius)>=dotBox.width/2-.5),
@@ -209,10 +209,10 @@ async function checkPeopleLayout(view) {
     return {people,overlaps};
   });
   assert.ok(result.people.every(p=>p.inside&&p.box.width>=24&&p.box.height>=24),'every person keeps a generous touch target inside the dial: '+JSON.stringify(result.people));
-  assert.ok(result.people.every(p=>p.initial&&Array.from(p.initial).length===1&&p.circle&&p.icons===0),'every person keeps one initial and no person icon');
+  assert.ok(result.people.every(p=>p.initial&&Array.from(p.initial).length===1&&p.circle),'every person keeps an initial and a circular hit target');
   assert.ok(result.people.every(p=>p.compact?
-    !p.nameVisible&&p.transparentTarget&&p.dot?.visible&&p.dot.inside&&p.dot.filled&&p.dot.circle&&p.dot.centered&&p.dot.width>=8&&p.dot.width<=14&&p.dot.width<p.box.width/2:
-    p.nameVisible&&p.nameFits&&p.font>=12&&!p.dot?.visible),'crowded people show only small dots; separate people show readable initials: '+JSON.stringify(result.people));
+    !p.nameVisible&&!p.portrait&&p.transparentTarget&&p.dot?.visible&&p.dot.inside&&p.dot.filled&&p.dot.circle&&p.dot.centered&&p.dot.width>=8&&p.dot.width<=14&&p.dot.width<p.box.width/2:
+    p.portrait&&p.nameVisible&&p.nameFits&&p.font>=12&&!p.dot?.visible),'crowded people show small dots; separate people show their portrait and initial: '+JSON.stringify(result.people));
   assert.deepEqual(result.overlaps,[],'person markers and the self marker do not cover one another');
 }
 
@@ -785,10 +785,12 @@ async function checkNavigation(page){
     assert.equal(await answers.locator('.history-heading .feednumber').count(),0,'remove distracting answer total from the heading');
     assert.equal(await page.evaluate(()=>window.feedCalls.length),1,'first feed read is shared with the UI');
     assert.equal(await answers.getByRole('heading',{name:rows[0].question}).count(),1);
-    assert.equal(await page.evaluate(()=>window.artPending),true,'feed is usable with all artwork still pending');
     assert.equal(await page.evaluate(()=>window.authCalls),1);
-    assert.deepEqual(await page.evaluate(()=>window.artCalls.slice().sort()),['book.webp','walk.webp']);
-    assert.deepEqual(await cards.locator('.avatar').evaluateAll(nodes=>nodes.map(n=>n.dataset.genderTone).sort()),['female','male']);
+    assert.deepEqual(await page.evaluate(()=>window.artCalls),[],'member portraits do not request private interest illustrations');
+    const portraits=await cards.locator('.pj-character-portrait').evaluateAll(nodes=>nodes.map(n=>[n.dataset.genderTone,getComputedStyle(n).backgroundImage]));
+    assert.equal(portraits.length,2);
+    assert.match(portraits.find(([gender])=>gender==='male')[1],/avatars-male-20261125-01\.webp/);
+    assert.match(portraits.find(([gender])=>gender==='female')[1],/avatars-20261125-03\.webp/);
     assert.deepEqual(await group.getByRole('radio').evaluateAll(nodes=>nodes.map(node=>node.value)),['male','all','female']);
     assert.deepEqual(await group.locator('label span').allTextContents(),['','','']);
     const dir=path.join(__dirname,'artifacts/pajang-discovery');

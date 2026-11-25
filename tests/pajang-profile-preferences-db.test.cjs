@@ -178,8 +178,14 @@ test('public Pajang preferences save atomically and relationship discovery prese
   t.beforeEach(()=>db.exec('begin'));
   t.afterEach(()=>db.exec('rollback'));
 
-  await t.test('the member state shares only outfit IDs with self and mutually connected unblocked peers',async()=>{
+  const installPortraits = async () => {
+    const radar = read('20261121165547_pajang_nearby_recent_answers.sql');
+    await db.exec(radar.slice(radar.indexOf('create function pajang_private.nearby_people'),radar.indexOf('revoke all on function')));
     await db.exec(read('20261125041640_pajang_connected_chat_avatar_ids.sql'));
+    await db.exec(read('20261125043708_pajang_public_portraits.sql'));
+  };
+  await t.test('profile portraits identify visible members and omit blocked, invisible and private details',async()=>{
+    await installPortraits();
     const state = (n, input={}) => as(account(n),()=>rpc('pajang_member',['state',input]));
     const peer = (s,n) => s.people.find(p=>p.id===person(n));
     for (const [n,id] of [[1,200],[2,101],[3,131],[4,153]]) {
@@ -195,19 +201,64 @@ test('public Pajang preferences save atomically and relationship discovery prese
     assert.equal(peer(mine,2).avatarId,101);
     assert.equal(peer(await state(2),1).avatarId,200);
     assert.equal((await state(5)).me.avatarId,1);
-    for (const n of [3,4]) assert.ok(!Object.hasOwn(peer(mine,n),'avatarId'));
-    assert.ok(!Object.hasOwn(peer(await state(5,{peer:person(1)}),2),'avatarId'),
-      'an unrelated viewer cannot impersonate another person by submitting a selector');
+    assert.equal(peer(mine,3).avatarId,131,'outgoing-only signal');
+    assert.equal(peer(mine,4).avatarId,153,'incoming-only signal');
+    assert.equal(peer(await state(5),2).avatarId,101,'public answer author without signals');
+    assert.equal(peer(await state(5,{peer:person(1)}),4),undefined,'an unrelated viewer cannot retrieve a hidden author');
+    const publicProfile=await profile(person(2));
+    assert.equal(publicProfile.avatarId,101);
+    assert.ok(!Object.hasOwn(publicProfile,'avatar') && !Object.hasOwn(publicProfile,'bg'));
+    assert.ok(!JSON.stringify(publicProfile).includes('비공개 직업'));
+    await db.query("insert into pajang_private.answers(person,day,slot,body,at,question_prompt) values($1,$2,'pm','내 답변',700,'검사용 질문')",
+      [person(1),today]);
+    const cards=(await feed()).items;
+    assert.equal(cards.find(row=>row.own && row.peer===person(1)).avatarId,200);
+    assert.equal(cards.find(row=>row.peer===person(2)).avatarId,101);
+    assert.ok(!cards.some(row=>row.peer===person(4)),'a moderated answer must stay absent from the feed');
     assert.ok(!Object.hasOwn(mine.me,'avatar') && !Object.hasOwn(peer(mine,2),'avatar'));
     assert.ok(!JSON.stringify(peer(mine,2)).includes('비공개 직업'));
     for (const [a,b] of [[1,2],[2,1]]) {
       await db.query('insert into pajang_private.blocks values($1,$2)',[person(a),person(b)]);
       assert.equal(peer(await state(1),2),undefined);
       assert.equal(peer(await state(2),1),undefined);
+      assert.ok(!(await feed()).items.some(p=>p.peer===person(2)));
+      await assert.rejects(()=>profile(person(2)),{code:'42501'});
       await db.query('delete from pajang_private.blocks where src=$1 and dst=$2',[person(a),person(b)]);
     }
     await assert.rejects(()=>state(8),{code:'42501'});
     await assert.rejects(()=>as(account(1),()=>rpc('pajang_member',['state',{}]),'anon'),{code:'42501'});
+  });
+
+  await t.test('radar portraits follow location opt-in and blocks without exposing an avatar configuration',async()=>{
+    await installPortraits();
+    const past = read('20261121154322_pajang_past_questions.sql');
+    await db.exec(past.slice(past.indexOf('create or replace function pajang_private.answer_is_visible('),
+      past.indexOf('-- Patch the deployed callers')));
+    await db.exec(`
+      alter table auth.users add column is_anonymous boolean default false,add column deleted_at timestamptz,add column banned_until timestamptz;
+      create table public.user_private(user_id uuid primary key,banned_until timestamptz);
+      create schema ojjuda_account_deletion;
+      create table ojjuda_account_deletion.requests(user_id uuid primary key);
+      create table ojjuda_account_internal.location_preferences(user_id uuid primary key,enabled boolean);
+      create table pajang_private.answer_likes(person uuid,day date,slot text,liker uuid);
+      update pajang_private.people set location_enabled=true;
+    `);
+    for (const n of [1,2]) {
+      await db.query('insert into pajang_private.locations(person,day,lat,lon,direction) values($1,$2,3750,12700,true)',
+        [person(n),today]);
+    }
+    await db.query('update pajang_private.people set avatar=$1::jsonb where id=$2',[{id:187,bg:6,form:'full'},person(2)]);
+    await db.query("select set_config('request.jwt.claims',$1,true)",[JSON.stringify({sub:account(1)})]);
+    const radar=()=>value("select pajang_private.nearby_people($1,$2,'pm',l) as value from pajang_private.locations l where l.person=$1",
+      [person(1),today]);
+    const visible=(await radar()).find(r=>r.id===person(2));
+    assert.equal(visible.avatarId,187);
+    assert.ok(!Object.hasOwn(visible,'avatar') && !Object.hasOwn(visible,'bg'));
+    await db.query('insert into ojjuda_account_internal.location_preferences values($1,false)',[account(2)]);
+    assert.ok(!(await radar()).some(r=>r.id===person(2)));
+    await db.query('update ojjuda_account_internal.location_preferences set enabled=true where user_id=$1',[account(2)]);
+    await db.query('insert into pajang_private.blocks values($1,$2)',[person(2),person(1)]);
+    assert.ok(!(await radar()).some(r=>r.id===person(2)));
   });
 
   await t.test('account gender is selected at entry and an explicit hide survives profile reads',async()=>{
@@ -526,6 +577,7 @@ test('public Pajang preferences save atomically and relationship discovery prese
   });
 
   await t.test('relationship filters run before counts and pagination and preserve legacy filters',async()=>{
+    await installPortraits();
     await store(2,{relationship_intents:['conversation','dating']});
     await store(3,{relationship_intents:['friendship','marriage']});
     await store(4,{relationship_intents:['dating']});
@@ -559,6 +611,7 @@ test('public Pajang preferences save atomically and relationship discovery prese
     const second=await feed('friendship',first.nextCursor);
     assert.equal(second.total,30);
     assert.equal(second.items.length,6);
+    assert.ok([...first.items,...second.items].every(row=>row.avatarId===1));
     assert.equal(second.nextCursor,null);
     assert.equal(new Set([...first.items,...second.items].map(item=>`${item.peer}/${item.day}/${item.slot}`)).size,30);
     assert.ok(![...first.items,...second.items].some(item=>item.peer===person(49)),'unselected members are not inferred into a relationship');

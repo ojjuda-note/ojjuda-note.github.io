@@ -66,7 +66,7 @@ export function ProfileTastesFields({value,interest,onInterest,onChange,drafts,o
         </fieldset>
       </details>;
     })}
-    <details className="preference-group profile-art-choice"><summary><span><strong>대표 취향 · 프로필 그림</strong><small>{interests.find(option=>option.key===interest)?.name||"자동 배정"}</small></span><I n="chevron" s={16}/></summary>
+    <details className="preference-group profile-art-choice"><summary><span><strong>대표 취향</strong><small>{interests.find(option=>option.key===interest)?.name||"선택 안 함"}</small></span><I n="chevron" s={16}/></summary>
       <fieldset disabled={disabled} aria-label="대표 취향"><div className="interestgrid">{interests.map(option=><button type="button" key={option.key} aria-label={option.name} className={interest===option.key?"selected":""} aria-pressed={interest===option.key} onClick={()=>onInterest(interest===option.key?"":option.key)}><InterestArt interest={option.key}/>{option.name}</button>)}</div></fieldset>
     </details>
   </div>;

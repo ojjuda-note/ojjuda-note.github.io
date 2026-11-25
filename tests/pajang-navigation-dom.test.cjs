@@ -98,9 +98,12 @@ test('the React app closes its popup first and restores real tabs, including but
 test('opening a chat from a feed profile returns to that feed instead of a fixed list or closed popup',async t=>{
   const f=fixture(t),{w}=f;
   await f.until(()=>f.byText('#answers .person strong','라온'));
+  assert.match(w.document.querySelector('#answers .person .pj-character-portrait').style.backgroundImage,/avatars-20261125-03\.webp/);
   await f.click('#answers .person strong','라온');await f.until(()=>f.modal());
+  assert.match(f.modal().querySelector('.pj-character-portrait').style.backgroundImage,/avatars-20261125-03\.webp/);
   await f.click('dialog button','대화 열기');
   await f.until(()=>w.document.querySelector('.composer'));
+  assert.match(w.document.querySelector('.chatheader .pj-character-portrait').style.backgroundImage,/avatars-20261125-03\.webp/);
   assert.equal(new URL(w.location.href).searchParams.get('chat'),'peer');
   w.document.querySelector('.chatheader [aria-label="뒤로가기"]').click();
   await f.until(()=>!new URL(w.location.href).searchParams.has('tab'));
@@ -120,6 +123,7 @@ test('own portrait and matched chat reuse selected outfits with a fresh scene on
 
   w.Math.random=()=>0;
   await f.menu('마음함');
+  assert.match(doc.querySelector('.listperson .pj-character-portrait').style.backgroundImage,/avatars-20261125-03\.webp/);
   await f.click('button','대화 열기');
   const scenery=()=>doc.querySelector('.pj-chat-scenery');
   const backdrop=()=>scenery()?.querySelector('.pj-chat-backdrop')?.style.backgroundImage;
@@ -140,6 +144,20 @@ test('own portrait and matched chat reuse selected outfits with a fresh scene on
   await f.click('button','대화 열기');
   await f.until(backdrop);
   assert.notEqual(backdrop(),firstScene,'reopening the same room draws another scene');
+  assert.deepEqual(f.errors,[]);
+});
+
+test('outgoing signal and its result show the same member portrait',async t=>{
+  const f=fixture(t),{w}=f;
+  await f.until(()=>f.byText('nav a','마음함'));
+  w.pajangState.signals=[{src:'me',dst:'peer'}];
+  w.document.dispatchEvent(new w.Event('visibilitychange'));
+  await f.menu('마음함');await f.click('button','보낸 신호 1');
+  await f.until(()=>f.byText('button','상태 보기'));
+  const listPortrait=w.document.querySelector('.listperson .pj-character-portrait');
+  assert.match(listPortrait.style.backgroundImage,/avatars-20261125-03\.webp/);
+  await f.click('button','상태 보기');await f.until(()=>f.modal());
+  assert.equal(f.modal().querySelector('.resultart .pj-character-portrait').style.backgroundImage,listPortrait.style.backgroundImage);
   assert.deepEqual(f.errors,[]);
 });
 
@@ -202,12 +220,16 @@ test('individual radar markers preserve person selection through popup Back and 
   const markers=()=>[...w.document.querySelectorAll('.scope-person')];
   const select=async name=>{markers().find(node=>node.getAttribute('aria-label').startsWith(name+',')).click();await f.until(()=>f.byText('.radar-identity h2',name));};
   await f.until(()=>markers().length===3);
+  assert.match(w.document.querySelector('.scope-self .pj-character-portrait').style.backgroundImage,/avatars-male-20261125-25\.webp/);
+  const separate=markers().find(node=>node.getAttribute('aria-label').startsWith('라온,'));
+  assert.match(separate.querySelector('.pj-character-portrait').style.backgroundImage,/avatars-20261125-03\.webp/);
   assert.deepEqual(markers().map(node=>node.querySelector('.scope-person-name').textContent).sort(),['도','라','소']);
   assert.equal(w.document.querySelectorAll('.scope-person.scope-same-cell').length,2);
   assert.equal(w.document.querySelectorAll('.scope-person.scope-same-cell .scope-person-dot').length,2);
   assert.ok(markers().filter(node=>node.classList.contains('scope-same-cell')).every(node=>node.querySelector('.scope-person-name').hidden),'crowded same-cell dots retain their full accessible names while hiding initials');
   assert.equal(w.document.querySelectorAll('.radar-links line').length,1,'same-cell markers never receive an invented bearing');
   await select('소담');
+  assert.match(w.document.querySelector('.radar-identity .pj-character-portrait').style.backgroundImage,/avatars-20261125-01\.webp/,'older member data uses the white-shirt portrait');
   const positions=markers().map(node=>[node.style.left,node.style.top]);
   await f.click('button','공개 정보 보기');await f.until(()=>f.modal());
   assert.ok(f.byText('dialog h2','소담'));

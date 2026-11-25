@@ -449,6 +449,8 @@ footer,.footerbrand {color:var(--ink-2)}
 
 .account-heading h1:has(.pj-character-portrait){display:flex;align-items:center;gap:10px}
 .pj-character-portrait{background-color:var(--surface-2,#f2eeeb);background-repeat:no-repeat}
+.radar-scope .scope-person>.pj-character-portrait,.scope-self>.pj-character-portrait{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.scope-person-name:not([hidden]),.scope-self:has(.pj-character-portrait)>.scope-self-name{position:absolute;right:0;bottom:0;display:grid;place-items:center;min-width:1em;height:1em;padding:0 1px;border-radius:50%;background:var(--surface,#fff);color:var(--ink,#24333a);font-weight:700;pointer-events:none}
 .pj-chat-view{position:relative;isolation:isolate;overflow:hidden;background:var(--surface,#fff)}
 .pj-chat-scenery{position:absolute;inset:0;overflow:hidden;pointer-events:none;user-select:none;container-type:size}
 .pj-chat-backdrop{position:absolute;inset:-12px;background-position:center;background-size:cover;filter:blur(5px);opacity:.34}

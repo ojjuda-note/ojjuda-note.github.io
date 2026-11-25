@@ -55,7 +55,7 @@ function Figure({id,form}:{id:number;form:ProfileAvatar["form"]}){
   }}/>;
 }
 
-export function CharacterPortrait({id,gender}:{id?:number;gender?:string|null}){
+export function CharacterPortrait({id,gender,large=false}:{id?:number;gender?:string|null;large?:boolean}){
   const selected=isCharacterId(id)?id:defaultAvatar.id;
   const sprite=characterSprite(selected,"mini");
   const top=femaleMiniTop[selected-1]??113;
@@ -64,7 +64,7 @@ export function CharacterPortrait({id,gender}:{id?:number;gender?:string|null}){
   const y=sprite.row*492+top-9;
   const visibleGender=profileGender(gender);
   const name=roster[selected-1].name+" 대두형 상반신";
-  return <span className="avatar pj-character-portrait" role="img" data-gender-tone={visibleGender?.tone}
+  return <span className={"avatar pj-character-portrait"+(large?" large":"")} role="img" data-gender-tone={visibleGender?.tone}
     aria-label={visibleGender?name+" · "+visibleGender.name:name} style={{
       backgroundImage:sprite.image,backgroundSize:(1248/size*100)+"% "+(984/size*100)+"%",
       backgroundPosition:(x/(1248-size)*100)+"% "+(y/(984-size)*100)+"%"
