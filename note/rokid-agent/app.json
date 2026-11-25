@@ -1,0 +1,6 @@
+{
+  "pages": ["pages/park/index"],
+  "engine": ">=0.18.0",
+  "permissions": ["INTERNET", "GEOLOCATION"],
+  "window": {"navigationBarTitleText": "오쭈다 공원", "navigationStyle": "custom"}
+}
