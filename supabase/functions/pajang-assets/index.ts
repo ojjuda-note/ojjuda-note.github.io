@@ -4,7 +4,7 @@ const files: Record<string,string> = {
   "walk.webp": "47bc50f315c0dcf65cdccb6e2af76b120c134d8d8e55034f8511efa633f27266",
   "book.webp": "2a76a993ac3a690eb73a17ee79d4180863ba20c991dd34459abc333d90a6b95a",
   "vinyl.webp": "dfe33b7665d0ecbf952d2004710940635e4879f589ae4680ef85ac6109a23d77",
-  "station.js": "57e41fe48f3f10a379ad6cc2c5694d359bcfb7f5073ea021eea8152f05b047c1",
+  "station.js": "838221af970c3139061c6f785250b08a938e5a79cdf0c1d2e12de46e73365330",
   "camera.webp": "b686b71a0517be69e02f61a3028d18e2f406a1087dcebc060d588bcae3df046d"
 };
 // station.js carries the unified app download links and test participation path.

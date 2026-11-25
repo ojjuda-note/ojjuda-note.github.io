@@ -7,7 +7,7 @@ const fix=accuracy=>({coords:{latitude:37.5665,longitude:126.978,accuracy}});
 const cell={latCell:3757,lonCell:12698};
 function environment(t,geolocation){
   globalThis.OjjudaLocation.forget('member');
-  for(const [key,value] of Object.entries({navigator:{geolocation},window:new EventTarget(),document:{querySelector:()=>null}})){
+  for(const [key,value] of Object.entries({navigator:{geolocation,permissions:{query:async()=>({state:'granted'})}},window:new EventTarget(),document:{querySelector:()=>null}})){
     const descriptor=Object.getOwnPropertyDescriptor(globalThis,key);
     Object.defineProperty(globalThis,key,{configurable:true,writable:true,value});
     t.after(()=>descriptor?Object.defineProperty(globalThis,key,descriptor):delete globalThis[key]);
@@ -83,6 +83,26 @@ test('entry respects off, preserves failures, and checks the account before uplo
   denied=true;const failed=await prepareLocation(state,db,'member');assert.equal(failed.locationEnabled,true);assert.ok(failed.locationNotice.includes('권한'));assert.equal(writes,0);
   denied=false;account='other';await prepareLocation(state,db,'member');assert.equal(writes,0);
   account='member';const success=await prepareLocation(state,db,'member');assert.equal(success.radarOn,true);assert.equal(writes,1);
+});
+
+test('reopening Pajang after a one-time grant expires waits for the location button',async t=>{
+  let reads=0,writes=0,permission='granted';
+  environment(t,{getCurrentPosition(ok){reads++;ok(fix(40));}});
+  navigator.permissions.query=async()=>({state:permission});
+  const state={me:{id:'profile'},locationEnabled:true,locationVersion:1};
+  const db={auth:{getSession:async()=>({data:{session:{user:{id:'member'}}}})},rpc:async(name)=>{
+    if(name==='ojjuda_location_preference')return {data:{enabled:true,version:1}};
+    writes++;return {data:{...state,radarOn:true}};
+  }};
+  assert.equal((await prepareLocation(state,db,'member')).radarOn,true);
+  permission='prompt';
+  for(let visit=0;visit<2;visit++){
+    const result=await prepareLocation(state,db,'member');
+    assert.equal(result.locationNotice,'');assert.equal(result.locationChecked,true);
+  }
+  assert.equal(reads,1);assert.equal(writes,1);
+  assert.deepEqual(await readLocationCell({db,accountId:'member',allowDisabled:true,fresh:true}),cell);
+  assert.equal(reads,2);
 });
 
 test('leaving during entry stops the lookup and never saves a location',async t=>{

@@ -320,6 +320,13 @@ function clientFixture(hash) {
     state.locationVersion=Number(localStorage.locationVersion||0);
     window.geoWrites=[];
     window.geoReadCount=0;
+    window.geoPermissionChecks=0;
+    const nativePermission=navigator.permissions.query.bind(navigator.permissions);
+    navigator.permissions.query=async descriptor=>{
+      const result=await nativePermission(descriptor);
+      if(descriptor.name==='geolocation')window.geoPermissionChecks++;
+      return result;
+    };
     const nativePosition=navigator.geolocation.getCurrentPosition.bind(navigator.geolocation);
     Object.defineProperty(navigator.geolocation,'getCurrentPosition',{configurable:true,value:(ok,fail,options)=>{
       window.geoReadCount++;
@@ -1504,8 +1511,9 @@ async function checkNavigation(page){
     assert.ok(await page.evaluate(()=>window.geoWrites.some(p=>p.automatic)));
     await context.clearPermissions();
     await page.reload();await locationSwitch.waitFor();
-    await page.getByText('위치 권한이 막혀 있어요. 휴대폰 설정에서 브라우저의 위치 권한과 오쭈다 사이트의 위치 허용을 확인해 주세요.',{exact:true}).last().waitFor();
-    assert.equal(await locationSwitch.getAttribute('aria-checked'),'true','browser denial does not overwrite the preference');
+    await page.waitForFunction(()=>window.geoPermissionChecks>0);
+    assert.equal(await page.evaluate(()=>window.geoReadCount),0,'reopening after a grant expires does not prompt for GPS');
+    assert.equal(await locationSwitch.getAttribute('aria-checked'),'true','an expired grant does not overwrite the preference');
     await locationSwitch.click();
     await page.waitForFunction(()=>localStorage.locationEnabled==='false');
     assert.equal(await page.evaluate(()=>window.geoWrites.filter(p=>p.automatic).length),0);

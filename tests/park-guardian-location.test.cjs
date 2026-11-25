@@ -24,7 +24,7 @@ function fixture() {
     dispatchEvent: event => state.weather.push(event.detail),
     sessionStorage: { getItem: k => state.storage.get(k), setItem: (k,v) => state.storage.set(k,v), removeItem: k => state.storage.delete(k) },
     navigator: {
-      permissions: { query: async () => ({ state: 'granted' }) },
+      permissions: { query: async () => ({ state: state.permission || 'granted' }) },
       geolocation: {
         getCurrentPosition: (ok,fail) => { state.gps++; if (state.measure) state.measure(ok,fail); else ok(coordinate()); },
         watchPosition: ok => { state.gps++; ok(coordinate()); return 1; },
@@ -57,6 +57,23 @@ test('revocation while measuring prevents caching, use and high-accuracy retry',
   state.measure = (ok, fail) => { state.allowed = false; fail({ code:2 }); };
   await assert.rejects(read({fresh:true}), { code:'guardian' });
   assert.equal(state.gps, 2);
+});
+
+test('Park reuses a lasting grant and never reopens the prompt on an automatic read or retry',async()=>{
+  const {state,read}=fixture();
+  await read({automatic:true});
+  await read({automatic:true});
+  assert.equal(state.gps,1);
+  state.permission='prompt';
+  await assert.rejects(read({automatic:true}),{code:'prompt'});
+  assert.equal(state.gps,1);
+  assert.equal(state.storage.size,0);
+  await read({allowDisabled:true,fresh:true});
+  assert.equal(state.gps,2,'a deliberate tap can request location again');
+  state.permission='granted';
+  state.measure=(_ok,fail)=>{state.permission='prompt';fail({code:2});};
+  await assert.rejects(read({automatic:true,fresh:true}),{code:'prompt'});
+  assert.equal(state.gps,3,'the precise fallback cannot open a prompt');
 });
 
 test('junior weather neither uses saved grid nor starts GPS; revoked card coordinates cannot be reused', async () => {
