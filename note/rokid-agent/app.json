@@ -1,4 +1,5 @@
 {
+  "agentName": "오쭈다 공원",
   "pages": ["pages/park/index"],
   "engine": ">=0.18.0",
   "permissions": ["INTERNET", "GEOLOCATION"],
