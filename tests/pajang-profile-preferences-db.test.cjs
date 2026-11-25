@@ -172,6 +172,7 @@ test('public Pajang preferences save atomically and relationship discovery prese
     grant execute on function pajang_private.profile_details(text,jsonb),public.pajang_profile_details(text,jsonb)
       to authenticated;`);
   await db.exec(read('20261122150000_pajang_unified_profile_editor.sql'));
+  await db.exec(read('20261125025306_pajang_profile_character_selection.sql'));
 
   t.beforeEach(()=>db.exec('begin'));
   t.afterEach(()=>db.exec('rollback'));
@@ -229,11 +230,14 @@ test('public Pajang preferences save atomically and relationship discovery prese
 
   await t.test('one save updates public fields and private exchange data atomically',async()=>{
     const current=await as(account(1),()=>rpc('pajang_profile_details',['mine',{}]));
+    const initialAvatar = {id:1,form:'full',bg:0};
+    const pickedAvatar = {id:100,form:'mini',bg:8};
+    assert.deepEqual(current.avatar,initialAvatar);
     assert.equal(current.person,person(1));
     assert.equal(current.name,'회원1');
     assert.equal(current.region,'서울특별시');
     assert.deepEqual(current.preferences.relationship_intents,[]);
-    const submitted={profilePerson:person(1),name:'통합 회원',region:'경기도',
+    const submitted={profilePerson:person(1),avatar:pickedAvatar,previousAvatar:initialAvatar,name:'통합 회원',region:'경기도',
       interest:'book',fields:{job:'서점 직원',bio:'교환 뒤 보여요.'},
       showAge:true,showGender:false,preferences:{relationship_intents:['conversation'],meeting_styles:['deep_talk']},
       preferencesVersion:0};
@@ -248,6 +252,11 @@ test('public Pajang preferences save atomically and relationship discovery prese
     assert.deepEqual(saved.preferences.meeting_styles,['deep_talk']);
     assert.equal(saved.preferencesVersion,1);
     const reopened=await as(account(1),()=>rpc('pajang_profile_details',['mine',{}]));
+    assert.deepEqual(reopened.avatar,pickedAvatar);
+    await assert.rejects(()=>as(account(1),()=>rpc('pajang_profile_details',['save',
+      {...submitted,avatar:{...pickedAvatar,bg:0},preferencesVersion:1}])),{code:'40001'});
+    await assert.rejects(()=>as(account(1),()=>rpc('pajang_profile_details',['save',
+      {...submitted,previousAvatar:pickedAvatar,avatar:{...pickedAvatar,id:101},preferencesVersion:1}])),{code:'23514'});
     assert.equal(reopened.name,'통합 회원');
     assert.equal(reopened.region,'경기도');
     assert.equal(reopened.fields.job,'서점 직원');
@@ -273,6 +282,7 @@ test('public Pajang preferences save atomically and relationship discovery prese
       profilePerson:person(1),fields:{job:'이전 앱에서 수정'},showAge:true,showGender:false,
       interest:'book',preferences:{meeting_styles:['deep_talk']},preferencesVersion:1
     }]));
+    assert.deepEqual(legacy.avatar,pickedAvatar);
     assert.equal(legacy.name,'통합 회원');
     assert.equal(legacy.region,'경기도');
     assert.deepEqual(legacy.preferences.relationship_intents,['conversation']);
