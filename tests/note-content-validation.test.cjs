@@ -359,3 +359,31 @@ for (const view of ['inquiries', 'feedback']) {
     assert.equal(f.writes[0].args.p_body ?? f.writes[0].args.body, body);
   });
 }
+
+test('Park writer preserves whole compound tags and respects removal during retry', async t => {
+  const f = composer(t);
+  const text = f.document.getElementById('compose-text'), tags = f.document.getElementById('compose-tags');
+  const input = (element, value) => {
+    element.value = value;
+    element.dispatchEvent(new f.window.Event('input', { bubbles: true }));
+  };
+  input(tags, '검사태그');
+  for (const [body, tag] of [
+    ['돈가스 먹었다', '돈가스'], ['돈가스를 먹었다', '돈가스'],
+    ['돈까스 먹었다', '돈까스'], ['돈까스를 먹었다', '돈까스'],
+    ['사랑니 뽑았다', '사랑니'], ['사랑니를 뽑았다', '사랑니'],
+    ['사랑니', '사랑니']
+  ]) {
+    input(text, body);
+    assert.equal(tags.value, '검사태그, ' + tag, body);
+  }
+  input(text, '사랑니 뽑았다. 돈가스 먹었다.');
+  assert.equal(tags.value, '검사태그, 사랑니, 돈가스');
+  input(tags, '검사태그, 돈가스, 직접태그');
+  f.setError(NETWORK);
+  await f.send();
+  assert.equal(tags.value, '검사태그, 직접태그, 돈가스');
+  f.setError(null);
+  await f.send();
+  assert.deepEqual(f.writes.at(-1).args.p_tags, ['검사태그', '직접태그', '돈가스']);
+});

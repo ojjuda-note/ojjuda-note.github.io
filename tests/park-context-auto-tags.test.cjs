@@ -12,6 +12,11 @@ for (const phrase of ['완벽은 없다', '완벽은 없지만', '완벽은 존�
   assert.deepEqual(suggest(phrase), ['완벽']);
 }
 const examples = [
+  ['돈가스 먹었다', ['돈가스']], ['돈가스를 먹었다', ['돈가스']],
+  ['돈까스 먹었다', ['돈까스']], ['돈까스를 먹었다', ['돈까스']],
+  ['사랑니 뽑았다', ['사랑니']], ['사랑니를 뽑았다', ['사랑니']],
+  ['사랑니', ['사랑니']], ['목걸이 샀어', ['목걸이']],
+  ['돈 걱정이 된다', ['돈','걱정']],
   ['친구랑 커피 마셨어.', ['친구','커피']],
   ['여기에도 40대 있나요?', ['40대']],
   ['퇴근길에 빵집 들렀다.', ['퇴근길','빵집']],
@@ -36,7 +41,8 @@ for (const [text,tags] of examples) assert.deepEqual(suggest(text,3),tags,text);
 assert.equal(suggest('친구 커피 노래', 1).length, 1);
 assert.equal(suggest('친구 커피 노래 사과 주말 전화').length, 5);
 
-const sql = read('supabase/migrations/20261125051027_park_card_body_keywords.sql');
+const baseline = read('supabase/migrations/20261125051027_park_card_body_keywords.sql');
+const sql = read('supabase/migrations/20261125053000_park_lexical_compounds.sql');
 const lists = vm.runInContext('TAG_WORDS', context);
 lists.forEach((words,i) => assert.ok(sql.includes("("+i+", '"+words+"')"), 'shared vocabulary tier '+i));
 const park = read('park/index.html');
@@ -50,7 +56,13 @@ async function checkPublisher() {
   const db = new PGlite();
   try {
     await db.exec('CREATE SCHEMA ojjuda_note_internal');
+    await db.exec(baseline);
+    const readMeta = async () => (await db.query(
+      "select prosrc,proacl::text as acl,provolatile,proconfig from pg_proc where oid='ojjuda_note_internal.park_card_context_tags(text)'::regprocedure"
+    )).rows[0];
+    const before = await readMeta();
     await db.exec(sql);
+    assert.deepEqual(await readMeta(), {...before,prosrc:before.prosrc.replace('|목걸이|팔찌|','|목걸이|돈가스|돈까스|사랑니|팔찌|')});
     for (const [body, expected] of examples) {
       const {rows} = await db.query('SELECT ojjuda_note_internal.park_card_context_tags($1) AS tags', [body]);
       assert.deepEqual(rows[0].tags, expected, body);
