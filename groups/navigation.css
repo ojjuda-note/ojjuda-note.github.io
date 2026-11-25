@@ -1,9 +1,13 @@
 :root {
+  --font-b: "Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  font-family:var(--font-b);
   --accent-soft: #e9eee5;
   --accent-ink: #38574b;
   --ink-2: #52655a;
+  --ink: #263e33;
   --surface: var(--paper);
 }
+body {min-height:100vh; min-height:100dvh}
 .group-main-nav {display:flex; align-items:center; gap:8px}
 .group-main-nav a {display:flex; align-items:center; justify-content:center; gap:7px; min-height:44px; padding:6px 12px; border-radius:12px; color:var(--ink-2); font-weight:650}
 .group-main-nav a[aria-current] {color:var(--accent-ink); background:var(--accent-soft)}

@@ -39,6 +39,11 @@ function fixture(url='https://ojjuda.kr/world.html'){
   for(const selector of ['.bottomnav','.sidenav']){
    assert.deepEqual([...w.document.querySelectorAll(selector+' [data-tab]')].map(b=>b.textContent.trim()),['아지트','그룹','오락실','설정']);
    assert.equal(w.document.querySelector(selector+' [aria-current=page]').dataset.tab,'hub');
+   for(const button of w.document.querySelectorAll(selector+' [data-tab]')){
+    const href=button.querySelector('svg use').getAttribute('href'),asset=new URL(href,w.location.href);
+    const sprite=new w.DOMParser().parseFromString(fs.readFileSync(path.join(root,asset.pathname),'utf8'),'image/svg+xml');
+    assert.ok(sprite.getElementById(asset.hash.slice(1))?.querySelector('path,circle,rect'),button.textContent+' has a drawable navigation icon');
+   }
   }
   // The main menu replaces the duplicate group tile.
   assert.deepEqual([...w.document.querySelectorAll('#agit-daily .agit-life-grid > *')].map(el =>
