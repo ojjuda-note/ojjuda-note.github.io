@@ -278,12 +278,13 @@ test('public Pajang preferences save atomically and relationship discovery prese
     await db.query('update pajang_private.people set avatar=$1 where id=$2',[{id:192,form:'mini',bg:6},person(1)]);
     await db.query('update ojjuda_account_internal.member_identity set gender=null where user_id=$1',[account(3)]);
     await db.exec(read('20261125134428_pajang_gender_bound_character_catalog.sql'));
-    const mine = (n,modern=true) => as(account(n),()=>rpc('pajang_profile_details',['mine',modern?{avatarCatalog:2}:{}]));
+    await db.exec(read('20261125134429_pajang_station_gallery_avatars.sql'));
+    const mine = (n,modern=true) => as(account(n),()=>rpc('pajang_profile_details',['mine',modern?{avatarCatalog:modern===2?2:3}:{}]));
     const state = n => as(account(n),()=>rpc('pajang_member',['state',{}]));
     const submit = async(n,old,next,modern=true,other={}) => {
       const current=await mine(n,modern);
       return as(account(n),()=>rpc('pajang_profile_details',['save',{
-        ...(modern?{avatarCatalog:2}:{}),profilePerson:person(n),fields:current.fields,
+        ...(modern?{avatarCatalog:modern===2?2:3}:{}),profilePerson:person(n),fields:current.fields,
         preferences:{},preferencesVersion:current.preferencesVersion,...other,
         ...(next?{avatar:next,previousAvatar:old}:{})
       }]));
@@ -295,6 +296,24 @@ test('public Pajang preferences save atomically and relationship discovery prese
     await assert.rejects(()=>submit(1,woman.avatar,{...woman.avatar,id:192}),{code:'22023'});
     await assert.rejects(()=>submit(2,man.avatar,{...man.avatar,id:99}),{code:'22023'});
     await assert.rejects(()=>submit(2,man.avatar,{...man.avatar,id:201}),{code:'23514'});
+    for(const [n,original,allowed,otherCatalog] of [[1,woman.avatar,[202,204],203],[2,man.avatar,[203,205],204]]){
+      await as(account(n),()=>rpc('pajang_discovery_visibility',[true]));
+      let previous=original;
+      for(const id of allowed){
+        const picked={id,bg:4,form:'mini'};
+        assert.deepEqual((await submit(n,previous,picked)).avatar,picked);
+        assert.equal((await state(n)).me.avatarId,id);
+        assert.equal((await mine(n,2)).avatar.catalogId,id);
+        for(const client of [2,false]){
+          const fallback=(await mine(n,client)).avatar;
+          const changed=await submit(n,fallback,{...fallback,bg:5},client);
+          assert.equal(changed.avatar.catalogId,id);
+        }
+        previous=(await mine(n)).avatar;
+        await assert.rejects(()=>submit(n,previous,{...previous,id:otherCatalog}),{code:'22023'});
+      }
+      await submit(n,previous,original);
+    }
     const oldMan=await mine(2,false);
     assert.deepEqual(oldMan.avatar,{id:1,catalogId:101,form:'full',bg:0});
     await assert.rejects(()=>submit(2,oldMan.avatar,{...oldMan.avatar,id:2},false),{code:'22023'});

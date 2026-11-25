@@ -14,7 +14,7 @@ for(const pathname of supportPaths)assert.ok(fs.statSync(path.join(root,pathname
 
 // Exercise the built React member program with real DOM/history events. The
 // network boundary is an in-memory member fixture, never a live user account.
-function fixture(t,url='https://ojjuda.test/features/pajang/station.html',{admin=false,radar=false,hidden=false}={}){
+function fixture(t,url='https://ojjuda.test/features/pajang/station.html',{admin=false,radar=false,hidden=false,newOutfits=false}={}){
   const errors=[];
   const console=new VirtualConsole();console.on('jsdomError',error=>errors.push(error.message));
   const dom=new JSDOM('<!doctype html><div id="station"></div>',{url,runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:console});
@@ -30,6 +30,7 @@ function fixture(t,url='https://ojjuda.test/features/pajang/station.html',{admin
   }
   const me={id:'me',name:'보리',gender:'male',avatarId:200,interest:'book',body:'내 답변',at:1};
   const peer={id:'peer',name:'라온',avatarId:9,interest:'walk',body:'함께 걸어요.',at:1,range:3,bearing:315};
+  if(newOutfits){me.avatarId=205;peer.avatarId=202;}
   if(hidden){
     Object.assign(me,{gender:null,avatarId:201});
     Object.assign(peer,{gender:null,avatarId:201});
@@ -120,16 +121,16 @@ test('opening a chat from a feed profile returns to that feed instead of a fixed
 });
 
 test('own portrait and matched chat reuse selected outfits with a fresh scene on each entry', async t => {
-  const f=fixture(t), {w}=f, doc=w.document;
+  const f=fixture(t,undefined,{newOutfits:true}), {w}=f, doc=w.document;
   await f.until(()=>f.byText('nav a','내 파장'));
   await f.menu('내 파장');
   const portrait=doc.querySelector('.account-heading [role="img"]');
   assert.equal(portrait.dataset.genderTone,'male');
-  assert.match(portrait.style.backgroundImage,/avatars-male-20261125-25\.webp/);
+  assert.match(portrait.style.backgroundImage,/avatars-male-20261125-26\.webp/);
 
   w.Math.random=()=>0;
   await f.menu('마음함');
-  assert.match(doc.querySelector('.listperson .pj-character-portrait').style.backgroundImage,/avatars-20261125-03\.webp/);
+  assert.match(doc.querySelector('.listperson .pj-character-portrait').style.backgroundImage,/avatars-20261125-26\.webp/);
   await f.click('button','대화 열기');
   const scenery=()=>doc.querySelector('.pj-chat-scenery');
   const backdrop=()=>scenery()?.querySelector('.pj-chat-backdrop')?.style.backgroundImage;
@@ -137,8 +138,8 @@ test('own portrait and matched chat reuse selected outfits with a fresh scene on
   const firstScene=backdrop();
   assert.match(firstScene,/avatar-bg-20261125-[1-8]\.webp/);
   assert.equal(scenery().getAttribute('aria-hidden'),'true');
-  assert.match(scenery().querySelector('.pj-chat-peer .full').style.backgroundImage,/avatars-20261125-03\.webp/);
-  assert.match(scenery().querySelector('.pj-chat-self .full').style.backgroundImage,/avatars-male-20261125-25\.webp/);
+  assert.match(scenery().querySelector('.pj-chat-peer .full').style.backgroundImage,/avatars-20261125-26\.webp/);
+  assert.match(scenery().querySelector('.pj-chat-self .full').style.backgroundImage,/avatars-male-20261125-26\.webp/);
   assert.equal(doc.querySelector('.chatlog').contains(scenery()),false);
 
   w.Math.random=()=>.999;

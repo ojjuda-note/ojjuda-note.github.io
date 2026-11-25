@@ -12,20 +12,23 @@ const assetRoot="/features/pajang/assets/";
 const backgroundUrl=(id:number)=>assetRoot+"avatar-bg-20261125-"+id+".webp";
 const formName=(form:ProfileAvatar["form"])=>form==="mini"?"대두형":"전신형";
 export type AvatarCollection="female"|"male";
-const collectionSize=100;
-const collectionFor=(id:number):AvatarCollection=>id>collectionSize?"male":"female";
-const localIndex=(id:number)=>(id-1)%collectionSize;
-const roster=[...femaleNames,...maleNames].map((name,index)=>{
-  const id=index+1,slot=localIndex(id);
-  return {id,name,collection:collectionFor(id),group:groups[slot<40?1:slot<80?2:3]};
-});
+// IDs 1–200 belong to the original atlases. ID 201 is reserved for the public disguise.
+const collections={
+  female:[...femaleNames.map((name,index)=>({id:index+1,name})),{id:202,name:"정류장의 오후"},{id:204,name:"갤러리 산책"}],
+  male:[...maleNames.map((name,index)=>({id:index+101,name})),{id:203,name:"정류장의 오후"},{id:205,name:"갤러리 산책"}]
+};
+const roster=(["female","male"] as const).flatMap(collection=>
+  collections[collection].map((entry,slot)=>({...entry,slot,collection,
+    group:groups[slot<40||slot>=100?1:slot<80?2:3]})));
+const byId=new Map(roster.map(entry=>[entry.id,entry]));
 
 export function sameAvatar(a:ProfileAvatar,b:ProfileAvatar){
   return a.id===b.id&&a.form===b.form&&a.bg===b.bg;
 }
 export function avatarForCollection(avatar:ProfileAvatar,collection:AvatarCollection|null):ProfileAvatar{
-  if(!collection||collectionFor(avatar.id)===collection)return avatar;
-  return {...avatar,id:localIndex(avatar.id)+1+(collection==="male"?collectionSize:0)};
+  const entry=byId.get(avatar.id);
+  if(!entry||!collection||entry.collection===collection)return avatar;
+  return {...avatar,id:collections[collection][entry.slot].id};
 }
 export function validAvatar(value:unknown):value is ProfileAvatar{
   if(!value||typeof value!=="object")return false;
@@ -43,15 +46,15 @@ const femaleMiniTop=[
   133,125,127,126,91,88,78,83,105,112,93,99,104,108,106,96,91,102,101,109
 ];
 function isCharacterId(id:unknown):id is number{
-  return typeof id==="number"&&Number.isInteger(id)&&id>=1&&id<=roster.length;
+  return typeof id==="number"&&byId.has(id);
 }
 function isDisplayId(id:unknown):id is number{return id===hiddenCharacterId||isCharacterId(id);}
-function characterName(id:number){return id===hiddenCharacterId?"나무 분장":roster[id-1].name;}
+function characterName(id:number){return id===hiddenCharacterId?"나무 분장":byId.get(id)!.name;}
 function characterSprite(id:number,form:ProfileAvatar["form"]){
   if(id===hiddenCharacterId)return {image:'url("'+assetRoot+'avatar-tree-20261125.webp")',
     column:form==="mini"?0:1,row:0,columns:2,rows:1};
-  const index=localIndex(id);
-  const prefix=collectionFor(id)==="male"?"avatars-male-20261125-":"avatars-20261125-";
+  const {slot:index,collection}=byId.get(id)!;
+  const prefix=collection==="male"?"avatars-male-20261125-":"avatars-20261125-";
   const atlas=String(Math.floor(index/4)+1).padStart(2,"0");
   return {image:'url("'+assetRoot+prefix+atlas+'.webp")',
     column:(index%2)*2+(form==="mini"?0:1),row:Math.floor((index%4)/2),columns:4,rows:2};
@@ -112,14 +115,14 @@ export function ProfileCharacter({avatar,collection,showGender,onChange,disabled
   const previewId=showGender?avatar.id:hiddenCharacterId;
   function choose(next:ProfileAvatar){
     if(disabled)return;
-    if((next.id!==avatar.id||next.form!==avatar.form)&&collectionFor(next.id)!==collection)return;
+    if((next.id!==avatar.id||next.form!==avatar.form)&&byId.get(next.id)?.collection!==collection)return;
     onChange(next);setPanel(null);
     (panel==="background"?bgButton:charButton).current?.focus();
   }
   function openCharacter(){
     if(!collection)return;
     if(panel==="character"){setPanel(null);return;}
-    setGroup("전체");setQuery("");setPage(Math.floor(localIndex(avatar.id)/pageSize));setPanel("character");
+    setGroup("전체");setQuery("");setPage(Math.floor((byId.get(avatar.id)?.slot??0)/pageSize));setPanel("character");
   }
   return <section aria-label="내 캐릭터" className="pj-avatar">
     <div className="pj-avatar-stage" role="img" aria-label={characterName(previewId)+" "+formName(avatar.form)+" · 배경 "+backgrounds[avatar.bg]}>
@@ -139,7 +142,7 @@ export function ProfileCharacter({avatar,collection,showGender,onChange,disabled
       <div className="pj-avatar-filters"><select aria-label="의상 분류" value={group} disabled={disabled} onChange={e=>{setGroup(e.target.value);setPage(0);}}>{groups.map(g=><option key={g}>{g}</option>)}</select>
       <input aria-label="캐릭터 검색" type="search" placeholder="이름 검색" value={query} disabled={disabled} onChange={e=>{setQuery(e.target.value);setPage(0);}}/></div>
       <div className="pj-avatar-grid" data-collection={collection==="male"?"남자":"여자"}>{filtered.slice(page*pageSize,(page+1)*pageSize).map(c=><div className="pj-avatar-card" key={c.id}>
-        <div className="pj-avatar-pair">{(["mini","full"] as const).map(form=><button type="button" key={form} disabled={disabled} aria-pressed={avatar.id===c.id&&avatar.form===form} aria-label={c.name+" "+formName(form)} onClick={()=>choose({...avatar,id:c.id,form})}><Figure id={c.id} form={form}/><span>{formName(form)}</span></button>)}</div>
+        <div className="pj-avatar-pair" data-equal-frames={c.collection==="male"||c.slot>=100?true:undefined}>{(["mini","full"] as const).map(form=><button type="button" key={form} disabled={disabled} aria-pressed={avatar.id===c.id&&avatar.form===form} aria-label={c.name+" "+formName(form)} onClick={()=>choose({...avatar,id:c.id,form})}><Figure id={c.id} form={form}/><span>{formName(form)}</span></button>)}</div>
         <strong>{c.name}</strong></div>)}</div>
       {!filtered.length&&<p>검색 결과가 없어요.</p>}
       {pageCount>1&&<div className="pj-avatar-pages"><button type="button" disabled={disabled||page===0} onClick={()=>setPage(page-1)}>이전</button><span>{page+1} / {pageCount}</span><button type="button" disabled={disabled||page+1===pageCount} onClick={()=>setPage(page+1)}>다음</button></div>}

@@ -27,7 +27,7 @@ export async function exchange<T>(action:string, options:{p_peer?:string; p_kind
 
 async function profileDetails(action:"mine"|"save",person:string,data:object={}):Promise<SavedProfile>{
   const db=await window.OjjudaGetClient();
-  const {data:profile,error}=await db.rpc("pajang_profile_details",{p_action:action,p_data:{...data,avatarCatalog:2}});
+  const {data:profile,error}=await db.rpc("pajang_profile_details",{p_action:action,p_data:{...data,avatarCatalog:3}});
   if(error)throw Object.assign(new Error(error.message),{code:error.code});
   if(!profile||profile.person!==person||typeof profile.name!=="string"||typeof profile.region!=="string"||!profile.fields||typeof profile.fields!=="object"||Array.isArray(profile.fields)
     ||typeof profile.showAge!=="boolean"||typeof profile.showGender!=="boolean"||typeof profile.interest!=="string"
