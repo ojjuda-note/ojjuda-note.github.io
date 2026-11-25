@@ -66,7 +66,7 @@ async function fixture(t, {fields = {}, profile = {}, save, read, ready = true} 
   const state = {
     calls: [],
     successes: 0,
-    profile: {fields: copy(fields), age: 35, gender: '남성', showAge: false, showGender: false,
+    profile: {ownedCharacters:[2,3,102,103,205],characterCoins:20,fields: copy(fields), age: 35, gender: '남성', showAge: false, showGender: false,
       person: profileId, name:'보리', region:'서울특별시', interest: 'book', preferences: emptyPreferences(), preferencesVersion: 3, ...profile},
   };
   window.profileId = profileId;
