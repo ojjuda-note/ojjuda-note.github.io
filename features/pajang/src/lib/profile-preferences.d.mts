@@ -24,7 +24,7 @@ export type ProfilePreferenceGroup = {
 };
 
 export const MAX_PROFILE_CUSTOM_LENGTH:40;
-export const MAX_PROFILE_GROUP_SELECTIONS:32;
+export const MAX_PROFILE_GROUP_SELECTIONS:5;
 export const relationshipIntents:readonly RelationshipIntent[];
 export const profilePreferenceGroups:readonly ProfilePreferenceGroup[];
 export const profilePreferenceKeys:Readonly<Record<PreferenceGroupKey,readonly string[]>>;

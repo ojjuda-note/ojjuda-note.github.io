@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { introDetails, profileGender, themeFor, type NearbyAnswer, type NearbyPerson, type Station } from "../lib/station";
 import { compassDirections, directionName, radarPosition, rangeNames, type RadarBand, type RadarCell } from "../lib/radar";
 import {radarBands as bands, radarMarkers} from "../lib/radar-markers";
-import {CharacterPortrait} from "./profile-character";
+import {CharacterPortrait,hiddenCharacterId} from "./profile-character";
 import { I } from "./icons";
 import { useCompass } from "./use-compass";
 import {readLocationCell} from "../../location.mjs";
@@ -125,7 +125,7 @@ export default function NearbyRadar({station,sample,autoLocation,onLocationChang
           </svg>
           <span className="scope-self">{station.me&&<CharacterPortrait id={station.me.avatarId}/>}<span className="scope-self-name">나</span></span>
           {markers.map(({person:p,x,y,anchor,compact})=>{
-            const gender=profileGender(p.gender);
+            const gender=p.avatarId===hiddenCharacterId?undefined:profileGender(p.gender);
             const label=p.name+(gender?", "+gender.name:"")+", "+bearingLabel(p)+", "+rangeNames[p.range];
             const picked=p.id===person?.id;
             return <button key={p.id} type="button" data-gender-tone={gender?.tone} className={"scope-person"+(!anchor?" scope-same-cell":"")+(compact?" scope-person-compact":"")+(picked?" picked":"")} style={{left:x+"%",top:y+"%"}}

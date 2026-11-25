@@ -175,6 +175,8 @@ test('public Pajang preferences save atomically and relationship discovery prese
   await db.exec(read('20261125025306_pajang_profile_character_selection.sql'));
   await db.exec(read('20261125031145_pajang_male_profile_characters.sql'));
 
+  await db.exec(read('20261125044350_pajang_five_tastes_per_list.sql'));
+
   t.beforeEach(()=>db.exec('begin'));
   t.afterEach(()=>db.exec('rollback'));
 
@@ -183,6 +185,24 @@ test('public Pajang preferences save atomically and relationship discovery prese
     await db.exec(radar.slice(radar.indexOf('create function pajang_private.nearby_people'),radar.indexOf('revoke all on function')));
     await db.exec(read('20261125041640_pajang_connected_chat_avatar_ids.sql'));
     await db.exec(read('20261125043708_pajang_public_portraits.sql'));
+  };
+  const prepareRadar = async () => {
+    const past = read('20261121154322_pajang_past_questions.sql');
+    await db.exec(past.slice(past.indexOf('create or replace function pajang_private.answer_is_visible('),
+      past.indexOf('-- Patch the deployed callers')));
+    await db.exec(`
+      alter table auth.users add column is_anonymous boolean default false,add column deleted_at timestamptz,add column banned_until timestamptz;
+      create table public.user_private(user_id uuid primary key,banned_until timestamptz);
+      create schema ojjuda_account_deletion;
+      create table ojjuda_account_deletion.requests(user_id uuid primary key);
+      create table ojjuda_account_internal.location_preferences(user_id uuid primary key,enabled boolean);
+      create table pajang_private.answer_likes(person uuid,day date,slot text,liker uuid);
+      update pajang_private.people set location_enabled=true;
+    `);
+    for (const n of [1,2]) {
+      await db.query('insert into pajang_private.locations(person,day,lat,lon,direction) values($1,$2,3750,12700,true)',
+        [person(n),today]);
+    }
   };
   await t.test('profile portraits identify visible members and omit blocked, invisible and private details',async()=>{
     await installPortraits();
@@ -231,22 +251,7 @@ test('public Pajang preferences save atomically and relationship discovery prese
 
   await t.test('radar portraits follow location opt-in and blocks without exposing an avatar configuration',async()=>{
     await installPortraits();
-    const past = read('20261121154322_pajang_past_questions.sql');
-    await db.exec(past.slice(past.indexOf('create or replace function pajang_private.answer_is_visible('),
-      past.indexOf('-- Patch the deployed callers')));
-    await db.exec(`
-      alter table auth.users add column is_anonymous boolean default false,add column deleted_at timestamptz,add column banned_until timestamptz;
-      create table public.user_private(user_id uuid primary key,banned_until timestamptz);
-      create schema ojjuda_account_deletion;
-      create table ojjuda_account_deletion.requests(user_id uuid primary key);
-      create table ojjuda_account_internal.location_preferences(user_id uuid primary key,enabled boolean);
-      create table pajang_private.answer_likes(person uuid,day date,slot text,liker uuid);
-      update pajang_private.people set location_enabled=true;
-    `);
-    for (const n of [1,2]) {
-      await db.query('insert into pajang_private.locations(person,day,lat,lon,direction) values($1,$2,3750,12700,true)',
-        [person(n),today]);
-    }
+    await prepareRadar();
     await db.query('update pajang_private.people set avatar=$1::jsonb where id=$2',[{id:187,bg:6,form:'full'},person(2)]);
     await db.query("select set_config('request.jwt.claims',$1,true)",[JSON.stringify({sub:account(1)})]);
     const radar=()=>value("select pajang_private.nearby_people($1,$2,'pm',l) as value from pajang_private.locations l where l.person=$1",
@@ -259,6 +264,84 @@ test('public Pajang preferences save atomically and relationship discovery prese
     await db.query('update ojjuda_account_internal.location_preferences set enabled=true where user_id=$1',[account(2)]);
     await db.query('insert into pajang_private.blocks values($1,$2)',[person(2),person(1)]);
     assert.ok(!(await radar()).some(r=>r.id===person(2)));
+  });
+
+  await t.test('registered catalog governs storage while explicit gender hiding masks every public portrait',async()=>{
+    await installPortraits();
+    const discovery=read('20261117210000_pajang_discovery_gender.sql');
+    await db.exec(discovery.slice(discovery.indexOf('create function public.pajang_discovery_visibility'),
+      discovery.indexOf('create function public.pajang_discovery_feed')));
+    await db.exec(read('20261125110000_pajang_member_gender_defaults.sql'));
+    await db.exec(read('20261125114508_pajang_member_gender_borders.sql'));
+    await db.exec(read('20261125120844_pajang_combined_visibility_defaults.sql'));
+    await prepareRadar();
+    await db.query('update pajang_private.people set avatar=$1 where id=$2',[{id:192,form:'mini',bg:6},person(1)]);
+    await db.query('update ojjuda_account_internal.member_identity set gender=null where user_id=$1',[account(3)]);
+    await db.exec(read('20261125134428_pajang_gender_bound_character_catalog.sql'));
+    const mine = (n,modern=true) => as(account(n),()=>rpc('pajang_profile_details',['mine',modern?{avatarCatalog:2}:{}]));
+    const state = n => as(account(n),()=>rpc('pajang_member',['state',{}]));
+    const submit = async(n,old,next,modern=true,other={}) => {
+      const current=await mine(n,modern);
+      return as(account(n),()=>rpc('pajang_profile_details',['save',{
+        ...(modern?{avatarCatalog:2}:{}),profilePerson:person(n),fields:current.fields,
+        preferences:{},preferencesVersion:current.preferencesVersion,...other,
+        ...(next?{avatar:next,previousAvatar:old}:{})
+      }]));
+    };
+    const woman=await mine(1),man=await mine(2),unknown=await mine(3);
+    assert.deepEqual([woman.avatarCollection,man.avatarCollection,unknown.avatarCollection],['female','male',null]);
+    assert.deepEqual(woman.avatar,{id:92,form:'mini',bg:6});
+    assert.deepEqual(man.avatar,{id:101,form:'full',bg:0});
+    await assert.rejects(()=>submit(1,woman.avatar,{...woman.avatar,id:192}),{code:'22023'});
+    await assert.rejects(()=>submit(2,man.avatar,{...man.avatar,id:99}),{code:'22023'});
+    await assert.rejects(()=>submit(2,man.avatar,{...man.avatar,id:201}),{code:'23514'});
+    const oldMan=await mine(2,false);
+    assert.deepEqual(oldMan.avatar,{id:1,catalogId:101,form:'full',bg:0});
+    await assert.rejects(()=>submit(2,oldMan.avatar,{...oldMan.avatar,id:2},false),{code:'22023'});
+    assert.equal((await submit(2,oldMan.avatar,{...oldMan.avatar,bg:7},false)).avatar.catalogId,101);
+    const currentMan=(await mine(2)).avatar;
+    const chosen={...currentMan,id:184,form:'mini'};
+    assert.deepEqual((await submit(2,currentMan,chosen)).avatar,chosen);
+    assert.deepEqual((await submit(2,currentMan,chosen)).avatar,chosen,'an already-applied retry is idempotent');
+    await assert.rejects(()=>submit(2,currentMan,{...chosen,id:165}),{code:'40001'});
+    await assert.rejects(()=>submit(3,unknown.avatar,{...unknown.avatar,id:2}),{code:'22023'});
+    await assert.rejects(()=>submit(3,unknown.avatar,{...unknown.avatar,form:'mini'}),{code:'22023'});
+    assert.equal((await submit(3,unknown.avatar,{...unknown.avatar,bg:3})).avatar.bg,3);
+    assert.equal((await submit(3,null,null,true,{name:'별밤'})).name,'별밤');
+
+    const visible = flag => as(account(2),()=>rpc('pajang_discovery_visibility',[flag]));
+    const radar = async() => {
+      await db.query("select set_config('request.jwt.claims',$1,true)",[JSON.stringify({sub:account(1)})]);
+      return value("select pajang_private.nearby_people($1,$2,'pm',l) as value from pajang_private.locations l where l.person=$1",
+        [person(1),today]);
+    };
+    const card = async() => (await feed()).items.find(r=>r.peer===person(2));
+    for (const [a,b] of [[1,2],[2,1]]) {
+      await db.query('insert into pajang_private.signals(src,dst,day,note,at) values($1,$2,$3,$4,1000)',
+        [person(a),person(b),today,'']);
+    }
+    await visible(false);
+    assert.deepEqual((await mine(2)).avatar,chosen);
+    assert.equal((await mine(2)).avatarCollection,'male');
+    const pub=await profile(person(2));
+    assert.equal(pub.gender,null);
+    for (const surface of [pub,(await state(2)).me,(await state(1)).people.find(r=>r.id===person(2)),
+        await card(),(await radar()).find(r=>r.id===person(2))]) {
+      assert.equal(surface.avatarId,201);
+      for (const key of ['avatar','avatarCollection','catalogId','form','bg']) assert.ok(!Object.hasOwn(surface,key),key);
+    }
+    await visible(true);
+    assert.equal((await card()).avatarId,184);
+    assert.equal((await profile(person(2))).avatarId,184);
+    assert.deepEqual((await mine(2)).avatar,chosen);
+    await db.query("update ojjuda_account_internal.member_identity set gender='female' where user_id=$1",[account(2)]);
+    assert.deepEqual((await mine(2)).avatar,{...chosen,id:84},'authorized registration correction');
+    await db.query('insert into auth.users(id) values($1),($2)',[account(10),account(11)]);
+    await db.query("insert into ojjuda_account_internal.member_identity values($1,'1990-01-01','male')",[account(10)]);
+    for(const n of [10,11])await db.query("insert into pajang_private.people(id,owner_id,name,region,interest) values($1,$2,'새회원','서울특별시','coffee')",[person(n),account(n)]);
+    assert.equal((await state(10)).me.avatarId,101,'new male member default');
+    await db.query("insert into ojjuda_account_internal.member_identity values($1,'1990-01-01','male')",[account(11)]);
+    assert.equal((await state(11)).me.avatarId,101,'late registration sets the correct default');
   });
 
   await t.test('account gender is selected at entry and an explicit hide survives profile reads',async()=>{
@@ -464,7 +547,21 @@ test('public Pajang preferences save atomically and relationship discovery prese
     assert.equal(await value('select count(*)::int as value from pajang_private.public_profile_preferences'),0,'no inferred or backfilled selection');
   });
 
-  await t.test('saves all catalog choices, custom text and basic profile in one operation',async()=>{
+  await t.test('caps legacy lists on read without rewriting stored choices on a no-op',async()=>{
+    const legacy=selection();
+    legacy.meeting_styles=catalog.profilePreferenceGroups[0].options.slice(3,10).map(item=>item.key);
+    legacy.custom.life_priorities=['첫째','둘째','셋째','넷째','다섯째'];
+    await store(1,legacy);
+    const capped=(await profile()).preferences;
+    assert.deepEqual(capped,catalog.normalizeProfilePreferences(legacy));
+    assert.deepEqual(capped.meeting_styles,legacy.meeting_styles.slice(0,5));
+    assert.deepEqual(capped.custom.life_priorities,legacy.custom.life_priorities.slice(0,4));
+    const noOp=await save({preferences:capped,preferencesVersion:1});
+    assert.equal(noOp.me.preferencesVersion,1);
+    assert.deepEqual(await value("select preferences->'meeting_styles' as value from pajang_private.public_profile_preferences where person=$1",[person(1)]),legacy.meeting_styles);
+  });
+
+  await t.test('saves five combined choices per list, custom text and basic profile in one operation',async()=>{
     const preferences=selection();
     preferences.meeting_styles.push('deep_talk');
     preferences.custom.meeting_styles=['  새벽시장 구경  ','새벽시장 구경','별 보러 가기'];
@@ -475,7 +572,7 @@ test('public Pajang preferences save atomically and relationship discovery prese
     assert.deepEqual(saved.me.preferences.custom.meeting_styles,['새벽시장 구경','별 보러 가기']);
     assert.deepEqual((await profile()).preferences,saved.me.preferences);
     const allChoices={relationship_intents:catalog.relationshipIntents.map(item=>item.key)};
-    for(const group of catalog.profilePreferenceGroups) allChoices[group.key]=group.options.map(item=>item.key);
+    for(const group of catalog.profilePreferenceGroups) allChoices[group.key]=group.options.slice(0,group.key==='meeting_styles'?3:5).map(item=>item.key);
     const all=await save({preferences:allChoices,preferencesVersion:1});
     for(const group of catalog.profilePreferenceGroups) assert.deepEqual(all.me.preferences[group.key],allChoices[group.key]);
     assert.deepEqual(all.me.preferences.relationship_intents,allChoices.relationship_intents);
@@ -483,7 +580,7 @@ test('public Pajang preferences save atomically and relationship discovery prese
     const cleared=await save({preferences:{relationship_intents:[],custom:{meeting_styles:[]}},preferencesVersion:2});
     assert.deepEqual(cleared.me.preferences.relationship_intents,[]);
     assert.deepEqual(cleared.me.preferences.custom.meeting_styles,[]);
-    assert.equal(cleared.me.preferences.life_priorities.length,24);
+    assert.equal(cleared.me.preferences.life_priorities.length,5);
     await as(account(1),()=>rpc('pajang_member',['profile',{name:'구버전 저장',interest:'walk'}]));
     assert.deepEqual((await profile()).preferences,cleared.me.preferences,'legacy profile writes preserve new choices');
     assert.equal((await profile()).version,3);
@@ -495,6 +592,9 @@ test('public Pajang preferences save atomically and relationship discovery prese
     const invalid=[
       null,[],{unknown:[]},{relationship_intents:['unknown']},{relationship_intents:'dating'},
       {meeting_styles:[null]},{meeting_styles:['unknown']},{life_priorities:['trust']},
+      {meeting_styles:catalog.profilePreferenceGroups[0].options.slice(0,6).map(item=>item.key)},
+      {meeting_styles:catalog.profilePreferenceGroups[0].options.slice(0,5).map(item=>item.key),custom:{meeting_styles:['새 취향']}},
+      {custom:{meeting_styles:Array.from({length:6},(_,i)=>'취향'+i)}},
       {custom:null},{custom:{unknown:[]}},{custom:{meeting_styles:'text'}},
       {custom:{meeting_styles:['   ']}},{custom:{meeting_styles:[42]}},
       {custom:{meeting_styles:['가'.repeat(41)]}},

@@ -1,4 +1,4 @@
-import {ProfileCharacter,defaultAvatar,sameAvatar,validAvatar,type ProfileAvatar} from "./profile-character";
+import {ProfileCharacter,avatarForCollection,defaultAvatar,sameAvatar,validAvatar,type AvatarCollection,type ProfileAvatar} from "./profile-character";
 import {profileGender} from "../lib/station";
 import {useEffect, useRef, useState} from "react";
 import regionCatalog from "../../regions.json";
@@ -9,7 +9,7 @@ import {ProfileTastesFields,blankTasteDrafts,addTaste,prepareTastes,tastePatch} 
 export type ExchangeKind = "profile"|"photos";
 type Fields = Partial<Record<"relationship"|"job"|"region"|"religion"|"height"|"mbti"|"bloodType"|"skills"|"hobbies"|"drinking"|"smoking"|"bio",string|number>>;
 export type SharedProfile = {fields: Fields; age:number|null; gender:string|null};
-type MyProfile = SharedProfile & {avatar:ProfileAvatar;showAge:boolean; showGender:boolean;person:string;name:string;region:string;interest:string;preferences:ProfilePreferences;preferencesVersion:number};
+type MyProfile = SharedProfile & {avatar:ProfileAvatar;storedAvatar:ProfileAvatar;avatarCollection:AvatarCollection|null;showAge:boolean; showGender:boolean;person:string;name:string;region:string;interest:string;preferences:ProfilePreferences;preferencesVersion:number};
 type SavedProfile = MyProfile & {masking?:Partial<Record<keyof Fields,{submitted:unknown;saved:unknown}>>};
 
 function confirmedMask(receipt:SavedProfile["masking"],key:keyof Fields,submitted:string,saved:string) {
@@ -35,9 +35,12 @@ async function profileDetails(action:"mine"|"save",person:string,data:object={})
     ||!Array.isArray(profile.preferences?.relationship_intents)
     ||!profilePreferenceGroups.every(group=>Array.isArray(profile.preferences?.[group.key])&&Array.isArray(profile.preferences?.custom?.[group.key])))
     throw new Error(action==="save"?"저장 결과를 확인하지 못했어요. 다시 시도해 주세요.":"프로필을 불러오지 못했어요. 다시 시도해 주세요.");
-  const avatar=profile.avatar===undefined?defaultAvatar:profile.avatar;
-  if(!validAvatar(avatar))throw new Error("캐릭터 정보를 확인하지 못했어요.");
-  return {...profile,avatar,preferences:normalizeProfilePreferences(profile.preferences)};
+  const storedAvatar=profile.avatar===undefined?defaultAvatar:profile.avatar;
+  if(!validAvatar(storedAvatar))throw new Error("캐릭터 정보를 확인하지 못했어요.");
+  const collection=profile.avatarCollection===undefined?profileGender(profile.gender)?.tone:profile.avatarCollection;
+  const avatarCollection=collection==="male"||collection==="female"?collection:null;
+  return {...profile,storedAvatar,avatarCollection,avatar:avatarForCollection(storedAvatar,avatarCollection),
+    preferences:normalizeProfilePreferences(profile.preferences)};
 }
 
 const regions:Record<string,string[]>=regionCatalog;
@@ -134,7 +137,7 @@ export function ExchangeProfileEditor({profileId,focusTastes=false,onSaved}:{pro
     };
     try {
       const saved=await profileDetails("save",profileId,{profilePerson:profileId,
-        ...(!sameAvatar(profile.avatar,originalAvatar.current)?{avatar:profile.avatar,previousAvatar:originalAvatar.current}:{}),
+        ...(!sameAvatar(profile.avatar,originalAvatar.current)?{avatar:profile.avatar,previousAvatar:profile.storedAvatar}:{}),
         name:profile.name.trim(),region:profile.region,
         fields,...visibilityPatch,interest:profile.interest,
         preferences:{...tastePatch(prepared.preferences),relationship_intents:prepared.preferences.relationship_intents},
@@ -154,7 +157,7 @@ export function ExchangeProfileEditor({profileId,focusTastes=false,onSaved}:{pro
         JSON.stringify([...prepared.preferences.relationship_intents].sort()))changed.push("원하는 인연");
       if(visibilityPatch.showAge!==undefined&&saved.showAge!==visibilityPatch.showAge)changed.push("나이 공개 설정");
       if(visibilityPatch.showGender!==undefined&&saved.showGender!==visibilityPatch.showGender)changed.push("성별 공개 설정");
-      if(!sameAvatar(profile.avatar,originalAvatar.current)&&!sameAvatar(profile.avatar,saved.avatar))changed.push("캐릭터·배경");
+      if(!sameAvatar(profile.avatar,originalAvatar.current)&&!sameAvatar(profile.avatar,saved.storedAvatar))changed.push("캐릭터·배경");
       if(changed.length)
         throw new Error(`${changed.join(", ")} 항목이 저장되지 않았어요. 입력 내용은 이 창에 남겨 뒀어요.`);
       if(mounted.current){originalAvatar.current=saved.avatar;originalVisibility.current=saved;setProfile(saved);setDrafts(blankTasteDrafts());onSaved(saved);}
@@ -172,7 +175,7 @@ export function ExchangeProfileEditor({profileId,focusTastes=false,onSaved}:{pro
       if(input.name==="height"&&privateDetails.current)privateDetails.current.open=true;
       setError(input.name==="height"?"키는 1~300cm 사이의 숫자로 입력해 주세요.":"입력한 내용을 확인해 주세요.");
     }}>
-      <ProfileCharacter avatar={profile.avatar} disabled={busy} onChange={avatar=>{setError("");setProfile(current=>current?{...current,avatar}:current);}}/>
+      <ProfileCharacter avatar={profile.avatar} collection={profile.avatarCollection} showGender={profile.showGender} disabled={busy} onChange={avatar=>{setError("");setProfile(current=>current?{...current,avatar}:current);}}/>
       <fieldset className="unified-public-profile" data-gender-tone={profile.showGender?gender?.tone:undefined} disabled={busy}>
         <legend>공개 프로필</legend>
         {gender&&<span className="pajang-screen-reader">가입 성별 {gender.name}</span>}

@@ -21,7 +21,7 @@ export function addTaste(preferences:ProfilePreferences,key:PreferenceGroupKey,d
   if(maskedTextLength(value)>MAX_PROFILE_CUSTOM_LENGTH)return {preferences,error:"직접 입력은 40자까지 적어 주세요."};
   const preset=profilePreferenceGroups.find(group=>group.key===key)!.options.find(option=>option.label===value);
   if(preset?preferences[key].includes(preset.key):preferences.custom[key].includes(value))return {preferences,error:""};
-  if(preferences[key].length+preferences.custom[key].length>=MAX_PROFILE_GROUP_SELECTIONS)return {preferences,error:"이 항목은 32개까지 고를 수 있어요."};
+  if(preferences[key].length+preferences.custom[key].length>=MAX_PROFILE_GROUP_SELECTIONS)return {preferences,error:`한 목록에서 최대 ${MAX_PROFILE_GROUP_SELECTIONS}개까지 고를 수 있어요.`};
   return {preferences:preset?{...preferences,[key]:[...preferences[key],preset.key]}:
     {...preferences,custom:{...preferences.custom,[key]:[...preferences.custom[key],value]}},error:""};
 }
@@ -46,23 +46,24 @@ export function ProfileTastesFields({value,interest,onInterest,onChange,drafts,o
   drafts:TasteDrafts;onDraft:(key:PreferenceGroupKey,value:string)=>void;onAdd:(key:PreferenceGroupKey)=>void;disabled:boolean;
 }){
   return <div className="preference-editor">
-    <div className="preference-section-heading"><h3>나를 표현하는 취향</h3><span>모두 선택 사항</span></div>
+    <div className="preference-section-heading"><h3>나를 표현하는 취향</h3><span>목록별 최대 {MAX_PROFILE_GROUP_SELECTIONS}개</span></div>
     {profilePreferenceGroups.map(group=>{
       const key=group.key,selected=tasteLabels(value,key);
+      const full=selected.length>=MAX_PROFILE_GROUP_SELECTIONS;
       return <details className="preference-group" key={key} name="profile-preference-group">
         <summary><span><strong>{group.label}</strong><small>{selected.length?selected.slice(0,2).join(" · ")+(selected.length>2?` 외 ${selected.length-2}개`:""):"나와 맞는 보기를 골라 주세요"}</small></span><I n="chevron" s={16}/></summary>
         <fieldset className="preference-group-body" disabled={disabled} aria-label={group.label}>
           <div className="preference-chips">{group.options.map(option=>{
             const selected=value[key].includes(option.key);
             return <button type="button" key={option.key} aria-label={option.label} aria-pressed={selected}
-              disabled={!selected&&value[key].length+value.custom[key].length>=MAX_PROFILE_GROUP_SELECTIONS}
+              disabled={!selected&&full}
               onClick={()=>onChange({...value,[key]:selected?value[key].filter(item=>item!==option.key):[...value[key],option.key]})}>{option.label}</button>;
           })}</div>
           {value.custom[key].length>0&&<div className="preference-chips custom-choices">{value.custom[key].map(label=><button key={label} type="button" aria-label={label+" 삭제"} aria-pressed="true"
-            onClick={()=>onChange({...value,custom:{...value.custom,[key]:value.custom[key].filter(item=>item!==label)}})}>{label}<I n="close" s={12}/></button>)}</div>}
-          <div className="preference-custom"><input aria-label={group.label+" 직접 입력"} value={drafts[key]} placeholder="보기 외 항목 직접 추가"
+            onClick={()=>onChange({...value,custom:{...value.custom,[key]:value.custom[key].filter(item=>item!==label)}})}>{label}</button>)}</div>}
+          <div className="preference-custom"><input aria-label={group.label+" 직접 입력"} value={drafts[key]} disabled={full&&!drafts[key]} placeholder="보기 외 항목 직접 추가"
             onChange={event=>onDraft(key,event.target.value)} onKeyDown={event=>{if(event.key==="Enter"&&!event.nativeEvent.isComposing){event.preventDefault();onAdd(key);}}}/>
-            <button type="button" aria-label={group.label+" 추가"} disabled={!drafts[key].trim()} onClick={()=>onAdd(key)}>추가</button></div>
+            <button type="button" aria-label={group.label+" 추가"} disabled={full||!drafts[key].trim()} onClick={()=>onAdd(key)}>추가</button></div>
         </fieldset>
       </details>;
     })}

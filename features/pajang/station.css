@@ -263,8 +263,7 @@
 .profile-intent-field .preference-help{margin:-2px 0 9px}
 .preference-chips{display:flex;flex-wrap:wrap;gap:6px}
 .preference-chips button{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:34px;max-width:100%;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);font-size:12px;line-height:1.5;overflow-wrap:anywhere;text-align:left}
-.preference-chips button[aria-pressed=true]{border-color:var(--purple);background:var(--soft);color:var(--dark);font-weight:700}
-.preference-chips button[aria-pressed=true]::before{content:"✓";font-size:11px;flex:none}
+.preference-chips button[aria-pressed=true]{border-color:var(--purple);background:var(--soft);color:var(--dark)}
 .preference-chips button:disabled{opacity:.5}
 .intent-choices button{min-height:38px;padding:7px 11px;font-size:13px}
 .preference-group{border:1px solid var(--line);border-radius:10px;background:var(--paper);min-width:0}

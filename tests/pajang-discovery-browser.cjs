@@ -666,7 +666,7 @@ async function checkNavigation(page){
       if(pathname==='/shared/location/location.js')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../../shared/location/location.js'))});
       if(pathname==='/shared/content/text-length.mjs')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../../shared/content/text-length.mjs'))});
       const file=pathname.slice(project.length)||'index.html';
-      if(/^assets\/(?:avatars(?:-male)?-20261125-\d{2}|avatar-bg-20261125-[1-8])\.webp$/.test(file)){
+      if(/^assets\/(?:avatars(?:-male)?-20261125-\d{2}|avatar-bg-20261125-[1-8]|avatar-tree-20261125)\.webp$/.test(file)){
         return route.fulfill({contentType:'image/webp',body:await fs.readFile(path.join(feature,file))});
       }
       if(legacyLocationPage&&file==='location.mjs')return route.fulfill({contentType:'text/javascript',body:'export async function prepareLocation(state){return state;}'});

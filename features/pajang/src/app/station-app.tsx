@@ -2,7 +2,7 @@
 import {useEffect,useLayoutEffect,useRef,useState} from "react";
 import {themeFor,introDetails,signalsWith,type Person,type Message,type Station,type NearbyAnswer} from "../lib/station";
 
-import {CharacterPortrait,ChatScenery} from "./profile-character";
+import {CharacterPortrait,ChatScenery,hiddenCharacterId} from "./profile-character";
 import {I} from "./icons";
 import NearbyRadar from "./nearby-radar";
 import {prepareLocation} from "../../location.mjs";
@@ -568,7 +568,8 @@ export default function StationApp({initialStation}:{initialStation:Station}){
       }}>{(row?.sent&&row?.received)||signalsWith(s,peer.id).match?"대화 열기":row?.sent||signalsWith(s,peer.id).outgoing?"보낸 신호 확인":row?.received||signalsWith(s,peer.id).incoming?"신호 수락하기":"신호 보내기"}<I n="signal" s={17}/></button><button className="textbtn" onClick={()=>open({kind:"block",peer:peer.id,answer:row})}>이 프로필 차단</button></>}
     {(modal.kind==="edit"||modal.kind==="privateProfile")&&me&&<ExchangeProfileEditor key={me.id} profileId={me.id} focusTastes={modal.focusTastes} onSaved={saved=>{
       const current=liveRef.current;if(current.me?.id!==saved.person)return;
-      const next={...current,me:{...current.me,name:saved.name,region:saved.region,interest:saved.interest,avatarId:saved.avatar.id}};
+      const next={...current,me:{...current.me,name:saved.name,region:saved.region,interest:saved.interest,
+        gender:saved.showGender?(saved.gender??saved.avatarCollection):null,avatarId:saved.showGender?saved.avatar.id:hiddenCharacterId}};
       serverRevision.current++;liveRef.current=next;setLive(next);setHistoryRevision(n=>n+1);
       close();setToast("프로필을 저장했어요.");void refresh();
     }}/>}

@@ -8,7 +8,7 @@ import regionCatalog from "../../regions.json";
 import {textInputMaxLength} from "../../../../shared/content/text-length.mjs";
 import {tasteLabels} from "./profile-tastes";
 import {I} from "./icons";
-import {CharacterPortrait} from "./profile-character";
+import {CharacterPortrait,hiddenCharacterId} from "./profile-character";
 
 type Preferences=ReturnType<typeof emptyProfilePreferences>;
 type GroupKey="meeting_styles"|"relationship_values"|"affection_styles"|"life_priorities";
@@ -98,11 +98,12 @@ export function ProfileForm({person,isNew,onSave,busy}:{person:Person|null;isNew
 
 export function PublicProfilePreferences({viewer,person,avatarId,children,revision=0,onEdit,onEditTastes}:{viewer:string;person:string;avatarId?:number;children:ReactNode;revision?:number;onEdit?:()=>void;onEditTastes?:()=>void}){
   const read=usePublicPreferences(viewer,person,revision);
-  const gender=profileGender(read.gender);
+  const displayId=read.avatarId??avatarId;
+  const gender=displayId===hiddenCharacterId?undefined:profileGender(read.gender);
   const selectedIntents=relationshipIntents.filter(intent=>read.preferences.relationship_intents.includes(intent.key));
   const selectedGroups=profilePreferenceGroups.map(group=>({...group,labels:tasteLabels(read.preferences,group.key as GroupKey)})).filter(group=>group.labels.length);
   return <>
-    <CharacterPortrait id={read.avatarId??avatarId} gender={read.gender} large/>
+    <CharacterPortrait id={displayId} gender={read.gender} large/>
     {children}
     <section className="public-preference-summary" data-gender-tone={gender?.tone} aria-label="공개 프로필">
       <div className="preference-section-heading"><h3>공개 프로필</h3>{onEdit&&<button type="button" onClick={onEdit}>기본 정보 수정<I n="pencil" s={13}/></button>}</div>

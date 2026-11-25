@@ -264,11 +264,12 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
         }}
         renderAnswers={answers=>answers.map(row=>{
         const relation=signalsWith(station,row.peer);
+        const author=row.peer===station.me?.id?station.me:row;
         const sent=row.sent||!!relation.outgoing, received=row.received||!!relation.incoming, matched=sent&&received;
         const intents=relationshipIntents.filter(intent=>row.relationship_intents?.includes(intent.key));
         return <article key={rowKey(row)} className="answercard">
           <button className="person" onClick={()=>onProfile(row)}>
-            <CharacterPortrait id={row.peer===station.me?.id?station.me.avatarId??row.avatarId:row.avatarId} gender={row.gender}/>
+            <CharacterPortrait id={author.avatarId??row.avatarId} gender={author.gender}/>
             <span><strong>{row.name}{row.own?" · 내 답변":""}</strong>{row.region&&<small>{row.region}</small>}</span>
           </button>
           <p className="quote">{row.body}</p>
