@@ -203,10 +203,10 @@
   function guestEntrance(theme) {
     return `<header class="agit-hero agit-guest-hero" data-guest-entrance aria-label="아지트 시작하기">
       <div class="agit-entry-top"><span>OJJUDA · AGIT</span><span>${escapeHtml(theme.name)}의 아지트</span></div>
-      <div class="agit-entry-story"><h1>취향이 모이는<br><em>우리의 아지트</em></h1><p>가볍게 놀고, 다정하게 나눠요.</p></div>
+      <div class="agit-entry-story"><h1>취향이 모이는<br><em>우리의 아지트</em></h1><p>그룹에서 모임 소식을 나누고, 오락실에서 함께 한 판 즐겨요.</p></div>
       <figure class="agit-entry-art"><img class="agit-hero-theme-art" src="/features/home/theme-illustrations/${theme.key}.webp?v=20261110-themes3" alt="" width="960" height="640" decoding="async" fetchpriority="high"><figcaption>잠깐의 여유, 함께하는 즐거움.</figcaption></figure>
       <nav class="agit-entry-actions" aria-label="아지트 계정 시작"><a class="agit-entry-primary" href="/?auth=signup&next=world">회원가입 <span aria-hidden="true">↗</span></a><a class="agit-entry-secondary" href="/?auth=login&next=world">로그인</a></nav>
-      <p class="agit-entry-note">게임부터 일상 이야기까지, 한곳에서.</p>
+      <p class="agit-entry-note">그룹을 만들거나 가입하려면 로그인해 주세요.</p>
     </header>`;
   }
   function markup(settings, games, date = kstDate(), options = {}) {
