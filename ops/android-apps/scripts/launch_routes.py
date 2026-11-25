@@ -19,7 +19,7 @@ LAUNCH_ROUTES = {
         "start": "/park/",
         "manifest": "/park/manifest.webmanifest",
         "id": "/world.html?place=park",
-        "scope": "/",
+        "scope": "/park/",
         "icons": "/park/assets/",
     },
     "pajang": {

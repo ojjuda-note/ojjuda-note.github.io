@@ -6,7 +6,7 @@ val prepareSeasonalResources by tasks.registering(Exec::class) {
     inputs.files(rootProject.fileTree("../../brand/app-icons/seasonal") { include("**/*.png") })
     inputs.file(rootProject.file("../../shared/app-icons/calendar.json"))
     inputs.files(rootProject.fileTree("baselines") { include("*.json") })
-    inputs.files(rootProject.fileTree("scripts") { include("prepare_resources.py") })
+    inputs.files(rootProject.fileTree("scripts") { include("prepare_resources.py", "launch_routes.py") })
     outputs.dir(layout.buildDirectory.dir("generated/seasonal"))
 }
 
@@ -32,6 +32,7 @@ android {
     sourceSets {
         getByName("main").manifest.srcFile(layout.buildDirectory.file("generated/seasonal/main/AndroidManifest.xml"))
         listOf("agit", "park", "pajang").forEach { app ->
+            getByName(app).manifest.srcFile(layout.buildDirectory.file("generated/seasonal/$app/AndroidManifest.xml"))
             getByName(app).res.srcDir(layout.buildDirectory.dir("generated/seasonal/$app/res"))
         }
     }
