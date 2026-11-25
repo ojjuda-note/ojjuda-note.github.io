@@ -175,6 +175,8 @@ test('public Pajang preferences save atomically and relationship discovery prese
   await db.exec(read('20261125025306_pajang_profile_character_selection.sql'));
   await db.exec(read('20261125031145_pajang_male_profile_characters.sql'));
 
+  await db.exec(read('20261125044350_pajang_five_tastes_per_list.sql'));
+
   t.beforeEach(()=>db.exec('begin'));
   t.afterEach(()=>db.exec('rollback'));
 
@@ -413,7 +415,21 @@ test('public Pajang preferences save atomically and relationship discovery prese
     assert.equal(await value('select count(*)::int as value from pajang_private.public_profile_preferences'),0,'no inferred or backfilled selection');
   });
 
-  await t.test('saves all catalog choices, custom text and basic profile in one operation',async()=>{
+  await t.test('caps legacy lists on read without rewriting stored choices on a no-op',async()=>{
+    const legacy=selection();
+    legacy.meeting_styles=catalog.profilePreferenceGroups[0].options.slice(3,10).map(item=>item.key);
+    legacy.custom.life_priorities=['첫째','둘째','셋째','넷째','다섯째'];
+    await store(1,legacy);
+    const capped=(await profile()).preferences;
+    assert.deepEqual(capped,catalog.normalizeProfilePreferences(legacy));
+    assert.deepEqual(capped.meeting_styles,legacy.meeting_styles.slice(0,5));
+    assert.deepEqual(capped.custom.life_priorities,legacy.custom.life_priorities.slice(0,4));
+    const noOp=await save({preferences:capped,preferencesVersion:1});
+    assert.equal(noOp.me.preferencesVersion,1);
+    assert.deepEqual(await value("select preferences->'meeting_styles' as value from pajang_private.public_profile_preferences where person=$1",[person(1)]),legacy.meeting_styles);
+  });
+
+  await t.test('saves five combined choices per list, custom text and basic profile in one operation',async()=>{
     const preferences=selection();
     preferences.meeting_styles.push('deep_talk');
     preferences.custom.meeting_styles=['  새벽시장 구경  ','새벽시장 구경','별 보러 가기'];
@@ -424,7 +440,7 @@ test('public Pajang preferences save atomically and relationship discovery prese
     assert.deepEqual(saved.me.preferences.custom.meeting_styles,['새벽시장 구경','별 보러 가기']);
     assert.deepEqual((await profile()).preferences,saved.me.preferences);
     const allChoices={relationship_intents:catalog.relationshipIntents.map(item=>item.key)};
-    for(const group of catalog.profilePreferenceGroups) allChoices[group.key]=group.options.map(item=>item.key);
+    for(const group of catalog.profilePreferenceGroups) allChoices[group.key]=group.options.slice(0,group.key==='meeting_styles'?3:5).map(item=>item.key);
     const all=await save({preferences:allChoices,preferencesVersion:1});
     for(const group of catalog.profilePreferenceGroups) assert.deepEqual(all.me.preferences[group.key],allChoices[group.key]);
     assert.deepEqual(all.me.preferences.relationship_intents,allChoices.relationship_intents);
@@ -432,7 +448,7 @@ test('public Pajang preferences save atomically and relationship discovery prese
     const cleared=await save({preferences:{relationship_intents:[],custom:{meeting_styles:[]}},preferencesVersion:2});
     assert.deepEqual(cleared.me.preferences.relationship_intents,[]);
     assert.deepEqual(cleared.me.preferences.custom.meeting_styles,[]);
-    assert.equal(cleared.me.preferences.life_priorities.length,24);
+    assert.equal(cleared.me.preferences.life_priorities.length,5);
     await as(account(1),()=>rpc('pajang_member',['profile',{name:'구버전 저장',interest:'walk'}]));
     assert.deepEqual((await profile()).preferences,cleared.me.preferences,'legacy profile writes preserve new choices');
     assert.equal((await profile()).version,3);
@@ -444,6 +460,9 @@ test('public Pajang preferences save atomically and relationship discovery prese
     const invalid=[
       null,[],{unknown:[]},{relationship_intents:['unknown']},{relationship_intents:'dating'},
       {meeting_styles:[null]},{meeting_styles:['unknown']},{life_priorities:['trust']},
+      {meeting_styles:catalog.profilePreferenceGroups[0].options.slice(0,6).map(item=>item.key)},
+      {meeting_styles:catalog.profilePreferenceGroups[0].options.slice(0,5).map(item=>item.key),custom:{meeting_styles:['새 취향']}},
+      {custom:{meeting_styles:Array.from({length:6},(_,i)=>'취향'+i)}},
       {custom:null},{custom:{unknown:[]}},{custom:{meeting_styles:'text'}},
       {custom:{meeting_styles:['   ']}},{custom:{meeting_styles:[42]}},
       {custom:{meeting_styles:['가'.repeat(41)]}},

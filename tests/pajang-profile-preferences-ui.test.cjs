@@ -316,6 +316,19 @@ async function openGroup(dialog,label) {
     await meeting.getByRole('button',{name:'차분한 대화',exact:true}).click();
     await meeting.getByRole('textbox',{name:'만남 스타일 직접 입력',exact:true}).fill('별 보며 걷기');
     await meeting.getByRole('button',{name:'만남 스타일 추가',exact:true}).click();
+    const options=meeting.locator('.preference-chips').first().getByRole('button');
+    for(const n of [1,2,3])await options.nth(n).click();
+    assert.equal(await meeting.getByRole('button',{pressed:true}).count(),5);
+    assert.ok(await options.nth(4).isDisabled());
+    assert.ok(await meeting.getByRole('textbox').isDisabled());
+    assert.equal(await options.first().evaluate(el=>getComputedStyle(el,'::before').content),'none');
+    assert.notEqual(await options.first().evaluate(el=>getComputedStyle(el).backgroundColor),
+      await options.nth(4).evaluate(el=>getComputedStyle(el).backgroundColor));
+    const values=await openGroup(form.dialog,'관계에서 중요한 것');
+    assert.ok(await values.getByRole('button').first().isEnabled());
+    await openGroup(form.dialog,'만남 스타일');
+    for(const n of [1,2,3])await options.nth(n).click();
+    assert.ok(await meeting.getByRole('textbox').isEnabled());
     let art=await openGroup(form.dialog,'대표 취향 · 프로필 그림');
     await art.getByRole('button',{name:'카페',exact:true}).click();
 

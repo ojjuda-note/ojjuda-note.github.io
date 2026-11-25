@@ -44,7 +44,7 @@ function enterMain(destination = main, savedStation) {
     style.rel='stylesheet';
     style.dataset.pajangStationStyle='main';
     style.media='print';
-    style.href='./station.css?v=20261122-light-controls1';
+    style.href='./station.css?v=20261125-taste-limit1';
     const styled=new Promise((resolve,reject)=>{style.onload=resolve;style.onerror=reject;});
     document.querySelector('link[href*="shell.css"]').before(style);
     await Promise.all([styled,mountStation(async()=>{
