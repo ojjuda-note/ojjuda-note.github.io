@@ -71,6 +71,7 @@ jobs:
           navigation_test_failed=0
           node tests/public-navigation-history-ui.test.cjs || navigation_test_failed=1
           node tests/group-navigation-history-ui.test.cjs || navigation_test_failed=1
+          node --test tests/agit-group-navigation-ui.test.cjs || navigation_test_failed=1
           PAJANG_NAVIGATION_ONLY=1 node tests/pajang-discovery-browser.cjs || navigation_test_failed=1
           node tests/world-game-back-ui.test.cjs || navigation_test_failed=1
           node tests/arcade-exit-ui.test.cjs || navigation_test_failed=1

@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
+const { JSDOM } = require('jsdom');
 
 const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
@@ -308,7 +309,7 @@ test('unmarked SPA path and query entries retain their own navigation', () => {
 
 test('every standalone return link points to its intended section', () => {
   const hubPages=[
-    'features/arcade/monthly-ranking.html','groups/index.html',
+    'features/arcade/monthly-ranking.html',
     'features/fanpages/index.html','features/fanpages/artist.html',
     'games/certified-restaurants/index.html',
     'byeolcheonji/index.html','star/index.html',
@@ -321,6 +322,9 @@ test('every standalone return link points to its intended section', () => {
     assert.match(html,/href="\/world\.html\?tab=hub"/,file);
     assert.doesNotMatch(html,/href="\/world\.html\?tab=arcade"/,file);
   }
+  const groups=new JSDOM(read('groups/index.html')).window.document;
+  assert.equal(groups.querySelector('.ojjuda-service-home').getAttribute('href'),'/world.html?tab=hub');
+  assert.equal(groups.querySelector('.group-main-nav [data-tab=arcade]').getAttribute('href'),'/world.html?tab=arcade');
   for (const file of ['games/sacheonseong/index.html','games/spot-difference/index.html','games/ojjuda-tour/index.html']) {
     assert.match(read(file),/href="\/world\.html\?tab=arcade"/,file);
   }
