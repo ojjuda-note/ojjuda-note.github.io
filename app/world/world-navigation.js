@@ -26,8 +26,9 @@
     };
     const swipeZone = (target, doc=document, canStart=()=>true) => {
       if(!canStart())return null;
-      const zone = doc===document ? target.closest?.(zoneSelector) : document.querySelector(surfaceSelector);
-      if (!zone || [...new Set([document,doc])].flatMap(root=>[...root.querySelectorAll('#modal-root:not(:empty), dialog[open], [role="dialog"], .gaming')])
+      const panel = target.closest?.('[data-world-swipe-surface]') || target.getRootNode?.().host?.closest('[data-world-swipe-surface]');
+      const zone = doc===document ? (panel || target.closest?.(zoneSelector)) : document.querySelector(surfaceSelector);
+      if (!zone || [...new Set([document,doc,target.getRootNode?.() || doc])].flatMap(root=>[...root.querySelectorAll('#modal-root:not(:empty), dialog[open], [role="dialog"], .gaming')])
         .some(element => element.getClientRects().length)) return null;
       // These surfaces already use drag, pinch, selection or media controls.
       if (target.closest('.stage:not(.place-art-stage),.av-preview,canvas,video,audio,input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="slider"],[data-world-swipe="off"],#feed.note-feed-swipe,.note-photo-gallery')) return null;
@@ -40,11 +41,11 @@
       reset();
       suppressClickUntil = 0;
       if (blocked()) return;
-      const zone=swipeZone(event.target,doc,canStart);
+      const zone=swipeZone(event.composedPath?.()[0] || event.target,doc,canStart);
       if (!zone) return;
       gesture = {id: kind==='touch' ? point.identifier : point.pointerId,
         x:point.clientX,y:point.clientY,kind,horizontal:false,
-        route:swipeRoute(),surface: zone.closest(surfaceSelector) || document.querySelector(surfaceSelector)};
+        route:swipeRoute(),surface: zone.matches('[data-world-swipe-surface]') ? zone : zone.closest(surfaceSelector) || document.querySelector(surfaceSelector)};
     };
     const move = (event, point) => {
       const g = gesture;
@@ -84,7 +85,7 @@
       if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
       if (!step(direction)) return;
       if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        document.querySelector(surfaceSelector)?.animate(
+        (document.querySelector('[data-world-swipe-surface]:not([hidden])') || document.querySelector(surfaceSelector))?.animate(
           [{transform: `translateX(${dx < 0 ? 35 : -35}px)`, opacity: .7}, {transform: 'translateX(0)', opacity: 1}],
           {duration: 180, easing: 'ease-out'});
       }
@@ -122,7 +123,7 @@
         if(gesture?.kind==='pointer' && event.pointerId===gesture.id)reset();
       });
       listen('dragstart', event => {
-        if (swipeZone(event.target,doc,canStart)) event.preventDefault();
+        if (swipeZone(event.composedPath?.()[0] || event.target,doc,canStart)) event.preventDefault();
       });
       listen('click', event => {
         if (event.detail && performance.now() < suppressClickUntil) {
