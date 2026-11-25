@@ -4,6 +4,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2" defer></script>
 <script src="/shared/location/location.js?v=20261125-park-guardian1" defer></script>
   <meta charset="utf-8">
+  <base href="/features/pajang/">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#fbf8f2">
   <link rel="icon" href="/features/pajang/assets/icon-192.png?v=seasonal-v1-autumn-d0c431c01ed9" type="image/png">
@@ -15,17 +16,17 @@
   <script src="/shared/pwa/pwa-install.js?v=app-icons-a6a612391e00" defer></script>
   <title>오쭈다 파장 | 질문과 취향으로 만나는 소개팅</title>
   <meta name="description" content="오쭈다 파장은 질문에 대한 답변과 취향으로 서로를 알아가는 만 19세 이상 회원 소개팅입니다. 마음에 닿는 답변에 신호를 보내고 새로운 인연을 만나보세요.">
-  <link rel="canonical" href="https://ojjuda.kr/features/pajang/">
+  <link rel="canonical" href="https://ojjuda.kr/pajang/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="오쭈다 파장">
   <meta property="og:title" content="오쭈다 파장 | 질문과 취향으로 만나는 소개팅">
   <meta property="og:description" content="오쭈다 파장은 질문에 대한 답변과 취향으로 서로를 알아가는 만 19세 이상 회원 소개팅입니다. 마음에 닿는 답변에 신호를 보내고 새로운 인연을 만나보세요.">
-  <meta property="og:url" content="https://ojjuda.kr/features/pajang/">
+  <meta property="og:url" content="https://ojjuda.kr/pajang/">
   <meta property="og:image" content="https://ojjuda.kr/og-image.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="오쭈다 파장 | 질문과 취향으로 만나는 소개팅">
   <meta name="twitter:description" content="오쭈다 파장은 질문에 대한 답변과 취향으로 서로를 알아가는 만 19세 이상 회원 소개팅입니다. 마음에 닿는 답변에 신호를 보내고 새로운 인연을 만나보세요.">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"오쭈다 파장","url":"https://ojjuda.kr/features/pajang/","description":"오쭈다 파장은 질문에 대한 답변과 취향으로 서로를 알아가는 만 19세 이상 회원 소개팅입니다. 마음에 닿는 답변에 신호를 보내고 새로운 인연을 만나보세요.","inLanguage":"ko-KR","isPartOf":{"@id":"https://ojjuda.kr/#website"}}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"오쭈다 파장","url":"https://ojjuda.kr/pajang/","description":"오쭈다 파장은 질문에 대한 답변과 취향으로 서로를 알아가는 만 19세 이상 회원 소개팅입니다. 마음에 닿는 답변에 신호를 보내고 새로운 인연을 만나보세요.","inLanguage":"ko-KR","isPartOf":{"@id":"https://ojjuda.kr/#website"}}</script>
   <link rel="preconnect" href="https://ziezbdjofcugznowiuda.supabase.co" crossorigin>
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -56,13 +57,13 @@
   <script src="/app/world/world-themes.js?v=20261119-auto-theme1"></script>
   <script src="/app/world/world-weather.js?v=20261119-kma-current1" defer></script>
   <script type="module" src="./shell.mjs?v=20261126-adult-service1"></script>
-  <script type="module" src="./entry.mjs?v=20261125-lazy-station1"></script>
+  <script type="module" src="./entry.mjs?v=20261125-public-pajang1"></script>
   <script src="/shared/analytics/growth-attribution.js?v=20261121-campaign1" defer></script>
 </head>
 <body>
   <header class="pajang-mast"><div class="pajang-mast-inner ojjuda-service-header">
     <div class="ojjuda-service-brand">
-      <a class="ojjuda-service-home" href="./" aria-label="오쭈다 파장 오늘로">
+      <a class="ojjuda-service-home" href="/pajang/" aria-label="오쭈다 파장 오늘로">
         <svg class="ojjuda-service-logo ojjuda-theme-logo" viewBox="-16 -16 544 544" width="30" height="30" aria-hidden="true" focusable="false"><path fill="currentColor" d="M100 0H354Q369 0 381 12L499 130Q512 143 512 165V428Q512 512 428 512H84Q0 512 0 428V100Q0 0 100 0Z"/><path fill="#FFF" d="M346 37Q346 22 358 31L476 149Q485 161 470 161H395Q346 161 346 112Z"/><path d="M108 290Q256 420 404 290" fill="none" stroke="#FFF" stroke-width="60" stroke-linecap="round"/></svg>
         <span class="ojjuda-service-word">오쭈다 <span class="ojjuda-service-name">파장</span></span>
       </a>
@@ -79,7 +80,7 @@
       <div class="flight-landscape"></div>
       <div class="flight-across"><div class="flight-lift"><span class="paper-plane"><i></i></span></div></div>
     </div>
-    <p class="flight-caption" role="status">파장을 열고 있어요.</p>
+    <p class="flight-caption" role="status">오쭈다 파장 · 질문과 답변으로 알아가는 만 19세 이상 회원 소개팅</p>
   </main>
   <main id="welcome" hidden>
     <div class="entry-intro"><div class="entry-scene" aria-hidden="true"><div class="moon-study"></div></div><span class="entry-slot" id="slot-label">이번 질문</span>

@@ -56,7 +56,8 @@
   const isPark = url.pathname === '/park' || url.pathname.startsWith('/park/') ||
     (url.pathname === '/world.html' && url.searchParams.getAll('game').length !== 1 &&
       (url.searchParams.get('place') === 'park' || url.searchParams.get('tab') === 'park'));
-  const isPajang = url.pathname === '/features/pajang' || url.pathname.startsWith('/features/pajang/');
+  const isPajang = /^\/pajang(?:\/index\.html|\/)?$/.test(url.pathname) ||
+    url.pathname === '/features/pajang' || url.pathname.startsWith('/features/pajang/');
   const app = apps[isPajang ? 'pajang' : isPark ? 'park' : 'agit'];
   const versioned = (path) => path + '?v=' + iconRevision;
 
