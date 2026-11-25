@@ -185,7 +185,7 @@ function route(id=null){
  render();void loadFeed();
 }
 function render(){epoch++;loading=false;directoryLoading=false;clearMedia();const r=currentRoom();renderedRoomId=r?.id||null;
-$('#app').innerHTML=`<section class="hero${r?' group-room-hero':''}" ${r?GroupAppearance.attributes(r):''}>${r?GroupAppearance.artwork(r,true):''}<div class="hero-top"><h1>${esc(r?.name||'그룹')}</h1>${r?'':`<button type="button" class="mine-toggle" data-action="mine" aria-pressed="${onlyMine}" aria-label="${onlyMine?'전체 그룹 보기':'내 그룹만 보기'}">${onlyMine?'전체 그룹':'내 그룹'}</button>`}</div><div class="actions">${r?'<button data-action="home">← 그룹 목록</button>':'<button class="primary" data-action="create">＋ 그룹 만들기</button>'}<button type="button" class="page-share" data-action="share-page" aria-label="${r?'그룹 페이지 공유':'그룹 목록 페이지 공유'}">↗ 페이지 공유</button></div></section>
+$('#app').innerHTML=`<section class="hero${r?' group-room-hero':' group-directory-hero'}" ${r?GroupAppearance.attributes(r):''}>${r?GroupAppearance.artwork(r,true):''}<div class="hero-top"><h1>${esc(r?.name||'그룹')}</h1>${r?'':`<button type="button" class="mine-toggle" data-action="mine" aria-pressed="${onlyMine}" aria-label="${onlyMine?'전체 그룹 보기':'내 그룹만 보기'}">${onlyMine?'전체 그룹':'내 그룹'}</button>`}</div><div class="actions">${r?'<button data-action="home">← 그룹 목록</button>':'<button class="primary" data-action="create">＋ 그룹 만들기</button>'}<button type="button" class="page-share" data-action="share-page" aria-label="${r?'그룹 페이지 공유':'그룹 목록 페이지 공유'}">${r?'↗ 페이지 공유':'↗ 공유'}</button></div></section>
 ${!r?`<section class="toolbar directory-toolbar"><form class="group-search-form" data-group-search="directory" role="search"><input type="search" id="directory-query" maxlength="100" enterkeyhint="search" value="${esc(directoryDraft)}" placeholder="그룹 이름 검색" aria-label="그룹 이름 검색"><button type="submit" class="group-search-button" aria-label="그룹 검색" title="검색">${searchIcon}</button></form><div class="directory-sort" role="group" aria-label="그룹 정렬">${[['activity','최근활동'],['members','회원수'],['created','최근생성']].map(([key,label])=>`<button type="button" data-sort="${key}" class="${directorySort===key?'active':''}" aria-pressed="${directorySort===key}">${label}</button>`).join('')}</div></section><section id="group-invitations" class="feed" hidden></section><section id="directory" class="feed" aria-label="그룹 목록" aria-live="polite"><p class="empty">불러오는 중…</p></section><button class="more" id="directory-more" hidden>더 보기</button>`:
 `<div class="room-context"><p class="muted">${r.description?'<span class="room-desc" title="'+esc(r.description)+'">'+esc(r.description)+'</span><span class="room-sep"> · </span>':''}<span class="room-count">${r.member_count}명</span> ${Age.badge(r)}</p><div class="actions">${r.deleting||r.age_eligible===false?'':'<button data-action="share">초대 공유</button>'}${r.age_eligible!==false||r.owner_id===user.id?`<button data-action="manage">${r.owner_id===user.id?'그룹 관리':'그룹원'}</button>`:''}</div></div>
 ${r.deleting?`<div class="empty"><strong>그룹 삭제를 마무리해 주세요.</strong><button data-action="resume-delete" class="danger">삭제 계속하기</button></div>`:r.age_eligible===false?`<div class="empty">${Age.note(r)}${r.owner_id===user.id?'<p>그룹 관리에서 연령 조건을 변경하거나 그룹을 삭제할 수 있어요.</p>':'<button data-action="age-leave" class="danger">그룹 나가기</button>'}</div>`:
@@ -678,5 +678,15 @@ window.addEventListener('popstate',event=>{
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&user&&!mutating&&!document.querySelector('dialog[open]'))void refresh({quiet:true});});
 window.addEventListener('pagehide',()=>clearMedia(true));
 setInterval(()=>{if(!document.hidden)void refreshGroupNotice();if(user&&!document.hidden&&!mutating&&!loading&&!document.querySelector('dialog[open]')&&!document.activeElement?.matches('input,textarea,select'))void refresh({quiet:true});},60000);
+const menuLinks=Array.from(document.querySelectorAll('.group-main-nav a'));
+const groupLink=menuLinks.find(link=>link.hasAttribute('aria-current'));
+if(groupLink)window.OjjudaWorldNavigation?.installTabSwipes({
+ tabs:menuLinks.map(link=>link.href),
+ currentTab:()=>groupLink.href,
+ changeTab:href=>location.assign(href),
+ zoneSelector:'body',
+ surfaceSelector:'#app',
+ canLeave:()=>!document.querySelector('dialog[open]')&&!headerNotifications?.isOpen()
+});
 void initialize();
 })();
