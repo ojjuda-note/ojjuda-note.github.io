@@ -54,6 +54,7 @@ class TestNativeLaunchRoutes(unittest.TestCase):
                     owners = []
                     for app in LAUNCH_ROUTES:
                         xml = ET.fromstring(app_links_manifest(app))
+                        self.assertEqual(xml.find(".//activity").get(attr + "exported"), "true")
                         for intent in xml.findall(".//intent-filter"):
                             data = intent.findall("data")
                             if not any(item.get(attr + "host") == host for item in data):
