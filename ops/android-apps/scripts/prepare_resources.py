@@ -132,7 +132,7 @@ def app_links_manifest(app):
       </intent-filter>''')
     return '''<manifest xmlns:android="http://schemas.android.com/apk/res/android">
   <application>
-    <activity android:name="${applicationId}.LauncherActivity">
+    <activity android:name="${applicationId}.LauncherActivity" android:exported="true">
 ''' + '\n'.join(filters) + '''
     </activity>
   </application>
