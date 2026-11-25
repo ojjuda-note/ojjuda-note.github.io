@@ -305,7 +305,7 @@
     render();
   }
   let locationFailed = false;
-  async function beginLocation() {
+  async function beginLocation(manual=false) {
     if (paused || document.hidden || sample || tracking || !db || owner === undefined || !service) return;
     const active = {owner, native:installed, controller:new AbortController(), nextFeed:0};
     tracking=active; locationFailed=false;
@@ -321,9 +321,10 @@
       if (tracking!==active) return;
       async function read() {
         let fix;
+        const automatic=!manual || !!active.fix;
         if (installed) fix=await window.OjjudaEvenG2.readPhonePosition();
-        else if (active.owner) fix=await service.readPosition({db,accountId:active.owner,park:true,fresh:true,cache:false,signal});
-        else fix=await service.readGuestPosition({fresh:true,signal});
+        else if (active.owner) fix=await service.readPosition({db,accountId:active.owner,park:true,fresh:true,cache:false,signal,automatic});
+        else fix=await service.readGuestPosition({fresh:true,signal,automatic});
         if (tracking!==active || signal.aborted) return;
         const at=fix?.capturedAt ?? fix?.timestamp ?? Date.now();
         if (!Number.isFinite(fix?.latitude) || !Number.isFinite(fix?.longitude) ||
@@ -338,7 +339,7 @@
     function fail(error) {
       if (tracking!==active) return;
       locationFailed=true;
-      resetFeed(error?.message || '위치 권한을 확인해 주세요.');
+      resetFeed(error?.code==='prompt' ? '' : error?.message || '위치 권한을 확인해 주세요.');
       weatherHint='날씨 · 위치 확인 필요'; render();
     }
   }
@@ -388,7 +389,7 @@
   byId('glass-next').onclick = () => move(1);
   locate.onclick = () => {
     if (tracking) { autoPaused=true; resetFeed('위치 꺼짐'); return; }
-    autoPaused=false; locationFailed=false; return beginLocation();
+    autoPaused=false; locationFailed=false; return beginLocation(true);
   };
   byId('glass-retry').onclick = () => { void loadCards(tracking?.fix,tracking); };
   byId('glass-view').addEventListener('keydown', event => {

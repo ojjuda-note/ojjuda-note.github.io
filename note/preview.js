@@ -1664,12 +1664,12 @@ async function refreshNearbyPosition(button, version) {
     if (button.isConnected) { button.disabled = false; button.textContent = label; }
   }
 }
-async function currentPosition(fresh = false, enable = false, signal) {
+async function currentPosition(fresh = false, enable = false, signal, automatic = false) {
   const service = window.OjjudaLocation, userId = session?.user?.id;
   if (!authKnown || !userId || session.user.is_anonymous) throw Error('로그인 후 위치를 이용해 주세요.');
   if (!service?.authorizePosition) throw Error('위치 기능을 불러오지 못했어요. 새로고침해 주세요.');
   const choice = await service.preference(client, userId);
-  const position = await service.readPosition({db:client,accountId:userId,fresh,allowDisabled:enable,signal,park:true});
+  const position = await service.readPosition({db:client,accountId:userId,fresh,allowDisabled:enable,signal,park:true,automatic});
   if (userId && userId !== session?.user?.id) throw Error('회원 정보를 다시 확인해 주세요.');
   if (enable && userId && !choice.enabled) await service.setPreference(client,userId,true,choice.version);
   return position;
@@ -1681,7 +1681,7 @@ async function positionIfAlreadyGranted() {
   if (!locationIsEnabled() || !navigator.geolocation || !navigator.permissions?.query) return null;
   try {
     const permission = await navigator.permissions.query({ name: 'geolocation' });
-    if (permission.state === 'granted') return await currentPosition();
+    if (permission.state === 'granted') return await currentPosition(false,false,undefined,true);
   } catch { /* No implicit request when browser permissions cannot be inspected. */ }
   return null;
 }
@@ -2315,7 +2315,7 @@ function installFeatures() {
     try {
       const choice=await service.preference(client,userId);
       if (composerUserId!==userId || session?.user?.id!==userId || backdrop.hidden) return;
-      if (choice.enabled) {
+      if (choice.enabled && $('#card-location-button').getAttribute('aria-checked') === 'true') {
         $('#card-location-button').disabled=true;
         await service.setPreference(client,userId,false,choice.version);
         rememberComposerSetting('locationEnabled',false);
@@ -3110,14 +3110,16 @@ async function loadWritingLocation(run, enable = false) {
   const controller=new AbortController();writingLocationController=controller;
   writingPosition=null;setCardLocationSwitch(enable||locationIsEnabled(),'위치를 확인하고 있어요.',true);updateComposer();
   try {
-    const position=await currentPosition(false,enable,controller.signal);
+    const position=await currentPosition(false,enable,controller.signal,!enable);
     if(request!==locationRun||run!==composerRun||backdrop.hidden||userId!==session?.user?.id||!locationIsEnabled())return;
     writingPosition=position;nearbyPosition=position;
     if(enable)rememberComposerSetting('locationEnabled',true);
     setCardLocationSwitch(true,'공원과 파장에서 함께 사용해요.');
   }catch(error){
     if(request===locationRun&&run===composerRun&&!backdrop.hidden){
-      writingPosition=null;setCardLocationSwitch(locationIsEnabled(),locationErrorText(error),false,true);
+      writingPosition=null;
+      if(error?.code==='prompt')setCardLocationSwitch(false,'위치를 켜면 현재 위치를 확인해요.');
+      else setCardLocationSwitch(locationIsEnabled(),locationErrorText(error),false,true);
     }
   }finally{if(request===locationRun){writingLocationController=null;updateComposer();}}
 }

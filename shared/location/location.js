@@ -6,6 +6,7 @@ const notices = {
   disabled:'위치가 꺼져 있어요. 공원이나 파장에서 위치를 켜 주세요.',
   guardian:'위치를 이용하려면 보호자의 위치 동의가 필요해요.',
   account:'로그인 상태를 확인한 뒤 위치를 이용해 주세요.',
+  prompt:'현재 위치를 사용하려면 위치 확인을 눌러 주세요.',
   denied:'위치 권한이 막혀 있어요. 휴대폰 설정에서 브라우저의 위치 권한과 오쭈다 사이트의 위치 허용을 확인해 주세요.',
   unavailable:'위치 신호를 받지 못했어요. 휴대폰의 위치 기능과 인터넷 연결을 확인한 뒤 다시 시도해 주세요.',
   timeout:'위치 확인 시간이 초과됐어요. 창가나 실외에서 다시 확인해 주세요.',
@@ -59,16 +60,25 @@ function locate(geo,{signal,precise,timeout,fresh}) {
   });
 }
 
-async function measurePosition({signal,onProgress,fresh=false,preciseTimeout=20000},authorize) {
+async function measurePosition({signal,onProgress,fresh=false,preciseTimeout=20000,automatic=false},authorize) {
   if(!navigator.geolocation||globalThis.isSecureContext===false)throw failure('unsupported');
-  await authorize();
+  async function beforeGPS(){
+    await authorize();
+    if(automatic){
+      let permission;
+      try { permission=await navigator.permissions?.query({name:'geolocation'}); } catch {}
+      if(permission?.state!=='granted')throw failure(permission?.state==='denied'?'denied':'prompt');
+    }
+    if(signal?.aborted)throw signal.reason;
+  }
+  await beforeGPS();
   onProgress?.('위치를 확인하고 있어요.');
   try {
     return await locate(navigator.geolocation,{signal,precise:false,timeout:4000,fresh});
   }catch(error){
     if(error.name==='AbortError'||error.code==='denied'||error.code==='disabled')throw error;
   }
-  await authorize();
+  await beforeGPS();
   onProgress?.('더 정확한 위치를 확인하고 있어요.');
   return locate(navigator.geolocation,{signal,precise:true,timeout:preciseTimeout,fresh:true});
 }
