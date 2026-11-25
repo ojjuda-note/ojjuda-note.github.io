@@ -557,7 +557,7 @@ async function showMemberInfo(afterSave = null) {
 }
 // 자동 태그: 본문에 나온 낱말만 고르고, 직접 쓴 태그와 지운 태그를 우선한다.
 const MAX_CARD_TAGS = 5;
-let originalEditTags = [];
+let originalEditTags = [], composingCardTags = false;
 const MAX_TAG_TEXT = 4096;
 let wordTagger, wordTaggerLoading, tagAnalysis, pendingTagSubmit = null;
 function analyzeTagBody(body) {
@@ -939,7 +939,7 @@ async function refreshAutoTags() {
   if (!autoTagMode || maskedTextLength(body) > 200) return false;
   try {
     const words = body.trim() ? (wordTagger ? wordTagger(body) : await analyzeTagBody(body)) : [];
-    if (!autoTagMode || run !== composerRun || text.value !== body || backdrop.hidden) return false;
+    if (!autoTagMode || composingCardTags || run !== composerRun || text.value !== body || backdrop.hidden) return false;
     const before = tags.value;
     setAutoTags(words);
     if (before !== tags.value) { updateComposer(); recordDraft(); }
@@ -2978,6 +2978,7 @@ async function openComposer(mode, card = null, replyTo = null, pending = null) {
   for (const group of ['textColor', 'boxColor']) setColorChoice(group, style[group]);
   setBoxTransparency(editingId ? (style.boxTransparency ?? 80) : style.boxTransparency);
   applyComposeStyle(); updateEventPrice();
+  composingCardTags = false;
   originalEditTags = editingId ? [...card.tags] : [];
   text.value = editingId ? card.body : ''; tags.value = editingId ? card.tags.join(', ') : guest ? '' : initialComposerTags();
   const identityMode = editingId ? (card.identity_mode === 'nickname' ? 'nickname' : 'anonymous') : readComposerSettings().identity;

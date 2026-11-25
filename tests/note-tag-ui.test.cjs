@@ -39,6 +39,17 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
     await tag.focus(); await page.keyboard.press('Enter'); await page.keyboard.press('Space');
     assert.deepEqual(await page.evaluate(() => tagSearches), ['응원', '응원', '응원']);
     assert.equal(await page.locator('#detail-card-slot [data-open]').count(), 0, 'a detail card cannot reopen itself');
+    const inputStates = await page.evaluate(() => {
+      autoTagMode = true; manualTags = []; autoTagsNow = ['하나','둘','셋','넷','다섯'];
+      tags.value = autoTagsNow.join(', ') + ', 산';
+      tags.dispatchEvent(new CompositionEvent('compositionstart'));
+      tags.dispatchEvent(new InputEvent('input', {isComposing:true}));
+      const composing = tags.value;
+      tags.value += '책';
+      tags.dispatchEvent(new CompositionEvent('compositionend'));
+      return [composing, tags.value];
+    });
+    assert.deepEqual(inputStates, ['하나, 둘, 셋, 넷, 다섯, 산','하나, 둘, 셋, 넷, 산책']);
     // A crowded tag row must not shrink a short quote or the photo beneath it.
     for (const width of [320, 360, 768, 1280]) {
       await page.setViewportSize({ width, height: 900 });
