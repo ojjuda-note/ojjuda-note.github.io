@@ -210,7 +210,7 @@ async function checkCompactColors(page, viewport, area, keyboard = false) {
           const nav = await page.locator('.bottomnav').boundingBox();
           const reply = page.locator('#reply-list .reply-card');
           const box = await reply.boundingBox();
-          assert.ok(box.y + box.height <= nav.y, 'the entire last reply clears the fixed bottom navigation');
+          assert.ok(box.y + box.height <= nav.y, `last reply at ${box.y + box.height} overlaps navigation at ${nav.y} on ${viewport.width}×${viewport.height}`);
           await assertInside(page, reply.locator('[data-reaction="like"]'), {bottom:nav.y}, 'reply like button');
           await page.evaluate(() => showFeed(false));
         }

@@ -81,7 +81,14 @@ html body .shell > .col > .main { container: park-content / inline-size; }
 }
 @media (max-width: 779px) {
   .shell > .col > .main:has(> #detail:not([hidden])) {
-    padding: 4px 12px calc(16px + var(--app-nav-height) + var(--app-viewport-bottom));
+    padding: 4px 12px;
+  }
+}
+
+/* Reserve the fixed navigation in the detail itself, including landscape phones. */
+@media (max-width: 899px) {
+  html:not([data-park-embedded]) #main > #detail:not([hidden]) {
+    padding-bottom: calc(max(var(--app-nav-height), 56px + var(--app-safe-bottom)) + var(--app-viewport-bottom) + 16px);
   }
 }
 

@@ -3155,7 +3155,10 @@ async function publishGuestCard(body) {
 }
 async function publishCard() {
   if (busy || submit.disabled || !client || !ready) return;
-  if (autoTagMode) refreshAutoTags();
+  if (autoTagMode) {
+    noteTagEdit();
+    refreshAutoTags();
+  }
   let body = text.value.replace(/\r\n?/g, '\n').trim(), values = parsedTags();
   if (!body || maskedTextLength(body) > 200 || !values) return;
   if (cardPhotoPreparing) { composeMessage.textContent = '첨부 파일을 준비하는 중이에요. 잠시 뒤 등록해 주세요.'; return; }
