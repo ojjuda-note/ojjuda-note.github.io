@@ -99,7 +99,7 @@ async function start(firstEntry) {
     $('entry-count').textContent = length+' / 220';
     mine.maxLength = textInputMaxLength(mine.value,220);
     mine.setCustomValidity('');
-    submit.textContent = mode === 'feed' ? '참여하고 '+nextName+' 보기' : entry.genderSharePending ? '답변·가입 성별을 파장 회원에게 공개' : '답변하기';
+    submit.textContent = mode === 'feed' ? '참여하고 '+nextName+' 보기' : '답변하기';
     submit.disabled = saving || (mode === 'answer' && !picked && (!mine.value.trim() || length>220));
   }
   function paintChoices(theme) {
@@ -253,12 +253,11 @@ async function start(firstEntry) {
     try {
       const data = joiningOnly ? {} : {body, day:entry.day, slot:entry.slot, archive:true, publicationPolicy:"year-v1"};
       if (!joiningOnly && entry.question) data.questionId = entry.question.id;
-      if (entry.joined && entry.genderSharePending) data.shareAccountGender = true;
       if (!entry.joined) {
         const {province, city, interest, consent} = form.elements;
         Object.assign(data, {
           name:form.elements.namedItem('name').value.trim(),
-          region:[province.value, city.value].filter(Boolean).join(' '), interest:interest.value, consent:consent.checked, shareAccountGender:consent.checked
+          region:[province.value, city.value].filter(Boolean).join(' '), interest:interest.value, consent:consent.checked
         });
       }
       const action = joiningOnly ? 'participate' : entry.joined ? 'answer' : 'join';

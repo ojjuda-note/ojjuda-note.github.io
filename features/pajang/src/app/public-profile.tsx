@@ -66,7 +66,7 @@ export function ProfileForm({person,isNew,onSave,busy}:{person:Person|null;isNew
   const disabled=busy||!choicesReady;
   function submit(event:React.FormEvent){
     event.preventDefault();if(disabled)return;
-    onSave({name:name.trim(),region,consent,...(isNew?{shareAccountGender:consent}:{}),profilePerson:person?.id??null,
+    onSave({name:name.trim(),region,consent,profilePerson:person?.id??null,
       preferences:{relationship_intents:preferences.relationship_intents},preferencesVersion:read.version});
   }
   return <form className="profileform public-profile-form" onSubmit={submit}>

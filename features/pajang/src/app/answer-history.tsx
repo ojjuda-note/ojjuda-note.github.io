@@ -7,7 +7,7 @@ import QuestionCarousel from "./question-carousel";
 import {AnswerLike,useAnswerLikes} from "./answer-likes";
 
 export type DiscoveryAnswer = {
-  peer:string; name:string; region:string; interest:string;
+  peer:string; gender?:string|null; name:string; region:string; interest:string;
   day:string; slot:Slot; at:number; question:string; body:string;
   own:boolean; sent:boolean; received:boolean;
   liked?:boolean; likeCount?:number;
@@ -19,9 +19,9 @@ type Result = {key:string; items:DiscoveryAnswer[]; total:number|null; next:Curs
 type Order = "recommend"|"latest"|"local";
 type Gender = "male"|"all"|"female";
 const genderOptions = [
-  {value:"all", text:"전체", label:"성별 전체"},
-  {value:"male", text:"", label:"남성 답변"},
-  {value:"female", text:"", label:"여성 답변"},
+  {value:"male", label:"남성 답변"},
+  {value:"all", label:"성별 전체"},
+  {value:"female", label:"여성 답변"},
 ] as const;
 declare global {
   interface Window {
@@ -158,7 +158,7 @@ function GenderSwitch({value,onChange}:{value:Gender;onChange:(next:Gender)=>voi
     onClickCapture={e=>{if(e.detail && suppressClick.current){e.preventDefault();e.stopPropagation();suppressClick.current=false;}}}>
     {genderOptions.map(option=><label key={option.value} className={"answer-gender "+option.value} data-lit={lit===option.value}>
       <input type="radio" name="answer-gender" value={option.value} aria-label={option.label}
-        checked={value===option.value} onChange={()=>onChange(option.value)}/><span aria-hidden="true">{option.text}</span>
+        checked={value===option.value} onChange={()=>onChange(option.value)}/><span aria-hidden="true"/>
     </label>)}
   </div>;
 }
@@ -268,7 +268,7 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
         const intents=relationshipIntents.filter(intent=>row.relationship_intents?.includes(intent.key));
         return <article key={rowKey(row)} className="answercard">
           <button className="person" onClick={()=>onProfile(row)}>
-            <InterestArt personId={row.peer} interest={row.interest}/>
+            <InterestArt gender={row.gender} personId={row.peer} interest={row.interest}/>
             <span><strong>{row.name}{row.own?" · 내 답변":""}</strong>{row.region&&<small>{row.region}</small>}</span>
           </button>
           <p className="quote">{row.body}</p>
