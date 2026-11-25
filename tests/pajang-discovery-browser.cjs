@@ -798,10 +798,11 @@ async function checkNavigation(page){
       const targets=await group.locator('label').evaluateAll(nodes=>nodes.map(node=>{
         const box=node.getBoundingClientRect(),text=node.querySelector('span');
         const dot=text.getBoundingClientRect(),style=getComputedStyle(text);
-        return {left:box.left,right:box.right,width:box.width,height:box.height,dot:dot.width,round:dot.width===dot.height&&style.borderRadius==='50%',outlined:parseFloat(style.outlineWidth)>0};
+        return {left:box.left,right:box.right,width:box.width,height:box.height,dot:dot.width,center:dot.left+dot.width/2,round:dot.width===dot.height&&style.borderRadius==='50%',outlined:parseFloat(style.outlineWidth)>0};
       }));
       assert.ok(targets.every(box=>box.width>=44&&box.height>=44&&box.dot===18&&box.round),
         'small circles retain full touch targets at '+width+'px: '+JSON.stringify(targets));
+      assert.deepEqual(targets.slice(1).map((box,i)=>box.center-targets[i].center),[36,36]);
       assert.deepEqual(targets.map(box=>box.outlined),[false,true,false]);
       assert.ok(targets.every(box=>box.left>=0&&box.right<=width+1),'gender choices fit at '+width+'px');
       await answers.screenshot({path:path.join(dir,'answers-'+width+'.png'),animations:'disabled'});
