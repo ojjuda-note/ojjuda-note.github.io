@@ -43,6 +43,7 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
       autoTagMode = true; manualTags = []; autoTagsNow = ['하나','둘','셋','넷','다섯'];
       tags.value = autoTagsNow.join(', ') + ', 산';
       tags.dispatchEvent(new CompositionEvent('compositionstart'));
+      if (!composingCardTags) throw Error('composition was not marked active');
       tags.dispatchEvent(new InputEvent('input', {isComposing:true}));
       const composing = tags.value;
       tags.value += '책';
