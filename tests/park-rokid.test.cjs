@@ -179,6 +179,17 @@ test('denying location keeps recent cards without distances or a weather request
   h.page.onUnload();
 });
 
+test('removes a card from the reader if the public parent check no longer returns it', async () => {
+  const h = await openPage({read: (request, json) =>
+    request.url.pathname.endsWith('/rpc/get_card') ? json(null) : null});
+  await h.key('Enter');
+  await h.key('Enter');
+  assert.equal(h.page.data.mode, 'feed');
+  assert.notEqual(h.page.data.firstBody, first.body);
+  assert.match(h.page.data.status, /공개가 끝난/);
+  h.page.onUnload();
+});
+
 test('when the current area is empty it shows recent public cards, without invented distances', async () => {
   const h = await openPage({ nearby: [] });
   assert.ok(h.requests.some(({ body }) => body.p_sort === 'nearby'));

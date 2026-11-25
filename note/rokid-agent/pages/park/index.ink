@@ -176,7 +176,15 @@ export default {
     try {
       const confirmed=await rest(s,'rpc/get_card',{p_id:card.id});
       if(!current())return;
-      if(!visibleCard(confirmed,s.stack.length===1?'memo':'comment')) {parent.message='공개가 끝난 카드';return;}
+      if(!visibleCard(confirmed,s.stack.length===1?'memo':'comment')) {
+        parent.rows.splice(parent.at,1);
+        if(!parent.rows.length)s.stack.pop();
+        else {parent.at=Math.min(parent.at,parent.rows.length-1);parent.sheet=0;parent.message='공개가 끝난 카드';}
+        s.rows=s.rows.filter(r=>r.id!==card.id);
+        s.at=Math.max(0,Math.min(s.at,s.rows.length-1));
+        s.label='공개가 끝난 카드';
+        return;
+      }
       const f={rows:[],at:0,sheet:0,parentId:card.id,snapshot:new Date().toISOString(),more:true};
       const rows=await this.replyBatch(s,f);
       if(!current())return;

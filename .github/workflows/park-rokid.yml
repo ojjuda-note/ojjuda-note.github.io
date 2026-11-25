@@ -38,6 +38,7 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/rokid-tools" --no-audit --no-fund --save-exact @yodaos-pkg/aix-cli@0.11.0
           aix="$RUNNER_TEMP/rokid-tools/node_modules/.bin/aix"
           bundle="$RUNNER_TEMP/ojjuda-park.aix"
+          "$aix" check note/rokid-agent
           "$aix" pack note/rokid-agent -o "$bundle"
           test -s "$bundle"
           "$aix" list "$bundle" > "$RUNNER_TEMP/aix-files.txt"
