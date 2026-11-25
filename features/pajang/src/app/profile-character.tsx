@@ -75,11 +75,12 @@ export function CharacterPortrait({id,gender,large=false,fullBodyPreview=false}:
   if(fullBodyPreview){
     // Center the painted figure, leaving room for hair and shoes inside the circle.
     const cropTop=top-5;
-    const scale=86/(492-cropTop);
+    const cropHeight=492-cropTop;
     return <span className="pj-character-preview" role="img" aria-label={label} data-gender-tone={visibleGender?.tone}>
       <span className="pj-character-preview-art" aria-hidden="true" style={{
-        width:312*scale,height:86,backgroundImage:sprite.image,backgroundSize:(width*scale)+"px "+(height*scale)+"px",
-        backgroundPosition:(-sprite.column*312*scale)+"px "+(-(sprite.row*492+cropTop)*scale)+"px"
+        aspectRatio:"312 / "+cropHeight,backgroundImage:sprite.image,
+        backgroundSize:(sprite.columns*100)+"% "+(height/cropHeight*100)+"%",
+        backgroundPosition:(sprite.column/(sprite.columns-1)*100)+"% "+((sprite.row*492+cropTop)/(height-cropHeight)*100)+"%"
       }}/>
     </span>;
   }

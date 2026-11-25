@@ -602,8 +602,11 @@ async function checkNavigation(page){
   await heading('주변 레이더').waitFor();
   await page.locator('.scope-person').filter({hasText:'라'}).click();
   await page.getByRole('button',{name:'공개 정보 보기'}).click();
+  const beforeProfile=page.viewportSize();
+  await page.setViewportSize({width:320,height:568});
   await page.getByRole('dialog').getByRole('button',{name:'대화 열기',exact:true}).click();
   await page.getByRole('textbox',{name:'메시지',exact:true}).waitFor();
+  await page.setViewportSize(beforeProfile);
   assert.ok(page.url().includes('chat=peer1'));
   await page.getByRole('button',{name:'뒤로가기',exact:true}).click();
   await heading('주변 레이더').waitFor();
