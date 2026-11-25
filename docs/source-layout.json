@@ -195,6 +195,7 @@
     "tank"
   ],
   "generatedAssets": {
+    "park/even-g2.bundle.mjs": "note/vendor/build.mjs",
     "note/vendor/mediabunny-1.66.2.mjs": "note/vendor/build.mjs",
     "note/vendor/mediabunny-aac-encoder-1.66.2.mjs": "note/vendor/build.mjs",
     "note/vendor/tus-js-client-4.3.1.mjs": "note/vendor/build.mjs"
