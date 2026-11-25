@@ -251,13 +251,27 @@ async function checkCharacterViewer(page,editor) {
   const category=editor.getByRole('combobox',{name:'의상 분류'});
   const stage=editor.locator('.pj-avatar-stage');
   const original=await stage.getAttribute('aria-label');
+  const viewer=page.getByRole('dialog',{name:'캐릭터 미리보기',exact:true});
+  const button=name=>viewer.getByRole('button',{name,exact:true});
+  await editor.getByRole('button',{name:'흰 티와 청바지 대두형',exact:true}).click();
+  await button('이전 캐릭터').click();
+  await viewer.getByText('갤러리 산책',{exact:true}).waitFor();
+  await page.keyboard.press('ArrowRight');
+  await viewer.getByText('흰 티와 청바지',{exact:true}).waitFor();
+  await button('목록으로').click();
+  await search.fill('물리치료사');
+  const therapist=editor.getByRole('button',{name:'물리치료사 전신형',exact:true});
+  assert.ok((await paintedHeight(therapist.locator('.full'))).fraction>0.9);
+  await therapist.click();
+  const corrected=viewer.locator('.pj-character-figure.full');
+  assert.match(await corrected.evaluate(node=>node.style.backgroundImage),/hd\/avatar-153-full-20261126/);
+  assert.ok((await paintedHeight(corrected)).fraction>0.9);
+  await button('목록으로').click();
   await category.selectOption('일상복');
   await search.fill('차분');
   const names=await editor.locator('.pj-avatar-card strong').allTextContents();
   assert.ok(names.length>=2,'comparison requires at least two outfits matching both filters');
   const tile=editor.getByRole('button',{name:names[0]+' 전신형',exact:true});
-  const viewer=page.getByRole('dialog',{name:'캐릭터 미리보기',exact:true});
-  const button=name=>viewer.getByRole('button',{name,exact:true});
   for(const width of [320,390]){
     await page.setViewportSize({width,height:640});
     const thumbnail=await paintedHeight(tile.locator('.pj-character-figure'));
@@ -293,6 +307,8 @@ async function checkCharacterViewer(page,editor) {
   await button('이전 캐릭터').click();await current(names[0]);
   await page.keyboard.press('ArrowRight');await current(names[1]);
   await page.keyboard.press('ArrowLeft');await current(names[0]);
+  await button('이전 캐릭터').click();
+  assert.notEqual(await viewer.locator('header strong').textContent(),names[0]);
   const scroller=viewer.locator('.pj-viewer-scroll');
   const bounds=await scroller.boundingBox();
   const x=bounds.x+bounds.width*0.75,y=bounds.y+bounds.height/2;
@@ -302,7 +318,7 @@ async function checkCharacterViewer(page,editor) {
     await session.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x-bounds.width/2,y}]});
     await session.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
   }finally{await session.detach();}
-  await current(names[1]);
+  await current(names[0]);
   await button('대두형').click();
   await viewer.locator('.pj-character-figure.mini').waitFor();
   await button('전신형').click();

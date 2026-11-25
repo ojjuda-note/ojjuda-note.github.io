@@ -415,6 +415,10 @@ test('the female catalog has 102 outfits with the short variant on the left and 
     }
     if (page < 13) { f.button('다음').click(); await turn(); }
   }
+  f.button('다음').click(); await turn();
+  assert.equal(picker.querySelector(".pj-avatar-pages span").textContent, "1 / 13");
+  f.button('이전').click(); await turn();
+  assert.equal(picker.querySelector(".pj-avatar-pages span").textContent, "13 / 13");
   assert.equal(names.size, 102);
   for(const name of ['정류장의 오후','갤러리 산책'])assert.ok(names.has(name));
   await f.set('캐릭터 검색', '책방 가는 날');
@@ -422,6 +426,8 @@ test('the female catalog has 102 outfits with the short variant on the left and 
   await f.set('캐릭터 검색', '회색 후디');
   f.button('회색 후디 대두형').click();
   await turn();
+  assert.ok(f.button('이전 캐릭터').disabled && f.button('다음 캐릭터').disabled,
+    'a single search result has no neighboring character');
   assert.equal(stage().getAttribute('aria-label'), '흰 티와 청바지 전신형 · 배경 없음');
   f.button('이 모습 선택').click();
   await turn();
@@ -478,7 +484,9 @@ test('102 male outfits reuse every existing backdrop and reopen on the saved pai
       const atlas = String(Math.floor(looks.length / 4) + 1).padStart(2,'0');
       for (const button of pair) {
         const figure = button.querySelector('.pj-character-figure');
-        assert.ok(figure.style.backgroundImage.includes('avatars-male-' + (atlas==='26'?'20261126':'20261125') + '-' + atlas + '.webp'));
+        const therapist=button.getAttribute('aria-label')==='물리치료사 전신형';
+        const asset=therapist?'avatar-153-full-20261126.webp':'avatars-male-' + (atlas==='26'?'20261126':'20261125') + '-' + atlas + '.webp';
+        assert.ok(figure.style.backgroundImage.includes(asset));
         sprites.add(figure.style.backgroundImage + ' ' + figure.style.backgroundPosition);
       }
       looks.push(card.querySelector('strong').textContent);
@@ -506,7 +514,8 @@ test('102 male outfits reuse every existing backdrop and reopen on the saved pai
   assert.ok(stage().getAttribute('aria-label').includes(chosenBackground));
   await click('캐릭터 선택');
   assert.equal(f.button(lastShort).getAttribute('aria-pressed'), 'true');
-  assert.ok(f.button('다음').disabled);
+  await click('다음');
+  assert.equal(region().querySelector('.pj-avatar-pages span').textContent,'1 / 13');
   assert.ok(!f.button('여자'));
   assert.deepEqual(f.saves()[0].p_data.avatar, {id:205,form:'mini',bg:8});
   assert.ok(f.state.calls.every(call => call.p_data.avatarCatalog === 3));

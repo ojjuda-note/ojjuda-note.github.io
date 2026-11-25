@@ -49,6 +49,9 @@ const femaleMiniTop=[
   125,109,105,129,94,85,91,81,106,106,100,111,82,94,97,100,88,85,72,74,
   133,125,127,126,91,88,78,83,105,112,93,99,104,108,106,96,91,102,101,109
 ];
+function wrapIndex(index:number,count:number){
+  return (index+count)%count;
+}
 function isCharacterId(id:unknown):id is number{
   return typeof id==="number"&&byId.has(id);
 }
@@ -58,6 +61,8 @@ function characterSprite(id:number,form:ProfileAvatar["form"],high=false){
   const root=high?assetRoot+"hd/":assetRoot;
   if(id===hiddenCharacterId)return {image:'url("'+root+'avatar-tree-20261125.webp")',
     column:form==="mini"?0:1,row:0,columns:2,rows:1};
+  if(id===153&&form==="full")return {image:'url("'+root+'avatar-153-full-20261126.webp")',
+    column:0,row:0,columns:1,rows:1};
   const {slot:index,collection}=byId.get(id)!;
   const prefix=collection==="male"?"avatars-male-":"avatars-";
   const revision=id>=202&&id<=205&&(collection==="male"||form==="mini")?"20261126":"20261125";
@@ -154,7 +159,7 @@ export function ProfileCharacter({avatar,collection,showGender,onChange,disabled
   const filtered=roster.filter(c=>c.collection===collection&&(group==="전체"||group===c.group)&&matchesCharacter(searchById.get(c.id),search));
   const pageSize=8,pageCount=Math.ceil(filtered.length/pageSize);
   const viewIndex=view?filtered.findIndex(c=>c.id===view.id):-1;
-  function browse(index:number){setView(current=>current?{...current,id:filtered[index].id}:null);}
+  function browse(index:number){setView(current=>current?{...current,id:filtered[wrapIndex(index,filtered.length)].id}:null);}
   const previewId=showGender?avatar.id:hiddenCharacterId;
   function choose(next:ProfileAvatar){
     if(disabled)return;
@@ -191,7 +196,7 @@ export function ProfileCharacter({avatar,collection,showGender,onChange,disabled
           <button type="button" disabled={disabled} onClick={()=>setPending(null)}>취소</button></div>
       </div>:<><div className="pj-avatar-filters"><select aria-label="의상 분류" value={group} disabled={disabled} onChange={e=>{setGroup(e.target.value);setPage(0);}}>{groups.map(g=><option key={g} value={g}>{g==="전체"?"전체 ("+collections[collection].length+"종)":g}</option>)}</select>
       <input aria-label="캐릭터 검색" type="search" placeholder="이름·색상·의상·분위기" onKeyDown={e=>{if(e.key==="Enter")e.preventDefault();}} value={query} disabled={disabled} onChange={e=>{setQuery(e.target.value);setPage(0);}}/></div>
-      {pageCount>1&&<div className="pj-avatar-pages"><button type="button" disabled={disabled||page===0} onClick={()=>setPage(page-1)}>이전</button><span>{page+1} / {pageCount}</span><button type="button" disabled={disabled||page+1===pageCount} onClick={()=>setPage(page+1)}>다음</button></div>}
+      {pageCount>1&&<div className="pj-avatar-pages"><button type="button" disabled={disabled} onClick={()=>setPage(p=>wrapIndex(p-1,pageCount))}>이전</button><span>{page+1} / {pageCount}</span><button type="button" disabled={disabled} onClick={()=>setPage(p=>wrapIndex(p+1,pageCount))}>다음</button></div>}
       <div className="pj-avatar-grid" data-collection={collection==="male"?"남자":"여자"}>{filtered.slice(page*pageSize,(page+1)*pageSize).map(c=><div className="pj-avatar-card" key={c.id}>
         <div className="pj-avatar-pair" data-equal-frames={c.collection==="male"||c.slot>=100?true:undefined}>{(["mini","full"] as const).map(form=><button type="button" key={form} disabled={disabled} aria-pressed={avatar.id===c.id&&avatar.form===form} aria-label={c.name+" "+formName(form)} aria-haspopup="dialog" onClick={()=>setView({...avatar,id:c.id,form})}><Figure id={c.id} form={form} high={window.devicePixelRatio>2}/><span>{formName(form)}</span></button>)}</div>
         <button type="button" className="pj-outfit-name" aria-label={c.name+" 미리보기"} aria-haspopup="dialog" disabled={disabled}
@@ -201,7 +206,7 @@ export function ProfileCharacter({avatar,collection,showGender,onChange,disabled
     </div>}
     {panel==="character"&&view&&viewIndex>=0&&!pending&&<CharacterViewer name={filtered[viewIndex].name} form={view.form}
       onForm={form=>setView({...view,form})} onClose={()=>setView(null)}
-      previous={viewIndex>0?()=>browse(viewIndex-1):undefined} next={viewIndex+1<filtered.length?()=>browse(viewIndex+1):undefined}
+      previous={filtered.length>1?()=>browse(viewIndex-1):undefined} next={filtered.length>1?()=>browse(viewIndex+1):undefined}
       actionLabel={isFree(view.id)||owned.includes(view.id)?"이 모습 선택":"구매하기"} onSelect={()=>pick(view)}>
       <Figure id={view.id} form={view.form} trim/>
     </CharacterViewer>}
