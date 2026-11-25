@@ -564,14 +564,14 @@ const TAG_WORDS = [
 요청 수정 시계 메신저 수다 배달비 이체일 입꼬리 가격표 계산기 창가 창밖 옆자리 단톡방 밥상 그릇 문장 토요일 일요일 맞은편 TV 싱크대 숟가락
 전자레인지 곰탕 햇볕 셀카 주머니 장갑 조명 오타 단어 메뉴 습관 재료 포장 볶음밥 양배추 커버 스트레스 코드 챕터 우유 세제 옷걸이 첫눈 잔소리 입맛
 소식 양보 축하 생일 옷차림 냄새 주황빛 냉면 국 고장 결제 음악회 통장잔고 영어 국어 벚꽃 강아지풀 병아리 종이 딸기 책방 도서관 산더미 서른 음식 문제 창문 가게 공기
-위로 칭찬 혼잣말 앞날 질문 손질 필름 필름카메라 만년필 목도리 손뜨개 뜨개질 독서 독서모임 독립서점 동네책방 뜨개실 코바늘 북클럽 수업 도예 머그잔 텃밭 모종 상추 바질 씨앗 화분받침 구독 해지 이체 저축 공과금 전기요금 관리비 배터리 고사리 버섯 김밥 재즈 카메라 양말짝 손편지 한강 수영 기타줄 새우 배달앱 조깅 러닝 마라톤 완주 스케치 수채화 노을빛 보조배터리 옥상 물감 자전거 텀블러 장마철 친절 준비 기억 시작 출발 결정 피곤 선택 안심 기대 긴장 인정 검색 대답 대화 인사 지원 실감`,
+위로 칭찬 혼잣말 앞날 질문 버튼 순간 말동무 손잡이 성격 용기 재생 어린이집 유치원 학교 학원 운동회 소풍 나들이 우체국 우체통 우표 엽서 서류봉투 손글씨 문방구 문구점 연필 공책 독서록 메모장 책갈피 서재 소설 에세이 시집 작가 동화책 만화책 동네친구 동창 조카 손주 할머니 할아버지 언니 동생 형제 자매 사촌 생일선물 기념일 집들이 자취방 자취 이사 보증금 식재료 순두부 두부 김치볶음밥 만둣국 비빔밥 떡국 된장찌개 감자 오이 토마토 바나나 자몽 사과주스 딸기우유 식빵 소금빵 토스트 베이글 샐러드 캠핑 피크닉 물병 돗자리 배낭 강변 바닷가 해변 파도 숲길 산길 정원 장미 민들레 정원수 미용실 이발 머리카락 염색 일기 스티커 산책로 헬스장 사물함 경조사 안부인사 야근 회식 휴게실 인수인계 출근버스 정기권 환승 막내 수험생 시험지 면접관 생일케이크 우연 여전히 천천히 그날 초조 서론 설명 해명 집안 다행 보람 아쉬움 결정권 문고리 잠금 막차 마감 기한 빨랫감 연습 일정표 미안 고마움 답답 뿌듯 불안 서운 감정 잠버릇 어릴적 웃음 표정 음정 안도 안정 심정 고마워 꿈 선택지 기쁨 어색 하루치 보답 안타까움 손질 필름 필름카메라 만년필 목도리 손뜨개 뜨개질 독서 독서모임 독립서점 동네책방 뜨개실 코바늘 북클럽 수업 도예 머그잔 텃밭 모종 상추 바질 씨앗 화분받침 구독 해지 이체 저축 공과금 전기요금 관리비 배터리 고사리 버섯 김밥 재즈 카메라 양말짝 손편지 한강 수영 기타줄 새우 배달앱 조깅 러닝 마라톤 완주 스케치 수채화 노을빛 보조배터리 옥상 물감 자전거 텀블러 장마철 친절 준비 기억 시작 출발 결정 피곤 선택 안심 기대 긴장 인정 검색 대답 대화 인사 지원 실감`,
   `혼자 성공 소리 옷 눈치 분위기 기회 간격 여유 계산 속도 결심 자존감 집중 장소 날짜 자리 바퀴 장면 타이밍 절반 결과 편지 모레 아침 점심 저녁 오후
 기분 가격 계획 밥 의자 손끝 조각 재촉 그리움 외로움 머리 밑단 접시 시간표 시각 단계 갈등 계절 페이지 일정 색 행복 토닥토닥 잠 부담 기운 어린이
 일상 옆구리 오랜만 자유 관심 깜빡 안전 고생 운동장 고구마 요가 장난감 동물원 어깨 목 마음 정신 짐 돈 느리게 자기비판 조급함 눈길 작년 올해`,
   `하루 오늘 내일 어제 생각 시간 사람 일 말 몸 밤 낮 집 손 눈 문 길 물 차 끝 답 얘기 이야기 별일 매일 언젠가`
 ];
 const TAG_ACTIONS = new Set(`완벽 고백 걱정 고민 지각 면접 출근 퇴근 연락 운동 친절 감사 준비 공부 후회 기억 생각 시작 출발 축하 양보 결정 거절 사랑 피곤 실수 수다 통화 요리
-선택 청소 빨래 설거지 쇼핑 약속 안심 합격 연애 기대 긴장 지출 인정 검색 사과 부탁 대답 대화 샤워 발표 산책 전화 인사 지원 칭찬 실감 손질 독서 구독 해지 이체 저축 조깅 완주 스케치`.split(/\s+/));
+선택 청소 빨래 설거지 쇼핑 약속 안심 합격 연애 기대 긴장 지출 인정 검색 사과 부탁 대답 대화 샤워 발표 산책 전화 인사 지원 칭찬 실감 결제 연습 이야기 얘기 말 초조 서운 어색 미안 답답 뿌듯 불안 설명 고생 위로 다정 손질 독서 구독 해지 이체 저축 조깅 완주 스케치`.split(/\s+/));
 const TAG_PARTICLE = /^(?:(?:들)?(?:에게서|에게|한테서|한테|께서|께|에서|으로부터|으로서|으로써|으로|에까지|에라도|에|부터|까지|처럼|보다|밖에|만큼|마다|조차|대로|이랑|랑|하고|이라도|라도|이나|나|이든|든|과|와|은|는|을|를|이|가|로|의|도|만|엔|에선|서|인|이다|이다가|이라|라|이라서|라서|이고|이고도|인데|인데도|인지는|인지|일수록|이니까|니까|이었던|였던|이었다|였다)?(?:에는|에도|까지|부터|은|는|에|도|만|요|만이라도)?)$/u;
 const TAG_PREDICATE = /^(?:하|한|할|함|해|했|합니|됩니|되|된|될|돼|됐)[가-힣]*$/u;
 const tagRanks = new Map(TAG_WORDS.flatMap((words, rank) =>
@@ -604,7 +604,8 @@ function tagCandidate(token, soleToken, nextToken) {
     const tier = tagRanks.get(key);
     const compound = tier === undefined && end >= 3 && TAG_COMPOUND.test(tag);
     if (tier === undefined && !compound) continue;
-    if (!TAG_PARTICLE.test(ending) && !(TAG_ACTIONS.has(key) && TAG_PREDICATE.test(ending))) continue;
+    const derived = (key === '우연' && ending === '히') || (key === '안정' && ending.startsWith('적'));
+    if (!TAG_PARTICLE.test(ending) && !derived && !(TAG_ACTIONS.has(key) && TAG_PREDICATE.test(ending))) continue;
     let weight = compound || tier === 0 ? 6 : TAG_DETAILS.has(key) ? 5 : tier === 1 ? 3 : 1;
     if ((compound || tier === 0) && tag.length >= 3) weight++;
     if (weight >= 5 && /^(?:을|를)$/u.test(ending)) weight++;
@@ -613,6 +614,9 @@ function tagCandidate(token, soleToken, nextToken) {
   }
 
   if (/^[A-Z][A-Z0-9]{1,9}$/.test(token)) return { tag: token, weight: 6 };
+  const duration = token.match(/^([1-9][0-9]?(?:분|시간|초|시|주|개월|년|살))(?:에|이|가|은|는|을|를|만|쯤|째|까지|부터)?$/u);
+  if (duration) return { tag: duration[1], weight: 3 };
+  if (TAG_EXPRESSIONS.has(token)) return { tag: token, weight: 3 };
   const parsed = token.match(TAG_UNKNOWN);
   if (parsed && !TAG_GENERIC.test(parsed[1]) && !TAG_NON_NOUN.test(token)) {
     const tag = parsed[1], particle = parsed[3];
@@ -627,8 +631,16 @@ function tagCandidate(token, soleToken, nextToken) {
   if (/^[A-Z][A-Z0-9]{1,11}$/.test(token) || (soleToken && standaloneTagName(token))) {
     return { tag: token, weight: 5 };
   }
+  if (nextToken && /^(?:먹었다|먹었어|먹으러|먹고|마셨다|마셨어|마시러|샀다|샀어|사러|찍었다|찍었어|찍으러|읽었다|읽었어|읽으러|보러|보냈다|신었다|입었다|키우기|만들었다|갔다|다녀왔다|탔다)$/u.test(nextToken) && standaloneTagName(token)
+    && !TAG_GENERIC.test(token) && !TAG_NON_NOUN.test(token)
+    && !/(?:부터|까지|라도|보다|려고|으로|보다가|면서|다가|다시|마저|만큼|을|를|에|로|도|만|와|며|씩|뿐|히|리|쪽)$/u.test(token)) {
+    return { tag: token, weight: 3 };
+  }
   return null;
 }
+
+const TAG_SUPPORT = new Set('마음 생각 시간 밤 낮 집 손 눈 문 길 물 차 끝 답 얘기 이야기 별일 내일 사람 일 말 몸 하루'.split(' '));
+const TAG_EXPRESSIONS = new Set('아쉽네 아쉽다 아쉬운 부끄럽다 기뻤다 신났다 씁쓸했다 울컥했다 뿌듯하다 잠깐만요 괜찮다고 귀엽다 웃었다 고마웠다 고맙다고 그립다 쉬었다 지쳤다 지쳤나 느긋하게 말똥말똥하다 재밌었다 고생했다 보고싶다 설렌다 고마워요 반갑다 힘들다 반가웠다 걷다 좋아진다 망설였다 괜찮아 설렜다 춥다 따뜻하다 속상했다 외롭다 시원하다 후련하다'.split(' '));
 
 function suggestTags(body, limit = 5) {
   const tokens = [...String(body || '').matchAll(/(#[가-힣A-Za-z0-9_]+|[가-힣A-Za-z0-9]+)([^가-힣A-Za-z0-9#]*)/gu)];
@@ -667,9 +679,13 @@ function suggestTags(body, limit = 5) {
     ...item, score: item.weight + (item.weight > 1 ? Math.min(item.count - 1, 2) * 3 : 0)
   })).sort((a, b) => b.score - a.score || a.pos - b.pos);
   if (!ranked.length) return [];
-  const cutoff = Math.min(5, ranked[0].score);
-  const selected = ranked.filter(item => item.score >= cutoff)
-    .slice(0, Math.min(limit, cutoff === 1 ? 1 : 5));
+  // Fill the next slots with supporting words from the same body.
+  const selected = [];
+  for (const item of ranked) {
+    if (selected.length >= Math.min(limit, 5)) break;
+    if (selected.length === 0 || item.score >= 5 || (selected.length < 3 && item.score >= 3)
+      || (selected.length < 2 && TAG_SUPPORT.has(item.tag))) selected.push(item);
+  }
   return selected.sort((a, b) => Number(!!b.explicit) - Number(!!a.explicit) || a.pos - b.pos)
     .map(item => item.tag);
 }
