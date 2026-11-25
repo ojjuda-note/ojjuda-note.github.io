@@ -475,19 +475,32 @@
       }).data.subscription;
     } catch { status.textContent = '공원에 연결하지 못했어요.'; }
   }
+  let connecting = false;
   async function connectG2() {
+    if (hardware || connecting) return;
+    connecting = true;
     const message = byId('g2-status');
+    const retry = byId('g2-reconnect');
+    retry.hidden = true;
     message.textContent = 'G2 연결을 기다리는 중…';
-    const installed=!!document.documentElement?.dataset?.evenApp;
-    const hint = setTimeout(() => { message.textContent = installed ? 'Even 앱에서 G2 연결 상태를 확인해 주세요.' : 'Even Realities 앱의 개발자 모드에서 QR을 열어 주세요.'; }, 10000);
+    let stage = 'SDK';
     try {
-      const {attachEvenG2} = await import('/park/even-g2.bundle.mjs?v=20261125-even-settings1');
-      hardware = await attachEvenG2(window.OJJUDA_GLASS_PREVIEW);
+      const sdk = await import('/park/even-g2.bundle.mjs?v=20261125-g2-connect2');
+      if (typeof sdk?.attachEvenG2 !== 'function') throw Error('SDK');
+      stage = 'BRIDGE';
+      hardware = await sdk.attachEvenG2(window.OJJUDA_GLASS_PREVIEW);
       byId('g2-setup').hidden = true;
       message.textContent = 'G2 화면을 열었어요.';
-    } catch { message.textContent = 'Even 앱에서 G2 연결을 확인한 뒤 공원을 다시 열어 주세요.'; }
-    finally { clearTimeout(hint); }
+    } catch (error) {
+      const code = /^(?:DEVICE|DISPLAY(?:-[0-9]+)?)$/.test(error?.message) ? error.message : stage;
+      message.textContent = code === 'SDK' ? '안경 모듈을 불러오지 못했어요. (SDK)' :
+        code === 'BRIDGE' ? 'Even 앱과 연결되지 않았어요. (BRIDGE)' :
+        code === 'DEVICE' ? 'Even 앱에서 G2가 연결되면 아래 버튼을 눌러 주세요. (DEVICE)' :
+        'G2 화면을 열지 못했어요. 안경 연결 상태를 확인해 주세요. (' + code + ')';
+      retry.hidden = false;
+    } finally { connecting = false; }
   }
+  byId('g2-reconnect').onclick = connectG2;
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
       ++autoRun;

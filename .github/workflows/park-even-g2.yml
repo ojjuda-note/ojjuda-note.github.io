@@ -31,6 +31,12 @@ jobs:
           tools="$RUNNER_TEMP/even-tools"
           npm install --prefix "$tools" --no-audit --no-fund --save-exact @evenrealities/evenhub-cli@0.2.0 @supabase/supabase-js@2.117.2
           node scripts/build-park-even-app.mjs "$RUNNER_TEMP/even-dist" "$tools"
+          node --test tests/park-even-g2.test.cjs
+          # Use a real file origin, as on a phone. The SDK must load before any native bridge exists.
+          google-chrome --headless --disable-gpu --no-sandbox --disable-dev-shm-usage \
+            --host-resolver-rules="MAP * ~NOTFOUND" --virtual-time-budget=14000 --dump-dom \
+            "file://$RUNNER_TEMP/even-dist/index.html" > "$RUNNER_TEMP/even-dom.html"
+          grep -Fq '(BRIDGE)' "$RUNNER_TEMP/even-dom.html"
           "$tools/node_modules/.bin/evenhub" pack note/even-app/app.json "$RUNNER_TEMP/even-dist" --sdk-ver 0.0.16 -o "$RUNNER_TEMP/ojjuda-park.ehpk"
           test -s "$RUNNER_TEMP/ojjuda-park.ehpk"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

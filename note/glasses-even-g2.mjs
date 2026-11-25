@@ -29,10 +29,32 @@ export function g2Page(view) {
   return {containerTotalNum:fields.length,textObject:fields};
 }
 
+function simplePage(view) {
+  const lines = view.reader ? [view.reader.title, view.reader.body, view.reader.distance] :
+    [view.time, ...view.cards.map(card => [card.oneLine,card.distance].filter(Boolean).join('  ')), view.weather];
+  const content = view.paused ? ' ' : lines.filter(Boolean).join('\n').slice(0,750);
+  return {containerTotalNum:1,textObject:[box(1,'park',8,8,560,272,content || '오쭈다 공원',1)]};
+}
+
+const attemptedStartup = new WeakSet();
 export async function attachEvenG2(hud) {
-  const bridge = await waitForEvenAppBridge();
-  let page = g2Page(hud.getView());
-  if (await bridge.createStartUpPageContainer(page) !== 0) throw Error('G2 display unavailable');
+  let timer;
+  const bridge = await Promise.race([waitForEvenAppBridge(),new Promise((_, reject) => {
+    timer = setTimeout(() => reject(Error('BRIDGE')), 10000);
+  })]).finally(() => clearTimeout(timer));
+  const info = await Promise.race([Promise.resolve().then(() => bridge.getDeviceInfo?.()).catch(() => null),
+    new Promise(resolve => { timer = setTimeout(() => resolve(null), 1200); })]).finally(() => clearTimeout(timer));
+  if (['disconnected','connectionFailed','connecting'].includes(info?.status?.connectType)) throw Error('DEVICE');
+  let page = simplePage(hud.getView());
+  let result;
+  try {
+    if (attemptedStartup.has(bridge) && await bridge.rebuildPageContainer(page)) result = 0;
+    else {
+      attemptedStartup.add(bridge);
+      result = await bridge.createStartUpPageContainer(page);
+    }
+  } catch { throw Error('DISPLAY'); }
+  if (result !== 0) throw Error('DISPLAY-' + String(result));
   let alive = true, drawing = false, dirty = false, listener, generation = 0;
   let locWork = Promise.resolve();
   async function paint() {
@@ -43,8 +65,12 @@ export async function attachEvenG2(hud) {
       while (alive && dirty) {
         dirty = false;
         const next = g2Page(hud.getView());
-        if (page.containerTotalNum !== next.containerTotalNum) {
+        if (page.containerTotalNum !== next.containerTotalNum || page.textObject[0].containerName !== next.textObject[0].containerName) {
           if (await bridge.rebuildPageContainer(next)) page = next;
+          else if (page.textObject[0].containerName === 'park') {
+            const fallback = simplePage(hud.getView()).textObject[0];
+            if (await bridge.textContainerUpgrade({containerID:1,containerName:'park',content:fallback.content})) page.textObject[0] = fallback;
+          }
         } else {
           for (let i=0;i<next.textObject.length && alive;i++) {
             const {containerID,containerName,content} = next.textObject[i];
@@ -67,11 +93,10 @@ export async function attachEvenG2(hud) {
     else if (type === OsEventTypeList.SCROLL_TOP_EVENT) hud.move(-1);
     else if (type === OsEventTypeList.SCROLL_BOTTOM_EVENT) hud.move(1);
   });
-  let deviceRev = 0;
   const battery = state => { if (alive) hud.setBattery(state?.batteryLevel,state?.isCharging); };
-  const offDevice = bridge.onDeviceStatusChanged(state => { deviceRev++; battery(state); });
-  void bridge.getDeviceInfo().then(info => { if (!deviceRev) battery(info?.status); }).catch(() => {});
-  const offLocation = bridge.onAppLocationChanged(fix => listener?.(fix));
+  battery(info?.status);
+  const offDevice = bridge.onDeviceStatusChanged?.(battery);
+  const offLocation = bridge.onAppLocationChanged?.(fix => listener?.(fix));
   const schedule = job => { locWork = locWork.catch(() => {}).then(job); return locWork; };
   function stopLocation() {
     ++generation; listener = undefined;
@@ -93,7 +118,7 @@ export async function attachEvenG2(hud) {
   return {startLocation,stopLocation,dispose() {
     alive=false;
     window.removeEventListener('ojjuda:glasses-view',redraw);
-    offEvents(); offDevice(); offLocation();
+    offEvents?.(); offDevice?.(); offLocation?.();
     if (listener) void stopLocation().catch(() => {});
   }};
 }

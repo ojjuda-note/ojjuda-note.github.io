@@ -178,3 +178,27 @@ test('nearby grandchildren and great-grandchildren retain distance, parent and s
   hud.move(-1);assert.equal(hud.getView().reader.body,'속 답');
   hud.move(-1);hud.move(1);assert.equal(hud.getView().reader.body,'다음 답');
 });
+
+test('G2 startup waits for a connected device, opens a simple page and retains cards when a full rebuild is rejected',async()=>{
+  const bridge={connected:false,starts:[],updates:[],
+    async getDeviceInfo(){return {status:{connectType:this.connected?'connected':'disconnected'}};},
+    async createStartUpPageContainer(page){this.starts.push(page);return 0;},
+    async rebuildPageContainer(){return false;},
+    async textContainerUpgrade(update){this.updates.push(update);return true;},
+    onEvenHubEvent(){return ()=>{};}
+  };
+  const code=readFileSync(path.join(root,'note/glasses-even-g2.mjs'),'utf8')
+    .replace(/^import [^;]+;/,'').replaceAll('export ', '');
+  const attach=vm.runInNewContext(code+'\nattachEvenG2',{window:new EventTarget(),setTimeout,clearTimeout,
+    waitForEvenAppBridge:async()=>bridge});
+  const hud={setBattery(){},getView(){return {time:'19:43',cards:[{oneLine:'공원 카드',distance:''}],weather:'4°C'};}};
+  await assert.rejects(attach(hud),/DEVICE/);assert.equal(bridge.starts.length,0);
+  bridge.connected=true;
+  const device=await attach(hud);
+  await delay(0);
+  assert.equal(bridge.starts.length,1);
+  assert.equal(bridge.starts[0].containerTotalNum,1);
+  assert.match(bridge.starts[0].textObject[0].content,/공원 카드/);
+  assert.match(bridge.updates.at(-1).content,/공원 카드/);
+  device.dispose();
+});
