@@ -282,7 +282,7 @@
     const spaces = {
       note: {key:'park', name:'공원', copy:'마음이 쉬어가는 공원.', line:'이름 없이 나누는\n오늘의 이야기.'},
       pajang: {key:'pajang', name:'파장', copy:'마음이 닿는 오늘의 한마디.', line:'답변으로 시작하는\n새로운 인연.'},
-      world: {key:'agit', name:'아지트', copy:'취향이 모이는 우리의 아지트.', line:'가볍게 놀고,\n다정하게 나눠요.'}
+      world: {key:'agit', name:'아지트', copy:'그룹에서 모임 소식을 나누고, 오락실에서 함께 한 판 즐겨요.', line:'가볍게 놀고,\n다정하게 나눠요.'}
     };
     setPolicyLinks(destination);
     const space = spaces[destination] || spaces.world;

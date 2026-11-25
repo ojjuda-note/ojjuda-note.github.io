@@ -27,7 +27,7 @@
     title.textContent = '조직도를 불러오고 있어요';
     message.textContent = '잠시만 기다려 주세요.';
     try {
-      const response = await fetch('organization.json?v=20261120-public-org1', {
+      const response = await fetch('organization.json?v=20261126-agit-groups1', {
         credentials: 'omit', cache: 'no-cache', signal: controller.signal
       });
       if (!response.ok) throw Error('organization_unavailable');

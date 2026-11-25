@@ -35,7 +35,7 @@ assert.match(world, /world-game-rankings\.js\?v=[^"\s]+/, 'signup button JS rema
 assert.match(world, /world-game-rankings\.css\?v=[^"\s]+/, 'signup CSS remains cache-versioned');
 assert.ok(world.includes('Go="' + version + '";'), 'world and portal version agree');
 
-for (const link of ['/groups/index.html', '/world.html?game=festival',
+for (const link of ['/world.html?tab=group', '/world.html?game=festival',
   '/world.html?game=restaurants', '/?auth=signup&amp;next=world']) {
   assert.ok(guide.includes('href="' + link + '"'), link + ' is in guide');
 }
