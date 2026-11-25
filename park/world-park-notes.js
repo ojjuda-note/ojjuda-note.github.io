@@ -31,7 +31,7 @@
         const url = new URL('/park/', location.origin);
         for (const [href,as] of [
           [url.pathname + url.search,'document'],
-          ['/note/preview.js?v=20261125-multiple-tags1','script'],
+          ['/note/preview.js?v=20261125-card-contrast1','script'],
           ['/park/design.css?v=20261125-reply-tags2','style']
         ]) {
           const link = document.createElement('link');

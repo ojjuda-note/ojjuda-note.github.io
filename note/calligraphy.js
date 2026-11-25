@@ -1112,6 +1112,33 @@
     }
     return Object.freeze({x: left / width, y: top / height, width: (right - left) / width, height: (bottom - top) / height});
   }
+  function outlineInk(ctx, bounds, color) {
+    const {width, height} = ctx.canvas;
+    const left = Math.floor(bounds.x * width), top = Math.floor(bounds.y * height);
+    const right = Math.ceil((bounds.x + bounds.width) * width), bottom = Math.ceil((bounds.y + bounds.height) * height);
+    const mask = ctx.canvas.ownerDocument.createElement('canvas');
+    mask.width = right - left;
+    mask.height = bottom - top;
+    const tint = mask.getContext('2d');
+    tint.drawImage(ctx.canvas, -left, -top);
+    tint.globalCompositeOperation = 'source-in';
+    tint.fillStyle = color;
+    tint.fillRect(0, 0, mask.width, mask.height);
+
+    // Paint behind the existing brush texture so exported PNGs carry the same edge.
+    const radius = Math.max(1, Math.round(width * .0035));
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalCompositeOperation = 'destination-over';
+    for (let step = 0; step < 8; step++) {
+      const angle = step * Math.PI / 4;
+      ctx.drawImage(mask, left + Math.round(radius * Math.cos(angle)), top + Math.round(radius * Math.sin(angle)));
+    }
+    ctx.restore();
+    const x = Math.max(0, left - radius), y = Math.max(0, top - radius);
+    return Object.freeze({x: x / width, y: y / height,
+      width: (Math.min(width, right + radius) - x) / width, height: (Math.min(height, bottom + radius) - y) / height});
+  }
   const lastPaint = new WeakMap();
   const normalizeColor = value => typeof value === 'string' && /^#[a-f0-9]{6}$/i.test(value) ? value.toLowerCase() : '';
   /** Paint isolated lettering onto a transparent canvas. CSS controls its displayed size. */
@@ -1120,6 +1147,7 @@
     accent = true,
     tags = [],
     inkColor,
+    outlineColor,
     zoom = 1
   } = {}) {
     if (!canvas || typeof canvas.getContext !== 'function') return null;
@@ -1132,10 +1160,11 @@
     const motif = window.ParkInkMotifs?.choose(source, cardTags);
     const tagKey = JSON.stringify(ranges);
     inkColor = normalizeColor(inkColor);
+    outlineColor = normalizeColor(outlineColor);
     zoom = Math.min(1.12, Math.max(.85, Number(zoom) || 1));
     const last = lastPaint.get(canvas);
     if (last && last.text === normalized && last.tagKey === tagKey && last.accent === accent && last.width === pixelWidth
-        && last.inkColor === inkColor && last.zoom === zoom && last.motif === motif
+        && last.inkColor === inkColor && last.outlineColor === outlineColor && last.zoom === zoom && last.motif === motif
         && canvas.width === pixelWidth && canvas.height === pixelHeight) return canvas;
     if (canvas.width !== pixelWidth) canvas.width = pixelWidth;
     if (canvas.height !== pixelHeight) canvas.height = pixelHeight;
@@ -1145,6 +1174,7 @@
     if (!ctx) return null;
     const edges = motif ? { left: new Int16Array(pixelHeight), right: new Int16Array(pixelHeight) } : null;
     let bounds = Composition.draw(ctx, normalized, source, ranges, accent, zoom, inkColor, edges);
+    if (outlineColor && bounds) bounds = outlineInk(ctx, bounds, outlineColor);
     if (motif && bounds) bounds = paintMotif(ctx, motif, bounds, edges, inkColor);
     lastPaint.set(canvas, {
       text: normalized,
@@ -1153,6 +1183,7 @@
       width: pixelWidth,
       accent,
       inkColor,
+      outlineColor,
       bounds,
       zoom
     });

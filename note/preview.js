@@ -153,7 +153,7 @@ const SELF_HOSTED_FONTS = ['heart', 'nanum-myeongjo'];
 const EFFECT_CODES = ['none', 'sparkle', 'frame', 'rain', 'shimmer', 'rainbow', 'snow',
   'starlight', 'fireflies', 'petals', 'bubbles', 'aurora', 'confetti', 'sunbeams',
   'mist', 'ocean', 'heartbeat', 'orbit', 'glitter', 'meteor', 'leaves', 'neon', 'dawn'];
-// 사진 위에서 자연스럽게: 글씨는 부드러운 색, 글상자는 같은 계열의 깊은 색을 반투명 유리처럼 깔아요.
+// solid는 글씨색과 밝은 글상자에, box는 어두운 글상자와 기본 투명도에 써요.
 // 안쪽 이름(red, yellow …)은 예전 그대로라, 이미 올린 카드도 새 색으로 보여요. deep은 색 고르기 단추에 보이는 글상자 색이에요.
 const COLOR_PALETTE = {
   white: { label: '흰색', solid: '#FFFDF7', box: '#FFFDF7A8', deep: '#EFE9DF' },
@@ -286,20 +286,20 @@ async function loadEventBackground(element, card) {
       element.style.backgroundImage = `url("${data.signedUrl.replaceAll('"', '%22')}")`;
   } catch (error) { console.warn('Note event background:', error); }
 }
-function colorLuminance(hex) {
-  const channels = [1, 3, 5].map(start => parseInt(hex.slice(start, start + 2), 16) / 255);
-  const linear = channels.map(value => value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4);
+function colorChannels(hex) {
+  return [1, 3, 5].map(start => parseInt(hex.slice(start, start + 2), 16));
+}
+function colorLuminance(channels) {
+  const linear = channels.map(channel => {
+    const value = channel / 255;
+    return value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4;
+  });
   return linear[0] * .2126 + linear[1] * .7152 + linear[2] * .0722;
 }
-function colorContrast(first, second) {
-  const values = [colorLuminance(first), colorLuminance(second)].sort((a, b) => b - a);
-  return (values[0] + .05) / (values[1] + .05);
-}
-function boxTransparencyColor(hex, value = 80) {
+function boxOpacity(hex, value = 80) {
   const raw = Number(value), level = Number.isInteger(raw) && raw >= 0 && raw <= 100 ? raw : 80;
   const base = parseInt(hex.slice(7, 9), 16) / 255;
-  const opacity = level <= 80 ? base * level / 80 : base + (1 - base) * (level - 80) / 20;
-  return `rgba(${parseInt(hex.slice(1, 3), 16)}, ${parseInt(hex.slice(3, 5), 16)}, ${parseInt(hex.slice(5, 7), 16)}, ${opacity.toFixed(3)})`;
+  return level <= 80 ? base * level / 80 : base + (1 - base) * (level - 80) / 20;
 }
 function setBoxTransparency(value) {
   const level = Number.isInteger(Number(value)) && Number(value) >= 0 && Number(value) <= 100 ? Number(value) : 25;
@@ -319,16 +319,23 @@ function applyVisualStyle(element, style = {}) {
   const textColor = COLOR_PALETTE[style.textColor];
   const boxColor = COLOR_PALETTE[style.boxColor];
   const textHex = textColor?.solid || (style.font === 'calligraphy' ? '#191A17' : '#FFFDF7');
-  const darkText = colorLuminance(textHex) < .3;   // 어두운 글씨면 기본 글상자를 밝은 유리로
+  const inkLight = colorLuminance(colorChannels(textHex));
+  const darkText = inkLight < .3;
   const boxHex = boxColor?.box || (darkText ? '#FFFDF7A8' : '#1C1A2447');
+  const boxRGB = colorChannels(darkText && boxColor && style.boxColor !== 'black' ? boxColor.solid : boxHex);
+  const opacity = boxOpacity(boxHex, style.boxTransparency);
+  // Check the least favorable photo behind the translucent box, before the photo loads.
+  const backdrop = darkText ? 0 : 255;
+  const boxLight = colorLuminance(boxRGB.map(channel => channel * opacity + backdrop * (1 - opacity)));
+  const contrast = darkText ? (boxLight + .05) / (inkLight + .05) : (inkLight + .05) / (boxLight + .05);
   element.style.setProperty('--note-text-color', textHex);
-  element.style.setProperty('--note-box-color', boxTransparencyColor(boxHex, style.boxTransparency));
+  element.style.setProperty('--note-box-color', `rgba(${boxRGB.join(', ')}, ${opacity.toFixed(3)})`);
   const boxLevel = Number(style.boxTransparency);
   element.style.setProperty('--note-box-blur', `${(6 * (Number.isFinite(boxLevel) ? Math.max(0, Math.min(100, boxLevel)) : 80) / 100).toFixed(2)}px`);
   element.classList.toggle('note-box-transparent', Number(style.boxTransparency) === 0);
   element.style.setProperty('--note-shadow', darkText ? 'rgba(255,253,247,.55)' : 'rgba(12,12,24,.42)');
-  element.classList.toggle('note-low-contrast', colorContrast(textHex, boxHex) < 4.5);
-  element.style.setProperty('--note-outline', colorLuminance(textHex) > .25 ? '#101020' : '#ffffff');
+  element.classList.toggle('note-low-contrast', contrast < 4.5);
+  element.style.setProperty('--note-outline', darkText ? '#ffffff' : '#101020');
 }
 
 
@@ -1119,9 +1126,10 @@ function requestTagFit() {
 }
 const expandedBodyEntries = new Set(), quoteFitEntries = new Set();
 const inkCards = new WeakMap();
-function inkOptions(style, width, cardTags) {
+function inkOptions(style, width, cardTags, photo) {
   const inkColor = COLOR_PALETTE[style.textColor]?.solid;
-  return { width, inkColor, tags: cardTags, zoom: style.size === 'small' ? .85 : style.size === 'large' ? 1.12 : 1 };
+  const outlineColor = photo.classList.contains('note-low-contrast') ? photo.style.getPropertyValue('--note-outline') : '';
+  return { width, inkColor, outlineColor, tags: cardTags, zoom: style.size === 'small' ? .85 : style.size === 'large' ? 1.12 : 1 };
 }
 function renderParkInk(canvas, body, options) {
   const renderer = window.ParkCalligraphy;
@@ -1181,7 +1189,7 @@ function syncComposeInk(selected, style, previewTags) {
   if (!on) { delete canvas.dataset.inkReady; composeInkComposing = false; }
   syncComposeInkDisplay();
   if (!on || composeInkComposing) return;
-  const body = text.value, options = inkOptions(style, 720, previewTags);
+  const body = text.value, options = inkOptions(style, 720, previewTags, photo);
   composeInkFrame = requestAnimationFrame(() => {
     if (run !== composeInkRun || backdrop.hidden) return;
     if (renderParkInk(canvas, body, options)) canvas.dataset.inkReady = 'true';
@@ -1302,7 +1310,7 @@ function cardElement(card, compact = false, expanded = false, deferBackground = 
   if (useInk) {
     photo.classList.add('park-ink-overlay');
     if (!expanded) open.setAttribute('aria-label', body + ', 카드 크게 보기');
-    const options = inkOptions(style, expanded ? 1080 : compact ? 480 : 720, cardTags);
+    const options = inkOptions(style, expanded ? 1080 : compact ? 480 : 720, cardTags, photo);
     const canvas = node('canvas', 'park-ink-art');
     canvas.setAttribute('aria-hidden', 'true');
     photo.append(canvas);
