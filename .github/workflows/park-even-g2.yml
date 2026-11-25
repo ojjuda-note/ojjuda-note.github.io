@@ -37,7 +37,7 @@ jobs:
             --host-resolver-rules="MAP * ~NOTFOUND" --virtual-time-budget=14000 --dump-dom \
             "file://$RUNNER_TEMP/even-dist/index.html" > "$RUNNER_TEMP/even-dom.html"
           grep 'id="g2-status"' "$RUNNER_TEMP/even-dom.html"
-          grep -Eq 'id="g2-status"[^>]*>[^<]*\\((BRIDGE|DISPLAY(-[0-9]+)?)\\)' "$RUNNER_TEMP/even-dom.html"
+          grep -Eq 'id="g2-status"[^>]*>[^<]*[(](BRIDGE|DISPLAY(-[0-9]+)?)[)]' "$RUNNER_TEMP/even-dom.html"
           grep -Eq 'id="g2-reconnect"[^>]*>안경 다시 연결' "$RUNNER_TEMP/even-dom.html"
           if grep -Eq 'id="g2-reconnect"[^>]*hidden' "$RUNNER_TEMP/even-dom.html"; then exit 1; fi
           "$tools/node_modules/.bin/evenhub" pack note/even-app/app.json "$RUNNER_TEMP/even-dist" --sdk-ver 0.0.16 -o "$RUNNER_TEMP/ojjuda-park.ehpk"
