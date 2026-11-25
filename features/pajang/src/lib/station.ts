@@ -93,3 +93,9 @@ export function signalsWith(s:Station,id:string):Relationship {
   }
   return peers.get(id)??unrelated;
 }
+
+export function profileGender(value?:string|null) {
+  if(value==="male"||value==="남성"||value==="남")return {tone:"male",name:"남성"} as const;
+  if(value==="female"||value==="여성"||value==="여")return {tone:"female",name:"여성"} as const;
+  return undefined;
+}

@@ -428,7 +428,7 @@ for (const scenario of [{joined:false,view:'write',action:'join'},{joined:true,v
     }
     mine.value='작성 중인 답변';mine.dispatchEvent(new w.Event('input',{bubbles:true}));
     assert.equal(form.querySelector('input[name="sample-answer"]:checked'),null);
-    if(!scenario.joined)assert.equal(document.getElementById('account-gender').value,'female');
+    if(!scenario.joined)assert.equal(document.getElementById('join-fields').dataset.genderTone,'female');
     if(!scenario.joined){
       assert.equal(form.elements.namedItem('name').maxLength,15,'a masked member nickname can still be edited');
       form.elements.namedItem('name').value='새 금칙';form.elements.consent.checked=true;

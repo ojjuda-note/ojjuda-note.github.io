@@ -143,7 +143,8 @@ async function start(firstEntry) {
     $('entry-question').textContent=theme.q.join(' ');
     radar?.setQuestion(theme);
     const gender=['male','female'].includes(entry.accountGender)?entry.accountGender:'';
-    $('account-gender').value=gender;
+    $('join-fields').dataset.genderTone=gender;
+    $('entry-profile-legend').setAttribute('aria-label', gender ? '파장 첫 참여, 가입 성별 '+(gender==='male'?'남성':'여성') : '파장 첫 참여');
     paintChoices(theme);
     updateAnswer();
     clearTimeout(timer);

@@ -1,3 +1,4 @@
+import {profileGender} from "../lib/station";
 import AnswerGenderVisibility from "./answer-gender-visibility";
 import {useEffect, useRef, useState} from "react";
 import regionCatalog from "../../regions.json";
@@ -69,12 +70,13 @@ function RegionField({value,onChange,label="사는 지역"}:{value:string;onChan
 export function PeerProfile({profile}:{profile:SharedProfile}) {
   const items:[string,string][]=[];
   if(profile.age!=null)items.push(["나이",`만 ${profile.age}세`]);
-  if(profile.gender)items.push(["성별",profile.gender]);
+  const gender=profileGender(profile.gender);
+  if(gender)items.push(["성별",gender.name]);
   for(const field of labels) {
     const val=profile.fields[field.key];
     if(val!==undefined&&val!==null&&String(val).trim())items.push([field.label,String(val)+(field.key==="height"?" cm":field.key==="bloodType"?"형":"")]);
   }
-  return items.length?<dl className="exchange-facts">{items.map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>:<p className="sub">상대가 교환용 프로필에 작성한 항목이 아직 없어요.</p>;
+  return items.length?<dl className="exchange-facts" data-gender-tone={gender?.tone}>{items.map(([label,value])=><div key={label} className={label==="성별"?"pajang-screen-reader":undefined}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>:<p className="sub">상대가 교환용 프로필에 작성한 항목이 아직 없어요.</p>;
 }
 
 export function ExchangeProfileEditor({profileId,focusTastes=false,onVisibilitySaved,onSaved}:{profileId:string;focusTastes?:boolean;onVisibilitySaved?:()=>void;onSaved:(profile:SavedProfile)=>void}) {
@@ -151,6 +153,7 @@ export function ExchangeProfileEditor({profileId,focusTastes=false,onVisibilityS
       if(mounted.current)setError(err instanceof Error?err.message:"저장하지 못했어요. 다시 시도해 주세요.");
     } finally {saving.current=false;if(mounted.current)setBusy(false);}
   }
+  const gender=profileGender(profile?.gender);
   return <><h2>내 프로필 수정</h2>
     {error&&!profileReady&&<p className="error" role="alert">{error} <button className="quiet" onClick={()=>setRetry(n=>n+1)}>다시 시도</button></p>}
     {!profileReady&&!error&&<p className="sub" role="status">회원정보와 취향을 확인하고 있어요.</p>}
@@ -160,9 +163,9 @@ export function ExchangeProfileEditor({profileId,focusTastes=false,onVisibilityS
       if(input.name==="height"&&privateDetails.current)privateDetails.current.open=true;
       setError(input.name==="height"?"키는 1~300cm 사이의 숫자로 입력해 주세요.":"입력한 내용을 확인해 주세요.");
     }}>
-      <fieldset className="unified-public-profile" disabled={busy}>
+      <fieldset className="unified-public-profile" data-gender-tone={gender?.tone} disabled={busy}>
         <legend>공개 프로필</legend>
-        {profile.gender&&<p className="exchange-hint">가입 성별 · {profile.gender}</p>}
+        {gender&&<span className="pajang-screen-reader">가입 성별 {gender.name}</span>}
         <details onToggle={e=>setVisibilityOpen(e.currentTarget.open)}><summary>공개 설정</summary>
           {visibilityOpen&&<AnswerGenderVisibility key={profileId} onSaved={onVisibilitySaved}/>}
         </details>
@@ -195,7 +198,7 @@ export function ExchangeProfileEditor({profileId,focusTastes=false,onVisibilityS
         <div className="unified-private-fields">
           <fieldset disabled={busy}><legend>나이·성별 공개 선택</legend>
             <label className="exchange-check"><input type="checkbox" disabled={profile.age==null} checked={profile.age!=null&&profile.showAge} onChange={e=>setProfile(current=>current?{...current,showAge:e.target.checked}:current)}/><span>나이</span><b>{profile.age==null?"연동 정보 없음":`만 ${profile.age}세`}</b></label>
-            <label className="exchange-check"><input type="checkbox" disabled={!profile.gender} checked={!!profile.gender&&profile.showGender} onChange={e=>setProfile(current=>current?{...current,showGender:e.target.checked}:current)}/><span>성별</span><b>{profile.gender||"연동 정보 없음"}</b></label>
+            <label className="exchange-check"><input type="checkbox" disabled={!profile.gender} checked={!!profile.gender&&profile.showGender} onChange={e=>setProfile(current=>current?{...current,showGender:e.target.checked}:current)}/><span>성별</span>{gender?<span className="pajang-screen-reader">{gender.name}</span>:<b>연동 정보 없음</b>}</label>
           </fieldset>
           <fieldset className="exchange-grid" disabled={busy}><legend>상세 정보 (선택)</legend>
             {labels.filter(field=>field.key!=="bio").map(({key,label,options,limit})=>{

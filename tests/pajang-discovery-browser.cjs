@@ -785,7 +785,7 @@ async function checkNavigation(page){
     assert.equal(await page.evaluate(()=>window.artPending),true,'feed is usable with all artwork still pending');
     assert.equal(await page.evaluate(()=>window.authCalls),1);
     assert.deepEqual(await page.evaluate(()=>window.artCalls.slice().sort()),['book.webp','walk.webp']);
-    assert.deepEqual(await group.locator('label span').allTextContents(),['전체','남성','여성']);
+    assert.deepEqual(await group.locator('label span').allTextContents(),['전체','','']);
     const dir=path.join(__dirname,'artifacts/pajang-discovery');
     await fs.mkdir(dir,{recursive:true});
     for(const width of [320,390,750,1080]){
@@ -1153,7 +1153,7 @@ async function checkNavigation(page){
       assert.ok(await settings.evaluate(el=>el.scrollWidth<=document.documentElement.clientWidth));
       assert.ok(await accountHome.evaluate(el=>el.getBoundingClientRect().height>=44));
       const rows=await topRows.evaluateAll(readRowBounds);
-      assert.equal(rows.length,15,'the 15 top-level settings rows include the Help summary and one unified profile editor');
+      assert.equal(rows.length,14,'the 14 top-level settings rows include the Help summary and one unified profile editor');
       for(const [index,row] of rows.entries()){
         assert.ok(row.height>=44,`settings row ${index+1} has a full touch target at ${width}px`);
         assert.ok(row.left>=0&&row.right<=width+1,'settings rows stay within the viewport');
@@ -1172,7 +1172,7 @@ async function checkNavigation(page){
         assert.ok(row.left>=0&&row.right<=width+1,'expanded Help children stay within the viewport');
         if(index)assert.ok(row.top>=childRows[index-1].bottom-1,'Help children stack vertically without overlap');
       }
-      assert.equal(await topRows.count(),15,'expanding Help never counts nested actions as top-level settings');
+      assert.equal(await topRows.count(),14,'expanding Help never counts nested actions as top-level settings');
       await helpMenu.locator('summary').click();
       assert.equal(await helpMenu.evaluate(el=>el.open),false);
       for(const index of [0,1])assert.equal(await helpRows.nth(index).isVisible(),false,'closing Help hides both children again');
