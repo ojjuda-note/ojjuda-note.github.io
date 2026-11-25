@@ -228,8 +228,6 @@
 
 /* Verified app entry: keep the answer, not another illustrated entrance. */
 @media (display-mode: standalone), (display-mode: minimal-ui) {
-  /* The guest invitation renders only after Auth confirms no member. */
-  #gate .flight-scene { display:none!important; }
   #welcome[data-member-entry="direct"] { margin-block:12px 20px; }
   #welcome[data-member-entry="direct"] .entry-intro {
     min-height:0;padding:6px 0 0;border:0;border-radius:0;

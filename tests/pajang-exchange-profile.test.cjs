@@ -88,7 +88,7 @@ async function fixture(t, {fields = {}, save, read, ready = true} = {}) {
       const nextFields = copy(args.p_data.fields);
       if (Object.hasOwn(nextFields, 'height')) nextFields.height = Number(nextFields.height);
       const next = {...state.profile, ...(args.p_data.avatar ? {avatar:copy(args.p_data.avatar)} : {}), fields:nextFields, name:args.p_data.name.trim(), region:args.p_data.region,
-        showAge:args.p_data.showAge, showGender:args.p_data.showGender,
+        showAge:args.p_data.showAge??state.profile.showAge, showGender:args.p_data.showGender??state.profile.showGender,
         interest:args.p_data.interest, preferencesVersion:state.profile.preferencesVersion + 1,
         preferences:{...state.profile.preferences,...copy(args.p_data.preferences)}};
       const override = await save?.(copy(args.p_data), attempt, copy(next));
@@ -150,6 +150,7 @@ async function fixture(t, {fields = {}, save, read, ready = true} = {}) {
 
 test('one profile editor saves public name, region, intentions, tastes and private details together', async t => {
   const f = await fixture(t, {fields:{drinking:'가끔 마셔요', smoking:'피우지 않아요', bio:'기존 소개'}});
+  assert.equal([...f.form().querySelectorAll('summary')].some(el=>el.textContent.trim()==='공개 설정'),false);
   const headings = [...f.form().querySelectorAll('h3')];
   const tastes = headings.find(node => node.textContent === '나를 표현하는 취향');
   const artwork = f.form().querySelector('.profile-art-choice');

@@ -522,7 +522,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
         if(row.sent||signalsWith(s,row.peer).outgoing){setInbox("sent");go("inbox");return;}
         open({kind:"signal",peer:row.peer,answer:row});
       }}>{(row?.sent&&row?.received)||signalsWith(s,peer.id).match?"대화 열기":row?.sent||signalsWith(s,peer.id).outgoing?"보낸 신호 확인":row?.received||signalsWith(s,peer.id).incoming?"신호 수락하기":"신호 보내기"}<I n="signal" s={17}/></button><button className="textbtn" onClick={()=>open({kind:"block",peer:peer.id,answer:row})}>이 프로필 차단</button></>}
-    {(modal.kind==="edit"||modal.kind==="privateProfile")&&me&&<ExchangeProfileEditor key={me.id} profileId={me.id} onVisibilitySaved={()=>{setHistoryRevision(n=>n+1);void refresh();}} focusTastes={modal.focusTastes} onSaved={saved=>{
+    {(modal.kind==="edit"||modal.kind==="privateProfile")&&me&&<ExchangeProfileEditor key={me.id} profileId={me.id} focusTastes={modal.focusTastes} onSaved={saved=>{
       const current=liveRef.current;if(current.me?.id!==saved.person)return;
       const next={...current,me:{...current.me,name:saved.name,region:saved.region,interest:saved.interest}};
       serverRevision.current++;liveRef.current=next;setLive(next);setHistoryRevision(n=>n+1);

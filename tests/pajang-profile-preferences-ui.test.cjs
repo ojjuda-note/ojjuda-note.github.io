@@ -145,7 +145,7 @@ function fixture() {
           if(mode==='conflict'||data.preferencesVersion!==current.version)return error('PT412','다른 화면에서 프로필을 변경했어요. 다시 열어 주세요.');
           const record={person:state.me.id,preferences:{...current.preferences,...structuredClone(data.preferences)},version:current.version+1};
           records.set(state.me.id,record);
-          privateProfile={...privateProfile,fields:structuredClone(data.fields),showAge:data.showAge,showGender:data.showGender};
+          privateProfile={...privateProfile,fields:structuredClone(data.fields),showAge:data.showAge??privateProfile.showAge,showGender:data.showGender??privateProfile.showGender};
           Object.assign(state.me,{name:data.name.trim(),region:data.region,interest:data.interest,
              preferences:record.preferences,preferencesVersion:record.version});
           return {data:control.detail(),error:null};

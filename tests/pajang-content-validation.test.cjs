@@ -114,7 +114,7 @@ async function fixture(t, {mode='station', body='기존 답변', chat=false, set
                 assert.equal(data.profilePerson,me.id);
                 assert.equal(data.preferencesVersion,state.preferencesVersion);
                 assert.ok(Object.hasOwn(data.preferences,'relationship_intents'));
-                state.exchange = {...state.exchange,showAge:data.showAge,showGender:data.showGender,fields:maskValues(data.fields)};
+                state.exchange = {...state.exchange,showAge:data.showAge??state.exchange.showAge,showGender:data.showGender??state.exchange.showGender,fields:maskValues(data.fields)};
                 if(state.exchange.fields.height)state.exchange.fields.height=Number(state.exchange.fields.height);
                 state.preferences={...state.preferences,...maskValues(data.preferences)};state.preferencesVersion++;
                 Object.assign(state.server.me,{name:mask(data.name),region:data.region,

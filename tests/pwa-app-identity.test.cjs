@@ -143,10 +143,14 @@ test('installed Agit, Park and Pajang authenticate before displaying their entra
   if (css !== null) {
     assert.match(css, /@media \(display-mode: standalone\), \(display-mode: minimal-ui\)/,
       'the quick entry applies to installed app display modes');
-    assert.ok(css.includes('#gate .flight-scene { display:none!important; }'),
-      'the logged-in app cannot flash a public airplane scene while loading');
+    assert.doesNotMatch(css, /#gate\s+\.flight-scene\s*\{[^}]*display\s*:\s*none/i,
+      'installed Pajang shows its loading illustration during member verification');
     assert.ok(css.includes('#welcome[data-member-entry="direct"] .sample-radar'),
       'the installed member answer keeps public invitation examples out of the way');
+  }
+  for (const html of [pajangEntry,pajangMain]) {
+    assert.match(html, /class="flight-scene"/);
+    assert.match(html, /class="flight-caption pajang-screen-reader" role="status">파장을 열고 있어요\.<\/p>/);
   }
   const versionedEntryStyle = /href="(\.\/entry-design\.css\?v=\d{8}-[a-z0-9-]+)"/;
   assert.match(pajangEntry, versionedEntryStyle);
