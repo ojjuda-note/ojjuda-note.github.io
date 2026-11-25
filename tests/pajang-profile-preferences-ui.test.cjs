@@ -46,7 +46,7 @@ function fixture() {
     const records = new Map();
     records.set(state.me.id,{person:state.me.id,preferences:emptyPreferences(),version:0});
     const ownAnswer={...rows[0],peer:state.me.id,own:true,name:state.me.name,body:state.me.body,avatarId:state.me.avatarId,gender:state.me.gender,relationship_intents:[]};
-    let privateProfile={fields:{drinking:'가끔 마셔요',smoking:'피우지 않아요',bio:'반가워요.'},avatar:{id:101,form:'full',bg:0},avatarCollection:'male',age:35,gender:'남성',showAge:false,showGender:true};
+    let privateProfile={ownedCharacters:[],characterCoins:20,fields:{drinking:'가끔 마셔요',smoking:'피우지 않아요',bio:'반가워요.'},avatar:{id:101,form:'full',bg:0},avatarCollection:'male',age:35,gender:'남성',showAge:false,showGender:true};
     for (const row of rows) records.set(row.peer,{
       person:row.peer,avatarId:row.peer===rows[0].peer?120:row.avatarId,version:1,
       preferences:{...emptyPreferences(),relationship_intents:[...row.relationship_intents],custom:{...emptyPreferences().custom,meeting_styles:['별 보며 걷기']}}
@@ -124,6 +124,13 @@ function fixture() {
             preferences:record.preferences,preferencesVersion:record.version});
           if(Object.hasOwn(data,'interest'))state.me.interest=data.interest;
           return {data:structuredClone(state),error:null};
+        }
+        if(name==='pajang_character_purchase'){
+          if(args.p_person!==state.me.id||args.p_character!==102||!args.p_request_id)throw Error('Invalid purchase');
+          if(!privateProfile.ownedCharacters.includes(102)){
+            privateProfile.ownedCharacters.push(102);privateProfile.characterCoins-=10;
+          }
+          return {data:{ok:true,person:args.p_person,character:102,userId:session.user.id,coins:privateProfile.characterCoins,charged:10},error:null};
         }
         if(name==='pajang_profile_details'&&args.p_action==='mine'){
           control.detailReads.push(structuredClone(args));
@@ -364,7 +371,16 @@ async function openGroup(dialog,label) {
     await art.getByRole('button',{name:'카페',exact:true}).click();
     await form.dialog.getByRole('button',{name:'캐릭터 선택',exact:true}).click();
     assert.equal(await form.dialog.getByRole('button',{name:'여자',exact:true}).count(),0);
-    await form.dialog.getByRole('button',{name:'책방 가는 날 대두형',exact:true}).click();
+    const search=form.dialog.getByRole('searchbox',{name:'캐릭터 검색'});
+    await search.fill('차분한 분위기 초록 바지');
+    const bookOutfit=form.dialog.getByRole('button',{name:'책방 가는 날 대두형',exact:true});
+    await bookOutfit.click();
+    await form.dialog.getByRole('button',{name:'취소',exact:true}).click();
+    assert.equal(await page.evaluate(()=>window.preferenceFixture.detail().characterCoins),20);
+    await bookOutfit.click();
+    await form.dialog.getByRole('button',{name:'10쭈로 구매',exact:true}).click();
+    await form.dialog.locator('.pj-avatar-purchase').waitFor({state:'hidden'});
+    assert.equal(await page.evaluate(()=>window.preferenceFixture.detail().characterCoins),10);
 
     const privateSection=form.dialog.locator('.unified-private-profile');
     assert.equal(await privateSection.evaluate(node=>node.open),true,'exchange details start expanded');
@@ -415,6 +431,8 @@ async function openGroup(dialog,label) {
     const savedOutfit=form.dialog.getByRole('button',{name:'책방 가는 날 대두형',exact:true});
     assert.equal(await savedOutfit.getAttribute('aria-pressed'),'true','hiding gender preserves the member’s private selection');
     await savedOutfit.click();
+    assert.equal(await form.dialog.locator('.pj-avatar-purchase').count(),0);
+    assert.equal(await page.evaluate(()=>window.preferenceFixture.detail().characterCoins),10);
     await genderCheckbox().check();
     assert.match(await form.dialog.locator('.pj-avatar-stage').getAttribute('aria-label'),/^책방 가는 날 대두형/);
     await form.dialog.getByLabel('닉네임',{exact:true}).fill('고친 보리');

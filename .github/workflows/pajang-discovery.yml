@@ -83,6 +83,7 @@ on:
       - 'tests/pajang-age-groups-db.test.cjs'
       - 'tests/pajang-adult-endpoint-guards-db.test.cjs'
       - 'tests/pajang-adult-only-retirement.test.cjs'
+      - 'tests/pajang-character-search.test.mjs'
       - 'tests/pajang-exchange-profile.test.cjs'
       - 'tests/pajang-exchange-height.test.mjs'
       - 'tests/test_pajang_program_publish.py'
@@ -171,6 +172,7 @@ on:
       - 'tests/pajang-age-groups-db.test.cjs'
       - 'tests/pajang-adult-endpoint-guards-db.test.cjs'
       - 'tests/pajang-adult-only-retirement.test.cjs'
+      - 'tests/pajang-character-search.test.mjs'
       - 'tests/pajang-exchange-profile.test.cjs'
       - 'tests/pajang-exchange-height.test.mjs'
       - 'ops/publish-pajang-program.py'
@@ -293,6 +295,7 @@ jobs:
       - name: Fetch previous release for opening comparisons
         run: git fetch --depth=1 origin 71785aabf407ca239a27b4811e252a962a725717
       - run: node tests/pajang-question-suggestion.test.cjs
+      - run: node --test tests/pajang-character-search.test.mjs
       - run: node tests/pajang-profile-preferences-ui.test.cjs
       - name: Check past answer editing and return navigation
         run: node tests/pajang-answer-edit-browser.cjs

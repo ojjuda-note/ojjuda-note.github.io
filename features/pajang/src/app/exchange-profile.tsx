@@ -9,7 +9,7 @@ import {ProfileTastesFields,blankTasteDrafts,addTaste,prepareTastes,tastePatch} 
 export type ExchangeKind = "profile"|"photos";
 type Fields = Partial<Record<"relationship"|"job"|"region"|"religion"|"height"|"mbti"|"bloodType"|"skills"|"hobbies"|"drinking"|"smoking"|"bio",string|number>>;
 export type SharedProfile = {fields: Fields; age:number|null; gender:string|null};
-type MyProfile = SharedProfile & {avatar:ProfileAvatar;storedAvatar:ProfileAvatar;avatarCollection:AvatarCollection|null;showAge:boolean; showGender:boolean;person:string;name:string;region:string;interest:string;preferences:ProfilePreferences;preferencesVersion:number};
+type MyProfile = SharedProfile & {ownedCharacters:number[];characterCoins:number|null;avatar:ProfileAvatar;storedAvatar:ProfileAvatar;avatarCollection:AvatarCollection|null;showAge:boolean; showGender:boolean;person:string;name:string;region:string;interest:string;preferences:ProfilePreferences;preferencesVersion:number};
 type SavedProfile = MyProfile & {masking?:Partial<Record<keyof Fields,{submitted:unknown;saved:unknown}>>};
 
 function confirmedMask(receipt:SavedProfile["masking"],key:keyof Fields,submitted:string,saved:string) {
@@ -39,7 +39,8 @@ async function profileDetails(action:"mine"|"save",person:string,data:object={})
   if(!validAvatar(storedAvatar))throw new Error("캐릭터 정보를 확인하지 못했어요.");
   const collection=profile.avatarCollection===undefined?profileGender(profile.gender)?.tone:profile.avatarCollection;
   const avatarCollection=collection==="male"||collection==="female"?collection:null;
-  return {...profile,storedAvatar,avatarCollection,avatar:avatarForCollection(storedAvatar,avatarCollection),
+  return {...profile,ownedCharacters:Array.isArray(profile.ownedCharacters)?profile.ownedCharacters:[],
+    characterCoins:Number.isSafeInteger(profile.characterCoins)?profile.characterCoins:null,storedAvatar,avatarCollection,avatar:avatarForCollection(storedAvatar,avatarCollection),
     preferences:normalizeProfilePreferences(profile.preferences)};
 }
 
@@ -122,6 +123,24 @@ export function ExchangeProfileEditor({profileId,focusTastes=false,onSaved}:{pro
     const result=addTaste(profile.preferences,key,drafts[key]);setError(result.error);
     if(!result.error){setProfile(current=>current?{...current,preferences:{...result.preferences,relationship_intents:current.preferences.relationship_intents}}:current);setDrafts(previous=>({...previous,[key]:""}));}
   }
+  async function purchase(avatar:ProfileAvatar,request:string){
+    if(!profileReady||saving.current)throw new Error("잠시 후 다시 시도해 주세요.");
+    saving.current=true;setBusy(true);
+    try{
+      const db=await window.OjjudaGetClient();
+      const {data,error}=await db.rpc("pajang_character_purchase",{p_person:profileId,p_character:avatar.id,p_request_id:request});
+      if(!error&&data?.reason==="coins"&&Number.isSafeInteger(data.coins)){
+        setProfile(current=>current?.person===profileId?{...current,characterCoins:data.coins}:current);
+        throw new Error("쭈가 부족해요. 보유 "+data.coins+"쭈");
+      }
+      if(error||data?.ok!==true||data.person!==profileId||data.character!==avatar.id||
+        typeof data.userId!=="string"||!Number.isSafeInteger(data.coins)||![0,10].includes(data.charged))
+        throw new Error("구매 결과를 확인하지 못했어요. 다시 시도해 주세요.");
+      if(mounted.current)setProfile(current=>current?.person===profileId?{...current,avatar,characterCoins:data.coins,
+        ownedCharacters:[...new Set([...current.ownedCharacters,avatar.id])]}:current);
+      window.dispatchEvent(new CustomEvent("pajang:balance",{detail:{userId:data.userId,coins:data.coins}}));
+    }finally{saving.current=false;if(mounted.current)setBusy(false);}
+  }
   async function save(event:React.FormEvent) {
     event.preventDefault();
     if(!profileReady||!profile||saving.current)return;
@@ -175,7 +194,7 @@ export function ExchangeProfileEditor({profileId,focusTastes=false,onSaved}:{pro
       if(input.name==="height"&&privateDetails.current)privateDetails.current.open=true;
       setError(input.name==="height"?"키는 1~300cm 사이의 숫자로 입력해 주세요.":"입력한 내용을 확인해 주세요.");
     }}>
-      <ProfileCharacter avatar={profile.avatar} collection={profile.avatarCollection} showGender={profile.showGender} disabled={busy} onChange={avatar=>{setError("");setProfile(current=>current?{...current,avatar}:current);}}/>
+      <ProfileCharacter key={profileId} owned={profile.ownedCharacters} coins={profile.characterCoins} onPurchase={purchase} avatar={profile.avatar} collection={profile.avatarCollection} showGender={profile.showGender} disabled={busy} onChange={avatar=>{setError("");setProfile(current=>current?{...current,avatar}:current);}}/>
       <fieldset className="unified-public-profile" data-gender-tone={profile.showGender?gender?.tone:undefined} disabled={busy}>
         <legend>공개 프로필</legend>
         {gender&&<span className="pajang-screen-reader">가입 성별 {gender.name}</span>}
