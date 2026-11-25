@@ -276,6 +276,9 @@
 #answers .answer-gender{display:grid;place-items:center;width:44px;height:44px}
 #answers .answer-gender.all{--pajang-gender-tone:#93989e}
 #answers .answer-gender span{display:block;width:18px;height:18px;min-width:0;min-height:0;padding:0;border:0;border-radius:50%;background:var(--pajang-gender-tone);outline:0;box-shadow:none}
+/* Keep the full touch targets while drawing the outer dots closer to the center. */
+#answers .answer-gender:first-child span{transform:translateX(8px)}
+#answers .answer-gender:last-child span{transform:translateX(-8px)}
 #answers .answer-gender[data-lit=true] span{outline:2px solid var(--ink,#34363b);outline-offset:3px}
 #answers .answer-gender:has(input:focus-visible){outline:2px dashed var(--ink,#34363b);outline-offset:-3px;border-radius:9px}
 @media(forced-colors:active){#answers .answer-gender span{forced-color-adjust:none}#answers .answer-gender[data-lit=true] span{outline-color:CanvasText}}
