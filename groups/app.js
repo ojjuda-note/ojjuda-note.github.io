@@ -627,10 +627,10 @@ async function initialize(){
   });
   headerNotifications=window.OjjudaNotifications?.install({
    client,getUserId:()=>user?.id||null,
-   onOpenCard:id=>location.assign('/park/?card='+encodeURIComponent(id)),
-   onKeepCard:(id,kind)=>location.assign('/park/?card='+encodeURIComponent(id)+'&keep='+encodeURIComponent(kind)),
-   onOpenInquiry:id=>location.assign('/world.html?tab=my&inquiry='+encodeURIComponent(id)),
-   onOpenWorld:(type,id)=>location.assign('/world.html?notice='+encodeURIComponent(type)+'&target='+encodeURIComponent(id)),
+   onOpenCard:id=>openServicePage('/park/?card='+encodeURIComponent(id)),
+   onKeepCard:(id,kind)=>openServicePage('/park/?card='+encodeURIComponent(id)+'&keep='+encodeURIComponent(kind)),
+   onOpenInquiry:id=>openServicePage('/world.html?tab=my&inquiry='+encodeURIComponent(id)),
+   onOpenWorld:(type,id)=>openServicePage('/world.html?notice='+encodeURIComponent(type)+'&target='+encodeURIComponent(id)),
    async onOpenGroup(id){
     const run=navigationRun;
     try{await reloadRooms();if(run===navigationRun&&rooms.some(r=>r.id===id))route(id);}
@@ -677,13 +677,37 @@ window.addEventListener('popstate',event=>{
 });
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&user&&!mutating&&!document.querySelector('dialog[open]'))void refresh({quiet:true});});
 window.addEventListener('pagehide',()=>clearMedia(true));
-setInterval(()=>{if(!document.hidden)void refreshGroupNotice();if(user&&!document.hidden&&!mutating&&!loading&&!document.querySelector('dialog[open]')&&!document.activeElement?.matches('input,textarea,select'))void refresh({quiet:true});},60000);
+setInterval(()=>{if(tabHost && window.frameElement?.hidden)return;if(!document.hidden)void refreshGroupNotice();if(user&&!document.hidden&&!mutating&&!loading&&!document.querySelector('dialog[open]')&&!document.activeElement?.matches('input,textarea,select'))void refresh({quiet:true});},60000);
+// Keep shared group and invitation URLs usable outside the Agit shell.
+let tabHost=null;
+try{if(window.parent!==window && window.parent.OjjudaGroupTab?.owns(window))tabHost=window.parent.OjjudaGroupTab;}catch{}
+function openServicePage(url){(tabHost?window.parent:window).location.assign(url);}
+function selectGroupMenu(link){
+ if(tabHost && tabHost.select(window,link.dataset.tab))return;
+ location.assign(link.href);
+}
 const menuLinks=Array.from(document.querySelectorAll('.group-main-nav a'));
 const groupLink=menuLinks.find(link=>link.hasAttribute('aria-current'));
+if(tabHost){
+ window.OjjudaGroupView={back(){
+  if(headerNotifications?.isOpen()){headerNotifications.close();return true;}
+  if(groupHistoryIndex>0){history.back();return true;}
+  return false;
+ }};
+ document.addEventListener('click',event=>{
+  if(event.defaultPrevented||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
+  const link=event.target.closest('a[href]');
+  if(!link)return;
+  if(menuLinks.includes(link)||link.matches('.ojjuda-service-home')){
+   event.preventDefault();
+   if(!document.querySelector('dialog[open]')&&!headerNotifications?.isOpen())tabHost.select(window,link.dataset.tab||'hub');
+  }else if(!link.target && new URL(link.href).origin===location.origin && new URL(link.href).pathname!==location.pathname)link.target='_top';
+ });
+}
 if(groupLink)window.OjjudaWorldNavigation?.installTabSwipes({
- tabs:menuLinks.map(link=>link.href),
- currentTab:()=>groupLink.href,
- changeTab:href=>location.assign(href),
+ tabs:menuLinks,
+ currentTab:()=>groupLink,
+ changeTab:selectGroupMenu,
  zoneSelector:'body',
  surfaceSelector:'#app',
  canLeave:()=>!document.querySelector('dialog[open]')&&!headerNotifications?.isOpen()
