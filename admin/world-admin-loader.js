@@ -11,7 +11,7 @@
   "/admin/fortune-purchases.js?v=20261113-biorhythm-paid1",
   "/admin/groups.js?v=20261107-group-mod2","/admin/asset-library.js?v=20261124-service1",
   "/note/operations.js?v=20261119-question-admin1",
-  "/note/admin.js?v=20261125-pos1"
+  "/note/admin.js?v=20261126-five-tags"
  ],styles=[
   "/admin/visitors.css?v=20261121-campaign1",
   "/admin/visitors-charts.css?v=20261113-feature-chart2",

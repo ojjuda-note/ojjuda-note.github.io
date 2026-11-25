@@ -556,8 +556,8 @@ async function showMemberInfo(afterSave = null) {
   }
 }
 // 자동 태그: 본문에 나온 낱말만 고르고, 직접 쓴 태그와 지운 태그를 우선한다.
-// The scheduled publisher uses the same tiers and Korean word boundaries (see the regression test).
-const MAX_CARD_TAGS = 256; // A 200-character body fits even when every character is a word.
+const MAX_CARD_TAGS = 5;
+let originalEditTags = [];
 const MAX_TAG_TEXT = 4096;
 let wordTagger, wordTaggerLoading, tagAnalysis, pendingTagSubmit = null;
 function analyzeTagBody(body) {
@@ -910,12 +910,29 @@ const tagList = raw => String(raw || '').split(/[\s,]+/u).map(value => value.rep
 function initialComposerTags(raw = '') {
   const values = tagList(raw);
   if (!editingId && kind !== 'event' && tagList(feedTerm).includes('19금') && !values.includes('19금')) values.unshift('19금');
+  if (!editingId && values.length > MAX_CARD_TAGS) {
+    if (values.includes('19금') && !values.slice(0, MAX_CARD_TAGS).includes('19금')) values.unshift('19금');
+    return values.slice(0, MAX_CARD_TAGS).join(', ');
+  }
   return values.join(', ');
 }
 function setAutoTags(words) {
-  const mine = new Set(manualTags.map(tag => tag.toLowerCase()));
-  autoTagsNow = words.filter(t => !mine.has(t.toLowerCase()) && !rejectedTags.has(t.toLowerCase()));
-  tags.value = [...manualTags, ...autoTagsNow].join(', ');
+  const seen = new Set(manualTags.map(t => t.toLowerCase()));
+  const explicit = Array.from(text.value.matchAll(/#([\p{L}\p{N}_]+)/gu), match => match[1]);
+  const available = new Map(words.map(word => [word.toLowerCase(), word]));
+  const candidates = [...explicit.map(t => available.get(t.toLowerCase())), ...words];
+  autoTagsNow = [];
+  if (available.has('19금') && !seen.has('19금') && !rejectedTags.has('19금')) {
+    autoTagsNow.push('19금'); seen.add('19금');
+  }
+  for (const word of candidates) {
+    if (manualTags.length + autoTagsNow.length >= MAX_CARD_TAGS) break;
+    if (!word || seen.has(word.toLowerCase()) || rejectedTags.has(word.toLowerCase())) continue;
+    autoTagsNow.push(word); seen.add(word.toLowerCase());
+  }
+  const reserved = autoTagsNow.includes('19금') && manualTags.length === MAX_CARD_TAGS;
+  const chosen = reserved ? manualTags.slice(0, MAX_CARD_TAGS - 1) : manualTags;
+  tags.value = [...chosen, ...autoTagsNow].join(', ');
 }
 async function refreshAutoTags() {
   const body = text.value, run = composerRun;
@@ -936,6 +953,23 @@ function noteTagEdit() {
   for (const t of previous) if (!kept.has(t)) rejectedTags.add(t.toLowerCase());
   manualTags = now.filter(t => !previous.has(t));
   autoTagsNow = now.filter(t => previous.has(t));
+  // Keep the user's cursor and separators while a typed word displaces a suggestion.
+  const excess = now.length - MAX_CARD_TAGS;
+  if (excess > 0 && autoTagMode) {
+    const removable = autoTagsNow.filter(t => t !== '19금');
+    const drop = new Set(removable.slice(Math.max(0, removable.length - excess)));
+    if (drop.size) {
+      const caret = tags.selectionStart;
+      let removedBefore = 0;
+      tags.value = tags.value.replace(/[^\s,]+[\s,]*/gu, (part, pos) => {
+        if (!drop.has(tagList(part)[0])) return part;
+        removedBefore += Math.max(0, Math.min(part.length, caret - pos));
+        return '';
+      });
+      if (caret != null) tags.setSelectionRange(caret - removedBefore, caret - removedBefore);
+      autoTagsNow = autoTagsNow.filter(t => !drop.has(t));
+    }
+  }
 }
 function restoreTagChoices(body, saved) {
   manualTags = tagList(saved); rejectedTags = new Set(); autoTagsNow = [];
@@ -946,7 +980,9 @@ function restoreTagChoices(body, saved) {
     const generated = new Set(words);
     manualTags = mine.filter(t => !generated.has(t));
     autoTagsNow = mine.filter(t => generated.has(t));
-    rejectedTags = new Set(words.filter(t => !mine.includes(t)).map(t => t.toLowerCase()));
+    // A full draft contains a selection; unshown candidates can fill a later vacancy.
+    rejectedTags = mine.length >= MAX_CARD_TAGS ? new Set() :
+      new Set(words.filter(t => !mine.includes(t)).map(t => t.toLowerCase()));
   }).catch(() => {});
 }
 function shownName(card) {
@@ -2722,7 +2758,8 @@ function installDrafts() {
 
 function parsedTags(raw = tags.value) {
   const values = tagList(raw);
-  return values.length <= MAX_CARD_TAGS && maskedTextLength(raw) <= MAX_TAG_TEXT && values.every(value => maskedTextLength(value) <= 201)
+  const unchanged = editingId && originalEditTags.length === values.length && originalEditTags.every((t, i) => values[i] === t);
+  return (values.length <= MAX_CARD_TAGS || unchanged) && maskedTextLength(raw) <= MAX_TAG_TEXT && values.every(value => maskedTextLength(value) <= 201)
     && new Set(values).size === values.length ? values : null;
 }
 function validEventBody(value) {
@@ -2790,7 +2827,7 @@ function updateComposer() {
   } else if (!canWrite()) composeMessage.textContent = writingMessage();
   else if (maskedTextLength(text.value) > 200) composeMessage.textContent = '글은 200자 이내로 작성해 주세요';
   else if (kind === 'event' && !validEventBody(text.value)) composeMessage.textContent = '이벤트 내용을 입력해 주세요.';
-  else if (!values) composeMessage.textContent = '태그의 길이와 중복을 확인해 주세요';
+  else if (!values) composeMessage.textContent = previewTags.length > MAX_CARD_TAGS ? '태그는 최대 5개까지 달 수 있어요.' : '태그의 길이와 중복을 확인해 주세요';
   else if (kind === 'comment' && replyDueChecking) composeMessage.textContent = '상위 카드 공개 종료일 확인 중';
   else if (kind !== 'event' && !editingId && !writingPosition) composeMessage.textContent = composerTools
     ? '아래 위치 아이콘을 눌러 위치를 켜 주세요.' : '위치를 켜고 확인한 뒤 등록할 수 있어요.';
@@ -2941,6 +2978,7 @@ async function openComposer(mode, card = null, replyTo = null, pending = null) {
   for (const group of ['textColor', 'boxColor']) setColorChoice(group, style[group]);
   setBoxTransparency(editingId ? (style.boxTransparency ?? 80) : style.boxTransparency);
   applyComposeStyle(); updateEventPrice();
+  originalEditTags = editingId ? [...card.tags] : [];
   text.value = editingId ? card.body : ''; tags.value = editingId ? card.tags.join(', ') : guest ? '' : initialComposerTags();
   const identityMode = editingId ? (card.identity_mode === 'nickname' ? 'nickname' : 'anonymous') : readComposerSettings().identity;
   $(`input[name="identity"][value="${identityMode}"]`).checked = true;
@@ -4099,7 +4137,8 @@ text.addEventListener('focus', syncComposeInkDisplay);
 text.addEventListener('blur', syncComposeInkDisplay);
 text.addEventListener('compositionstart', () => { composeInkComposing = true; syncComposeInkDisplay(); });
 text.addEventListener('compositionend', () => { composeInkComposing = false; if (autoTagMode) refreshAutoTags(); updateComposer(); });
-tags.addEventListener('input', () => { noteTagEdit(); updateComposer(); });
+tags.addEventListener('input', event => { if (!event.isComposing) noteTagEdit(); updateComposer(); });
+tags.addEventListener('compositionend', () => { noteTagEdit(); updateComposer(); });
 tags.addEventListener('focus', () => updateComposer()); tags.addEventListener('blur', () => updateComposer());
 window.addEventListener('resize', () => { if (!backdrop.hidden) updateComposer(); requestTagFit(); });
 document.fonts?.addEventListener?.('loadingdone', () => { if (!backdrop.hidden) updateComposer(); requestTagFit(); });

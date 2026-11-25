@@ -133,7 +133,7 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
   for (const input of ['일상 산책 19금','  #일상   #산책, ##19금  ','일상\t산책\n19금','일상\u00a0산책\u300019금']) {
     assert.deepEqual(parsed(input),['일상','산책','19금']);
   }
-  assert.deepEqual(parsed('a b c d e f'), ['a','b','c','d','e','f']);
+  assert.equal(parsed('a b c d e f'),null);
   assert.equal(parsed('일상 일상'),null);
   assert.equal(parsed('a'.repeat(202)),null);
   assert.deepEqual(parsed(' , #  '),[]);
@@ -158,11 +158,11 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
   assert.equal(vm.runInContext('initialComposerTags()',context),'');
   context.kind='memo';
   vm.runInContext('tags.value=initialComposerTags(); manualTags=tagList(tags.value); refreshAutoTags()',context);
-  assert.deepEqual(parsed(context.tags.value),['19금','산책','일상','사진','휴식','운동']);
-  assert.equal(vm.runInContext("tagList(initialComposerTags('a b c d e')).length",context),6,'restoring a full draft must not discard its tags');
+  assert.deepEqual(parsed(context.tags.value),['19금','산책','일상','사진','휴식']);
+  assert.equal(vm.runInContext("tagList(initialComposerTags('a b c d e')).length",context),5,'reserve a slot for the search-only tag when restoring a draft');
   vm.runInContext("tags.value=initialComposerTags('a b c d e'); manualTags=tagList(tags.value); refreshAutoTags()",context);
-  assert.equal(context.tags.value,'19금, a, b, c, d, e, 산책, 일상, 사진, 휴식, 운동');
-  assert.equal(parsed(context.tags.value).length, 11);
+  assert.equal(context.tags.value,'19금, a, b, c, d');
+  assert.equal(parsed(context.tags.value).length, 5);
   context.feedTerm='';
   vm.runInContext(source.slice(source.indexOf('function filterSearchOnlyTags('),source.indexOf('async function loadFeed(')),context);
   const search = async tag => { context.feedTerm=tag; return await vm.runInContext('filteredFeed()',context).rows(); };
