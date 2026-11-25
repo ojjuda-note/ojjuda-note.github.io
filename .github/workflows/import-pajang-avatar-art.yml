@@ -1,0 +1,111 @@
+name: Import verified Pajang avatar artwork
+on:
+  push:
+    branches: [pajang-hd-art-20261126]
+    paths: ['.github/workflows/import-pajang-avatar-art.yml']
+permissions:
+  contents: write
+jobs:
+  artwork:
+    if: github.repository == 'ojjuda-note/ojjuda-note.github.io' && github.ref == 'refs/heads/pajang-hd-art-20261126'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Initialize the temporary artwork branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git init -q .
+          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          gh auth setup-git
+          git -c protocol.version=2 fetch --no-tags --depth=1 --filter=blob:none origin "${GITHUB_REF}"
+          git sparse-checkout init --cone
+          git sparse-checkout set features/pajang/assets/hd
+          git checkout -q -b pajang-hd-art-20261126 FETCH_HEAD
+      - name: Verify and stage the 53 WebP images
+        shell: bash
+        run: |
+          python - <<'PYTHON'
+          from pathlib import Path
+          from urllib.request import urlopen
+          import hashlib, time
+          root=Path('features/pajang/assets/hd')
+          root.mkdir(exist_ok=True)
+          records='''avatar-tree-20261125.webp 211960 75ab1848ba07a3d2b5e50cb2231860658c476afc0ebfa0a869dcb2e0639dfb70
+          avatars-20261125-01.webp 691162 b9b2ed7d1a0f30ae795eb4a6e714dfdb6060f69d949a1f51bfcd853c50cda7d5
+          avatars-20261125-02.webp 796088 e3217b524fe7d40f2ca09af05544cd2d5f6aa46dec858d68eb483dec57b5cb06
+          avatars-20261125-03.webp 833412 453c235b64f4bd22c4d9387ee082ad3a891d9e1de6ce36b91bd893b57c13a4ed
+          avatars-20261125-04.webp 873900 28403340b31a3c21c5d14f37dde8a721157c6b7addb07e97ad111568a57fe8bf
+          avatars-20261125-05.webp 802850 7343a83c4f1a260410346ead64aa413342635718a3f2ee15a1864b72637f6a80
+          avatars-20261125-06.webp 757490 ed050e86eba4944acb29d4a4df17e0c38af01ac5b27058b3a023c7ad55e2a0c5
+          avatars-20261125-07.webp 900478 2ef25f3558853ce858f3f521d1ac6707363f71cf7a3b949d58e6ecf1030229e8
+          avatars-20261125-08.webp 759588 785f40ce10baa0df7d16ad9774902e26a717c77f2fd9c94f49c043926683e11c
+          avatars-20261125-09.webp 821974 f7bb1d89ea5f1f55001823a78ab9da37df61afba4a5f9c8b988cc1204dd494cb
+          avatars-20261125-10.webp 854490 a657f913aaba72b047a7755cc1d77ad78f3feb36de840215fda9779e2c296819
+          avatars-20261125-11.webp 656398 ceddf1b1b16fc6b0637686eb2be5fc2478d8f3469cecb047b9e3aa47a0eca5b1
+          avatars-20261125-12.webp 635376 4e25688354f9d7ce8cda20e3dc7f26183ad51b166d407fcae355863a9f2f5ac8
+          avatars-20261125-13.webp 691760 4df13146906319b82bb07335b0255d50ebfdc6081d54ba4014222b9fc7a54fb8
+          avatars-20261125-14.webp 699392 73bc343075bbc81306036f945719f90b24d8e4c338fd86817b171d395505badb
+          avatars-20261125-15.webp 842224 024c292e2e7e89be889fc303851ec36403fdddbdbd4fcaadca1ee00250b85bc2
+          avatars-20261125-16.webp 791748 cbf4fd6cb81ea6fd5a25bbbf118f53a1a0d264854b1ef98945a5194c38a426f4
+          avatars-20261125-17.webp 864310 48de5d517f3e8204cbaa32a1381e539f862b72d70e064a53975dd35a4e56ecb1
+          avatars-20261125-18.webp 756632 7a51557b5bac2194011c89f96b47693b34e97b9e46e55abb1533e9b58a6a196b
+          avatars-20261125-19.webp 756544 6bdf1efc6ddd07057081a9d590deb942546f5daff4e442ee5aa4c911320a54c2
+          avatars-20261125-20.webp 903490 b44a76995309b92950b4e60ba3677ad528a31a197316c645c4a551e32f24c703
+          avatars-20261125-21.webp 792564 728ae16f2fc3f417c355614323cc567fc298271ed22c4775757fc795e6b3d16e
+          avatars-20261125-22.webp 927354 4ff6f482b6a338a8c202741c8ec442805458b01d5939131b47b96720495502cf
+          avatars-20261125-23.webp 1042756 a7ef2ea1074b2a3646d9426da7f9470e67a24dc60e04a7dcef056bb1f23c77d1
+          avatars-20261125-24.webp 1039456 a91cb000da990ff293ec2488307a89e2168e130333c09e62a61a4a3f4b1eeca6
+          avatars-20261125-25.webp 1041072 19597aa11046de96c25ee34a5d7ebdd0523d1fdd8b72575ac18d5d48ea4dd805
+          avatars-20261125-26.webp 277494 74756a56d658b3c380d1f31674353fa318109e160aa60b0206966637862b6c35
+          avatars-male-20261125-01.webp 607052 70eabc3eb927ec44231cde9d04f615e4c892c21f547daf55b0387e06d4e752ac
+          avatars-male-20261125-02.webp 679574 53ac906da39f44a6f85cf8c629b4ce5bc6f0215c43c68ed79d5cca894495c1f2
+          avatars-male-20261125-03.webp 692596 2b798193f032348511504d31652c23edd1ba91a6804ceafb0999ef437396f122
+          avatars-male-20261125-04.webp 716658 4d45cff105cd2b838e72dfe6e410890226e09721a8b4f0ce549c9e1775411046
+          avatars-male-20261125-05.webp 652088 2af8b528af872b8da87837e802d91d24eb9da2a3ffbc70a9cfe8a527cbf49abb
+          avatars-male-20261125-06.webp 642894 cae67bd4090ebed26b2c15178e60b659fc17cbc253e3220ca3f9875d4f6072a0
+          avatars-male-20261125-07.webp 693316 7b3528ee14c7a10c91e75fb52744ee7af456574134fedd613a07197e61c4e8d0
+          avatars-male-20261125-08.webp 693216 27516331491ba5adc6784b92c1da7938f6681164cf1028c1edc79cadc1ef72cb
+          avatars-male-20261125-09.webp 623264 1ca2c1367810da96619d41eaf0a16e102846a8f855d09caa23340ae10ff88940
+          avatars-male-20261125-10.webp 712482 88933df4137c2f61ed23ed1199d595cdece83ec9d72227b23862f18ba387cfaf
+          avatars-male-20261125-11.webp 621482 b245f3bf9cd6c1818799020858d6abe1177970474c7f75e99408de5eb592fecc
+          avatars-male-20261125-12.webp 680756 59e631f4fdbb2058537ac4578f8834244ade34332004c93382ff37b2fb1a6651
+          avatars-male-20261125-13.webp 604658 dc816d6a7b168da7b059ade6476b383cb20bc589c92584fbe5dd2a979988a515
+          avatars-male-20261125-14.webp 632352 e810c53483f908e41e32540df3b69f21a04300c284258e6bc58f601a7d9aece0
+          avatars-male-20261125-15.webp 573176 42933d14c884f1a91a411ff076fc1b46862a3170ed5afbdc7e14059e6383a323
+          avatars-male-20261125-16.webp 601726 a5c117cf86b8a3dd22965b27abd986d7b4bb57372f3bea6b6e316642bafd04fe
+          avatars-male-20261125-17.webp 754156 01d354a6552c594227ec831405c7a84979cae375ab94607cff4db86d7b9cb014
+          avatars-male-20261125-18.webp 611514 b9ffdcba252a48e58d2f764105838d7ca92843b368c7568210caecc789b0dcf3
+          avatars-male-20261125-19.webp 760904 20b1f0c8b35f0377a48fc695e268c57258730d250dbe655a52f38e0162a4175a
+          avatars-male-20261125-20.webp 621344 eccacfb6e567260320a8a6c39ac3deb7050db5e617eafb127c5d0141d85035f3
+          avatars-male-20261125-21.webp 689488 d7853f5704fb3df6865f4574ab251981bcabdbc450bae566261f1536aa658445
+          avatars-male-20261125-22.webp 739884 9d0ad74f08b00661b7193f8c8bb115ccbc524df8bcb90aea48631da4dd4e46fd
+          avatars-male-20261125-23.webp 704818 bede253b73b8b9e1fa20a43df931699e8fa2ecf10d8f9ef938182551ee4e684c
+          avatars-male-20261125-24.webp 703236 b204a96efd12850f82ea199ccced430f6bfa55c499550b54052e55bba4774c27
+          avatars-male-20261125-25.webp 752330 be3a2d2920e1856adc16e0a2eb8587f1dee44e306e7dc2d6746cc47040c5a310
+          avatars-male-20261125-26.webp 258206 f41b7f3694df008fd490e10cac2c13e6e418fe56781ec8ca6afe6739847c73f3'''.splitlines()
+          for line in records:
+              name, size, digest = line.split()
+              target=root/name
+              url='https://ziezbdjofcugznowiuda.supabase.co/storage/v1/object/public/pajang-theme/avatars-hd-8d4e7ea87d7a9ec1/'+name
+              for attempt in range(30):
+                  try:
+                      with urlopen(url+"?attempt="+str(attempt), timeout=30) as result: content=result.read(int(size)+1)
+                      if len(content)!=int(size) or hashlib.sha256(content).hexdigest()!=digest:
+                          raise ValueError('Unexpected avatar checksum or length for '+name)
+                      target.write_bytes(content)
+                      break
+                  except Exception:
+                      if attempt==29: raise
+                      time.sleep(6)
+          PYTHON
+      - name: Publish only verified artwork to the temporary branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- features/pajang/assets/hd
+          test "$(git diff --cached --name-only | wc -l)" -eq 53
+          git commit -qm 'Stage verified high-resolution Pajang character artwork'
+          git push origin HEAD:refs/heads/pajang-hd-art-20261126
