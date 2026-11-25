@@ -13,12 +13,17 @@ export function g2Page(view) {
     box(3,'weather',12,248,325,36,view.weather),
     box(4,'speed',426,248,146,36,(view.speed ?? '—') + ' km/h')
   ];
-  if (view.expanded && cards[0]) {
-    fields.push(box(5,'full',118,48,448,180,cards[0].body.slice(0,950),1,1));
+  if (view.reader) {
+    const reader=view.reader;
+    fields.push(box(5,'full',118,48,448,180,'',0,1),
+      box(6,'reader',125,52,431,138,(reader.title+'\n'+reader.body).slice(0,950),1),
+      box(7,'fulldist',441,194,119,30,reader.distance));
   } else {
-    const text = card => (view.sample ? '예시 · ' : '') + card.oneLine;
-    fields.push(box(5,'first',348,48,218,84,cards[0] ? text(cards[0]) : '공원 카드 —',1,1),
-      box(6,'second',348,143,218,84,cards[1] ? text(cards[1]) : '—',0,1));
+    const summary = card => (view.sample ? '예시 · ' : '') + card.oneLine;
+    fields.push(box(5,'first',348,48,218,84,cards[0] ? summary(cards[0]) : '근처 카드 —',1,1),
+      box(6,'second',348,143,218,84,cards[1] ? summary(cards[1]) : '—',0,1),
+      box(7,'firstdist',443,100,118,29,cards[0]?.distance ?? ''),
+      box(8,'seconddist',443,195,118,29,cards[1]?.distance ?? ''));
   }
   return {containerTotalNum:fields.length,textObject:fields};
 }
@@ -58,8 +63,8 @@ export async function attachEvenG2(hud) {
     const type = envelope.eventType ?? OsEventTypeList.CLICK_EVENT;
     if (type === OsEventTypeList.DOUBLE_CLICK_EVENT) { void bridge.shutDownPageContainer(1); return; }
     if (type === OsEventTypeList.CLICK_EVENT) hud.select();
-    else if (!hud.getView().expanded && type === OsEventTypeList.SCROLL_TOP_EVENT) hud.move(-1);
-    else if (!hud.getView().expanded && type === OsEventTypeList.SCROLL_BOTTOM_EVENT) hud.move(1);
+    else if (type === OsEventTypeList.SCROLL_TOP_EVENT) hud.move(-1);
+    else if (type === OsEventTypeList.SCROLL_BOTTOM_EVENT) hud.move(1);
   });
   let deviceRev = 0;
   const battery = state => { if (alive) hud.setBattery(state?.batteryLevel,state?.isCharging); };

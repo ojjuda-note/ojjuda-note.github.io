@@ -20,3 +20,11 @@ button:enabled { cursor: pointer; } button:disabled { opacity: .45; }
 :focus-visible { outline: 2px solid #e2ffbb; outline-offset: 2px; }
 .status, details p { text-align: center; font-size: .85rem; color: #b9cbbd; }
 details { max-width: 22rem; margin: 1rem auto; text-align: center; } details img { background: white; }
+
+.messages button { position: relative; display: flex; align-items: flex-start; padding-bottom: 1.25em; }
+.message-body { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; line-height: 1.18; }
+.message-distance { position: absolute; right: .45em; bottom: .18em; color: #a4c9a7; font-size: .72em; line-height: 1.1; white-space: nowrap; }
+.hud .full { display: flex; flex-direction: column; align-items: stretch; overflow: hidden !important; padding: .35em .6em 1.3em; }
+.reader-heading { flex: none; font-size: .72em; color: #b4dcb6; }
+.reader-body { min-height: 0; overflow: auto; white-space: pre-wrap; }
+@media (max-width: 420px) { .message-body { -webkit-line-clamp: 1; } }
