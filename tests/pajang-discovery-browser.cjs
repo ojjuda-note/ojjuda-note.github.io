@@ -1125,10 +1125,7 @@ async function checkNavigation(page){
     const ownAnswers=page.getByRole('dialog',{name:'내가 남긴 답변',exact:true});
     await ownAnswers.getByText('내 책방 답변').waitFor();
     await ownAnswers.getByRole('button',{name:'닫기',exact:true}).click();
-    await settings.getByRole('button',{name:'답변 공개 설정',exact:true}).click();
-    const visibility=page.getByRole('dialog',{name:'답변 공개 설정',exact:true});
-    assert.equal(await visibility.getByRole('switch',{name:'성별 필터에 내 답변 표시'}).isChecked(),false);
-    await visibility.getByRole('button',{name:'닫기',exact:true}).click();
+    assert.equal(await settings.getByRole('switch',{name:'성별 숨기기'}).count(),0);
     await settings.getByRole('button',{name:'파장 기록 삭제',exact:true}).click();
     const deletion=page.getByRole('dialog',{name:'파장 기록 삭제',exact:true});
     await deletion.getByRole('button',{name:'취소',exact:true}).click();
@@ -1138,7 +1135,7 @@ async function checkNavigation(page){
     for(const label of ['이용약관','개인정보처리방침'])assert.equal(await settings.getByRole('link',{name:label,exact:true}).getAttribute('target'),null);
     const accountPage=page.locator('.station-account');
     assert.deepEqual(await settings.locator('[aria-labelledby="account-activity-title"] .ojjuda-settings-label').allTextContents(),
-      ['답변 공개 설정','내가 남긴 답변','신호 구매','쭈 충전'],'signal purchase stays directly above coin charging in My Pajang activities');
+      ['내가 남긴 답변','신호 구매','쭈 충전'],'signal purchase stays directly above coin charging in My Pajang activities');
     assert.equal(await settings.getByRole('button',{name:'쭈 충전',exact:true}).getAttribute('aria-controls'),'ju-charge-dialog','settings exposes the shared coin charge dialog');
     const helpMenu=settings.locator('details').filter({has:page.locator('summary').filter({hasText:'도움말'})});
     const helpRows=helpMenu.locator(':scope > .ojjuda-settings-body > .ojjuda-settings-row');

@@ -176,6 +176,29 @@ test('public Pajang preferences save atomically and relationship discovery prese
   t.beforeEach(()=>db.exec('begin'));
   t.afterEach(()=>db.exec('rollback'));
 
+  await t.test('account gender is selected at entry and an explicit hide survives profile reads',async()=>{
+    const discovery=read('20261117210000_pajang_discovery_gender.sql');
+    await db.exec(discovery.slice(discovery.indexOf('create function public.pajang_discovery_visibility'),
+      discovery.indexOf('create function public.pajang_discovery_feed')));
+    await db.exec(read('20261125110000_pajang_member_gender_defaults.sql'));
+    const entry=await as(account(1),()=>rpc('pajang_member',['entry',{}]));
+    assert.equal(entry.accountGender,'female');
+    assert.equal(entry.genderSharePending,true);
+    const share={day:today,slot:'pm',body:'함께 걷기',questionId:'synthetic-question',shareAccountGender:true};
+    await as(account(1),()=>rpc('pajang_member',['answer',share]));
+    assert.equal((await as(account(1),()=>rpc('pajang_member',['entry',{}]))).genderSharePending,false);
+    assert.equal((await as(account(3),()=>rpc('pajang_profile_preferences',[person(1)]))).gender,'female');
+    await as(account(1),()=>rpc('pajang_discovery_visibility',[false]));
+    await as(account(1),()=>rpc('pajang_member',['answer',share]));
+    assert.equal((await as(account(3),()=>rpc('pajang_profile_preferences',[person(1)]))).gender,null);
+    const readPublic=()=>as(account(1),()=>rpc('pajang_profile_preferences',[person(2)]));
+    await as(account(2),()=>rpc('pajang_discovery_visibility',[true]));
+    assert.equal((await readPublic()).gender,'male');
+    await as(account(2),()=>rpc('pajang_discovery_visibility',[false]));
+    assert.equal((await readPublic()).gender,null);
+    assert.equal(await value('select gender_visibility_choice as value from pajang_private.people where id=$1',[person(2)]),false);
+  });
+
   await t.test('one save updates public fields and private exchange data atomically',async()=>{
     const current=await as(account(1),()=>rpc('pajang_profile_details',['mine',{}]));
     assert.equal(current.person,person(1));

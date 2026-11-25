@@ -1,3 +1,4 @@
+import AnswerGenderVisibility from "./answer-gender-visibility";
 import {useEffect, useRef, useState} from "react";
 import regionCatalog from "../../regions.json";
 import {maskedTextLength,textInputMaxLength} from "../../../../shared/content/text-length.mjs";
@@ -76,7 +77,8 @@ export function PeerProfile({profile}:{profile:SharedProfile}) {
   return items.length?<dl className="exchange-facts">{items.map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>:<p className="sub">상대가 교환용 프로필에 작성한 항목이 아직 없어요.</p>;
 }
 
-export function ExchangeProfileEditor({profileId,focusTastes=false,onSaved}:{profileId:string;focusTastes?:boolean;onSaved:(profile:SavedProfile)=>void}) {
+export function ExchangeProfileEditor({profileId,focusTastes=false,onVisibilitySaved,onSaved}:{profileId:string;focusTastes?:boolean;onVisibilitySaved?:()=>void;onSaved:(profile:SavedProfile)=>void}) {
+  const [visibilityOpen,setVisibilityOpen]=useState(false);
   const [profile,setProfile]=useState<MyProfile|null>(null);
   const [drafts,setDrafts]=useState(blankTasteDrafts);
   const [error,setError]=useState(""),[retry,setRetry]=useState(0),[busy,setBusy]=useState(false);
@@ -149,7 +151,7 @@ export function ExchangeProfileEditor({profileId,focusTastes=false,onSaved}:{pro
       if(mounted.current)setError(err instanceof Error?err.message:"저장하지 못했어요. 다시 시도해 주세요.");
     } finally {saving.current=false;if(mounted.current)setBusy(false);}
   }
-  return <><h2>내 프로필 수정</h2><p className="sub">닉네임·활동 지역·취향은 파장 회원에게 공개되고, 상세 정보는 프로필 교환을 승인한 상대에게만 보여요.</p>
+  return <><h2>내 프로필 수정</h2>
     {error&&!profileReady&&<p className="error" role="alert">{error} <button className="quiet" onClick={()=>setRetry(n=>n+1)}>다시 시도</button></p>}
     {!profileReady&&!error&&<p className="sub" role="status">회원정보와 취향을 확인하고 있어요.</p>}
     {profileReady&&profile&&<form className="profileform exchange-editor unified-profile-editor" onSubmit={save} onInvalidCapture={event=>{
@@ -160,7 +162,10 @@ export function ExchangeProfileEditor({profileId,focusTastes=false,onSaved}:{pro
     }}>
       <fieldset className="unified-public-profile" disabled={busy}>
         <legend>공개 프로필</legend>
-        <p className="exchange-hint">파장 회원에게 보이는 정보</p>
+        {profile.gender&&<p className="exchange-hint">가입 성별 · {profile.gender}</p>}
+        <details onToggle={e=>setVisibilityOpen(e.currentTarget.open)}><summary>공개 설정</summary>
+          {visibilityOpen&&<AnswerGenderVisibility key={profileId} onSaved={onVisibilitySaved}/>}
+        </details>
         <label>닉네임<input name="nickname" required value={profile.name}
           maxLength={textInputMaxLength(profile.name,12)}
           onChange={e=>{setError("");setProfile(current=>current?{...current,name:e.target.value}:current);}}/></label>

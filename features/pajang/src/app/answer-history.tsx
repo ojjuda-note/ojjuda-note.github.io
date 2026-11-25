@@ -268,7 +268,7 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
         const intents=relationshipIntents.filter(intent=>row.relationship_intents?.includes(intent.key));
         return <article key={rowKey(row)} className="answercard">
           <button className="person" onClick={()=>onProfile(row)}>
-            <InterestArt interest={row.interest}/>
+            <InterestArt personId={row.peer} interest={row.interest}/>
             <span><strong>{row.name}{row.own?" · 내 답변":""}</strong>{row.region&&<small>{row.region}</small>}</span>
           </button>
           <p className="quote">{row.body}</p>

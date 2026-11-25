@@ -166,8 +166,8 @@ test('one profile editor saves public name, region, intentions, tastes and priva
   assert.ok(follows(f.control('음주 여부'), f.control('자기소개')));
   assert.ok([...f.form().querySelectorAll('legend')].some(node => node.textContent === '원하는 인연'),
     'relationship intentions are in the same editor');
-  assert.match(tastes.parentElement.parentElement.textContent, /파장 회원|공개 프로필/,
-    'the relocated choices still explain that they are public');
+  assert.equal(tastes.closest('.unified-public-profile').querySelector('legend').textContent, '공개 프로필',
+    'public choices remain grouped under the public profile heading');
   assert.equal(f.button('독서').getAttribute('aria-pressed'), 'true', 'saved artwork is hydrated before saving is enabled');
   await f.set('닉네임','새 보리');
   await f.set('공개할 활동 지역 시·도','경기도');

@@ -1,9 +1,11 @@
 import {useEffect,useState} from "react";
-import {badges} from "../lib/station";
+import {badges,interests} from "../lib/station";
 import {I} from "./icons";
 
-export function InterestArt({interest,large=false}:{interest:string;large?:boolean}){
-  const badge=badges(interest);
+export function InterestArt({interest,personId,large=false}:{interest:string;personId?:string;large?:boolean}){
+  const randomPrefix=personId&&/^[0-9a-f]{8}-/i.test(personId)?parseInt(personId.slice(0,8),16):null;
+  const fallback=randomPrefix===null?"":interests[randomPrefix%interests.length].key;
+  const badge=badges(interest||fallback);
   const [,setReady]=useState("");
   useEffect(()=>{
     let current=true;

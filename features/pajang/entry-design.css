@@ -245,3 +245,18 @@
   }
   #welcome[data-member-entry="direct"] .actions { margin:12px 0 0; }
 }
+
+/* One question, two ways to answer, shared by the entry page and member dialog. */
+.pajang-answer-split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0}
+.pajang-answer-split:has(.pajang-choices[hidden]){grid-template-columns:1fr}
+.pajang-choices{margin:0;padding:0;border:0;min-width:0}
+.pajang-choices legend,.pajang-written>label{display:block;padding:0;margin:0 0 8px;font-size:15px;font-weight:700}
+.pajang-written{display:flex;flex-direction:column;min-width:0}
+#welcome .pajang-written textarea,.dialog .pajang-written textarea{flex:1;width:100%;min-height:5em;margin:0}
+.pajang-choices .pajang-option,#welcome .actions .pajang-option{display:flex;align-items:center;gap:8px;min-height:44px;padding:8px 10px;margin:0 0 6px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:500 14px/1.45 var(--sans,system-ui,sans-serif);overflow-wrap:anywhere;cursor:pointer}
+.pajang-option:last-child{margin-bottom:0}
+.pajang-choices .pajang-option:has(:checked),#welcome .actions .pajang-option:has(:checked){border-color:var(--accent);background:var(--accent-soft)}
+#welcome .actions .pajang-option input,.dialog .pajang-option input{width:16px;height:16px;min-height:0;margin:0;padding:0;flex:none;accent-color:var(--accent)}
+.answer-length{align-self:flex-end;color:var(--ink-2);font-size:12px}
+#welcome .actions button[type=submit]:disabled{opacity:.55;cursor:default}
+@media(max-width:500px){.pajang-answer-split{gap:8px}.pajang-choices .pajang-option,#welcome .actions .pajang-option{gap:5px;padding:8px}}
