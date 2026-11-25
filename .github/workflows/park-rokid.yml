@@ -1,0 +1,81 @@
+name: Package Park for Rokid Glasses
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, build/park-rokid-1.0.0]
+    paths:
+      - 'note/rokid-agent/**'
+      - 'tests/park-rokid.test.cjs'
+      - 'park/rokid-glasses.html'
+      - '.github/workflows/park-rokid.yml'
+  pull_request:
+    paths:
+      - 'note/rokid-agent/**'
+      - 'tests/park-rokid.test.cjs'
+      - 'park/rokid-glasses.html'
+      - '.github/workflows/park-rokid.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Test the Park agent
+        run: node --test tests/park-rokid.test.cjs
+      - name: Pack and verify the AIX
+        run: |
+          set -euo pipefail
+          npm install --prefix "$RUNNER_TEMP/rokid-tools" --no-audit --no-fund --save-exact @yodaos-pkg/aix-cli@0.11.0
+          aix="$RUNNER_TEMP/rokid-tools/node_modules/.bin/aix"
+          bundle="$RUNNER_TEMP/ojjuda-park.aix"
+          "$aix" check note/rokid-agent
+          "$aix" pack note/rokid-agent -o "$bundle"
+          test -s "$bundle"
+          "$aix" list "$bundle" > "$RUNNER_TEMP/aix-files.txt"
+          grep -F 'app.json' "$RUNNER_TEMP/aix-files.txt"
+          grep -F 'pages/' "$RUNNER_TEMP/aix-files.txt"
+          "$aix" show "$bundle" -o "$RUNNER_TEMP/agent-definition.json"
+          jq -e '.agentId | type == "string" and length > 0' "$RUNNER_TEMP/agent-definition.json"
+          jq -e '.agentName == "오쭈다 공원"' "$RUNNER_TEMP/agent-definition.json"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ojjuda-park-rokid
+          path: ${{ runner.temp }}/ojjuda-park.aix
+          if-no-files-found: error
+          compression-level: 0
+
+  stage:
+    needs: package
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/build/park-rokid-1.0.0'
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0
+        with:
+          name: ojjuda-park-rokid
+          path: park/rokid
+      - name: Stage the verified package and Park version
+        run: |
+          set -euo pipefail
+          node scripts/sync-section-versions.mjs
+          git add -- park/rokid/ojjuda-park.aix world.html
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Stage tested Rokid Park package and synced version'
+          git push origin HEAD:refs/heads/build/park-rokid-1.0.0
