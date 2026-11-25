@@ -55,7 +55,7 @@ function fixture() {
     let session = {user:{id:'auth-member',is_anonymous:false},access_token:'mock-member-token'};
     const control = window.preferenceFixture = {
       reads:[],saves:[],feeds:[],unexpected:[],readResponses:[],saveResponses:[],pendingReads:[],pendingSaves:[],
-      detailReads:[],detailSaves:[],detailReadResponses:[],detailSaveResponses:[],pendingDetailReads:[],pendingDetailSaves:[],
+      detailReads:[],detailSaves:[],detailReadResponses:[],detailSaveResponses:[],pendingDetailReads:[],pendingDetailSaves:[],purchases:[],
       emptyFilter:'',pagination:false,deniedFeed:false,historyEvents:0
     };
     window.addEventListener('popstate',()=>control.historyEvents++,true);
@@ -126,6 +126,7 @@ function fixture() {
           return {data:structuredClone(state),error:null};
         }
         if(name==='pajang_character_purchase'){
+          control.purchases.push(structuredClone(args));
           if(args.p_person!==state.me.id||args.p_character!==102||!args.p_request_id)throw Error('Invalid purchase');
           if(!privateProfile.ownedCharacters.includes(102)){
             privateProfile.ownedCharacters.push(102);privateProfile.characterCoins-=10;
@@ -218,6 +219,105 @@ async function openGroup(dialog,label) {
   return group;
 }
 
+async function paintedHeight(figure) {
+  return figure.evaluate(async node=>{
+    const css=getComputedStyle(node);
+    const atlas=new Image();
+    atlas.src=css.backgroundImage.match(/url\(["']?(.+?)["']?\)/)[1];
+    await atlas.decode();
+    const [scaleX,scaleY]=css.backgroundSize.split(' ').map(size=>parseFloat(size)/100);
+    const sourceWidth=atlas.naturalWidth/scaleX,sourceHeight=atlas.naturalHeight/scaleY;
+    // A percentage background position aligns matching points in the source and its box.
+    const left=(atlas.naturalWidth-sourceWidth)*parseFloat(css.backgroundPositionX)/100;
+    const upper=(atlas.naturalHeight-sourceHeight)*parseFloat(css.backgroundPositionY)/100;
+    const canvas=document.createElement('canvas');
+    canvas.width=Math.round(sourceWidth);canvas.height=Math.round(sourceHeight);
+    const ctx=canvas.getContext('2d');
+    ctx.drawImage(atlas,left,upper,sourceWidth,sourceHeight,0,0,canvas.width,canvas.height);
+    const pixels=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+    let top=canvas.height,bottom=-1;
+    for(let y=0;y<canvas.height;y++){
+      for(let x=0;x<canvas.width;x++){
+        if(pixels[(y*canvas.width+x)*4+3]>32){top=Math.min(top,y);bottom=y;break;}
+      }
+    }
+    const fraction=(bottom-top+1)/canvas.height;
+    return {height:node.getBoundingClientRect().height*fraction,fraction};
+  });
+}
+
+async function checkCharacterViewer(page,editor) {
+  const search=editor.getByRole('searchbox',{name:'캐릭터 검색'});
+  const category=editor.getByRole('combobox',{name:'의상 분류'});
+  const stage=editor.locator('.pj-avatar-stage');
+  const original=await stage.getAttribute('aria-label');
+  await category.selectOption('일상복');
+  await search.fill('차분');
+  const names=await editor.locator('.pj-avatar-card strong').allTextContents();
+  assert.ok(names.length>=2,'comparison requires at least two outfits matching both filters');
+  const tile=editor.getByRole('button',{name:names[0]+' 전신형',exact:true});
+  const viewer=page.getByRole('dialog',{name:'캐릭터 미리보기',exact:true});
+  const button=name=>viewer.getByRole('button',{name,exact:true});
+  for(const width of [320,390]){
+    await page.setViewportSize({width,height:640});
+    const thumbnail=await paintedHeight(tile.locator('.pj-character-figure'));
+    assert.ok(thumbnail.fraction>0.5,'the full figure comes from a painted atlas cell');
+    const oldFrame=Math.max(56,Math.min(width*0.12,92));
+    assert.ok(thumbnail.height>=3*oldFrame*thumbnail.fraction-1,'the list artwork itself has tripled at '+width+'px');
+    await tile.click();
+    await viewer.waitFor();
+    const figure=viewer.locator('.pj-character-figure.full');
+    const whole=await paintedHeight(figure);
+    assert.ok(whole.height>=3*oldFrame*thumbnail.fraction-1,'the whole outfit is large enough before zoom');
+    const viewport=viewer.locator('.pj-viewer-scroll');
+    const frame=await figure.boundingBox(),area=await viewport.boundingBox();
+    assert.ok(frame.y>=area.y-1&&frame.y+frame.height<=area.y+area.height+1&&
+      frame.x>=area.x-1&&frame.x+frame.width<=area.x+area.width+1,'the entire figure fits before zoom');
+    await viewer.screenshot({path:path.join(artifacts,'character-preview-'+width+'.png'),animations:'disabled'});
+    await button('3배 확대').click();
+    const zoomed=await paintedHeight(figure);
+    assert.ok(zoomed.height>=whole.height*3-1,'zoom enlarges the painted outfit, not just its container');
+    assert.ok(await viewport.evaluate(node=>node.scrollHeight>node.clientHeight),'the enlarged outfit can be panned');
+    console.log('Character artwork at %dpx: %dpx in the list, %dpx in full view, %dpx zoomed.',
+      width,Math.round(thumbnail.height),Math.round(whole.height),Math.round(zoomed.height));
+    await button('전신 보기').click();
+    assert.ok(Math.abs((await paintedHeight(figure)).height-whole.height)<1);
+    await assertNoOverflow(page,'outfit preview at '+width+'px');
+    await button('목록으로').click();
+    await viewer.waitFor({state:'hidden'});
+  }
+  await tile.click();
+  const current=name=>viewer.getByText(name,{exact:true}).waitFor();
+  await current(names[0]);
+  await button('다음 캐릭터').click();await current(names[1]);
+  await button('이전 캐릭터').click();await current(names[0]);
+  await page.keyboard.press('ArrowRight');await current(names[1]);
+  await page.keyboard.press('ArrowLeft');await current(names[0]);
+  const scroller=viewer.locator('.pj-viewer-scroll');
+  const bounds=await scroller.boundingBox();
+  const x=bounds.x+bounds.width*0.75,y=bounds.y+bounds.height/2;
+  const session=await page.context().newCDPSession(page);
+  try{
+    await session.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});
+    await session.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x-bounds.width/2,y}]});
+    await session.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+  }finally{await session.detach();}
+  await current(names[1]);
+  await button('대두형').click();
+  await viewer.locator('.pj-character-figure.mini').waitFor();
+  await button('전신형').click();
+  await viewer.locator('.pj-character-figure.full').waitFor();
+  await button('목록으로').click();
+  await viewer.waitFor({state:'hidden'});
+  assert.equal(await category.inputValue(),'일상복');
+  assert.equal(await search.inputValue(),'차분');
+  assert.deepEqual(await editor.locator('.pj-avatar-card strong').allTextContents(),names);
+  assert.equal(await stage.getAttribute('aria-label'),original);
+  assert.deepEqual(await page.evaluate(()=>[window.preferenceFixture.purchases.length,window.preferenceFixture.detailSaves.length,
+    window.preferenceFixture.detail().characterCoins]),[0,0,20]);
+  await page.setViewportSize({width:390,height:844});
+}
+
 (async()=>{
   const bundle=await fs.readFile(process.env.PAJANG_TEST_BUNDLE||path.join(feature,'assets/station.js'));
   const template=(await fs.readFile(path.join(feature,'station.html'),'utf8'))
@@ -230,7 +330,7 @@ async function openGroup(dialog,label) {
   const errors=[];
   try{
     await fs.mkdir(artifacts,{recursive:true});
-    const context=await browser.newContext({viewport:{width:390,height:844},locale:'ko-KR'});
+    const context=await browser.newContext({viewport:{width:390,height:844},locale:'ko-KR',hasTouch:true});
     await context.route('**/*',async route=>{
       const url=new URL(route.request().url());
       // Every request is fixture-local; this test never reads or mutates production.
@@ -312,14 +412,22 @@ async function openGroup(dialog,label) {
         return text.left+text.width/2;
       });
       assert.ok(Math.abs(textCenter-(circle.x+circle.width/2))<=1,'nickname text is centered beneath the circle');
-      assert.equal(circle.width,200);assert.equal(circle.height,200);
-      assert.equal(art.height,172);
+      assert.ok(Math.abs(circle.width-Math.min(name.width,600))<=1,'the circle fills the available content width');
+      assert.ok(Math.abs(circle.width-circle.height)<=1,'the portrait remains circular at both screen widths');
+      assert.ok(Math.abs(art.height-circle.height*.86)<=1,'the body scales with the circle');
       assert.ok(Math.abs(circle.x+circle.width/2-(name.x+name.width/2))<=1,'the circle is centered across the dialog content');
       assert.equal(await preview.evaluate(el=>getComputedStyle(el).borderRadius),'50%');
       assert.ok(circle.y+circle.height<=name.y+1,'the circle sits above the name');
       assert.ok(art.width>0&&art.height>art.width&&art.y>=circle.y&&art.y+art.height<=circle.y+circle.height,
         'the complete illustrated figure fits vertically inside the circle');
     }
+    await preview.click();
+    const publicViewer=page.getByRole('dialog',{name:'캐릭터 미리보기',exact:true});
+    await publicViewer.getByRole('button',{name:'3배 확대',exact:true}).click();
+    await publicViewer.getByRole('button',{name:'전신 보기',exact:true}).waitFor();
+    assert.equal(await publicViewer.getByRole('button',{name:/구매|이 모습 선택/}).count(),0);
+    await publicViewer.getByRole('button',{name:'닫기',exact:true}).click();
+    await publicViewer.waitFor({state:'hidden'});
     assert.equal(await publicMember.getByText('만남 스타일',{exact:true}).isVisible(),true,'a peer\'s public tastes are visible without opening an editor or disclosure');
     assert.ok((await page.evaluate(()=>window.preferenceFixture.reads)).some(read=>read.peer==='22222222-2222-4222-8222-222222222222'));
     await page.getByRole('dialog').screenshot({path:path.join(artifacts,'public-member-profile.png'),animations:'disabled'});
@@ -371,16 +479,23 @@ async function openGroup(dialog,label) {
     await art.getByRole('button',{name:'카페',exact:true}).click();
     await form.dialog.getByRole('button',{name:'캐릭터 선택',exact:true}).click();
     assert.equal(await form.dialog.getByRole('button',{name:'여자',exact:true}).count(),0);
+    await checkCharacterViewer(page,form.dialog);
     const search=form.dialog.getByRole('searchbox',{name:'캐릭터 검색'});
     await search.fill('차분한 분위기 초록 바지');
     const bookOutfit=form.dialog.getByRole('button',{name:'책방 가는 날 대두형',exact:true});
+    const viewer=page.getByRole('dialog',{name:'캐릭터 미리보기',exact:true});
+    const buy=viewer.getByRole('button',{name:'구매하기',exact:true});
     await bookOutfit.click();
-    await form.dialog.getByRole('button',{name:'취소',exact:true}).click();
+    await buy.click();
+    await page.getByRole('button',{name:'취소',exact:true}).click();
+    await viewer.waitFor();
+    assert.ok(await viewer.getByText('책방 가는 날',{exact:true}).isVisible());
     assert.equal(await page.evaluate(()=>window.preferenceFixture.detail().characterCoins),20);
-    await bookOutfit.click();
-    await form.dialog.getByRole('button',{name:'10쭈로 구매',exact:true}).click();
-    await form.dialog.locator('.pj-avatar-purchase').waitFor({state:'hidden'});
-    assert.equal(await page.evaluate(()=>window.preferenceFixture.detail().characterCoins),10);
+    assert.equal(await page.evaluate(()=>window.preferenceFixture.purchases.length),0);
+    await buy.click();
+    await page.getByRole('button',{name:'10쭈로 구매',exact:true}).click();
+    await page.getByRole('button',{name:'10쭈로 구매',exact:true}).waitFor({state:'hidden'});
+    assert.deepEqual(await page.evaluate(()=>[window.preferenceFixture.purchases.length,window.preferenceFixture.detail().characterCoins]),[1,10]);
 
     const privateSection=form.dialog.locator('.unified-private-profile');
     assert.equal(await privateSection.evaluate(node=>node.open),true,'exchange details start expanded');
@@ -431,7 +546,8 @@ async function openGroup(dialog,label) {
     const savedOutfit=form.dialog.getByRole('button',{name:'책방 가는 날 대두형',exact:true});
     assert.equal(await savedOutfit.getAttribute('aria-pressed'),'true','hiding gender preserves the member’s private selection');
     await savedOutfit.click();
-    assert.equal(await form.dialog.locator('.pj-avatar-purchase').count(),0);
+    await viewer.getByRole('button',{name:'이 모습 선택',exact:true}).click();
+    assert.equal(await page.evaluate(()=>window.preferenceFixture.purchases.length),1);
     assert.equal(await page.evaluate(()=>window.preferenceFixture.detail().characterCoins),10);
     await genderCheckbox().check();
     assert.match(await form.dialog.locator('.pj-avatar-stage').getAttribute('aria-label'),/^책방 가는 날 대두형/);

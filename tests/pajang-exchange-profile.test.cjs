@@ -98,6 +98,8 @@ async function fixture(t, {fields = {}, profile = {}, save, read, ready = true} 
     },
   });
   window.HTMLElement.prototype.scrollIntoView = function () {};
+  window.HTMLDialogElement.prototype.showModal = function () { this.open = true; };
+  window.HTMLDialogElement.prototype.close = function () { this.open = false; };
   window.eval(await editorBundle());
   t.after(() => {
     window.unmountEditor?.();
@@ -416,6 +418,9 @@ test('the female catalog has 102 outfits with the short variant on the left and 
   await f.set('캐릭터 검색', '회색 후디');
   f.button('회색 후디 대두형').click();
   await turn();
+  assert.equal(stage().getAttribute('aria-label'), '흰 티와 청바지 전신형 · 배경 없음');
+  f.button('이 모습 선택').click();
+  await turn();
   f.button('배경 선택').click();
   await turn();
   f.button('장미 정원').click();
@@ -482,6 +487,7 @@ test('102 male outfits reuse every existing backdrop and reopen on the saved pai
 
   const lastShort = looks[101] + ' 대두형';
   await click(lastShort);
+  await click('이 모습 선택');
   assert.equal(region().querySelectorAll('.pj-character-figure').length, 1);
   assert.ok(stage().querySelector('.pj-character-figure').style.backgroundImage.includes('avatars-male-20261125-26.webp'));
   assert.ok(stage().getAttribute('aria-label').includes(chosenBackground));
@@ -513,6 +519,7 @@ test('an older profile read uses the registered gender and preserves the origina
       assert.ok(stage().startsWith(gender==='남성'?'책방 가는 날':'회색 후디'));
       f.button('캐릭터 선택').click();await turn();
       character.querySelectorAll('.pj-avatar-pair')[2].querySelector('button').click();await turn();
+      f.button('이 모습 선택').click();await turn();
       const selected=stage();
       f.submit();await waitFor(()=>!!f.alert(),'a conflicting save leaves the editor open');
       assert.equal(stage(),selected);
@@ -534,6 +541,7 @@ test('hiding gender keeps the private catalog restricted and previews the tree f
       assert.equal(f.button(collection==='male'?'여자':'남자'),undefined);
       const name=collection==='male'?'책방 가는 날':'회색 후디';
       f.button(name+' 대두형').click();await turn();
+      f.button('이 모습 선택').click();await turn();
       assert.match(stage().getAttribute('aria-label'),/^나무 분장 대두형/);
       f.submit();await waitFor(()=>f.state.successes===1,'private selection saves under the costume');
       assert.deepEqual(f.state.profile.avatar,{id:collection==='male'?102:2,form:'mini',bg:0});

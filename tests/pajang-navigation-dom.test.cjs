@@ -164,7 +164,10 @@ test('outgoing signal and its result show the same member portrait',async t=>{
   const listPortrait=w.document.querySelector('.listperson .pj-character-portrait');
   assert.match(listPortrait.style.backgroundImage,/avatars-20261125-03\.webp/);
   await f.click('button','상태 보기');await f.until(()=>f.modal());
-  assert.equal(f.modal().querySelector('.resultart .pj-character-portrait').style.backgroundImage,listPortrait.style.backgroundImage);
+  const result=f.modal().querySelector('.resultart .pj-character-portrait');
+  assert.match(result.style.backgroundImage,/\/hd\/avatars-20261125-03\.webp/);
+  assert.equal(result.style.backgroundPosition,listPortrait.style.backgroundPosition);
+  assert.equal(result.getAttribute('aria-label'),listPortrait.getAttribute('aria-label'));
   assert.deepEqual(f.errors,[]);
 });
 
