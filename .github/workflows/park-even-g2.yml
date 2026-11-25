@@ -1,47 +1,33 @@
-name: Package Park for Even G2
+name: Stage verified Park G2 installation
 on:
-  workflow_dispatch:
   push:
-    branches: [main]
-    paths:
-      - 'note/even-app/**'
-      - 'note/glasses*'
-      - 'note/vendor/package*.json'
-      - 'park/glasses.html'
-      - 'scripts/build-park-even-app.mjs'
-      - '.github/workflows/park-even-g2.yml'
+    branches: ['build/park-g2-install-1.0.1']
+    paths: ['.github/workflows/park-even-g2.yml']
 permissions:
-  contents: read
+  actions: read
+  contents: write
 jobs:
-  package:
+  stage:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 7
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        with:
-          node-version: '22'
-      - name: Build the installable Park app
+      - name: Stage the checked v1.0.1 package on the build branch
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          npm --prefix note/vendor ci --ignore-scripts --no-audit --no-fund
-          npm --prefix note/vendor run build
-          tools="$RUNNER_TEMP/even-tools"
-          npm install --prefix "$tools" --no-audit --no-fund --save-exact @evenrealities/evenhub-cli@0.2.0 @supabase/supabase-js@2.117.2
-          node scripts/build-park-even-app.mjs "$RUNNER_TEMP/even-dist" "$tools"
-          node --test tests/park-even-g2.test.cjs
-          # Use a real file origin, as on a phone. The SDK must load before any native bridge exists.
-          google-chrome --headless --disable-gpu --no-sandbox --disable-dev-shm-usage \
-            --host-resolver-rules="MAP * ~NOTFOUND" --virtual-time-budget=14000 --dump-dom \
-            "file://$RUNNER_TEMP/even-dist/index.html" > "$RUNNER_TEMP/even-dom.html"
-          grep -Fq '(BRIDGE)' "$RUNNER_TEMP/even-dom.html"
-          "$tools/node_modules/.bin/evenhub" pack note/even-app/app.json "$RUNNER_TEMP/even-dist" --sdk-ver 0.0.16 -o "$RUNNER_TEMP/ojjuda-park.ehpk"
-          test -s "$RUNNER_TEMP/ojjuda-park.ehpk"
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: ojjuda-park-even-g2
-          path: ${{ runner.temp }}/ojjuda-park.ehpk
-          compression-level: 0
-          if-no-files-found: error
+          for attempt in {1..80}; do
+            state=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/45598564671" --jq '.status')
+            if [ "$state" = completed ]; then break; fi
+            sleep 3
+          done
+          test "$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/45598564671" --jq '.conclusion')" = success
+          mkdir -p park-even-install
+          gh run download 45598564671 --name ojjuda-park-even-g2 --dir park-even-install
+          (cd park-even-install && sha256sum ojjuda-park.ehpk > SHA256SUMS)
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config user.name 'github-actions[bot]'
+          git add park-even-install
+          git commit -m 'Stage tested Ojjuda Park beta 1.0.1 for upload'
+          git push origin HEAD:build/park-g2-install-1.0.1
