@@ -219,11 +219,11 @@
     const [, month, day] = date.split('-');
     const weekday = ['일','월','화','수','목','금','토'][new Date(date+'T00:00:00Z').getUTCDay()];
     const dailyItems = new Map(Object.entries(games || {}).filter(([, r]) => r.test && !(r.age >= 19)));
-    // The four daily destinations follow a fixed, easy-to-scan order.
-    const lifeItems = ['group', 'fanpages', 'restaurants', 'festival']
+    // Group is available in the main menu.
+    const lifeItems = ['fanpages', 'restaurants', 'festival']
       .filter(id => id === 'fanpages' || dailyItems.has(id))
       .map(id => ({id, item: dailyItems.get(id)}));
-    const dailyHints = {group:'함께하는 이야기',festival:'이번 주 어디 갈까?',restaurants:'맛있는 발견',tour:'가볍게 떠나요'};
+    const dailyHints = {festival:'이번 주 어디 갈까?',restaurants:'맛있는 발견',tour:'가볍게 떠나요'};
     return `<div class="agit-hub" id="agit-hub-view" data-agit-hub data-agit-season="${theme.season}" data-agit-theme="${theme.key}">
       ${options.guest ? guestEntrance(theme) : `      <header class="agit-hero" aria-label="아지트">
         <div class="agit-hero-story">
@@ -250,8 +250,8 @@
         <div class="agit-life-grid">${lifeItems.map(({id,item},i) => {
            if(id==='fanpages')return `<a class="agit-life-tile agit-life-tile--4" href="/features/fanpages/index.html" data-act="agit-fan" aria-label="팬페이지"><span class="agit-life-top"><span class="agit-life-tile-arrow" aria-hidden="true">→</span></span><span class="agit-life-art"><img src="/features/home/daily-fanpages.webp" alt="" width="600" height="400" loading="lazy"></span><span class="agit-life-title"><strong>팬페이지</strong><small>좋아하는 이야기</small></span></a>`;
           if(!/^[a-z0-9_]+$/.test(id))return '';
-          const cover=['group','restaurants','festival'].includes(id) ? `/features/home/daily-${id}.webp` : `/assets/design/games/${id}.svg`;
-          return `<button type="button" class="agit-life-tile agit-life-tile--${id==='festival'?2:id==='group'?1:id==='restaurants'?3:i%4+1}" data-act="agit-daily" data-v="${id}" aria-label="${escapeHtml(item.name)}${item.memberOnly?' · 회원 전용':''}">
+          const cover=['restaurants','festival'].includes(id) ? `/features/home/daily-${id}.webp` : `/assets/design/games/${id}.svg`;
+          return `<button type="button" class="agit-life-tile agit-life-tile--${id==='festival'?2:id==='restaurants'?3:i%4+1}" data-act="agit-daily" data-v="${id}" aria-label="${escapeHtml(item.name)}${item.memberOnly?' · 회원 전용':''}">
             <span class="agit-life-top"><span class="agit-life-tile-arrow" aria-hidden="true">→</span></span>
             <span class="agit-life-art"><img src="${cover}" alt="" width="600" height="400" loading="lazy"></span>
             <span class="agit-life-title"><strong>${escapeHtml(item.name)}</strong><small>${item.memberOnly?'회원 전용':escapeHtml(dailyHints[id]||'구경하기')}</small></span>

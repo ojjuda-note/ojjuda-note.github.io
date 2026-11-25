@@ -32,6 +32,7 @@ function fixture(place = 'arcade') {
     w: value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])),
     Ts() { ticks++; }, H() { redraws++; }
   });
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '../shared/brand/service-notice.js'), 'utf8'), context);
   vm.runInContext(config + '\n' + markup, context);
   const main = dom.window.document.querySelector('main');
   main.innerHTML = context.Zg() + '<input id="draft" value="작성 중인 내용"><iframe title="공원"></iframe><div id="game">진행 중인 게임</div>';

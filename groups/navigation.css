@@ -1,0 +1,22 @@
+:root {
+  --accent-soft: #e9eee5;
+  --accent-ink: #38574b;
+  --ink-2: #52655a;
+  --surface: var(--paper);
+}
+.group-main-nav {display:flex; align-items:center; gap:8px}
+.group-main-nav a {display:flex; align-items:center; justify-content:center; gap:7px; min-height:44px; padding:6px 12px; border-radius:12px; color:var(--ink-2); font-weight:650}
+.group-main-nav a[aria-current] {color:var(--accent-ink); background:var(--accent-soft)}
+.group-main-nav svg {width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round}
+#group-service-notice:not(:empty) {max-width:1060px; margin:14px auto 0; padding:0 24px}
+#group-service-notice button {border-radius:10px; background:var(--accent-soft); padding:10px 14px}
+@media (max-width:899px) {
+  .top {backdrop-filter:none; -webkit-backdrop-filter:none}
+  .group-main-nav {
+    position:fixed; inset:auto 0 0; z-index:20; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:4px;
+    padding:7px 12px calc(7px + env(safe-area-inset-bottom,0px)); border-top:1px solid var(--line); background:var(--paper);
+  }
+  .group-main-nav a {flex-direction:column; min-height:50px; padding:4px; gap:4px; font-size:11px}
+  #group-service-notice:not(:empty) {padding:0 16px}
+  .fab {bottom:calc(80px + env(safe-area-inset-bottom,0px))}
+}
