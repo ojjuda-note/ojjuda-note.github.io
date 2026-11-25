@@ -100,6 +100,7 @@ function composer(t, { kind = 'memo', edit = false, guest = false } = {}) {
     writingPosition = eventPosition = { latitude: 37, longitude: 127 };
     backdrop.hidden = false;
     text.value = ${JSON.stringify(ORIGINAL)}; tags.value = ${guest ? "''" : "'검사태그'"};
+    autoTagMode = !isGuestComposer() && !editingId; manualTags = tagList(tags.value); rejectedTags = new Set(); autoTagsNow = [];
     document.querySelector('input[name="gender"][value="private"]').checked = true;
     setComposerInputs(); updateComposer();`);
   if (!guest && !edit && kind !== 'event') {
@@ -324,7 +325,7 @@ test('Park masked body and tag limits match the shared code-point counter and pe
     assert.equal(f.run(`textInputMaxLength(${JSON.stringify(value)},200)`), textInputMaxLength(value, 200));
   }
   const body = '가'.repeat(199) + '❤️❤️', tag = '나'.repeat(19) + '❤️❤️';
-  f.run(`text.value=${JSON.stringify(body)};tags.value=${JSON.stringify(tag)};updateComposer();`);
+  f.run(`text.value=${JSON.stringify(body)};tags.value=${JSON.stringify(tag)};tags.dispatchEvent(new Event('input',{bubbles:true}));updateComposer();`);
   assert.equal(f.document.getElementById('compose-count').textContent, '200 / 200자');
   assert.equal(f.document.getElementById('compose-text').maxLength, body.length);
   assert.equal(f.document.getElementById('publish-card').disabled, false);
@@ -359,3 +360,21 @@ for (const view of ['inquiries', 'feedback']) {
     assert.equal(f.writes[0].args.p_body ?? f.writes[0].args.body, body);
   });
 }
+
+
+test('Park manual tag edits survive new-card auto suggestions and retry', async t => {
+  const f = composer(t);
+  const text = f.document.getElementById('compose-text'), tags = f.document.getElementById('compose-tags');
+  text.value = '친구랑 커피 마셨어.';
+  text.dispatchEvent(new f.window.Event('input',{bubbles:true}));
+  assert.equal(tags.value,'검사태그, 친구, 커피');
+  tags.value='검사태그, 커피, 직접태그';
+  tags.dispatchEvent(new f.window.Event('input',{bubbles:true}));
+  text.value='친구랑 커피 마셨어. 노래';
+  text.dispatchEvent(new f.window.Event('input',{bubbles:true}));
+  assert.equal(tags.value,'검사태그, 직접태그, 커피, 노래');
+  f.setError(NETWORK); await f.send();
+  assert.equal(tags.value,'검사태그, 직접태그, 커피, 노래');
+  f.setError(null); await f.send();
+  assert.deepEqual(f.writes.at(-1).args.p_tags,['검사태그','직접태그','커피','노래']);
+});

@@ -135,7 +135,7 @@ async function checkCompactColors(page, viewport, area, keyboard = false) {
 (async () => {
   const browser = await chromium.launch({headless:true, executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined, args:['--no-sandbox','--disable-dev-shm-usage']});
   try {
-    for (const viewport of [{width:320,height:480}, {width:360,height:640}, {width:640,height:360}, {width:1280,height:800}]) {
+    for (const viewport of [{width:320,height:480}, {width:360,height:640}, {width:640,height:360}, {width:820,height:920}, {width:1280,height:800}]) {
       const context = await browser.newContext({viewport, isMobile:viewport.width < 900, hasTouch:true, reducedMotion:'reduce'});
       await context.addInitScript(() => {
         const viewport = new EventTarget();
@@ -206,11 +206,13 @@ async function checkCompactColors(page, viewport, area, keyboard = false) {
             replies.replaceChildren(cardElement({...card, id:'00000000-0000-4000-8000-000000000002', kind:'comment'}, true));
           });
           await settle(page);
-          await page.evaluate(() => window.scrollTo(0, document.scrollingElement.scrollHeight));
+          await page.evaluate(() => window.scrollTo({top:document.scrollingElement.scrollHeight,behavior:'instant'}));
+          await settle(page);
           const nav = await page.locator('.bottomnav').boundingBox();
           const reply = page.locator('#reply-list .reply-card');
           const box = await reply.boundingBox();
-          assert.ok(box.y + box.height <= nav.y, 'the entire last reply clears the fixed bottom navigation');
+          const geometry=await page.evaluate(()=>({scrollY,scrollHeight:document.scrollingElement.scrollHeight,viewport:innerHeight,padding:getComputedStyle(document.querySelector('#main')).paddingBottom,navHeight:getComputedStyle(document.documentElement).getPropertyValue('--app-nav-height')}));
+          assert.ok(box && box.y + box.height <= nav.y + 1, 'the entire last reply clears the fixed bottom navigation: '+JSON.stringify({viewport,box,nav,...geometry}));
           await assertInside(page, reply.locator('[data-reaction="like"]'), {bottom:nav.y}, 'reply like button');
           await page.evaluate(() => showFeed(false));
         }
