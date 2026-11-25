@@ -13,6 +13,18 @@ function observation(code='DB05',label='비',at='11.19.(목) 12:10'){
 }
 const response=(...args)=>new Response(observation(...args),{headers:{'Content-Type':'text/html;charset=UTF-8'}});
 
+test('installed G2 WebViews can read only named public district cells with the project key',async()=>{
+  const {createHandler}=await api;
+  const handler=createHandler({now:()=>NOW,publishableKeys:[KEY],fetch:async()=>response()});
+  const origin={Origin:'https://installed.example'};
+  const valid=await handler(get('district=60%2C127',origin));
+  assert.equal(valid.status,200); assert.equal(valid.headers.get('Access-Control-Allow-Origin'),'*');
+  assert.equal((await handler(get('district=60%2C127',{...origin,apikey:''}))).status,401);
+  for (const query of ['nx=60&ny=127','district=1,253','district=60,127&lat=37.5']) {
+    assert.equal((await handler(get(query,origin))).status,403);
+  }
+});
+
 test('only KMA current precipitation codes select rain/snow; missing and conflicting values are rejected',async()=>{
   const {weatherKind}=await api;
   for(const [code,label] of [['DB05','비'],['DB09','소나기'],['DB10','빗방울']])assert.equal(weatherKind(label,code),'rain');

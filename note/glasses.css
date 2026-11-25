@@ -15,7 +15,7 @@ body { margin: 0; }
 .full { position: absolute; inset: 18% 3% 21% 22%; overflow-y: auto !important; white-space: pre-wrap; }
 [hidden] { display: none !important; }
 .controls { justify-content: center; flex-wrap: wrap; margin: 1rem 0; }
-.controls button, .controls select, summary { padding: .65rem .85rem; border: 1px solid #486055; border-radius: .65rem; background: #16221c; color: inherit; font: inherit; font-size: .9rem; cursor: pointer; }
+.page-header button, .controls button, .controls select, summary { padding: .65rem .85rem; border: 1px solid #486055; border-radius: .65rem; background: #16221c; color: inherit; font: inherit; font-size: .9rem; cursor: pointer; }
 button:enabled { cursor: pointer; } button:disabled { opacity: .45; }
 :focus-visible { outline: 2px solid #e2ffbb; outline-offset: 2px; }
 .status, details p { text-align: center; font-size: .85rem; color: #b9cbbd; }

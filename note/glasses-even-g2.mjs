@@ -6,6 +6,7 @@ function box(id, name, x, y, w, h, content, capture = 0, border = 0) {
 }
 
 export function g2Page(view) {
+  if (view.paused) return {containerTotalNum:1,textObject:[box(1,'standby',0,0,576,288,' ',1)]};
   const cards = view.cards;
   const fields = [
     box(1,'clock',12,6,150,32,view.time),
@@ -42,7 +43,7 @@ export async function attachEvenG2(hud) {
       while (alive && dirty) {
         dirty = false;
         const next = g2Page(hud.getView());
-        if (page.textObject[4].containerName !== next.textObject[4].containerName) {
+        if (page.containerTotalNum !== next.containerTotalNum) {
           if (await bridge.rebuildPageContainer(next)) page = next;
         } else {
           for (let i=0;i<next.textObject.length && alive;i++) {

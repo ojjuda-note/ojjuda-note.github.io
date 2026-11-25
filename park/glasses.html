@@ -24,12 +24,12 @@
 <meta name="twitter:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
   <link rel="icon" href="/favicon.svg?v=20261022-agit-logo2" type="image/svg+xml">
-  <link rel="stylesheet" href="/note/glasses.css?v=20261125-g2-public1">
+  <link rel="stylesheet" href="/note/glasses.css?v=20261125-even-settings1">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261022-agit-logo2">
 <script src="/shared/navigation/section-back.js?v=20261123-independent-park1" data-return-to="park" defer></script></head>
 <body>
   <main class="preview-page">
-    <header class="page-header"><a href="/park/" class="back-link">← 오쭈다 공원</a><h1>Even G2</h1></header>
+    <header class="page-header"><a href="/park/" class="back-link">← 오쭈다 공원</a><h1>Even G2</h1><button type="button" id="glass-power" aria-controls="glass-view">화면 끄기</button></header>
     <section class="hud" id="glass-view" aria-label="G2 화면 미리보기">
       <time id="glass-clock" class="clock">--:--</time>
       <span id="glass-battery" class="battery" aria-label="안경 배터리">—%</span>
@@ -41,9 +41,11 @@
       <span id="glass-weather" class="weather">—° · 날씨 —</span>
       <span id="glass-speed" class="speed">— km/h</span>
     </section>
-    <div class="controls">
+    <div class="controls" id="glass-controls">
       <button type="button" id="glass-prev" disabled>이전</button>
       <button type="button" id="glass-next" disabled>다음</button>
+      <button type="button" id="glass-children" hidden>달린 답카드 보기</button>
+      <button type="button" id="glass-back" hidden>상위 답카드</button>
       <select id="glass-area" aria-label="날씨와 가까운 카드를 볼 지역">
         <option value="">지역 선택</option>
         <optgroup label="서울특별시">
@@ -347,6 +349,6 @@
   </main>
   <script src="/config.js?v=20261111-shared-member-auth1"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
-  <script src="/note/glasses.js?v=20261125-g2-public1" defer></script>
+  <script src="/note/glasses.js?v=20261125-g2-thread1" defer></script>
 </body>
 </html>

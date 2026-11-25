@@ -152,3 +152,29 @@ test('the G2 renders distance inside the lower right of each message, within the
     else{inside(xs[4],xs[6]);inside(xs[5],xs[7]);assert.equal(xs[7].content,'2km 이내');}
   }
 });
+
+test('public nested replies open from their parent and return to the same sibling',async()=>{
+  const {get,hud}=await setup({user:null});
+  get('glass-sample').onclick();hud.select();hud.move(1);
+  assert.equal(hud.getView().reader.hasReplies,true);
+  get('glass-children').onclick();
+  assert.match(hud.getView().reader.title,/2단계 답카드 1\/1/);
+  assert.equal(hud.getView().reader.body,'은행나무 옆 벤치도 좋아요.');
+  hud.move(-1);assert.equal(hud.getView().reader.body,'저도 이 길을 좋아해요.');
+  hud.move(1);assert.equal(get('glass-children').hidden,true);
+  get('glass-power').onclick();assert.equal(hud.getView().paused,true);
+  hud.select();assert.equal(hud.getView().paused,false);
+});
+
+test('nearby grandchildren and great-grandchildren retain distance, parent and sibling order',async()=>{
+  const tree={a:[['one','첫 답',true],['two','다음 답',false]],one:[['child','속 답',true]],child:[['deep','더 깊은 답',false]]};
+  const {hud}=await setup({granted:true,replies:async p=>{
+    const items=(tree[p.p_parent]||[]).map(([id,body,has_replies])=>({id,body,has_replies,distance_band:'2km'}));
+    return {data:{items,total:items.length,next:null}};
+  }});
+  hud.select();await delay(0);hud.move(1);hud.select();await delay(0);hud.select();await delay(0);
+  assert.equal(hud.getView().reader.body,'더 깊은 답');
+  assert.equal(hud.getView().reader.distance,'2km 이내');
+  hud.move(-1);assert.equal(hud.getView().reader.body,'속 답');
+  hud.move(-1);hud.move(1);assert.equal(hud.getView().reader.body,'다음 답');
+});

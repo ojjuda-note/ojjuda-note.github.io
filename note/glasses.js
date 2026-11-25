@@ -14,6 +14,7 @@
   let battery = null, charging = false, weather = null, speed = null, speedUntil = 0;
   let weatherHint = '날씨 · 지역 선택', permission, autoPaused = false;
   let source = 'recent', feedRequest;
+  let paused = false, resumeLocation = false;
   const dist = band => {
     if (band === '근처') return '1km 이내';
     return typeof band === 'string' && /^[1-9]\d{0,4}km$/.test(band) ? band + ' 이내' : '거리 미확인';
@@ -33,19 +34,25 @@
       const t = thread, reply = t.items[t.at-1];
       const label = t.error ? '다시 시도 ↓' : t.total === null ? '답카드 확인 중' :
         t.total ? '답카드 ' + t.total + '개 ↓' : '답카드 없음';
-      reader = {title:(reply ? '답카드 ' + t.at + '/' + t.total + (t.error ? ' · 다시 시도 ↓' : '') : '원글 · '+label)
-          + (t.public && t.total > 1 ? ' · 최신순' : ''),
-        body:reply?.body ?? cards[0].body, distance:reply?.distance ?? cards[0].distance,
-        prev:t.at>0, next:t.at<t.items.length || (!t.busy && (!!t.next || t.error))};
+      const pageLabel=(t.depth>1 ? t.depth+'단계 ' : '')+'답카드 '+t.at+'/'+t.total;
+      const current=reply || t.card;
+      reader = {title:(reply ? pageLabel + (t.error ? ' · 다시 시도 ↓' : '') : (t.parent ? '답카드 · ' : '원글 · ')+label)
+          + (reply?.hasReplies ? ' · 탭해 답 보기' : t.public && t.total>1 ? ' · 최신순' : ''),
+        body:current.body, distance:current.distance, hasReplies:!!reply?.hasReplies,
+        prev:t.at>0 || !!t.parent, next:t.at<t.items.length || (!t.busy && (!!t.next || t.error))};
     }
     return {time:clock.format(now), battery, charging, speed:now<speedUntil ? speed : null,
       weather:weather && weather.expiresAt>now ? weather.text : weatherHint,
-      cards, card:cards[0] || null, expanded:!!reader, reader, sample};
+      cards, card:cards[0] || null, expanded:!!reader, reader, sample, paused};
   }
   function render() {
     const view = model();
+    byId('glass-power').textContent = paused ? '화면 켜기' : '화면 끄기';
+    byId('glass-view').hidden = paused;
+    byId('glass-controls').hidden = paused;
+    status.hidden = paused;
     byId('glass-sample').textContent = sample ? '예시 닫기' : '예시 보기';
-    byId('glass-signin').hidden = owner !== null;
+    byId('glass-signin').hidden = owner !== null || !!document.documentElement?.dataset?.evenApp;
     locate.hidden = !owner;
     byId('glass-clock').textContent = view.time;
     byId('glass-battery').textContent = (battery == null ? '—' : battery) + '%' + (charging ? ' ⚡' : '');
@@ -60,17 +67,29 @@
     buttons[0].parentElement.hidden = view.expanded;
     const full = byId('glass-full');
     full.hidden = !view.expanded;
+    full.ariaLabel = view.reader?.hasReplies ? '달린 답카드 보기' : thread?.parent ? '상위 답카드로 돌아가기' : '본문 닫기';
+    byId('glass-children').hidden = !view.reader?.hasReplies;
+    byId('glass-back').hidden = !thread?.parent || thread.at<=1;
     byId('glass-reader-heading').textContent = view.reader?.title ?? '';
     const body = byId('glass-reader-body'), text = view.reader?.body ?? '';
     if (body.textContent !== text) { body.textContent = text; body.scrollTop = 0; }
     byId('glass-reader-distance').textContent = view.reader?.distance ?? '';
     byId('glass-prev').disabled = view.reader ? !view.reader.prev : !index;
     byId('glass-next').disabled = view.reader ? !view.reader.next : index >= rows.length-1;
-    byId('glass-prev').textContent = thread?.at === 1 ? '원글' : '이전';
+    byId('glass-prev').textContent = thread?.parent && thread.at<=1 ? '상위 답카드' : thread?.at === 1 ? '원글' : '이전';
     byId('glass-next').textContent = thread?.error ? '다시 시도' : (thread?.at === 0 && view.reader.next ? '답카드 보기' : '다음');
     window.dispatchEvent(new CustomEvent('ojjuda:glasses-view', {detail:view}));
   }
-  function closeThread() { thread?.controller.abort(); thread = null; }
+  function closeThread() {
+    while (thread) { thread.controller.abort(); thread=thread.parent; }
+  }
+  function back() {
+    if (!thread) return;
+    thread.controller.abort();
+    thread=thread.parent;
+    render();
+    byId(thread ? 'glass-full' : 'glass-first').focus({preventScroll:true});
+  }
   function setCards(data, message = '', order = 'recent') {
     if (source !== order) { closeThread(); index = 0; }
     source = order;
@@ -92,10 +111,10 @@
     if (!t.next) {
       const parent = await api.rpc('get_card', {p_id:t.id}).abortSignal(signal);
       if (parent.error) throw parent.error;
-      if (!parent.data || parent.data.kind !== 'memo' || parent.data.tags?.includes('19금')) return null;
+      if (!parent.data || parent.data.kind !== (t.parent ? 'comment' : 'memo') || parent.data.tags?.includes('19금')) return null;
     }
     const snapshot = t.snapshot || new Date().toISOString();
-    let query = api.from('public_cards').select('id,body,created_at', {count:t.next ? undefined : 'exact'})
+    let query = api.from('public_cards').select('id,body,created_at,reply_count', {count:t.next ? undefined : 'exact'})
       .eq('parent_id',t.id).eq('kind','comment').not('tags','cs','{19금}').lte('created_at',snapshot);
     if (t.next) {
       const {created_at,id} = t.next;
@@ -114,8 +133,9 @@
       let result;
       if (sample) {
         const items = t.id==='sample-0' ? [
-          {id:'sample-r1',body:'저도 이 길을 좋아해요.',distance_band:'근처'},
-          {id:'sample-r2',body:'다음엔 저도 걸어볼게요.',distance_band:'3km'}] : [];
+          {id:'sample-r1',body:'저도 이 길을 좋아해요.',distance_band:'근처',has_replies:true},
+          {id:'sample-r2',body:'다음엔 저도 걸어볼게요.',distance_band:'3km'}] : t.id==='sample-r1' ?
+          [{id:'sample-r1-1',body:'은행나무 옆 벤치도 좋아요.',distance_band:'2km'}] : [];
         result = {items,total:items.length,next:null};
       } else if (t.public) {
         result = await publicReplies(t);
@@ -128,22 +148,34 @@
       }
       if (thread !== t || owner !== t.owner) return;
       if (!result) {
-        rows.splice(index,1); index=Math.max(0,Math.min(index,rows.length-1)); closeThread();
+        if (t.parent) {
+          const parent=t.parent;
+          parent.items.splice(parent.at-1,1);
+          parent.at=Math.min(parent.at,parent.items.length);
+          parent.total=Math.max(parent.items.length,parent.total-1);
+          back();
+        } else {
+          rows.splice(index,1); index=Math.max(0,Math.min(index,rows.length-1)); closeThread();
+        }
         status.textContent='이제 볼 수 없는 카드예요.'; return;
       }
       const seen = new Set(t.items.map(row=>row.id));
       for (const row of result.items) if (row.body && !seen.has(row.id)) {
-        t.items.push({id:row.id,body:row.body,distance:t.public ? '' : dist(row.distance_band)}); seen.add(row.id);
+        t.items.push({id:row.id,body:row.body,distance:t.public ? '' : dist(row.distance_band),
+          hasReplies:row.has_replies===true || row.reply_count>0}); seen.add(row.id);
       }
       t.total = result.next ? Math.max(t.items.length,result.total) : t.items.length;
       t.next = result.next; t.snapshot = result.snapshot;
+      if (t.parent && t.total===0) t.card.hasReplies=false;
       if (advance && t.at<t.items.length) ++t.at;
     } catch { if (thread===t) t.error=true; }
     finally { t.busy=false; if (thread===t || !thread) render(); }
   }
   function move(delta) {
+    if (paused) return;
     if (thread) {
       const t=thread;
+      if (delta<0 && t.parent && t.at<=1) { back(); return; }
       if (delta<0) t.at=Math.max(0,t.at-1);
       else if (t.at<t.items.length) ++t.at;
       else if (t.next || t.error) { void readReplies(t,true); return; }
@@ -151,12 +183,16 @@
     render();
   }
   function select(offset = 0) {
-    if (thread) { closeThread(); render(); byId('glass-first').focus({preventScroll:true}); return; }
-    if (!rows[index+offset]) return;
-    index+=offset;
-    thread={id:rows[index].id,owner,fix:tracking?.fix,public:!sample && source!=='nearby',controller:new AbortController(),items:[],
+    if (paused) { togglePower(); return; }
+    const parent=thread;
+    const card=parent ? parent.items[parent.at-1] : rows[index+offset];
+    if (parent && !card?.hasReplies) { back(); return; }
+    if (!card) return;
+    if (!parent) index+=offset;
+    thread={id:card.id,card,parent,depth:(parent?.depth || 0)+1,owner,fix:parent?.fix ?? tracking?.fix,
+      public:parent?.public ?? (!sample && source!=='nearby'),controller:new AbortController(),items:[],
       at:0,total:null,next:null,snapshot:null,busy:false,error:false};
-    void readReplies(thread);
+    void readReplies(thread,!!parent);
     byId('glass-full').focus({preventScroll:true});
   }
   function setBattery(level, isCharging = false) {
@@ -165,7 +201,7 @@
     render();
   }
   async function loadCards(position, expected, note = '') {
-    if (!db || tracking !== expected || sample || document.hidden) return;
+    if (!db || tracking !== expected || sample || paused || document.hidden) return;
     feedRequest?.abort();
     const request = new AbortController();
     feedRequest = request;
@@ -243,7 +279,8 @@
       if (!current()) return;
       if (request.signal.aborted) throw Error('weather_timeout');
       const endpoint=new URL('/functions/v1/theme-weather',config.supabaseUrl);
-      endpoint.search=new URLSearchParams({nx:grid.nx,ny:grid.ny});
+      endpoint.search=new URLSearchParams(document.documentElement?.dataset?.evenApp && active.area ?
+        {district:grid.nx+','+grid.ny} : {nx:grid.nx,ny:grid.ny});
       const response=await fetch(endpoint,{headers:{apikey:config.supabaseKey},signal:request.signal});
       if (!response.ok) throw Error('weather');
       const data=await response.json();
@@ -277,6 +314,7 @@
     render();
   }
   async function beginLocation(automatic = false) {
+    if (paused) return;
     if (tracking?.area && !automatic) { areaSelect.value=''; stopTracking(); }
     if (tracking) {
       if (!automatic) { autoPaused=true; resetFeed(); }
@@ -319,6 +357,7 @@
     if (!document.hidden) void loadCards(null,tracking,note);
   }
   function chooseArea() {
+    if (paused) return;
     const option=areaSelect.selectedOptions?.[0];
     if (!option?.value) { resetFeed(); return; }
     const [latitude,longitude,nx,ny]=option.value.split(',').map(Number);
@@ -348,7 +387,7 @@
   }
   async function autoLocate() {
     const run=++autoRun, id=owner;
-    if (!id || !service || sample || tracking || autoPaused || document.hidden) return;
+    if (!id || !service || sample || paused || tracking || autoPaused || document.hidden) return;
     try {
       const allowed=await navigator.permissions?.query({name:'geolocation'});
       if (run!==autoRun || id!==owner || !allowed) return;
@@ -365,6 +404,20 @@
     if (permission?.state==='granted') { void autoLocate(); return; }
     if (tracking && !tracking.native && !tracking.area) resetFeed();
   }
+  function togglePower() {
+    paused=!paused;
+    if (paused) {
+      resumeLocation=!!tracking && !tracking.area;
+      ++autoRun; stopTracking(); closeThread();
+      if (!sample) setCards([]);
+    } else if (!sample) {
+      if (areaSelect.value) chooseArea();
+      else if (resumeLocation && owner) { void beginLocation(); }
+      else { resetFeed(); void autoLocate(); }
+    }
+    render();
+  }
+  byId('glass-power').onclick = togglePower;
   byId('glass-sample').onclick = () => {
     if (sample) { if (areaSelect.value) chooseArea(); else {resetFeed(); void autoLocate();} return; }
     ++autoRun; stopTracking(); sample=true;
@@ -372,6 +425,8 @@
   };
   buttons.forEach((button,n) => {button.onclick=()=>select(n);});
   byId('glass-full').onclick = () => select();
+  byId('glass-children').onclick = () => select();
+  byId('glass-back').onclick = back;
   byId('glass-prev').onclick = () => move(-1);
   byId('glass-next').onclick = () => move(1);
   locate.onclick = () => { ++autoRun; return beginLocation(); };
@@ -388,7 +443,7 @@
   byId('glass-retry').onclick = () => { void loadCards(tracking?.area || tracking?.fix,tracking); };
   byId('glass-view').addEventListener('keydown', event => {
     if (['ArrowLeft','ArrowRight'].includes(event.key)) { event.preventDefault(); move(event.key === 'ArrowLeft' ? -1 : 1); }
-    else if (event.key === 'Escape' && thread) select();
+    else if (event.key === 'Escape' && thread) back();
   });
   window.OJJUDA_GLASS_PREVIEW = Object.freeze({setBattery,setCards,move,select,getView:model,
     setLocation: fix => acceptFix(fix,tracking)});
@@ -405,7 +460,7 @@
       subscription = db.auth.onAuthStateChange((_event,session) => {
         const id = session?.user && !session.user.is_anonymous ? session.user.id : null;
         if (owner === id) return;
-        owner = id; autoPaused=false; ++autoRun; sample=false; stopTracking(); closeThread();
+        owner = id; autoPaused=false; resumeLocation=false; ++autoRun; sample=false; stopTracking(); closeThread();
         areaSelect.value=''; setCards([], '공개 카드 불러오는 중');
         stopPreference(); stopPreference = () => {};
         // Wait until Supabase releases its auth lock.
@@ -423,13 +478,14 @@
   async function connectG2() {
     const message = byId('g2-status');
     message.textContent = 'G2 연결을 기다리는 중…';
-    const hint = setTimeout(() => { message.textContent = 'Even Realities 앱의 개발자 모드에서 QR을 열어 주세요.'; }, 10000);
+    const installed=!!document.documentElement?.dataset?.evenApp;
+    const hint = setTimeout(() => { message.textContent = installed ? 'Even 앱에서 G2 연결 상태를 확인해 주세요.' : 'Even Realities 앱의 개발자 모드에서 QR을 열어 주세요.'; }, 10000);
     try {
-      const {attachEvenG2} = await import('/park/even-g2.bundle.mjs?v=20261125-even-g2-replies1');
+      const {attachEvenG2} = await import('/park/even-g2.bundle.mjs?v=20261125-even-settings1');
       hardware = await attachEvenG2(window.OJJUDA_GLASS_PREVIEW);
       byId('g2-setup').hidden = true;
       message.textContent = 'G2 화면을 열었어요.';
-    } catch { message.textContent = 'G2 연결을 확인하고 Even Realities 앱에서 QR을 다시 스캔해 주세요.'; }
+    } catch { message.textContent = 'Even 앱에서 G2 연결을 확인한 뒤 공원을 다시 열어 주세요.'; }
     finally { clearTimeout(hint); }
   }
   document.addEventListener('visibilitychange', () => {
@@ -447,5 +503,10 @@
     if (!event.persisted) { clearInterval(timer); stopPreference(); permission?.removeEventListener('change',permissionChanged); subscription?.unsubscribe(); hardware?.dispose(); }
   });
   render(); void initFeed();
-  if (new URL(location.href).searchParams.get('g2') === '1') void connectG2();
+  const params=new URL(location.href).searchParams;
+  if (params.get('g2') === '1' || document.documentElement?.dataset?.evenApp) void connectG2();
+  else if (params.get('launch')==='1') {
+    byId('g2-setup').hidden=true;
+    byId('g2-status').textContent='휴대폰 미리보기 · 안경용 앱 등록 준비 중';
+  }
 })();
