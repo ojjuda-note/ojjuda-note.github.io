@@ -505,8 +505,5 @@
   render(); void initFeed();
   const params=new URL(location.href).searchParams;
   if (params.get('g2') === '1' || document.documentElement?.dataset?.evenApp) void connectG2();
-  else if (params.get('launch')==='1') {
-    byId('g2-setup').hidden=true;
-    byId('g2-status').textContent='휴대폰 미리보기 · 안경용 앱 등록 준비 중';
-  }
+  else if (params.get('developer') === '1') byId('g2-setup').hidden = false;
 })();

@@ -160,7 +160,7 @@
     }
     const help = group('활동·도움');
     const glasses = disclosure(help, '스마트 글라스');
-    link(glasses, 'even-g2', '이븐리얼리티 G2', '/park/glasses.html?launch=1');
+    link(glasses, 'even-g2', '이븐리얼리티 G2', 'https://hub.evenrealities.com/landing?package_id=kr.ojjuda.park');
     if (!parkJunior()) {
       const charge = row(help, 'charge', '쭈 충전', () => window.OjjudaCharge?.open?.());
       charge.setAttribute('aria-haspopup', 'dialog');
