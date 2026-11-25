@@ -1,20 +1,31 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content"><meta name="theme-color" content="#38574b"><title>그룹 · 오쭈다 아지트</title><meta name="description" content="오쭈다 아지트 그룹에서 친구와 모임을 만들고 함께 이야기해 보세요. 회원 전용 게시물과 초대 정보는 로그인 후에만 볼 수 있어요."><script>
-// Direct entry opens the same tab as the main menu. Shared room and invite URLs keep their landing page.
-if(window===window.top && !location.search && !location.hash)location.replace('/world.html?tab=group');
-</script><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/shared/viewport/mobile-viewport.css?v=20261106-source-folders1"><link rel="stylesheet" href="/groups/style.css?v=20261123-search-submit1"><link rel="stylesheet" href="/groups/composer.css?v=20261124-single-tab-highlight1"><link rel="stylesheet" href="/features/groups/appearance.css?v=20261126-group-directory1"><script src="/config.js" defer></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2" defer></script><script src="/shared/content/word-mask.js?v=20261119-word-masking1" defer></script><script src="/groups/activities.js?v=20261124-wheel-draw1" defer></script><script src="/shared/viewport/mobile-viewport.js?v=20261106-source-folders1" defer></script><script src="/groups/composer.js?v=20261124-single-tab-highlight1" defer></script><script src="/shared/art/cozy-scenes.js?v=20261118-cozy100-1" defer></script>
+// Preserve shared room, invitation and referral links inside the Agit shell.
+if(window===window.top){
+ const source=new URL(location.href);
+ const supported=[...source.searchParams.keys()].every(key=>['ref','play_store'].includes(key));
+ if(supported&&(!source.hash||/^#(?:room|invite)=[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(source.hash))){
+  const target=new URL('/world.html',source.origin);
+  target.searchParams.set('tab','group');
+  for(const key of ['ref','play_store'])if(source.searchParams.has(key))target.searchParams.set(key,source.searchParams.get(key));
+  target.hash=source.hash;
+  location.replace(target.href);
+ }
+}
+</script><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/shared/viewport/mobile-viewport.css?v=20261106-source-folders1"><link rel="stylesheet" href="/groups/style.css?v=20261123-search-submit1"><link rel="stylesheet" href="/groups/composer.css?v=20261124-single-tab-highlight1"><link rel="stylesheet" href="/features/groups/appearance.css?v=20261126-theme1"><script src="/config.js" defer></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2" defer></script><script src="/shared/content/word-mask.js?v=20261119-word-masking1" defer></script><script src="/groups/activities.js?v=20261126-theme1" defer></script><script src="/shared/viewport/mobile-viewport.js?v=20261106-source-folders1" defer></script><script src="/groups/composer.js?v=20261126-theme1" defer></script><script src="/shared/art/cozy-scenes.js?v=20261118-cozy100-1" defer></script>
 <link rel="stylesheet" href="/shared/brand/service-header.css?v=20261119-main-invite1">
 <link rel="stylesheet" href="/shared/brand/service-notice.css?v=20261126-group-menu1">
 <link rel="stylesheet" href="/shared/share/page-share.css?v=20261123-park-share1">
 <link rel="stylesheet" href="/note/notifications.css?v=20261116-guest-inbox1">
-<link rel="stylesheet" href="/groups/navigation.css?v=20261126-group-swipes1">
+<link rel="stylesheet" href="/app/world/world-themes.css?v=20261126-theme1">
+<link rel="stylesheet" href="/groups/navigation.css?v=20261126-theme1">
 <script src="/app/world/world-themes.js?v=20261119-auto-theme1" defer></script>
 <script src="/shared/brand/service-notice.js?v=20261126-group-menu1" defer></script>
 <script src="/shared/auth/invite-referral.js?v=20261119-invite-referral1" defer></script>
 <script src="/shared/share/page-share.js?v=20261126-group-menu1" defer></script>
 <script src="/note/notifications.js?v=20261125-local-settings1" defer></script>
-<script src="/app/world/world-navigation.js?v=20261126-group-swipes1" defer></script>
-<script src="/groups/app.js?v=20261126-group-shell1" defer></script><script src="/shared/navigation/section-back.js?v=20261119-history1" data-return-to="hub" defer></script></head>
+<script src="/app/world/world-navigation.js?v=20261126-theme1" defer></script>
+<script src="/groups/app.js?v=20261126-theme1" defer></script><script src="/shared/navigation/section-back.js?v=20261119-history1" data-return-to="hub" defer></script></head>
 <body><header class="top ojjuda-service-header"><div class="ojjuda-service-brand"><a class="ojjuda-service-home" href="/world.html?tab=hub"><img class="ojjuda-service-logo" src="/favicon.svg" width="30" height="30" alt=""><span class="ojjuda-service-word">오쭈다 <b class="ojjuda-service-name">아지트</b></span></a></div>
 <nav class="group-main-nav" aria-label="아지트 메뉴">
 <a data-tab="hub" href="/world.html?tab=hub"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="/assets/design/interface.svg?v=20261126-group-icon1#home"/></svg><span>아지트</span></a>

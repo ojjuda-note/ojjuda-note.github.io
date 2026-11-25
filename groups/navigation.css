@@ -5,7 +5,7 @@
   --accent-ink: #38574b;
   --ink-2: #52655a;
   --ink: #263e33;
-  --surface: var(--paper);
+  --surface: #fff;
 }
 body {min-height:100vh; min-height:100dvh}
 .group-main-nav {display:flex; align-items:center; gap:8px}
@@ -24,3 +24,34 @@ body {min-height:100vh; min-height:100dvh}
   #group-service-notice:not(:empty) {padding:0 16px}
   .fab {bottom:calc(80px + env(safe-area-inset-bottom,0px))}
 }
+
+/* The directory uses Agit's active season, weather and appearance. */
+:root {
+  --green:var(--accent,#38574b);
+  --paper:var(--surface,#fff);
+  --muted:var(--ink-2,#67776c);
+  background-color:var(--bg,#f7f8f4);
+  color:var(--ink);
+}
+:root:not([data-world-theme]) {--surface:#fff}
+:host {
+  display:block; background:transparent; font:inherit; color:var(--ink);
+  --green:var(--accent); --paper:var(--surface); --muted:var(--ink-2);
+}
+:host #app {max-width:1264px; margin:0 auto; padding:0 32px 26px}
+@media(max-width:1100px){:host #app{padding-inline:24px}}
+@media(max-width:899px){:host #app{padding-inline:20px}}
+@media(max-width:600px){:host #app{padding-inline:18px}}
+:host .fab {bottom:calc(var(--app-nav-height,64px) + 12px)}
+:host #toast {bottom:calc(var(--app-nav-height,64px) + 18px)}
+#app button.primary, #directory .group-card-footer button.primary, .hero-top .mine-toggle[aria-pressed="true"], .directory-sort button.active {
+  background:var(--green); border-color:var(--green); color:var(--on-accent,#fff)
+}
+.hero-top .mine-toggle, .toolbar {background:var(--accent-soft); border-color:var(--line); color:var(--accent-ink)}
+.group-directory-hero .actions button:not(.primary), .directory-sort button:not(.active), .directory-toolbar input[type="search"] {
+  background:var(--paper); border-color:var(--line); color:var(--ink)
+}
+#app .group-directory-hero + .directory-toolbar {background:transparent}
+#directory .group-card.post {background:var(--paper); border-color:var(--line)}
+#directory .group-card-footer .metadata, #directory .group-description {color:var(--muted)}
+.group-room-hero h1, .group-room-hero .actions button {color:#263e33}

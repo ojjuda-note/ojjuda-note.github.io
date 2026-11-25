@@ -1,6 +1,12 @@
 (() => {
 'use strict';
-window.OjjudaWordMask?.watchInputs(document,'input[maxlength]:not([type=search]),textarea[maxlength]');
+function mount(root=document){
+const integrated=root!==document, visible=()=>!integrated||!root.host.hidden;
+const lifetime=new AbortController();
+const listen=(target,type,fn)=>target.addEventListener(type,fn,{signal:lifetime.signal});
+let authSubscription, markReady;
+const ready=new Promise(resolve=>{markReady=resolve;});
+const stopMask=window.OjjudaWordMask?.watchInputs(root,'input[maxlength]:not([type=search]),textarea[maxlength]');
 const Age=(() => {
  'use strict';
  const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -57,7 +63,7 @@ const GroupAppearance=(()=>{
 })();
 
 const activities=window.OjjudaGroupActivities;
-const $=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $=s=>root.querySelector(s), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uuid=()=>{if(crypto.randomUUID)return crypto.randomUUID();const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6]&15)|64;a[8]=(a[8]&63)|128;return [...a].map((b,i)=>([4,6,8,10].includes(i)?'-':'')+b.toString(16).padStart(2,'0')).join('');};
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const sharedCode=()=>{const code=new URLSearchParams(location.hash.slice(1)).get('invite');return UUID.test(code||'')?code:null;};
@@ -85,7 +91,7 @@ const invitationApi=(action,payload={})=>rpc('group_invitation',{p_action:action
 function cachedMedia(path){const entry=mediaCache.get(path);if(!entry)return null;mediaCache.delete(path);mediaCache.set(path,entry);return entry.url;}
 function trimMediaCache(protectedPath){
  if(mediaBytes<=MEDIA_CACHE_LIMIT)return;
- const used=new Set([...document.querySelectorAll('img[src^="blob:"],video[src^="blob:"]')].map(el=>el.src));
+ const used=new Set([...root.querySelectorAll('img[src^="blob:"],video[src^="blob:"]')].map(el=>el.src));
  for(const [path,entry] of mediaCache){
   if(mediaBytes<=MEDIA_CACHE_LIMIT||mediaCache.size<=1)break;
   if(path===protectedPath||used.has(entry.url))continue;
@@ -153,17 +159,18 @@ async function makePreview(file){
  }catch{return null;}
  finally{source?.close?.();if(sourceUrl)URL.revokeObjectURL(sourceUrl);}
 }
-function gate(message=sharedCode()?'로그인 후 초대를 수락해 주세요.':'로그인하고 우리만의 그룹을 만들어 보세요.') {epoch++;clearMedia(true);for(const d of document.querySelectorAll('dialog'))d.close();$('#app').innerHTML=`<section class="hero"><div><h1>그룹</h1></div></section><div class="empty"><strong>${esc(message)}</strong><a href="/?auth=login&amp;next=groups${sharedCode()?'&amp;invite='+encodeURIComponent(sharedCode()):''}" class="back">로그인 · 가입 →</a></div>`;}
+function gate(message=sharedCode()?'로그인 후 초대를 수락해 주세요.':'로그인하고 우리만의 그룹을 만들어 보세요.') {epoch++;clearMedia(true);for(const d of root.querySelectorAll('dialog'))d.close();$('#app').innerHTML=`<section class="hero"><div><h1>그룹</h1></div></section><div class="empty"><strong>${esc(message)}</strong><a href="/?auth=login&amp;next=groups${sharedCode()?'&amp;invite='+encodeURIComponent(sharedCode()):''}" class="back">로그인 · 가입 →</a></div>`;}
 // Dialogs own a real history entry; Back dismisses them before changing rooms.
 let dialogSequence=0, pendingDialogDismiss=null;
 let groupHistoryIndex=Number(history.state?.ojjudaGroupIndex)||0,groupHistoryMaximum=groupHistoryIndex;
+function directoryPath(){return integrated?location.pathname+location.search:location.pathname;}
 function pushGroupState(state,href){groupHistoryMaximum=++groupHistoryIndex;history.pushState({...state,ojjudaGroupIndex:groupHistoryIndex},'',href);}
 const groupDialogs=new Map();
 function groupRouteState(){const state={...(history.state||{})};delete state.ojjudaGroupDialog;return state;}
 function replaceGroupRoute(href){history.replaceState(groupRouteState(),'',href);}
 function dialog(title,body){
  const d=document.createElement('dialog'),id=++dialogSequence;d.className='dialog';d.dataset.groupDialog=String(id);d.setAttribute('aria-label',title);d.innerHTML=`<header class="dialog-head"><h2>${esc(title)}</h2><button type="button" data-close aria-label="닫기">✕</button></header><div class="dialog-body">${body}</div>`;
- document.body.append(d);const prev=document.activeElement;d.showModal();groupDialogs.set(id,d);
+ (integrated?root:document.body).append(d);const prev=root.activeElement;d.showModal();groupDialogs.set(id,d);
  // A new dialog can replace one that was closed synchronously by the same action.
  const previous=history.state?.ojjudaGroupDialog,previousDialog=groupDialogs.get(previous);
  const method=previous&&!previousDialog?.open?'replaceState':'pushState';
@@ -178,7 +185,7 @@ function dialog(title,body){
 }
 function route(id=null){
  navigationRun++;if(id!==roomId){query='';queryDraft='';filter='all';}roomId=id;date='';posts=[];
- const href=id?'#room='+id:location.pathname,entry=history.state?.ojjudaGroupDialog;
+ const href=id?'#room='+id:directoryPath(),entry=history.state?.ojjudaGroupDialog;
  // Completing a dialog replaces that transient screen, without adding a dead Back step.
  if(entry&&!groupDialogs.get(entry)?.open)replaceGroupRoute(href);
  else if(new URL(href,location.href).href!==location.href)pushGroupState(groupRouteState(),href);
@@ -208,7 +215,7 @@ for (const form of $('#app').querySelectorAll('[data-group-search]')) {
 }
 $('#load-more')?.addEventListener('click',()=>loadFeed(true));$('#directory-more')?.addEventListener('click',()=>loadDirectory(true));
 if(!r)void loadHome();}
-async function reloadRooms(){const run=mutationRun,data=await api('rooms');if(run!==mutationRun)return;rooms=data;if(roomId&&!rooms.some(r=>r.id===roomId)){clearMedia(true);roomId=null;replaceGroupRoute(location.pathname);}}
+async function reloadRooms(){const run=mutationRun,data=await api('rooms');if(run!==mutationRun)return;rooms=data;if(roomId&&!rooms.some(r=>r.id===roomId)){clearMedia(true);roomId=null;replaceGroupRoute(directoryPath());}}
 async function refresh({quiet=false}={}){
  if(refreshRequest?.run===navigationRun&&refreshRequest.mutation===mutationRun)return refreshRequest.promise;
  // Do not replace an in-flight directory search with an automatic refresh.
@@ -218,7 +225,7 @@ async function refresh({quiet=false}={}){
   if(!roomId){if(!$('#directory'))render();await loadHome({preserve:quiet});return;}
   await reloadRooms();if(run!==navigationRun)return;
   if(renderedRoomId!==roomId||prior!==JSON.stringify(currentRoom())||!$('#feed')){render();await loadFeed();}
-  else if(!quiet||posts.length<=40&&![...document.querySelectorAll('video')].some(v=>!v.paused&&!v.ended))await loadFeed(false,{quiet:true});
+  else if(!quiet||posts.length<=40&&![...root.querySelectorAll('video')].some(v=>!v.paused&&!v.ended))await loadFeed(false,{quiet:true});
  }catch(e){notify(failure(e));}})();
  const holder={run,mutation,promise:request};refreshRequest=holder;try{await request;}finally{if(refreshRequest===holder)refreshRequest=null;}
 }
@@ -279,7 +286,7 @@ function postCard(p){
  const activity=p.activity && activities?.labels[p.activity.kind];
  const action=activity && (p.activity.kind==='poll'?'투표 참여 · 결과 보기':p.activity_result?'결과 보기':p.activity.kind==='wheel'?'돌림판 돌리기':'사다리 타기');
  return `<article class="post" data-post="${p.id}"><header class="post-head"><div><div class="author">${esc(p.author_name)} <span class="metadata">· ${esc(p.room_name)}</span></div><div class="metadata">${dateText(p.created_at)}${p.updated_at!==p.created_at?' · 수정됨':''}</div></div><span class="tag ${p.kind==='post'?'':'event'}">${activity||{post:'이야기',event:'계획',trip:'계획'}[p.kind]}</span></header>${p.title?`<h3>${esc(p.title)}</h3>`:''}${p.kind!=='post'?`<div class="schedule"><strong>▦ ${dateText(p.starts_at,p.all_day)} ~ ${dateText(p.ends_at,p.all_day)}${p.all_day?' · 종일':''}</strong>${p.location?`⌖ ${esc(p.location)}`:''}</div>`:''}${p.body?`<p class="body">${esc(p.body)}</p>`:''}${p.media.length?`<div class="media-grid">${p.media.map((f,i)=>`<div class="media-slot" data-media-post="${p.id}" data-media-index="${i}"><button data-load-media="${p.id}" data-index="${i}">${f.mime.startsWith('video/')?'▶ 동영상 보기':'사진 불러오기'}</button></div>`).join('')}</div>`:''}${activity?`<div class="group-activity"><span>${p.activity.kind==='ladder'?'참가자 '+p.activity.names.length+'명':'항목 '+p.activity.options.length+'개'}</span><button class="primary" data-activity="${p.id}">${action}</button></div>`:''}<footer class="post-foot"><button data-comments="${p.id}">댓글 ${p.comment_count||0}</button><button data-report="${p.id}">신고</button>${p.author_id===user.id?`<div><button data-edit="${p.id}">수정</button><button class="danger" data-delete="${p.id}">삭제</button></div>`:''}</footer></article>`;}
-function observeMedia(){observer?.disconnect();observer=new IntersectionObserver(entries=>{for(const e of entries)if(e.isIntersecting){const p=posts.find(p=>p.id===e.target.dataset.mediaPost),f=p?.media[+e.target.dataset.mediaIndex];if(f?.mime.startsWith('image/'))void loadMedia(e.target,p,f,e.boundingClientRect?.top<=innerHeight?0:1);observer.unobserve(e.target);}},{rootMargin:navigator.connection?.saveData?'120px':'600px'});document.querySelectorAll('.media-slot:not([data-loaded])').forEach(n=>observer.observe(n));}
+function observeMedia(){observer?.disconnect();observer=new IntersectionObserver(entries=>{for(const e of entries)if(e.isIntersecting){const p=posts.find(p=>p.id===e.target.dataset.mediaPost),f=p?.media[+e.target.dataset.mediaIndex];if(f?.mime.startsWith('image/'))void loadMedia(e.target,p,f,e.boundingClientRect?.top<=innerHeight?0:1);observer.unobserve(e.target);}},{rootMargin:navigator.connection?.saveData?'120px':'600px'});root.querySelectorAll('.media-slot:not([data-loaded])').forEach(n=>observer.observe(n));}
 
 function openGallery(p,start=0){
  const media=p?.media||[];if(!media.length)return;
@@ -432,7 +439,7 @@ if(b.dataset.action==='mine'){onlyMine=!onlyMine;epoch++;directoryLoading=false;
  if(b.dataset.sort){
   if(!['activity','members','created'].includes(b.dataset.sort)||directorySort===b.dataset.sort)return;
   directorySort=b.dataset.sort;
-  document.querySelectorAll('[data-sort]').forEach(button=>{const active=button.dataset.sort===directorySort;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});
+  root.querySelectorAll('[data-sort]').forEach(button=>{const active=button.dataset.sort===directorySort;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});
   directory=[];directoryHasMore=false;epoch++;directoryLoading=false;
   await loadHome();return;
  }
@@ -462,7 +469,7 @@ function reportPost(p){const d=dialog("게시글 신고",`<form><p class="muted"
  function createRoom(){const requestId=uuid();const d=dialog('그룹 만들기',`<form id="room-form"><label class="field">그룹 이름<input name="name" required maxlength="60" placeholder="우리의 주말"></label><br><label class="field">그룹 소개<textarea name="description" maxlength="300" placeholder="그룹 소개"></textarea></label>${Age.fields()}<p class="hint">이름·소개 공개 · 게시물은 그룹원과 운영 관리자만 열람할 수 있어요.</p><p class="error" role="alert"></p><div class="dialog-foot"><button class="primary">만들기</button></div></form>`);Age.bind(d.querySelector('form'));d.querySelector('form').onsubmit=async e=>{e.preventDefault();const f=e.target,btn=f.querySelector('button');if(!f.reportValidity())return;if(btn.disabled)return;btn.disabled=true;try{await api('create_room',{...Object.fromEntries(new FormData(f)),id:requestId});await reloadRooms();d.close();directoryQuery='';directoryDraft='';route();notify('그룹을 만들었어요.');}catch(err){f.querySelector('.error').textContent=failure(err);}finally{btn.disabled=false;}};}
 function paintInvitations(rows){const box=$('#group-invitations');if(!box)return;const signature=JSON.stringify(rows);if(signatures.get(box)===signature)return;signatures.set(box,signature);box.hidden=onlyMine||!rows.length;box.innerHTML=rows.length?`<h3>받은 초대</h3>${rows.map(i=>`<article class="post"><h3>${esc(i.group_name)}</h3>${Age.badge(i)}${Age.note(i)}<p class="muted">${esc(i.sender_name)}님의 초대</p><div class="actions"><button class="primary" data-accept-invite="${i.id}" ${i.age_eligible===false?'disabled':''}>수락</button><button data-decline-invite="${i.id}">거절</button></div></article>`).join('')}`:'';}
 async function loadInvitations(){const box=$('#group-invitations');if(!box)return;const ticket=++invitationRun;try{const rows=await invitationApi('received');if(!box.isConnected||ticket!==invitationRun)return;paintInvitations(rows);}catch(e){if(box.isConnected&&ticket===invitationRun)notify(failure(e));}}
-async function showSharedInvitation(){const code=sharedCode();if(!code)return;try{const data=await invitationApi('preview_link',{code});if(sharedCode()!==code)return;const d=dialog('그룹 초대',`<h3>${esc(data.group_name)}</h3>${Age.badge(data)}${Age.note(data)}<p class="error" role="alert"></p><div class="dialog-foot"><button data-later>나중에</button><button class="primary" data-accept-link ${data.age_eligible===false?'disabled':''}>${data.member?'그룹 들어가기':'수락하고 가입'}</button></div>`);d.querySelector('[data-later]').onclick=()=>{d.close();replaceGroupRoute(location.pathname);};d.querySelector('[data-accept-link]').onclick=async e=>{e.target.disabled=true;try{const result=await invitationApi('accept_link',{code});await reloadRooms();d.close();route(result.room_id);notify('그룹에 가입했어요.');}catch(err){d.querySelector('.error').textContent=failure(err);}finally{e.target.disabled=false;}};}catch(e){notify(failure(e));}}
+async function showSharedInvitation(){const code=sharedCode();if(!code)return;try{const data=await invitationApi('preview_link',{code});if(sharedCode()!==code)return;const d=dialog('그룹 초대',`<h3>${esc(data.group_name)}</h3>${Age.badge(data)}${Age.note(data)}<p class="error" role="alert"></p><div class="dialog-foot"><button data-later>나중에</button><button class="primary" data-accept-link ${data.age_eligible===false?'disabled':''}>${data.member?'그룹 들어가기':'수락하고 가입'}</button></div>`);d.querySelector('[data-later]').onclick=()=>{d.close();replaceGroupRoute(directoryPath());};d.querySelector('[data-accept-link]').onclick=async e=>{e.target.disabled=true;try{const result=await invitationApi('accept_link',{code});await reloadRooms();d.close();route(result.room_id);notify('그룹에 가입했어요.');}catch(err){d.querySelector('.error').textContent=failure(err);}finally{e.target.disabled=false;}};}catch(e){notify(failure(e));}}
 async function inviteMembers(r){const d=dialog('회원 초대',`<form id="invite-search" class="actions"><input name="query" type="search" maxlength="60" placeholder="회원 닉네임 검색" aria-label="회원 닉네임 검색"><button class="primary">검색</button></form><p class="muted">최근 가입순</p><div id="invite-results" aria-live="polite"></div><button id="invite-more" hidden>더 보기</button><p class="error" role="alert"></p>`),form=d.querySelector('form'),box=d.querySelector('#invite-results'),more=d.querySelector('#invite-more');let searchRun=0,rows=[],query='',loading=false;
 const card=m=>`<div class="member"><span>${esc(m.nickname)}</span><button data-send-invite="${m.user_id}" ${m.invited?'disabled':''}>${m.invited?'초대 보냄':'초대'}</button></div>`;
 async function load(append=false){if(append&&loading)return;const ticket=++searchRun,last=append?rows.at(-1):null;loading=true;more.disabled=true;form.querySelector('button').disabled=true;d.querySelector('.error').textContent='';if(!append){rows=[];more.hidden=true;box.innerHTML='<p class="muted">불러오는 중…</p>';}
@@ -475,7 +482,7 @@ box.onclick=async e=>{const b=e.target.closest('[data-send-invite]');if(!b||b.di
 await load();}
 
 async function sharePage(r){
- const url=location.origin+location.pathname+(r?'#room='+encodeURIComponent(r.id):'');
+ const url=location.origin+'/groups/'+(r?'#room='+encodeURIComponent(r.id):'');
  const title=r?r.name+' · 오쭈다 그룹':'그룹 · 오쭈다 아지트';
  const message=r?r.name+' 그룹 페이지예요. 그룹원만 내용을 볼 수 있어요.':'오쭈다 아지트의 그룹 목록이에요.';
  if(navigator.share){try{await navigator.share({title,text:message,url});return;}catch(e){if(e?.name==='AbortError')return;}}
@@ -501,7 +508,7 @@ else if(act==='transfer')confirmAction('방장을 위임할까요?','선택한 �
 else if(act==='kick')confirmAction('이 그룹원을 추방할까요?','그룹을 볼 수 없게 되며 기존 초대 링크도 사용할 수 없어요.',perform);
 else if(act==='leave')confirmAction('그룹을 나갈까요?','다시 들어올 때는 그룹의 가입 방식이 적용돼요.',perform);
 else{await perform();}}catch(err){report(err);}finally{controls.forEach(x=>{if(x.isConnected)x.disabled=false;});}});}
-async function deleteRoom(r){const d=dialog('그룹 삭제 중',`<p role="status">첨부 파일을 정리하고 있어요…</p><p class="error"></p>`);try{await api('delete_room',{room_id:r.id});for(;;){const paths=await api('deletion_files',{room_id:r.id});if(!paths.length)break;const {error}=await client.storage.from(bucket).remove(paths);if(error)throw error;}await api('finish_delete',{room_id:r.id});d.close();roomId=null;replaceGroupRoute(location.pathname);await refresh();notify('그룹을 삭제했어요.');}catch(e){d.querySelector('.error').textContent='삭제가 중단됐어요. 그룹의 ‘삭제 계속하기’로 다시 진행해 주세요. '+failure(e);await refresh();throw e;}}
+async function deleteRoom(r){const d=dialog('그룹 삭제 중',`<p role="status">첨부 파일을 정리하고 있어요…</p><p class="error"></p>`);try{await api('delete_room',{room_id:r.id});for(;;){const paths=await api('deletion_files',{room_id:r.id});if(!paths.length)break;const {error}=await client.storage.from(bucket).remove(paths);if(error)throw error;}await api('finish_delete',{room_id:r.id});d.close();roomId=null;replaceGroupRoute(directoryPath());await refresh();notify('그룹을 삭제했어요.');}catch(e){d.querySelector('.error').textContent='삭제가 중단됐어요. 그룹의 ‘삭제 계속하기’로 다시 진행해 주세요. '+failure(e);await refresh();throw e;}}
 async function removeFiles(paths){const files=[...new Set(paths.filter(Boolean))];if(!files.length)return;const {error}=await client.storage.from(bucket).remove(files);clearMedia(true);if(error)notify('기록은 저장됐지만 일부 이전 첨부 정리가 지연됐어요.');}
 function compose(existing){const available=activeRooms();if(!available.length){createRoom();return;}let saved=existing?.media?.map(x=>({...x}))||[],files=[],previewUrls=[],busy=false,entryId=existing?.id||uuid(),uploaded=[],published=false;
 const activity=existing?.activity, initialKind=activity?.kind||existing?.kind||'post';
@@ -601,9 +608,9 @@ async function refreshGroupNotice(){
  }catch{ /* Keep the current notice until the next successful refresh. */ }
 }
 noticeHost?.addEventListener('click',()=>{if(noticeValue)dialog('공지',`<p class="body">${esc(noticeValue)}</p>`);});
-window.addEventListener('resize',()=>window.OjjudaServiceNotice?.measure(noticeHost?.firstElementChild));
-window.addEventListener('ojjuda:themechange',renderGroupNotice);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refreshGroupNotice();});
+listen(window,'resize',()=>window.OjjudaServiceNotice?.measure(noticeHost?.firstElementChild));
+listen(window,'ojjuda:themechange',renderGroupNotice);
+listen(document,'visibilitychange',()=>{if(visible()&&!document.hidden)void refreshGroupNotice();});
 $('.ojjuda-service-invite')?.addEventListener('click',event=>{
  const room=currentRoom();
  if(!room||!user||room.deleting||room.age_eligible===false)return;
@@ -614,28 +621,31 @@ $('[data-notifications-open]')?.addEventListener('click',()=>{
  if(!headerNotifications)notify('알림을 준비하고 있어요. 잠시 후 다시 눌러 주세요.');
 });
 
+async function openNotificationRoom(id){
+    const run=navigationRun;
+    try{await reloadRooms();if(run===navigationRun&&rooms.some(r=>r.id===id))route(id);}
+    catch(error){notify(failure(error));}
+   }
 async function initialize(){
  try{
   client=window.OjjudaGetClient?await window.OjjudaGetClient():
    window.supabase.createClient(window.OJJUDA_CONFIG.supabaseUrl,window.OJJUDA_CONFIG.supabaseKey);
+  if(lifetime.signal.aborted)return;
   const ticket=++authEpoch;
-  client.auth.onAuthStateChange((event,session)=>{
+  const listener=client.auth.onAuthStateChange((event,session)=>{
    if(event==='SIGNED_OUT'||user&&session?.user?.id!==user.id){
     authEpoch++;user=null;rooms=[];posts=[];noticeValue='';renderGroupNotice();
     gate('로그인 상태가 바뀌었어요. 다시 로그인해 주세요.');
    }
   });
-  headerNotifications=window.OjjudaNotifications?.install({
+  authSubscription=listener?.data?.subscription;
+  if(!integrated)headerNotifications=window.OjjudaNotifications?.install({
    client,getUserId:()=>user?.id||null,
    onOpenCard:id=>openServicePage('/park/?card='+encodeURIComponent(id)),
    onKeepCard:(id,kind)=>openServicePage('/park/?card='+encodeURIComponent(id)+'&keep='+encodeURIComponent(kind)),
    onOpenInquiry:id=>openServicePage('/world.html?tab=my&inquiry='+encodeURIComponent(id)),
    onOpenWorld:(type,id)=>openServicePage('/world.html?notice='+encodeURIComponent(type)+'&target='+encodeURIComponent(id)),
-   async onOpenGroup(id){
-    const run=navigationRun;
-    try{await reloadRooms();if(run===navigationRun&&rooms.some(r=>r.id===id))route(id);}
-    catch(error){notify(failure(error));}
-   }
+   onOpenGroup:openNotificationRoom
   });
   const {data,error}=await client.auth.getUser();
   if(ticket!==authEpoch)return;
@@ -645,17 +655,18 @@ async function initialize(){
   roomId=match?.[1]||null;
   if(roomId)await reloadRooms();
   render();if(roomId)await loadFeed();await showSharedInvitation();
- }catch(e){gate(failure(e));}
+ }catch(e){if(!lifetime.signal.aborted)gate(failure(e));}
+ finally{markReady();}
 }
-window.addEventListener('popstate',event=>{
- if(!user)return;
+listen(window,'popstate',event=>{
+ if(!user||!visible())return;
  const index=Number(event.state?.ojjudaGroupIndex)||0,direction=index<groupHistoryIndex?-1:1;groupHistoryIndex=index;
  if(pendingDialogDismiss){
   const d=pendingDialogDismiss;pendingDialogDismiss=null;
   if(d.open){if(d.requestDismiss)d.requestDismiss();else d.close();}
   return;
  }
- const top=[...document.querySelectorAll('dialog[open]')].at(-1);
+ const top=[...root.querySelectorAll('dialog[open]')].at(-1);
  if(top&&event.state?.ojjudaGroupDialog!==Number(top.dataset.groupDialog)){
   // Restore the dialog's entry before asking a dirty composer to dismiss.
   // Cancelling the confirmation then leaves both the room and Forward history intact.
@@ -675,42 +686,44 @@ window.addEventListener('popstate',event=>{
  if(nextRoom===roomId)return;
  navigationRun++;roomId=nextRoom;date='';render();void loadFeed();void showSharedInvitation();
 });
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&user&&!mutating&&!document.querySelector('dialog[open]'))void refresh({quiet:true});});
-window.addEventListener('pagehide',()=>clearMedia(true));
-setInterval(()=>{if(tabHost && window.frameElement?.hidden)return;if(!document.hidden)void refreshGroupNotice();if(user&&!document.hidden&&!mutating&&!loading&&!document.querySelector('dialog[open]')&&!document.activeElement?.matches('input,textarea,select'))void refresh({quiet:true});},60000);
-// Keep shared group and invitation URLs usable outside the Agit shell.
-let tabHost=null;
-try{if(window.parent!==window && window.parent.OjjudaGroupTab?.owns(window))tabHost=window.parent.OjjudaGroupTab;}catch{}
-function openServicePage(url){(tabHost?window.parent:window).location.assign(url);}
-function selectGroupMenu(link){
- if(tabHost && tabHost.select(window,link.dataset.tab))return;
- location.assign(link.href);
-}
-const menuLinks=Array.from(document.querySelectorAll('.group-main-nav a'));
+listen(document,'visibilitychange',()=>{if(visible()&&!document.hidden&&user&&!mutating&&!root.querySelector('dialog[open]'))void refresh({quiet:true});});
+listen(window,'pagehide',()=>clearMedia(true));
+const refreshTimer=setInterval(()=>{if(!visible()||document.hidden)return;void refreshGroupNotice();if(user&&!mutating&&!loading&&!root.querySelector('dialog[open]')&&!root.activeElement?.matches('input,textarea,select'))void refresh({quiet:true});},60000);
+function openServicePage(url){location.assign(url);}
+const menuLinks=Array.from(root.querySelectorAll('.group-main-nav a'));
 const groupLink=menuLinks.find(link=>link.hasAttribute('aria-current'));
-if(tabHost){
- window.OjjudaGroupView={back(){
-  if(headerNotifications?.isOpen()){headerNotifications.close();return true;}
-  if(groupHistoryIndex>0){history.back();return true;}
-  return false;
- }};
- document.addEventListener('click',event=>{
-  if(event.defaultPrevented||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
-  const link=event.target.closest('a[href]');
-  if(!link)return;
-  if(menuLinks.includes(link)||link.matches('.ojjuda-service-home')){
-   event.preventDefault();
-   if(!document.querySelector('dialog[open]')&&!headerNotifications?.isOpen())tabHost.select(window,link.dataset.tab||'hub');
-  }else if(!link.target && new URL(link.href).origin===location.origin && new URL(link.href).pathname!==location.pathname)link.target='_top';
- });
-}
 if(groupLink)window.OjjudaWorldNavigation?.installTabSwipes({
  tabs:menuLinks,
  currentTab:()=>groupLink,
- changeTab:selectGroupMenu,
+ changeTab:link=>location.assign(link.href),
  zoneSelector:'body',
  surfaceSelector:'#app',
- canLeave:()=>!document.querySelector('dialog[open]')&&!headerNotifications?.isOpen()
+ canLeave:()=>!root.querySelector('dialog[open]')&&!headerNotifications?.isOpen()
 });
 void initialize();
+return {
+ roomHash:()=>user&&currentRoom()?'#room='+roomId:'',
+ async openRoom(id){await ready;if(user&&visible()&&!lifetime.signal.aborted)await openNotificationRoom(id);},
+ invite(){
+  const room=currentRoom();
+  if(!room||!user||room.deleting||room.age_eligible===false)return false;
+  void shareInvitation(room);return true;
+ },
+ back(){
+  if(headerNotifications?.isOpen()){headerNotifications.close();return true;}
+  if(history.state?.ojjudaGroupDialog){history.back();return true;}
+  if(location.hash.startsWith('#room=')){if(groupHistoryIndex>0)history.back();else route();return true;}
+  return false;
+ },
+ destroy(){
+  user=null;authEpoch++;navigationRun++;mutationRun++;
+  lifetime.abort();authSubscription?.unsubscribe();stopMask?.();
+  clearInterval(refreshTimer);clearTimeout(toastTimer);
+  for(const dialog of root.querySelectorAll('dialog[open]'))dialog.close();
+  clearMedia(true);
+ }
+};
+}
+window.OjjudaGroups=Object.freeze({mount});
+if(!document.body.classList.contains('world-redesign'))mount();
 })();
