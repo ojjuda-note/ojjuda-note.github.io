@@ -60,16 +60,6 @@ button,input,select,textarea{font-family:inherit}button,a{-webkit-tap-highlight-
 :root[data-theme=dark] .world-redesign .gbtn{border-color:color-mix(in srgb,var(--game-edge) 60%,var(--surface));box-shadow:none}
 :root[data-theme=dark] .world-redesign .gbtn .ge{background:linear-gradient(145deg,var(--surface-2),color-mix(in srgb,var(--game-tint) 25%,var(--surface)))}
 @media(max-width:360px){.world-redesign .gbtn>span:last-child{font-size:12.5px}.world-redesign .gbtn small{font-size:10px!important}}
-/* Read from the left immediately; the second copy continues the same line. */
-.notice-bar.notice-tk{display:flex;align-items:center;gap:8px;width:100%;text-align:left;cursor:pointer;font:inherit;color:inherit;overflow:hidden}
-.notice-tk .nb-ico{flex:none}.notice-tk .nb-track{flex:1;min-width:0;overflow:hidden;white-space:nowrap}
-.notice-tk .nb-flow{display:flex;width:max-content;animation:noticeFlow var(--notice-duration,20s) linear infinite;will-change:transform}
-.notice-tk .nb-text,.notice-tk .nb-copy{display:block;flex:none;box-sizing:content-box;min-width:var(--notice-width,0px);padding-right:48px;white-space:nowrap}
-.notice-tk .nb-divider{display:inline-block;margin:0 16px;color:var(--accent-ink);font-weight:800}
-.notice-tk .nb-season{color:var(--accent-ink);font-weight:750}
-.notice-tk:focus-visible .nb-flow{animation-play-state:paused}
-@keyframes noticeFlow{to{transform:translateX(-50%)}}
-@media(prefers-reduced-motion:reduce){.notice-tk .nb-flow{animation:none;width:auto}.notice-tk .nb-copy{display:none}.notice-tk .nb-text{min-width:0;overflow:hidden;text-overflow:ellipsis;padding-right:0}}
 
 /* Keep the feedback shortcut beside the name on every header size. */
 .world-redesign .brand{flex:none;gap:6px}

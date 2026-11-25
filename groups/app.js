@@ -580,7 +580,73 @@ async function comments(p){const d=dialog('댓글',`<div id="comment-list"></div
 async function load(append=false){if(append&&appendBusy)return;const ticket=++listRun;appendBusy=true;d.querySelector('#older-comments').disabled=true;try{const last=append?rows.at(-1):null,data=await api('comments',{id:p.id,before:last?.created_at,before_id:last?.id});if(!d.isConnected||ticket!==listRun)return;rows=append?[...new Map([...rows,...data.slice(0,50)].map(c=>[c.id,c])).values()]:data.slice(0,50);d.querySelector('#comment-list').innerHTML=rows.map(c=>`<div class="comment"><div><b class="author">${esc(c.author_name)}</b><p>${esc(c.body)}</p><time>${dateText(c.created_at)}</time></div>${c.author_id===user.id?`<button class="danger" data-delete-comment="${c.id}">삭제</button>`:''}</div>`).join('')||'<p class="muted">첫 댓글을 남겨 보세요.</p>';d.querySelector('#older-comments').hidden=data.length<=50;}finally{if(ticket===listRun){appendBusy=false;d.querySelector('#older-comments').disabled=false;}}}
 d.querySelector('#older-comments').onclick=()=>load(true).catch(e=>notify(failure(e)));d.addEventListener('click',async e=>{const b=e.target.closest('[data-delete-comment]');if(!b)return;b.disabled=true;try{await api('delete_comment',{comment_id:b.dataset.deleteComment});await load();}catch(err){notify(failure(err));b.disabled=false;}});
 d.querySelector('form').onsubmit=async e=>{e.preventDefault();const f=e.target,b=f.querySelector('button');if(b.disabled)return;b.disabled=true;try{await api('comment',{id:p.id,comment_id:requestId,body:f.elements.body.value});requestId=uuid();f.reset();await load();}catch(err){f.querySelector('.error').textContent=failure(err);}finally{b.disabled=false;}};d.addEventListener('close',()=>loadFeed());await load();}
-async function initialize(){if(!window.supabase||!window.OJJUDA_CONFIG){gate('연결하지 못했어요. 새로고침해 주세요.');return;}client=window.supabase.createClient(window.OJJUDA_CONFIG.supabaseUrl,window.OJJUDA_CONFIG.supabaseKey);client.auth.onAuthStateChange((_event,session)=>{if(user&&session?.user?.id!==user.id){user=null;rooms=[];posts=[];gate('로그인 상태가 바뀌었어요. 다시 로그인해 주세요.');}});const ticket=++authEpoch;try{const {data,error}=await client.auth.getUser();if(error||!data.user||data.user.is_anonymous){gate();return;}if(ticket!==authEpoch)return;user=data.user;const match=location.hash.match(/^#room=([a-f0-9-]{36})$/);roomId=match?.[1]||null;if(roomId)await reloadRooms();render();if(roomId)await loadFeed();await showSharedInvitation();}catch(e){gate(failure(e));}}
+let headerNotifications, noticeValue = '', noticeRequest = 0;
+const noticeHost = $('#group-service-notice');
+function renderGroupNotice(){
+ if(!noticeHost)return;
+ const ticker=window.OjjudaServiceNotice;
+ const banner=noticeHost.firstElementChild;
+ if(banner?.querySelector('.nb-announcement')?.textContent===noticeValue&&
+    (banner.querySelector('.nb-season')?.textContent||'')===(ticker?.themeText()||''))return;
+ noticeHost.innerHTML=ticker?.markup(noticeValue)||'';
+ ticker?.measure(noticeHost.firstElementChild);
+}
+async function refreshGroupNotice(){
+ if(!user||!noticeHost)return;
+ const owner=user.id,request=++noticeRequest;
+ try{
+  const {data,error}=await client.from('app_config').select('value').eq('key','notice').maybeSingle();
+  if(error||user?.id!==owner||request!==noticeRequest)return;
+  noticeValue=String(data?.value||'');renderGroupNotice();
+ }catch{ /* Keep the current notice until the next successful refresh. */ }
+}
+noticeHost?.addEventListener('click',()=>{if(noticeValue)dialog('공지',`<p class="body">${esc(noticeValue)}</p>`);});
+window.addEventListener('resize',()=>window.OjjudaServiceNotice?.measure(noticeHost?.firstElementChild));
+window.addEventListener('ojjuda:themechange',renderGroupNotice);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refreshGroupNotice();});
+$('.ojjuda-service-invite')?.addEventListener('click',event=>{
+ const room=currentRoom();
+ if(!room||!user||room.deleting||room.age_eligible===false)return;
+ event.stopPropagation();
+ void shareInvitation(room);
+});
+$('[data-notifications-open]')?.addEventListener('click',()=>{
+ if(!headerNotifications)notify('알림을 준비하고 있어요. 잠시 후 다시 눌러 주세요.');
+});
+
+async function initialize(){
+ try{
+  client=window.OjjudaGetClient?await window.OjjudaGetClient():
+   window.supabase.createClient(window.OJJUDA_CONFIG.supabaseUrl,window.OJJUDA_CONFIG.supabaseKey);
+  const ticket=++authEpoch;
+  client.auth.onAuthStateChange((event,session)=>{
+   if(event==='SIGNED_OUT'||user&&session?.user?.id!==user.id){
+    authEpoch++;user=null;rooms=[];posts=[];noticeValue='';renderGroupNotice();
+    gate('로그인 상태가 바뀌었어요. 다시 로그인해 주세요.');
+   }
+  });
+  headerNotifications=window.OjjudaNotifications?.install({
+   client,getUserId:()=>user?.id||null,
+   onOpenCard:id=>location.assign('/park/?card='+encodeURIComponent(id)),
+   onKeepCard:(id,kind)=>location.assign('/park/?card='+encodeURIComponent(id)+'&keep='+encodeURIComponent(kind)),
+   onOpenInquiry:id=>location.assign('/world.html?tab=my&inquiry='+encodeURIComponent(id)),
+   onOpenWorld:(type,id)=>location.assign('/world.html?notice='+encodeURIComponent(type)+'&target='+encodeURIComponent(id)),
+   async onOpenGroup(id){
+    const run=navigationRun;
+    try{await reloadRooms();if(run===navigationRun&&rooms.some(r=>r.id===id))route(id);}
+    catch(error){notify(failure(error));}
+   }
+  });
+  const {data,error}=await client.auth.getUser();
+  if(ticket!==authEpoch)return;
+  if(error||!data.user||data.user.is_anonymous){gate();return;}
+  user=data.user;void headerNotifications?.refresh();void refreshGroupNotice();
+  const match=location.hash.match(/^#room=([a-f0-9-]{36})$/);
+  roomId=match?.[1]||null;
+  if(roomId)await reloadRooms();
+  render();if(roomId)await loadFeed();await showSharedInvitation();
+ }catch(e){gate(failure(e));}
+}
 window.addEventListener('popstate',event=>{
  if(!user)return;
  const index=Number(event.state?.ojjudaGroupIndex)||0,direction=index<groupHistoryIndex?-1:1;groupHistoryIndex=index;
@@ -611,6 +677,6 @@ window.addEventListener('popstate',event=>{
 });
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&user&&!mutating&&!document.querySelector('dialog[open]'))void refresh({quiet:true});});
 window.addEventListener('pagehide',()=>clearMedia(true));
-setInterval(()=>{if(user&&!document.hidden&&!mutating&&!loading&&!document.querySelector('dialog[open]')&&!document.activeElement?.matches('input,textarea,select'))void refresh({quiet:true});},60000);
+setInterval(()=>{if(!document.hidden)void refreshGroupNotice();if(user&&!document.hidden&&!mutating&&!loading&&!document.querySelector('dialog[open]')&&!document.activeElement?.matches('input,textarea,select'))void refresh({quiet:true});},60000);
 void initialize();
 })();
