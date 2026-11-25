@@ -21,6 +21,7 @@ test('entry routes select the right app without accepting arbitrary icon or inst
     ['/world.html?tab=park', 'park'], ['/world.html?tab=park&game=chess', 'agit'],
     ['/world.html?place=park&game=chess&game=mines', 'park'],
     ['/park/', 'park'], ['/park/index.html', 'park'],
+    ['/pajang/', 'pajang'], ['/pajang/index.html', 'pajang'],
     ['/features/pajang/', 'pajang'], ['/features/pajang/station.html', 'pajang'],
     ['/?auth=login&next=https://other.example/&icon=https://other.example/icon.png', 'agit']
   ]) {
@@ -150,7 +151,7 @@ test('installed Agit, Park and Pajang authenticate before displaying their entra
   for (const html of [pajangEntry, pajangMain]) {
     assert.match(html, /entry-design\.css\?v=20261122-app-skip-entry1/);
   }
-  assert.match(pajangEntry, /entry\.mjs\?v=20261125-lazy-station1/);
+  assert.match(pajangEntry, /<script type="module" src="\.\/entry\.mjs\?v=\d{8}-[a-z0-9-]+"><\/script>/);
   assert.match(read('park/index.html'), /note\/preview\.js\?v=\d{8}-[a-z0-9-]+/, 'Park loads a versioned composer');
   assert.match(world, /agit-welcome\.js\?v=20261122-member-app-start1/);
 });
