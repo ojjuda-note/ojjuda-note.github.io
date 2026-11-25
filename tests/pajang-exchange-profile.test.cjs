@@ -426,3 +426,70 @@ test('a single profile character persists with a separate backdrop and every sho
   assert.equal(stage().getAttribute('aria-label'), '회색 후디 대두형 · 배경 장미 정원');
   assert.equal(avatar().querySelectorAll('.pj-character-figure').length, 1);
 });
+
+test('100 male outfits reuse every existing backdrop and reopen on the saved pair', async t => {
+  const f = await fixture(t);
+  const region = () => f.form().querySelector('[aria-label="내 캐릭터"]');
+  const stage = () => region().querySelector('[role="img"]');
+  const click = async label => { f.button(label).click(); await turn(); };
+  const backgrounds = () => [...region().querySelectorAll('.pj-avatar-scenes button')]
+    .map(b => [b.textContent.trim(), b.querySelector('img')?.getAttribute('src') ?? null]);
+
+  await click('배경 선택');
+  const sharedBackgrounds = backgrounds();
+  assert.equal(sharedBackgrounds.length, 9);
+  assert.deepEqual(sharedBackgrounds.map(([,src]) => src), [null,
+    ...Array.from({length:8}, (_,i) => '/features/pajang/assets/avatar-bg-20261125-' + (i + 1) + '.webp')]);
+  const chosenBackground = sharedBackgrounds[8][0];
+  await click(chosenBackground);
+  await click('캐릭터 선택');
+  const sheet = f.window.document.createElement('style');
+  sheet.textContent = require('node:fs').readFileSync(path.join(pajang, 'letterroom.css'), 'utf8');
+  f.window.document.head.append(sheet);
+  const frameHeight = form => f.window.getComputedStyle(region().querySelector('.pj-avatar-pair .' + form)).height;
+  assert.ok(frameHeight('full'));
+  assert.notEqual(frameHeight('mini'), frameHeight('full'), 'existing female thumbnail sizing is preserved');
+  await click('남자');
+  assert.equal(frameHeight('mini'), frameHeight('full'), 'the male art already contains its intended height ratio');
+
+  const looks = [];
+  const sprites = new Set();
+  for (let page = 0; page < 13; page++) {
+    for (const card of region().querySelectorAll('.pj-avatar-card')) {
+      const pair = [...card.querySelectorAll('.pj-avatar-pair button')];
+      assert.deepEqual(pair.map(b => b.textContent), ['대두형','전신형']);
+      const atlas = String(Math.floor(looks.length / 4) + 1).padStart(2,'0');
+      for (const button of pair) {
+        const figure = button.querySelector('.pj-character-figure');
+        assert.ok(figure.style.backgroundImage.includes('avatars-male-20261125-' + atlas + '.webp'));
+        sprites.add(figure.style.backgroundImage + ' ' + figure.style.backgroundPosition);
+      }
+      looks.push(card.querySelector('strong').textContent);
+    }
+    if (page < 12) await click('다음');
+  }
+  assert.equal(looks.length, 100);
+  assert.equal(new Set(looks).size, 100);
+  assert.equal(sprites.size, 200);
+
+  const lastShort = looks[99] + ' 대두형';
+  await click(lastShort);
+  assert.equal(region().querySelectorAll('.pj-character-figure').length, 1);
+  assert.ok(stage().querySelector('.pj-character-figure').style.backgroundImage.includes('avatars-male-20261125-25.webp'));
+  assert.ok(stage().getAttribute('aria-label').includes(chosenBackground));
+  await click('배경 선택');
+  assert.deepEqual(backgrounds(), sharedBackgrounds);
+  await click(chosenBackground);
+  f.submit();
+  await waitFor(() => f.state.successes === 1, 'male outfit and shared backdrop should save');
+
+  await f.reopen();
+  assert.ok(stage().getAttribute('aria-label').includes(looks[99]));
+  assert.ok(stage().getAttribute('aria-label').includes(chosenBackground));
+  await click('캐릭터 선택');
+  assert.equal(f.button(lastShort).getAttribute('aria-pressed'), 'true');
+  assert.ok(f.button('다음').disabled);
+  assert.equal(f.button('남자').getAttribute('aria-pressed'), 'true');
+  assert.deepEqual(f.saves()[0].p_data.avatar, {id:200,form:'mini',bg:8});
+  assert.ok(f.state.calls.every(call => call.p_data.avatarCatalog === 2));
+});

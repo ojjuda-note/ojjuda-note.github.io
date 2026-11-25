@@ -173,6 +173,7 @@ test('public Pajang preferences save atomically and relationship discovery prese
       to authenticated;`);
   await db.exec(read('20261122150000_pajang_unified_profile_editor.sql'));
   await db.exec(read('20261125025306_pajang_profile_character_selection.sql'));
+  await db.exec(read('20261125031145_pajang_male_profile_characters.sql'));
 
   t.beforeEach(()=>db.exec('begin'));
   t.afterEach(()=>db.exec('rollback'));
@@ -318,6 +319,43 @@ test('public Pajang preferences save atomically and relationship discovery prese
       where oid='pajang_private.profile_details(text,jsonb)'::regprocedure`);
     assert.equal(def.rows[0].prosecdef,true);
     assert.deepEqual(def.rows[0].proconfig,['search_path=""']);
+  });
+
+  await t.test('old and new profile editors can share male avatar state without losing a newer choice', async () => {
+    const latest = {avatarCatalog:2};
+    const readProfile = (opts = {}) => as(account(1), () => rpc('pajang_profile_details', ['mine',opts]));
+    const saveProfile = async (patch, opts = {}) => {
+      const profile = await readProfile(opts);
+      return as(account(1), () => rpc('pajang_profile_details', ['save',{
+        ...opts, profilePerson:profile.person, preferencesVersion:profile.preferencesVersion,
+        fields:profile.fields, showAge:profile.showAge, showGender:profile.showGender, ...patch,
+      }]));
+    };
+
+    const original = (await readProfile()).avatar;
+    const male = {id:200,form:'mini',bg:8};
+    assert.deepEqual((await readProfile(latest)).avatar,original);
+    assert.deepEqual((await saveProfile({avatar:male,previousAvatar:original},latest)).avatar,male);
+
+    const projected = (await readProfile()).avatar;
+    assert.deepEqual(projected,{id:100,form:'mini',bg:8,catalogId:200});
+    await saveProfile({fields:{job:'서점 직원'}});
+    assert.deepEqual((await readProfile(latest)).avatar,male);
+    const oldBackground = {...projected,bg:3};
+    await saveProfile({previousAvatar:projected,avatar:oldBackground});
+    assert.deepEqual((await readProfile(latest)).avatar,{...male,bg:3});
+
+    // Simulate a cached tab selecting a new outfit after another tab chose a male character.
+    await assert.rejects(() => saveProfile({previousAvatar:original,avatar:{...original,id:3}}), {code:'40001'});
+    const current = (await readProfile(latest)).avatar;
+    await assert.rejects(() => saveProfile({previousAvatar:current,avatar:{...current,id:201}},latest));
+    await assert.rejects(() => saveProfile({previousAvatar:current,avatar:{...current,bg:9}},latest));
+    assert.deepEqual((await readProfile(latest)).avatar,current);
+
+    const oldCurrent = (await readProfile()).avatar;
+    const oldChoice = {...oldCurrent,id:7,form:'full'};
+    await saveProfile({previousAvatar:oldCurrent,avatar:oldChoice});
+    assert.deepEqual((await readProfile(latest)).avatar,{id:7,form:'full',bg:3});
   });
 
   await t.test('patches only discovery filters and preserves member, payment, exchange and grants',async()=>{
