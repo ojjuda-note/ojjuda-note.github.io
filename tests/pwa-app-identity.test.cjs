@@ -148,9 +148,10 @@ test('installed Agit, Park and Pajang authenticate before displaying their entra
     assert.ok(css.includes('#welcome[data-member-entry="direct"] .sample-radar'),
       'the installed member answer keeps public invitation examples out of the way');
   }
-  for (const html of [pajangEntry, pajangMain]) {
-    assert.match(html, /entry-design\.css\?v=20261122-app-skip-entry1/);
-  }
+  const versionedEntryStyle = /href="(\.\/entry-design\.css\?v=\d{8}-[a-z0-9-]+)"/;
+  assert.match(pajangEntry, versionedEntryStyle);
+  assert.equal(pajangMain.match(versionedEntryStyle)?.[1], pajangEntry.match(versionedEntryStyle)[1],
+    'both Pajang pages load the same version of the entry styles');
   assert.match(pajangEntry, /<script type="module" src="\.\/entry\.mjs\?v=\d{8}-[a-z0-9-]+"><\/script>/);
   assert.match(read('park/index.html'), /note\/preview\.js\?v=\d{8}-[a-z0-9-]+/, 'Park loads a versioned composer');
   assert.match(world, /agit-welcome\.js\?v=20261122-member-app-start1/);
