@@ -2,8 +2,7 @@
 import {useEffect,useLayoutEffect,useRef,useState} from "react";
 import {themeFor,introDetails,signalsWith,type Person,type Message,type Station,type NearbyAnswer} from "../lib/station";
 
-import {InterestArt as Art} from "./interest-art";
-import {CharacterPortrait,ChatScenery} from "./profile-character";
+import {CharacterPortrait,ChatScenery,hiddenCharacterId} from "./profile-character";
 import {I} from "./icons";
 import NearbyRadar from "./nearby-radar";
 import {prepareLocation} from "../../location.mjs";
@@ -64,7 +63,7 @@ function ListPerson({p,type,station,busy,onProfile,onAction}:{
   onProfile:()=>void;onAction:()=>void;
 }){
     const v=signalsWith(station,p.id);const sig=type==="received"?v.incoming:v.outgoing;
-    return <div className="listperson"><button className="person" onClick={onProfile}><Art gender={p.gender} personId={p.id} interest={p.interest}/><span><strong>{p.name}</strong><small>{introDetails(p)}</small></span></button><p>{type==="chat"?"서로의 신호가 닿았어요.":sig?.note||(v.match?"서로의 신호가 닿았어요.":type==="received"?"신호를 보내왔어요.":"상대의 신호를 기다리고 있어요.")}</p><button className="secondary small" disabled={busy||(!station.remaining&&type==="received"&&!station.purchasingEnabled)} onClick={onAction}>{v.match?"대화 열기":type==="sent"?"상태 보기":"수락하고 대화하기"}<I n="right" s={15}/></button></div>;
+    return <div className="listperson"><button className="person" onClick={onProfile}><CharacterPortrait id={p.avatarId} gender={p.gender}/><span><strong>{p.name}</strong><small>{introDetails(p)}</small></span></button><p>{type==="chat"?"서로의 신호가 닿았어요.":sig?.note||(v.match?"서로의 신호가 닿았어요.":type==="received"?"신호를 보내왔어요.":"상대의 신호를 기다리고 있어요.")}</p><button className="secondary small" disabled={busy||(!station.remaining&&type==="received"&&!station.purchasingEnabled)} onClick={onAction}>{v.match?"대화 열기":type==="sent"?"상태 보기":"수락하고 대화하기"}<I n="right" s={15}/></button></div>;
   }
 
 export default function StationApp({initialStation}:{initialStation:Station}){
@@ -380,7 +379,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     if(!answer){open({kind:"person",peer:id});return;}
     const relation=signalsWith(s,id);
     open({kind:"person",peer:id,answer:{...answer,peer:id,name:person.name,region:person.region,
-      interest:person.interest,own:id===me?.id,sent:!!relation.outgoing,received:!!relation.incoming}});
+      interest:person.interest,avatarId:person.avatarId,gender:person.gender,own:id===me?.id,sent:!!relation.outgoing,received:!!relation.incoming}});
   }
   async function openHistoryChat(id:string) {
     if(signalsWith(s,id).match && s.people.some(person=>person.id===id)){startChat(id);return;}
@@ -482,12 +481,12 @@ export default function StationApp({initialStation}:{initialStation:Station}){
       {matches.length?<div className="listbox">{matches.map(p=><ListPerson key={p.id} p={p} station={s} busy={busy} onProfile={()=>open({kind:"person",peer:p.id})} onAction={()=>startChat(p.id)} type="chat"/>)}</div>:<Blank icon="chat" title="아직 열린 대화가 없어요" body="서로 신호를 보내면 여기서 대화를 이어 갈 수 있어요."/>}
     </section>}
     {tab==="chat"&&active&&validThread&&<section className="innerpage" key={thread}>
-      <ChatExchange key={active.id} peer={active.id} owner={me?.id||""} name={active.name} region={active.region} lastMessage={lastMsg}>
+      <ChatExchange key={active.id} peer={active.id} owner={me?.id||""} name={active.name} region={active.region} avatarId={active.avatarId} lastMessage={lastMsg}>
         {({notification,actions})=><><div className="chatbox">
           <div className="chatheader">
             <button className="iconbtn" aria-label="뒤로가기" onClick={()=>goBack("inbox")}><I n="back"/></button>
             <button className="person" onClick={()=>open({kind:"person",peer:active.id})}>
-              <Art gender={active.gender} personId={active.id} interest={active.interest}/>
+              <CharacterPortrait id={active.avatarId} gender={active.gender}/>
               <span><strong>{active.name}</strong><small>서로 신호를 보낸 회원</small></span>
             </button>
             <button className="quiet" onClick={()=>open({kind:"block",peer:active.id})}>차단</button>
@@ -555,9 +554,13 @@ export default function StationApp({initialStation}:{initialStation:Station}){
           historyEditDirty.current=false;dismiss();setToast(slotName+(editingAnswer?" 답변을 수정했어요.":" 답변을 저장했어요."));
         }}/>
     </>}
-    {modal.kind==="signal"&&peer&&!(available===0&&s.purchasingEnabled)&&<><span className="modalicon"><I n="signal"/></span><h2>{peer.name}님{row?.received || signalsWith(s,peer.id).incoming?"의 신호 수락":"에게 신호 보내기"}</h2><p className="sub">{available?"서로 신호를 보내면 대화를 시작할 수 있어요.":"오늘의 신호를 모두 썼어요. 내일 다시 만나요."}</p><div className="questionbox">{row&&<small>{row.question}</small>}{peer.body||signalsWith(s,peer.id).incoming?.note}</div><Editor key={signalDraftKey(peer.id,row)} initial={signalDrafts.current.get(signalDraftKey(peer.id,row))} onDraftChange={value=>signalDrafts.current.set(signalDraftKey(peer.id,row),value)} max={120} label="함께 보낼 한마디 (선택)" hint="어떤 부분에 마음이 닿았나요?" submit={(row?.received || signalsWith(s,peer.id).incoming?"신호 수락하기":"신호 보내기")+" · 남은 "+available+"개"} busy={busy||available===0} optional onSave={note=>void deliver(peer.id,note,row)}/></>}
-    {modal.kind==="result"&&peer&&<div className="result"><span className="resultart"><Art gender={peer.gender} personId={peer.id} interest={peer.interest} large/><i><I n={signalsWith(s,peer.id).match?"wave":"signal"}/></i></span><h2>{signalsWith(s,peer.id).match?"서로의 신호가 닿았어요":"신호를 보냈어요"}</h2><p className="sub">{signalsWith(s,peer.id).match?peer.name+"님도 당신에게 신호를 보냈어요. 이제 첫인사를 건네보세요.":peer.name+"님도 신호를 보내면 대화방이 열려요."}</p><button className="primary wide" onClick={()=>signalsWith(s,peer.id).match?startChat(peer.id):(setInbox("sent"),go("inbox"))}>{signalsWith(s,peer.id).match?"대화 시작하기":"보낸 신호 보기"}<I n="arrow" s={17}/></button></div>}
-    {modal.kind==="person"&&peer&&<><Art personId={peer.id} interest={peer.interest} large/><h2>{peer.name}</h2><p className="sub">{introDetails(peer)}</p>{peer.body&&<div className="questionbox"><small>{row?.question||themeText}</small>{peer.body}</div>}{row&&<AnswerLike answer={row}/>} {me&&<PublicProfilePreferences key={me.id+peer.id} viewer={me.id} person={peer.id}/>}<button className="primary wide" onClick={()=>{
+    {modal.kind==="signal"&&peer&&!(available===0&&s.purchasingEnabled)&&<><CharacterPortrait id={peer.avatarId} gender={peer.gender} large/><h2>{peer.name}님{row?.received || signalsWith(s,peer.id).incoming?"의 신호 수락":"에게 신호 보내기"}</h2><p className="sub">{available?"서로 신호를 보내면 대화를 시작할 수 있어요.":"오늘의 신호를 모두 썼어요. 내일 다시 만나요."}</p><div className="questionbox">{row&&<small>{row.question}</small>}{peer.body||signalsWith(s,peer.id).incoming?.note}</div><Editor key={signalDraftKey(peer.id,row)} initial={signalDrafts.current.get(signalDraftKey(peer.id,row))} onDraftChange={value=>signalDrafts.current.set(signalDraftKey(peer.id,row),value)} max={120} label="함께 보낼 한마디 (선택)" hint="어떤 부분에 마음이 닿았나요?" submit={(row?.received || signalsWith(s,peer.id).incoming?"신호 수락하기":"신호 보내기")+" · 남은 "+available+"개"} busy={busy||available===0} optional onSave={note=>void deliver(peer.id,note,row)}/></>}
+    {modal.kind==="result"&&peer&&<div className="result"><span className="resultart"><CharacterPortrait id={peer.avatarId} gender={peer.gender} large/><i><I n={signalsWith(s,peer.id).match?"wave":"signal"}/></i></span><h2>{signalsWith(s,peer.id).match?"서로의 신호가 닿았어요":"신호를 보냈어요"}</h2><p className="sub">{signalsWith(s,peer.id).match?peer.name+"님도 당신에게 신호를 보냈어요. 이제 첫인사를 건네보세요.":peer.name+"님도 신호를 보내면 대화방이 열려요."}</p><button className="primary wide" onClick={()=>signalsWith(s,peer.id).match?startChat(peer.id):(setInbox("sent"),go("inbox"))}>{signalsWith(s,peer.id).match?"대화 시작하기":"보낸 신호 보기"}<I n="arrow" s={17}/></button></div>}
+    {modal.kind==="person"&&peer&&me&&<>
+      <PublicProfilePreferences key={me.id+peer.id} viewer={me.id} person={peer.id} avatarId={peer.avatarId}>
+        <h2>{peer.name}</h2><p className="sub">{introDetails(peer)}</p>{peer.body&&<div className="questionbox"><small>{row?.question||themeText}</small>{peer.body}</div>}{row&&<AnswerLike answer={row}/>}
+      </PublicProfilePreferences>
+      <button className="primary wide" onClick={()=>{
         if(!row)return signal(peer);
         if((row.sent&&row.received)||signalsWith(s,row.peer).match)return void openHistoryChat(row.peer);
         if(row.sent||signalsWith(s,row.peer).outgoing){setInbox("sent");go("inbox");return;}
@@ -565,7 +568,8 @@ export default function StationApp({initialStation}:{initialStation:Station}){
       }}>{(row?.sent&&row?.received)||signalsWith(s,peer.id).match?"대화 열기":row?.sent||signalsWith(s,peer.id).outgoing?"보낸 신호 확인":row?.received||signalsWith(s,peer.id).incoming?"신호 수락하기":"신호 보내기"}<I n="signal" s={17}/></button><button className="textbtn" onClick={()=>open({kind:"block",peer:peer.id,answer:row})}>이 프로필 차단</button></>}
     {(modal.kind==="edit"||modal.kind==="privateProfile")&&me&&<ExchangeProfileEditor key={me.id} profileId={me.id} focusTastes={modal.focusTastes} onSaved={saved=>{
       const current=liveRef.current;if(current.me?.id!==saved.person)return;
-      const next={...current,me:{...current.me,name:saved.name,region:saved.region,interest:saved.interest,avatarId:saved.avatar.id}};
+      const next={...current,me:{...current.me,name:saved.name,region:saved.region,interest:saved.interest,
+        gender:saved.showGender?(saved.gender??saved.avatarCollection):null,avatarId:saved.showGender?saved.avatar.id:hiddenCharacterId}};
       serverRevision.current++;liveRef.current=next;setLive(next);setHistoryRevision(n=>n+1);
       close();setToast("프로필을 저장했어요.");void refresh();
     }}/>}

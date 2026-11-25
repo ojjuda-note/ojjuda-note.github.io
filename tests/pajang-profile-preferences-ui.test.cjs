@@ -26,7 +26,7 @@ function fixture() {
     day:'2026-11-19', slot:'am', nextAt:new Date(Date.now() + 3600000).toISOString(),
     authenticated:true, remaining:3, signals:[], messages:[], people:[],
     question:{id:12, q:['서로에게 소개하고 싶은 작은 행복은 무엇인가요?'], answers:[]},
-    me:{id:'11111111-1111-4111-8111-111111111111', name:'보리', region:'서울특별시', interest:'book', body:'함께 나눌 이야기가 좋아요.'},
+    me:{id:'11111111-1111-4111-8111-111111111111', name:'보리', region:'서울특별시', interest:'book', avatarId:101, gender:'male', body:'함께 나눌 이야기가 좋아요.'},
     locationEnabled:false, locationVersion:0, radarOn:false
   };
   const base = {
@@ -34,7 +34,7 @@ function fixture() {
     sent:false, received:false, own:false, question:state.question.q[0]
   };
   const rows = [
-    {...base, peer:'22222222-2222-4222-8222-222222222222', name:'은하', interest:'book', body:'서로 책을 골라 주고 싶어요.', relationship_intents:['conversation','friendship']},
+    {...base, peer:'22222222-2222-4222-8222-222222222222', name:'은하', avatarId:9, interest:'book', body:'서로 책을 골라 주고 싶어요.', relationship_intents:['conversation','friendship']},
     {...base, peer:'33333333-3333-4333-8333-333333333333', name:'단비', interest:'walk', body:'먼저 함께 산책하며 알아가요.', relationship_intents:['casual','dating']},
     {...base, peer:'44444444-4444-4444-8444-444444444444', name:'다솜', interest:'coffee', body:'함께할 미래를 이야기해요.', relationship_intents:['marriage']},
     {...base, peer:'55555555-5555-4555-8555-555555555555', name:'솔', interest:'vinyl', body:'오늘은 음악 이야기가 하고 싶어요.', relationship_intents:[]}
@@ -45,9 +45,10 @@ function fixture() {
     const emptyPreferences = ${emptyPreferences.toString()};
     const records = new Map();
     records.set(state.me.id,{person:state.me.id,preferences:emptyPreferences(),version:0});
-    let privateProfile={fields:{drinking:'가끔 마셔요',smoking:'피우지 않아요',bio:'반가워요.'},age:35,gender:'남성',showAge:false,showGender:false};
+    const ownAnswer={...rows[0],peer:state.me.id,own:true,name:state.me.name,body:state.me.body,avatarId:state.me.avatarId,gender:state.me.gender,relationship_intents:[]};
+    let privateProfile={fields:{drinking:'가끔 마셔요',smoking:'피우지 않아요',bio:'반가워요.'},avatar:{id:101,form:'full',bg:0},avatarCollection:'male',age:35,gender:'남성',showAge:false,showGender:true};
     for (const row of rows) records.set(row.peer,{
-      person:row.peer,version:1,
+      person:row.peer,avatarId:row.peer===rows[0].peer?120:row.avatarId,version:1,
       preferences:{...emptyPreferences(),relationship_intents:[...row.relationship_intents],custom:{...emptyPreferences().custom,meeting_styles:['별 보며 걷기']}}
     });
     const listeners = new Set();
@@ -146,6 +147,9 @@ function fixture() {
           const record={person:state.me.id,preferences:{...current.preferences,...structuredClone(data.preferences)},version:current.version+1};
           records.set(state.me.id,record);
           privateProfile={...privateProfile,fields:structuredClone(data.fields),showAge:data.showAge??privateProfile.showAge,showGender:data.showGender??privateProfile.showGender};
+          if(data.avatar)privateProfile.avatar=structuredClone(data.avatar);
+          state.me.avatarId=privateProfile.showGender?privateProfile.avatar.id:201;
+          state.me.gender=privateProfile.showGender?'male':null;
           Object.assign(state.me,{name:data.name.trim(),region:data.region,interest:data.interest,
              preferences:record.preferences,preferencesVersion:record.version});
           return {data:control.detail(),error:null};
@@ -153,7 +157,7 @@ function fixture() {
         if(name==='pajang_discovery_feed'){
           control.feeds.push(structuredClone(args));
           if(control.deniedFeed)return error('42501','회원 정보를 확인해 주세요.');
-          let source=rows;
+          let source=[...rows,ownAnswer];
           if(control.pagination)source=Array.from({length:26},(_,i)=>({...rows[0],peer:'page-'+i,name:'대화 친구 '+(i+1),at:i}));
           const filtered=source.filter(row=>args.p_interest==='all'||row.relationship_intents.includes(args.p_interest));
           const selected=control.emptyFilter===args.p_interest?[]:filtered;
@@ -227,10 +231,10 @@ async function openGroup(dialog,label) {
       if(url.pathname==='/features/pajang/station.html')return route.fulfill({contentType:'text/html',body:template});
       if(url.pathname==='/fixture.js')return route.fulfill({contentType:'text/javascript',body:fixture()});
       if(url.pathname==='/program.js')return route.fulfill({contentType:'text/javascript',body:bundle});
-      if(!/\.(?:css|svg|woff2?)$/.test(url.pathname))return route.abort();
+      if(!/\.(?:css|svg|woff2?|webp)$/.test(url.pathname))return route.abort();
       const file=path.resolve(root,'.'+url.pathname);
       if(!file.startsWith(root+path.sep))return route.abort();
-      try{return route.fulfill({contentType:url.pathname.endsWith('.css')?'text/css':url.pathname.endsWith('.svg')?'image/svg+xml':'font/woff2',body:await fs.readFile(file)});}
+      try{return route.fulfill({contentType:url.pathname.endsWith('.css')?'text/css':url.pathname.endsWith('.svg')?'image/svg+xml':url.pathname.endsWith('.webp')?'image/webp':'font/woff2',body:await fs.readFile(file)});}
       catch{return route.fulfill({status:404,body:''});}
     });
     const page=await context.newPage();
@@ -247,7 +251,10 @@ async function openGroup(dialog,label) {
     const answers=page.locator('#answers');
     const filters=answers.locator('[aria-label="원하는 인연으로 필터"]');
     assert.deepEqual(await filters.getByRole('button').allTextContents(),['전체',...intentOptions.map(([,label])=>label)]);
-    assert.equal(await answers.locator('.answercard').count(),4,'All includes members without an inferred intention');
+    assert.equal(await answers.locator('.answercard').count(),5,'All includes my answer and members without an inferred intention');
+    const ownPortrait=answers.locator('.answercard').filter({hasText:'함께 나눌 이야기가 좋아요.'}).locator('.pj-character-portrait');
+    assert.match(await ownPortrait.evaluate(el=>el.style.backgroundImage),/avatars-male-20261125-01\.webp/);
+    assert.match(await ownPortrait.getAttribute('aria-label'),/흰 티와 청바지/);
     const unclassified=answers.locator('.answercard').filter({hasText:'오늘은 음악 이야기가 하고 싶어요.'});
     assert.equal(await unclassified.locator('.answer-intents .tag').count(),0,'an existing hobby is not converted into a relationship intention');
     const conversationCard=answers.locator('.answercard').filter({hasText:'서로 책을 골라 주고 싶어요.'});
@@ -282,6 +289,8 @@ async function openGroup(dialog,label) {
     const publicMember=page.getByRole('dialog').getByRole('region',{name:'공개 프로필',exact:true});
     await publicMember.getByRole('heading',{name:'나를 표현하는 취향',exact:true}).waitFor();
     await publicMember.locator('.preference-tags').getByText('별 보며 걷기',{exact:true}).waitFor();
+    assert.match(await page.getByRole('dialog').locator('.pj-character-portrait').evaluate(el=>el.style.backgroundImage),/avatars-male-20261125-05\.webp/,
+      'the opened public profile uses the current portrait even when its feed card was older');
     assert.equal(await publicMember.getByText('만남 스타일',{exact:true}).isVisible(),true,'a peer\'s public tastes are visible without opening an editor or disclosure');
     assert.ok((await page.evaluate(()=>window.preferenceFixture.reads)).some(read=>read.peer==='22222222-2222-4222-8222-222222222222'));
     await page.getByRole('dialog').screenshot({path:path.join(artifacts,'public-member-profile.png'),animations:'disabled'});
@@ -329,14 +338,20 @@ async function openGroup(dialog,label) {
     await openGroup(form.dialog,'만남 스타일');
     for(const n of [1,2,3])await options.nth(n).click();
     assert.ok(await meeting.getByRole('textbox').isEnabled());
-    let art=await openGroup(form.dialog,'대표 취향 · 프로필 그림');
+    const art=await openGroup(form.dialog,'대표 취향');
     await art.getByRole('button',{name:'카페',exact:true}).click();
+    await form.dialog.getByRole('button',{name:'캐릭터 선택',exact:true}).click();
+    assert.equal(await form.dialog.getByRole('button',{name:'여자',exact:true}).count(),0);
+    await form.dialog.getByRole('button',{name:'책방 가는 날 대두형',exact:true}).click();
 
     const privateSection=form.dialog.locator('.unified-private-profile');
     assert.equal(await privateSection.evaluate(node=>node.open),true,'exchange details start expanded');
     await form.dialog.getByLabel('직업',{exact:true}).fill('책방지기');
     await form.dialog.getByLabel('자기소개',{exact:false}).fill('서로 이야기를 나누고 싶어요.');
     await form.dialog.locator('.unified-private-fields .exchange-check').filter({hasText:'나이'}).locator('input[type="checkbox"]').check();
+    const genderCheckbox=()=>form.dialog.locator('.exchange-check').filter({hasText:'성별'}).getByRole('checkbox');
+    await genderCheckbox().uncheck();
+    assert.match(await form.dialog.locator('.pj-avatar-stage').getAttribute('aria-label'),/^나무 분장 대두형/);
     await form.save.click();
     await form.dialog.waitFor({state:'hidden'});
     let detailSaves=await page.evaluate(()=>window.preferenceFixture.detailSaves);
@@ -353,6 +368,8 @@ async function openGroup(dialog,label) {
     assert.equal(first.fields.job,'책방지기');
     assert.equal(first.fields.bio,'서로 이야기를 나누고 싶어요.');
     assert.equal(first.interest,'coffee');
+    assert.deepEqual(first.avatar,{id:102,form:'mini',bg:0});
+    assert.equal(first.showGender,false);
     assert.equal(first.showAge,true);
     assert.deepEqual(await page.evaluate(()=>window.preferenceFixture.detail().name),'새 보리');
     assert.equal(await page.evaluate(()=>window.preferenceFixture.detail().region),'경기도');
@@ -360,6 +377,9 @@ async function openGroup(dialog,label) {
     assert.equal(await settings.getByRole('region',{name:'공개 프로필',exact:true}).count(),0,
       'settings does not add an extra profile summary card');
     assert.equal(await onlyButton().count(),1,'settings has exactly one profile editor link');
+    await page.getByRole('navigation',{name:'파장 메뉴'}).getByRole('link',{name:'오늘',exact:true}).click();
+    assert.match(await ownPortrait.getAttribute('aria-label'),/나무/,'a stale feed row cannot reveal the hidden outfit');
+    assert.equal(await ownPortrait.getAttribute('data-gender-tone'),null);
 
     form=await openProfile(page);
     assert.equal(await form.dialog.getByLabel('닉네임',{exact:true}).inputValue(),'새 보리');
@@ -369,6 +389,12 @@ async function openGroup(dialog,label) {
     const privateAgain=form.dialog.locator('.unified-private-profile');
     assert.equal(await privateAgain.evaluate(node=>node.open),true,'exchange details reopen expanded');
     assert.equal(await form.dialog.getByLabel('직업',{exact:true}).inputValue(),'책방지기');
+    await form.dialog.getByRole('button',{name:'캐릭터 선택',exact:true}).click();
+    const savedOutfit=form.dialog.getByRole('button',{name:'책방 가는 날 대두형',exact:true});
+    assert.equal(await savedOutfit.getAttribute('aria-pressed'),'true','hiding gender preserves the member’s private selection');
+    await savedOutfit.click();
+    await genderCheckbox().check();
+    assert.match(await form.dialog.locator('.pj-avatar-stage').getAttribute('aria-label'),/^책방 가는 날 대두형/);
     await form.dialog.getByLabel('닉네임',{exact:true}).fill('고친 보리');
     await form.dialog.getByLabel('직업',{exact:true}).fill('새 직업');
     await page.evaluate(()=>window.preferenceFixture.detailSaveResponses.push('error'));
@@ -387,6 +413,9 @@ async function openGroup(dialog,label) {
     assert.equal(detailSaves[2].p_data.preferencesVersion,1,'retry uses the original expected version');
     assert.equal(await page.evaluate(()=>window.preferenceFixture.detail().name),'고친 보리');
     assert.equal(await page.evaluate(()=>window.preferenceFixture.detail().fields.job),'새 직업');
+    await page.getByRole('navigation',{name:'파장 메뉴'}).getByRole('link',{name:'오늘',exact:true}).click();
+    assert.match(await ownPortrait.getAttribute('aria-label'),/책방 가는 날/,'showing gender restores the saved outfit without reloading');
+    assert.equal(await ownPortrait.getAttribute('data-gender-tone'),'male');
 
     // Clearing the public relationship choices must not erase exchange details.
     form=await openProfile(page);

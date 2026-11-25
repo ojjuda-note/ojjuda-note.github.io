@@ -14,7 +14,7 @@ for(const pathname of supportPaths)assert.ok(fs.statSync(path.join(root,pathname
 
 // Exercise the built React member program with real DOM/history events. The
 // network boundary is an in-memory member fixture, never a live user account.
-function fixture(t,url='https://ojjuda.test/features/pajang/station.html',{admin=false,radar=false}={}){
+function fixture(t,url='https://ojjuda.test/features/pajang/station.html',{admin=false,radar=false,hidden=false}={}){
   const errors=[];
   const console=new VirtualConsole();console.on('jsdomError',error=>errors.push(error.message));
   const dom=new JSDOM('<!doctype html><div id="station"></div>',{url,runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:console});
@@ -30,6 +30,10 @@ function fixture(t,url='https://ojjuda.test/features/pajang/station.html',{admin
   }
   const me={id:'me',name:'보리',gender:'male',avatarId:200,interest:'book',body:'내 답변',at:1};
   const peer={id:'peer',name:'라온',avatarId:9,interest:'walk',body:'함께 걸어요.',at:1,range:3,bearing:315};
+  if(hidden){
+    Object.assign(me,{gender:null,avatarId:201});
+    Object.assign(peer,{gender:null,avatarId:201});
+  }
   const sameCell=radar?['도담','소담'].map((name,i)=>({id:'nearby'+i,name,interest:'book',body:'같은 동네에서 책을 읽어요.',range:1,sameCell:true})):[];
   const state={day:'2026-11-19',slot:'am',question:{id:1,q:['오늘은 무엇을 하고 싶나요?']},nextAt:new Date(Date.now()+3600000).toISOString(),
     me,people:[peer,...sameCell],signals:[{src:'me',dst:'peer'},{src:'peer',dst:'me'}],messages:[],remaining:3,authenticated:true,
@@ -98,9 +102,12 @@ test('the React app closes its popup first and restores real tabs, including but
 test('opening a chat from a feed profile returns to that feed instead of a fixed list or closed popup',async t=>{
   const f=fixture(t),{w}=f;
   await f.until(()=>f.byText('#answers .person strong','라온'));
+  assert.match(w.document.querySelector('#answers .person .pj-character-portrait').style.backgroundImage,/avatars-20261125-03\.webp/);
   await f.click('#answers .person strong','라온');await f.until(()=>f.modal());
+  assert.match(f.modal().querySelector('.pj-character-portrait').style.backgroundImage,/avatars-20261125-03\.webp/);
   await f.click('dialog button','대화 열기');
   await f.until(()=>w.document.querySelector('.composer'));
+  assert.match(w.document.querySelector('.chatheader .pj-character-portrait').style.backgroundImage,/avatars-20261125-03\.webp/);
   assert.equal(new URL(w.location.href).searchParams.get('chat'),'peer');
   w.document.querySelector('.chatheader [aria-label="뒤로가기"]').click();
   await f.until(()=>!new URL(w.location.href).searchParams.has('tab'));
@@ -120,6 +127,7 @@ test('own portrait and matched chat reuse selected outfits with a fresh scene on
 
   w.Math.random=()=>0;
   await f.menu('마음함');
+  assert.match(doc.querySelector('.listperson .pj-character-portrait').style.backgroundImage,/avatars-20261125-03\.webp/);
   await f.click('button','대화 열기');
   const scenery=()=>doc.querySelector('.pj-chat-scenery');
   const backdrop=()=>scenery()?.querySelector('.pj-chat-backdrop')?.style.backgroundImage;
@@ -141,6 +149,51 @@ test('own portrait and matched chat reuse selected outfits with a fresh scene on
   await f.until(backdrop);
   assert.notEqual(backdrop(),firstScene,'reopening the same room draws another scene');
   assert.deepEqual(f.errors,[]);
+});
+
+test('outgoing signal and its result show the same member portrait',async t=>{
+  const f=fixture(t),{w}=f;
+  await f.until(()=>f.byText('nav a','마음함'));
+  w.pajangState.signals=[{src:'me',dst:'peer'}];
+  w.document.dispatchEvent(new w.Event('visibilitychange'));
+  await f.menu('마음함');await f.click('button','보낸 신호 1');
+  await f.until(()=>f.byText('button','상태 보기'));
+  const listPortrait=w.document.querySelector('.listperson .pj-character-portrait');
+  assert.match(listPortrait.style.backgroundImage,/avatars-20261125-03\.webp/);
+  await f.click('button','상태 보기');await f.until(()=>f.modal());
+  assert.equal(f.modal().querySelector('.resultart .pj-character-portrait').style.backgroundImage,listPortrait.style.backgroundImage);
+  assert.deepEqual(f.errors,[]);
+});
+
+test('members who hide gender wear the neutral tree on every public surface',async t=>{
+  const f=fixture(t,undefined,{radar:true,hidden:true}),doc=f.w.document;
+  function treePortrait(scope){
+    const portrait=doc.querySelector(scope+' .pj-character-portrait');
+    assert.ok(portrait,scope+' has a portrait');
+    assert.match(portrait.getAttribute('aria-label'),/나무/);
+    assert.equal(portrait.getAttribute('data-gender-tone'),null);
+    assert.match(portrait.style.backgroundImage,/tree/i);
+  }
+  await f.until(()=>f.byText('#answers .person strong','라온'));
+  treePortrait('#answers .person');
+  await f.click('#answers .person strong','라온');await f.until(()=>f.modal());
+  treePortrait('dialog');await f.click('dialog button','대화 열기');
+  await f.until(()=>doc.querySelector('.composer'));
+  treePortrait('.chatheader');
+  for(const side of ['peer','self']){
+    const full=doc.querySelector('.pj-chat-'+side+' .pj-character-figure.full');
+    assert.ok(full,'the neutral full-height costume is rendered on the '+side+' side');
+    assert.match(full.style.backgroundImage,/tree/i);
+  }
+  await f.menu('마음함');treePortrait('.listperson');
+  await f.menu('내 파장');treePortrait('.account-heading');
+  await f.menu('오늘');await f.click('button','내 주변');
+  await f.until(()=>doc.querySelector('.scope-person'));
+  treePortrait('.scope-self');
+  const marker=doc.querySelector('.scope-person[aria-label^="라온"]');
+  assert.equal(marker.getAttribute('data-gender-tone'),null);
+  marker.click();await f.until(()=>f.byText('.radar-identity h2','라온'));
+  treePortrait('.radar-identity');
 });
 
 test('a directly opened chat replaces itself with its list and legal pages stay in the same tab',async t=>{
@@ -202,12 +255,16 @@ test('individual radar markers preserve person selection through popup Back and 
   const markers=()=>[...w.document.querySelectorAll('.scope-person')];
   const select=async name=>{markers().find(node=>node.getAttribute('aria-label').startsWith(name+',')).click();await f.until(()=>f.byText('.radar-identity h2',name));};
   await f.until(()=>markers().length===3);
+  assert.match(w.document.querySelector('.scope-self .pj-character-portrait').style.backgroundImage,/avatars-male-20261125-25\.webp/);
+  const separate=markers().find(node=>node.getAttribute('aria-label').startsWith('라온,'));
+  assert.match(separate.querySelector('.pj-character-portrait').style.backgroundImage,/avatars-20261125-03\.webp/);
   assert.deepEqual(markers().map(node=>node.querySelector('.scope-person-name').textContent).sort(),['도','라','소']);
   assert.equal(w.document.querySelectorAll('.scope-person.scope-same-cell').length,2);
   assert.equal(w.document.querySelectorAll('.scope-person.scope-same-cell .scope-person-dot').length,2);
   assert.ok(markers().filter(node=>node.classList.contains('scope-same-cell')).every(node=>node.querySelector('.scope-person-name').hidden),'crowded same-cell dots retain their full accessible names while hiding initials');
   assert.equal(w.document.querySelectorAll('.radar-links line').length,1,'same-cell markers never receive an invented bearing');
   await select('소담');
+  assert.match(w.document.querySelector('.radar-identity .pj-character-portrait').style.backgroundImage,/avatars-20261125-01\.webp/,'older member data uses the white-shirt portrait');
   const positions=markers().map(node=>[node.style.left,node.style.top]);
   await f.click('button','공개 정보 보기');await f.until(()=>f.modal());
   assert.ok(f.byText('dialog h2','소담'));

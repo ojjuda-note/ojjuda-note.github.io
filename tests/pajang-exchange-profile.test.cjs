@@ -56,7 +56,7 @@ async function editorBundle() {
 
 // The actual editor runs against an in-memory RPC boundary. These tests never
 // access a member account, live Supabase data, or browser authentication state.
-async function fixture(t, {fields = {}, save, read, ready = true} = {}) {
+async function fixture(t, {fields = {}, profile = {}, save, read, ready = true} = {}) {
   const dom = new JSDOM('<!doctype html><div id="root"></div>', {
     url: 'https://ojjuda.kr/features/pajang/station.html?tab=profile',
     runScripts: 'outside-only',
@@ -67,7 +67,7 @@ async function fixture(t, {fields = {}, save, read, ready = true} = {}) {
     calls: [],
     successes: 0,
     profile: {fields: copy(fields), age: 35, gender: '남성', showAge: false, showGender: false,
-      person: profileId, name:'보리', region:'서울특별시', interest: 'book', preferences: emptyPreferences(), preferencesVersion: 3},
+      person: profileId, name:'보리', region:'서울특별시', interest: 'book', preferences: emptyPreferences(), preferencesVersion: 3, ...profile},
   };
   window.profileId = profileId;
   window.pajangArt = {};
@@ -389,8 +389,8 @@ test('two submits while saving send one RPC and report success once', async t =>
   assert.equal(f.saves().length, 1);
 });
 
-test('a single profile character persists with a separate backdrop and every short variant is on the left', async t => {
-  const f = await fixture(t);
+test('the female catalog has 100 outfits with the short variant on the left and a separate backdrop', async t => {
+  const f = await fixture(t,{profile:{gender:'여성',showGender:true,avatarCollection:'female'}});
   const avatar = () => f.form().querySelector('[aria-label="내 캐릭터"]');
   const stage = () => avatar().querySelector('[role="img"]');
   assert.equal(stage().getAttribute('aria-label'), '흰 티와 청바지 전신형 · 배경 없음');
@@ -398,16 +398,20 @@ test('a single profile character persists with a separate backdrop and every sho
   assert.equal(f.button('배경 선택').getAttribute('aria-expanded'), 'false');
   f.button('캐릭터 선택').click();
   await turn();
+  assert.ok(!f.button('남자'));
   const names = new Set();
   for (let page = 1; page <= 13; page++) {
     for (const pair of avatar().querySelectorAll('.pj-avatar-pair')) {
       const buttons = [...pair.querySelectorAll('button')];
       assert.deepEqual(buttons.map(b => b.textContent), ['대두형','전신형']);
+      for(const button of buttons)assert.match(button.querySelector('.pj-character-figure').style.backgroundImage,/\/avatars-20261125-\d{2}\.webp/);
       names.add(pair.parentElement.querySelector('strong').textContent);
     }
     if (page < 13) { f.button('다음').click(); await turn(); }
   }
   assert.equal(names.size, 100);
+  await f.set('캐릭터 검색', '책방 가는 날');
+  assert.equal(avatar().querySelectorAll('.pj-avatar-pair').length,0,'search cannot reach the other catalog');
   await f.set('캐릭터 검색', '회색 후디');
   f.button('회색 후디 대두형').click();
   await turn();
@@ -428,12 +432,13 @@ test('a single profile character persists with a separate backdrop and every sho
 });
 
 test('100 male outfits reuse every existing backdrop and reopen on the saved pair', async t => {
-  const f = await fixture(t);
+  const f = await fixture(t,{profile:{gender:'남성',showGender:true,avatarCollection:'male'}});
   const region = () => f.form().querySelector('[aria-label="내 캐릭터"]');
   const stage = () => region().querySelector('[role="img"]');
   const click = async label => { f.button(label).click(); await turn(); };
   const backgrounds = () => [...region().querySelectorAll('.pj-avatar-scenes button')]
     .map(b => [b.textContent.trim(), b.querySelector('img')?.getAttribute('src') ?? null]);
+  assert.match(stage().querySelector('.pj-character-figure').style.backgroundImage,/avatars-male-20261125-01\.webp/);
 
   await click('배경 선택');
   const sharedBackgrounds = backgrounds();
@@ -448,8 +453,10 @@ test('100 male outfits reuse every existing backdrop and reopen on the saved pai
   f.window.document.head.append(sheet);
   const frameHeight = form => f.window.getComputedStyle(region().querySelector('.pj-avatar-pair .' + form)).height;
   assert.ok(frameHeight('full'));
-  assert.notEqual(frameHeight('mini'), frameHeight('full'), 'existing female thumbnail sizing is preserved');
-  await click('남자');
+  assert.ok(!f.button('여자'));
+  await f.set('캐릭터 검색','회색 후디');
+  assert.equal(region().querySelectorAll('.pj-avatar-pair').length,0);
+  await f.set('캐릭터 검색','');
   assert.equal(frameHeight('mini'), frameHeight('full'), 'the male art already contains its intended height ratio');
 
   const looks = [];
@@ -489,7 +496,59 @@ test('100 male outfits reuse every existing backdrop and reopen on the saved pai
   await click('캐릭터 선택');
   assert.equal(f.button(lastShort).getAttribute('aria-pressed'), 'true');
   assert.ok(f.button('다음').disabled);
-  assert.equal(f.button('남자').getAttribute('aria-pressed'), 'true');
+  assert.ok(!f.button('여자'));
   assert.deepEqual(f.saves()[0].p_data.avatar, {id:200,form:'mini',bg:8});
   assert.ok(f.state.calls.every(call => call.p_data.avatarCatalog === 2));
+});
+
+test('an older profile read uses the registered gender and preserves the original avatar for conflict detection',async t=>{
+  for(const [gender,oldId,newId] of [['남성',2,103],['여성',102,3]]){
+    await t.test(gender,async t=>{
+      const previous={id:oldId,form:'mini',bg:4};
+      const f=await fixture(t,{profile:{gender,showGender:true,avatar:previous},save:(_data,attempt)=>
+        attempt===1?{data:null,error:{code:'40001',message:'다른 화면에서 변경했어요.'}}:undefined});
+      const character=f.form().querySelector('[aria-label="내 캐릭터"]');
+      const stage=()=>character.querySelector('.pj-avatar-stage').getAttribute('aria-label');
+      assert.ok(stage().startsWith(gender==='남성'?'책방 가는 날':'회색 후디'));
+      f.button('캐릭터 선택').click();await turn();
+      character.querySelectorAll('.pj-avatar-pair')[2].querySelector('button').click();await turn();
+      const selected=stage();
+      f.submit();await waitFor(()=>!!f.alert(),'a conflicting save leaves the editor open');
+      assert.equal(stage(),selected);
+      assert.deepEqual(f.saves()[0].p_data.previousAvatar,previous);
+      f.submit();await waitFor(()=>f.state.successes===1,'a valid retry can save the chosen outfit');
+      assert.deepEqual(f.saves()[1].p_data.previousAvatar,previous);
+      assert.deepEqual(f.state.profile.avatar,{id:newId,form:'mini',bg:4});
+    });
+  }
+});
+
+test('hiding gender keeps the private catalog restricted and previews the tree for either collection',async t=>{
+  for(const collection of ['female','male']){
+    await t.test(collection,async t=>{
+      const f=await fixture(t,{profile:{gender:null,showGender:false,avatarCollection:collection}});
+      const stage=()=>f.form().querySelector('.pj-avatar-stage');
+      assert.match(stage().getAttribute('aria-label'),/^나무 분장/);
+      f.button('캐릭터 선택').click();await turn();
+      assert.equal(f.button(collection==='male'?'여자':'남자'),undefined);
+      const name=collection==='male'?'책방 가는 날':'회색 후디';
+      f.button(name+' 대두형').click();await turn();
+      assert.match(stage().getAttribute('aria-label'),/^나무 분장 대두형/);
+      f.submit();await waitFor(()=>f.state.successes===1,'private selection saves under the costume');
+      assert.deepEqual(f.state.profile.avatar,{id:collection==='male'?102:2,form:'mini',bg:0});
+    });
+  }
+});
+
+test('a missing registration gender permits a shared backdrop and profile edits without unlocking either catalog',async t=>{
+  const avatar={id:147,form:'mini',bg:0};
+  const f=await fixture(t,{profile:{gender:'여성',avatarCollection:null,avatar}});
+  assert.ok(f.button('캐릭터 선택').disabled,'explicitly unregistered takes precedence over public gender and outfit');
+  await f.set('닉네임','새 보리');
+  f.button('배경 선택').click();await turn();
+  f.button('장미 정원').click();await turn();
+  f.submit();await waitFor(()=>f.state.successes===1,'background and public fields can still save');
+  assert.deepEqual(f.saves()[0].p_data.previousAvatar,avatar);
+  assert.deepEqual(f.saves()[0].p_data.avatar,{...avatar,bg:2});
+  assert.equal(f.saves()[0].p_data.name,'새 보리');
 });

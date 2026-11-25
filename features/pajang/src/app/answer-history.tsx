@@ -1,13 +1,13 @@
 import {useEffect, useMemo, useRef, useState, type PointerEvent} from "react";
 import {signalsWith, type Slot, type Station} from "../lib/station";
 import {relationshipIntents,type RelationshipIntentKey} from "../lib/profile-preferences.mjs";
-import {InterestArt} from "./interest-art";
+import {CharacterPortrait} from "./profile-character";
 import {I} from "./icons";
 import QuestionCarousel from "./question-carousel";
 import {AnswerLike,useAnswerLikes} from "./answer-likes";
 
 export type DiscoveryAnswer = {
-  peer:string; gender?:string|null; name:string; region:string; interest:string;
+  peer:string; avatarId?:number; gender?:string|null; name:string; region:string; interest:string;
   day:string; slot:Slot; at:number; question:string; body:string;
   own:boolean; sent:boolean; received:boolean;
   liked?:boolean; likeCount?:number;
@@ -264,11 +264,12 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
         }}
         renderAnswers={answers=>answers.map(row=>{
         const relation=signalsWith(station,row.peer);
+        const author=row.peer===station.me?.id?station.me:row;
         const sent=row.sent||!!relation.outgoing, received=row.received||!!relation.incoming, matched=sent&&received;
         const intents=relationshipIntents.filter(intent=>row.relationship_intents?.includes(intent.key));
         return <article key={rowKey(row)} className="answercard">
           <button className="person" onClick={()=>onProfile(row)}>
-            <InterestArt gender={row.gender} personId={row.peer} interest={row.interest}/>
+            <CharacterPortrait id={author.avatarId??row.avatarId} gender={author.gender}/>
             <span><strong>{row.name}{row.own?" · 내 답변":""}</strong>{row.region&&<small>{row.region}</small>}</span>
           </button>
           <p className="quote">{row.body}</p>
