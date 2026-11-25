@@ -178,6 +178,38 @@ test('public Pajang preferences save atomically and relationship discovery prese
   t.beforeEach(()=>db.exec('begin'));
   t.afterEach(()=>db.exec('rollback'));
 
+  await t.test('the member state shares only outfit IDs with self and mutually connected unblocked peers',async()=>{
+    await db.exec(read('20261125041640_pajang_connected_chat_avatar_ids.sql'));
+    const state = (n, input={}) => as(account(n),()=>rpc('pajang_member',['state',input]));
+    const peer = (s,n) => s.people.find(p=>p.id===person(n));
+    for (const [n,id] of [[1,200],[2,101],[3,131],[4,153]]) {
+      await db.query('update pajang_private.people set avatar=$1::jsonb where id=$2',
+        [{id,form:'mini',bg:8},person(n)]);
+    }
+    for (const [a,b] of [[1,2],[2,1],[1,3],[4,1]]) {
+      await db.query('insert into pajang_private.signals(src,dst,day,note,at) values($1,$2,$3,$4,1000)',
+        [person(a),person(b),today,'']);
+    }
+    const mine=await state(1);
+    assert.equal(mine.me.avatarId,200);
+    assert.equal(peer(mine,2).avatarId,101);
+    assert.equal(peer(await state(2),1).avatarId,200);
+    assert.equal((await state(5)).me.avatarId,1);
+    for (const n of [3,4]) assert.ok(!Object.hasOwn(peer(mine,n),'avatarId'));
+    assert.ok(!Object.hasOwn(peer(await state(5,{peer:person(1)}),2),'avatarId'),
+      'an unrelated viewer cannot impersonate another person by submitting a selector');
+    assert.ok(!Object.hasOwn(mine.me,'avatar') && !Object.hasOwn(peer(mine,2),'avatar'));
+    assert.ok(!JSON.stringify(peer(mine,2)).includes('비공개 직업'));
+    for (const [a,b] of [[1,2],[2,1]]) {
+      await db.query('insert into pajang_private.blocks values($1,$2)',[person(a),person(b)]);
+      assert.equal(peer(await state(1),2),undefined);
+      assert.equal(peer(await state(2),1),undefined);
+      await db.query('delete from pajang_private.blocks where src=$1 and dst=$2',[person(a),person(b)]);
+    }
+    await assert.rejects(()=>state(8),{code:'42501'});
+    await assert.rejects(()=>as(account(1),()=>rpc('pajang_member',['state',{}]),'anon'),{code:'42501'});
+  });
+
   await t.test('account gender is selected at entry and an explicit hide survives profile reads',async()=>{
     const discovery=read('20261117210000_pajang_discovery_gender.sql');
     await db.exec(discovery.slice(discovery.indexOf('create function public.pajang_discovery_visibility'),

@@ -28,8 +28,8 @@ function fixture(t,url='https://ojjuda.test/features/pajang/station.html',{admin
     const link=w.document.createElement('link');link.rel='stylesheet';link.href=href;
     Object.defineProperty(link,'sheet',{value:{}});w.document.head.append(link);
   }
-  const me={id:'me',name:'보리',interest:'book',body:'내 답변',at:1};
-  const peer={id:'peer',name:'라온',interest:'walk',body:'함께 걸어요.',at:1,range:3,bearing:315};
+  const me={id:'me',name:'보리',gender:'male',avatarId:200,interest:'book',body:'내 답변',at:1};
+  const peer={id:'peer',name:'라온',avatarId:9,interest:'walk',body:'함께 걸어요.',at:1,range:3,bearing:315};
   const sameCell=radar?['도담','소담'].map((name,i)=>({id:'nearby'+i,name,interest:'book',body:'같은 동네에서 책을 읽어요.',range:1,sameCell:true})):[];
   const state={day:'2026-11-19',slot:'am',question:{id:1,q:['오늘은 무엇을 하고 싶나요?']},nextAt:new Date(Date.now()+3600000).toISOString(),
     me,people:[peer,...sameCell],signals:[{src:'me',dst:'peer'},{src:'peer',dst:'me'}],messages:[],remaining:3,authenticated:true,
@@ -56,7 +56,7 @@ function fixture(t,url='https://ojjuda.test/features/pajang/station.html',{admin
     return result;
   }}),rpc:(name,params)=>{
     calls.push({name,params});let data;
-    if(name==='pajang_member')data=params.p_action==='thread'?[]:state;
+    if(name==='pajang_member')data=params.p_action==='thread'?state.messages:state;
     else if(name==='pajang_discovery_feed')data={items:[row],nextCursor:null,total:1,remaining:3};
     else if(name==='pajang_exchange')data={myCount:0,peerCount:0,eligible:false,profile:'none',photos:'none'};
     else if(name==='is_admin')data=admin;
@@ -72,7 +72,7 @@ function fixture(t,url='https://ojjuda.test/features/pajang/station.html',{admin
   }
   async function click(selector,text){const element=byText(selector,text);assert.ok(element,'control '+text);element.click();await new Promise(resolve=>setTimeout(resolve,10));}
   function signOut(){session=null;for(const listener of authListeners)listener('SIGNED_OUT',null);}
-  return {w,errors,calls,authListeners,signOut,finishInquiry:()=>finishInquiry(),byText,until,click,menu:label=>click('nav a',label),modal:()=>w.document.querySelector('dialog[open]')};
+  return {w,errors,calls,authListeners,signOut,messages:state.messages,finishInquiry:()=>finishInquiry(),byText,until,click,menu:label=>click('nav a',label),modal:()=>w.document.querySelector('dialog[open]')};
 }
 
 test('the React app closes its popup first and restores real tabs, including button-close and Forward',async t=>{
@@ -107,6 +107,39 @@ test('opening a chat from a feed profile returns to that feed instead of a fixed
   assert.equal(f.modal(),null);assert.equal(w.document.querySelector('.composer'),null);
   w.history.forward();await f.until(()=>w.document.querySelector('.composer'));
   assert.equal(new URL(w.location.href).searchParams.get('chat'),'peer');
+  assert.deepEqual(f.errors,[]);
+});
+
+test('own portrait and matched chat reuse selected outfits with a fresh scene on each entry', async t => {
+  const f=fixture(t), {w}=f, doc=w.document;
+  await f.until(()=>f.byText('nav a','내 파장'));
+  await f.menu('내 파장');
+  const portrait=doc.querySelector('.account-heading [role="img"]');
+  assert.equal(portrait.dataset.genderTone,'male');
+  assert.match(portrait.style.backgroundImage,/avatars-male-20261125-25\.webp/);
+
+  w.Math.random=()=>0;
+  await f.menu('마음함');
+  await f.click('button','대화 열기');
+  const scenery=()=>doc.querySelector('.pj-chat-scenery');
+  const backdrop=()=>scenery()?.querySelector('.pj-chat-backdrop')?.style.backgroundImage;
+  await f.until(backdrop);
+  const firstScene=backdrop();
+  assert.match(firstScene,/avatar-bg-20261125-[1-8]\.webp/);
+  assert.equal(scenery().getAttribute('aria-hidden'),'true');
+  assert.match(scenery().querySelector('.pj-chat-peer .full').style.backgroundImage,/avatars-20261125-03\.webp/);
+  assert.match(scenery().querySelector('.pj-chat-self .full').style.backgroundImage,/avatars-male-20261125-25\.webp/);
+  assert.equal(doc.querySelector('.chatlog').contains(scenery()),false);
+
+  w.Math.random=()=>.999;
+  f.messages.push({id:'reply',src:'peer',dst:'me',body:'테스트 답장',at:123456789});
+  doc.dispatchEvent(new w.Event('visibilitychange'));
+  await f.until(()=>f.byText('.bubbleline p','테스트 답장'));
+  assert.equal(backdrop(),firstScene,'a message refresh keeps the room background');
+  await f.menu('마음함');
+  await f.click('button','대화 열기');
+  await f.until(backdrop);
+  assert.notEqual(backdrop(),firstScene,'reopening the same room draws another scene');
   assert.deepEqual(f.errors,[]);
 });
 
