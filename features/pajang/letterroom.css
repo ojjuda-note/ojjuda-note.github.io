@@ -450,6 +450,7 @@ footer,.footerbrand {color:var(--ink-2)}
 .pj-character-preview{box-sizing:border-box;display:grid;place-items:center;width:200px;height:200px;margin-inline:auto;overflow:hidden;border-radius:50%;background:var(--surface-2,#f2eeeb);box-shadow:inset 0 0 0 1px var(--line,#d7dfe0)}
 .pj-character-preview[data-gender-tone]{box-shadow:inset 0 0 0 3px var(--pajang-gender-tone)}
 .pj-character-preview-art{display:block;height:86%;background-repeat:no-repeat}
+.dialog .pj-character-preview + h2{text-align:center}
 .pj-character-portrait{background-color:var(--surface-2,#f2eeeb);background-repeat:no-repeat}
 .radar-scope .scope-person>.pj-character-portrait,.scope-self>.pj-character-portrait{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .scope-person-name:not([hidden]),.scope-self:has(.pj-character-portrait)>.scope-self-name{position:absolute;right:0;bottom:0;display:grid;place-items:center;min-width:1em;height:1em;padding:0 1px;border-radius:50%;background:var(--surface,#fff);color:var(--ink,#24333a);font-weight:700;pointer-events:none}
