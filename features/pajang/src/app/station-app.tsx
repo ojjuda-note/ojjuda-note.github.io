@@ -3,6 +3,7 @@ import {useEffect,useLayoutEffect,useRef,useState} from "react";
 import {themeFor,introDetails,signalsWith,type Person,type Message,type Station,type NearbyAnswer} from "../lib/station";
 
 import {InterestArt as Art} from "./interest-art";
+import {CharacterPortrait,ChatScenery} from "./profile-character";
 import {I} from "./icons";
 import NearbyRadar from "./nearby-radar";
 import {prepareLocation} from "../../location.mjs";
@@ -471,9 +472,39 @@ export default function StationApp({initialStation}:{initialStation:Station}){
       <h2 className="inbox-chats">이어지는 대화</h2>
       {matches.length?<div className="listbox">{matches.map(p=><ListPerson key={p.id} p={p} station={s} busy={busy} onProfile={()=>open({kind:"person",peer:p.id})} onAction={()=>startChat(p.id)} type="chat"/>)}</div>:<Blank icon="chat" title="아직 열린 대화가 없어요" body="서로 신호를 보내면 여기서 대화를 이어 갈 수 있어요."/>}
     </section>}
-    {tab==="chat"&&active&&validThread&&<section className="innerpage" key={thread}><ChatExchange key={active.id} peer={active.id} owner={me?.id||""} name={active.name} region={active.region} lastMessage={lastMsg}>{({notification,actions})=><><div className="chatbox"><div className="chatheader"><button className="iconbtn" aria-label="뒤로가기" onClick={()=>goBack("inbox")}><I n="back"/></button><button className="person" onClick={()=>open({kind:"person",peer:active.id})}><Art gender={active.gender} personId={active.id} interest={active.interest}/><span><strong>{active.name}</strong><small>서로 신호를 보낸 회원</small></span></button><button className="quiet" onClick={()=>open({kind:"block",peer:active.id})}>차단</button></div><div className="chatlog" onScroll={event=>{const log=event.currentTarget;followChat.current=log.scrollHeight-log.scrollTop-log.clientHeight<64;}}>{threadMessages.length===0?<div className="chatintro"><I n="wave" s={32}/><p>두 사람의 대화가 열렸어요.</p><small>오늘의 답변을 떠올리며 첫인사를 건네보세요.</small></div>:<>{threadMessages.length>=100&&<p className="chatnote">최근 메시지 100개</p>}{threadMessages.map(m=><div key={m.id} className={"bubbleline "+(m.src===me?.id?"mine":"")}><p>{m.body}</p><time>{fmtClock(m.at)}</time></div>)}</>}{notification}<div ref={bottom}/></div>{error&&!modal&&<p className="error" role="alert">{error}</p>}<form className="composer" onSubmit={e=>{e.preventDefault();void sendMessage();}}><input maxLength={textInputMaxLength(draft,500)} aria-label="메시지" placeholder="메시지를 입력하세요" value={draft} onChange={e=>{setDraft(e.target.value);draftByPeer.current.set(thread,e.target.value);}}/><button aria-label="메시지 보내기" disabled={busy||!draft.trim()||maskedTextLength(draft.trim())>500}><I n="send" s={18}/></button></form></div>{actions}</>}</ChatExchange></section>}
+    {tab==="chat"&&active&&validThread&&<section className="innerpage" key={thread}>
+      <ChatExchange key={active.id} peer={active.id} owner={me?.id||""} name={active.name} region={active.region} lastMessage={lastMsg}>
+        {({notification,actions})=><><div className="chatbox">
+          <div className="chatheader">
+            <button className="iconbtn" aria-label="뒤로가기" onClick={()=>goBack("inbox")}><I n="back"/></button>
+            <button className="person" onClick={()=>open({kind:"person",peer:active.id})}>
+              <Art gender={active.gender} personId={active.id} interest={active.interest}/>
+              <span><strong>{active.name}</strong><small>서로 신호를 보낸 회원</small></span>
+            </button>
+            <button className="quiet" onClick={()=>open({kind:"block",peer:active.id})}>차단</button>
+          </div>
+          <div className="pj-chat-view">
+            <ChatScenery key={me?.id} self={me?.avatarId} peer={active.avatarId}/>
+            <div className="chatlog" onScroll={event=>{const log=event.currentTarget;followChat.current=log.scrollHeight-log.scrollTop-log.clientHeight<64;}}>
+              {threadMessages.length===0?<div className="chatintro"><I n="wave" s={32}/><p>두 사람의 대화가 열렸어요.</p><small>오늘의 답변을 떠올리며 첫인사를 건네보세요.</small></div>:<>
+                {threadMessages.length>=100&&<p className="chatnote">최근 메시지 100개</p>}
+                {threadMessages.map(m=><div key={m.id} className={"bubbleline "+(m.src===me?.id?"mine":"")}><p>{m.body}</p><time>{fmtClock(m.at)}</time></div>)}
+              </>}
+              {notification}<div ref={bottom}/>
+            </div>
+          </div>
+          {error&&!modal&&<p className="error" role="alert">{error}</p>}
+          <form className="composer" onSubmit={e=>{e.preventDefault();void sendMessage();}}>
+            <input maxLength={textInputMaxLength(draft,500)} aria-label="메시지" placeholder="메시지를 입력하세요" value={draft}
+              onChange={e=>{setDraft(e.target.value);draftByPeer.current.set(thread,e.target.value);}}/>
+            <button aria-label="메시지 보내기" disabled={busy||!draft.trim()||maskedTextLength(draft.trim())>500}><I n="send" s={18}/></button>
+          </form>
+        </div>{actions}</>}
+      </ChatExchange>
+    </section>}
+
     {tab==="profile"&&<section className="station-account innerpage">
-      <div className="channel-heading account-heading"><h1>{me&&<Art gender={me.gender} personId={me.id} interest={me.interest}/>} 내 파장</h1><button type="button" className="account-settings-close" aria-label="설정 닫기" onClick={()=>goBack("today")}><I n="close"/></button></div>
+      <div className="channel-heading account-heading"><h1>{me&&<CharacterPortrait id={me.avatarId} gender={me.gender}/>} 내 파장</h1><button type="button" className="account-settings-close" aria-label="설정 닫기" onClick={()=>goBack("today")}><I n="close"/></button></div>
       <div className="ojjuda-settings">
           {me?<AccountSettings profileId={me.id} onOpen={kind=>open({kind})}/>:
         <Blank icon="user" title="파장에 참여해 주세요" body="오쭈다 회원 정보로 시작할 수 있어요." button="참여하기" onClick={()=>void enterMember()}/>}</div></section>}
@@ -524,7 +555,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
       }}>{(row?.sent&&row?.received)||signalsWith(s,peer.id).match?"대화 열기":row?.sent||signalsWith(s,peer.id).outgoing?"보낸 신호 확인":row?.received||signalsWith(s,peer.id).incoming?"신호 수락하기":"신호 보내기"}<I n="signal" s={17}/></button><button className="textbtn" onClick={()=>open({kind:"block",peer:peer.id,answer:row})}>이 프로필 차단</button></>}
     {(modal.kind==="edit"||modal.kind==="privateProfile")&&me&&<ExchangeProfileEditor key={me.id} profileId={me.id} focusTastes={modal.focusTastes} onSaved={saved=>{
       const current=liveRef.current;if(current.me?.id!==saved.person)return;
-      const next={...current,me:{...current.me,name:saved.name,region:saved.region,interest:saved.interest}};
+      const next={...current,me:{...current.me,name:saved.name,region:saved.region,interest:saved.interest,avatarId:saved.avatar.id}};
       serverRevision.current++;liveRef.current=next;setLive(next);setHistoryRevision(n=>n+1);
       close();setToast("프로필을 저장했어요.");void refresh();
     }}/>}

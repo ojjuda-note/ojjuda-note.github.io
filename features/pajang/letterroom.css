@@ -446,3 +446,18 @@ footer,.footerbrand {color:var(--ink-2)}
 .pj-avatar-pair .full,.pj-avatar-grid[data-collection="남자"] .pj-avatar-pair .mini{height:clamp(56px,12vw,92px);max-width:100%}
 .pj-avatar-pages{justify-content:center;margin:7px auto;font-size:13px}.pj-avatar-pages button{padding:5px 11px;min-height:34px}.pj-avatar button:disabled{opacity:.5}
 .pj-avatar-scenes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.pj-avatar-scenes button{min-width:0;overflow:hidden;padding:3px;font-size:12px}.pj-avatar-swatch{display:block;height:36px;overflow:hidden;border-radius:5px;background:#f4f7f8}.pj-avatar-swatch img{width:100%;height:100%;object-fit:cover;transform:scale(1.12);filter:blur(2px)}
+
+.account-heading h1:has(.pj-character-portrait){display:flex;align-items:center;gap:10px}
+.pj-character-portrait{background-color:var(--surface-2,#f2eeeb);background-repeat:no-repeat}
+.pj-chat-view{position:relative;isolation:isolate;overflow:hidden;background:var(--surface,#fff)}
+.pj-chat-scenery{position:absolute;inset:0;overflow:hidden;pointer-events:none;user-select:none;container-type:size}
+.pj-chat-backdrop{position:absolute;inset:-12px;background-position:center;background-size:cover;filter:blur(5px);opacity:.34}
+.pj-chat-peer,.pj-chat-self{position:absolute;bottom:3%;display:grid;place-items:end center;width:48%;height:90%;opacity:.42}
+.pj-chat-peer{left:0}.pj-chat-self{right:0}
+.pj-chat-scenery .pj-character-figure{height:auto;width:min(100%,255px)}
+@supports (width:1cqh){.pj-chat-scenery .pj-character-figure{width:min(100%,56cqh,255px)}}
+.pj-chat-view>.chatlog{position:relative;z-index:1;background:transparent}
+.pj-chat-view .chatintro{width:fit-content;max-width:100%;padding:8px 12px;border-radius:12px;background:var(--surface,#fff)}
+.pj-chat-view .bubbleline p,.pj-chat-view .chatnote{background-color:var(--surface,#fff)}
+.pj-chat-view .bubbleline.mine p{color:var(--accent-ink,#34516a);background-color:var(--surface,#fff);background-image:linear-gradient(var(--accent-soft,#e4eff4),var(--accent-soft,#e4eff4))}
+.pj-chat-view .bubbleline time{padding:1px 4px;border-radius:4px;background:var(--surface,#fff)}

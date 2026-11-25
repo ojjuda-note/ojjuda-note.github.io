@@ -13,7 +13,7 @@ const startupDelayMs=180;
 const feature = path.resolve(__dirname, '../features/pajang');
 const origin = 'https://pajang.test';
 const project = '/features/pajang/';
-const me = {id:'me',name:'보리',age:29,region:'서울특별시',interest:'coffee',body:'같이 걸을래요.',at:1};
+const me = {id:'me',name:'보리',age:29,gender:'male',avatarId:200,region:'서울특별시',interest:'coffee',body:'같이 걸을래요.',at:1};
 const state = {day:'2026-11-17',slot:'pm',question:{id:1,q:['처음 만난 날, 어떤 이야기를 나누고 싶나요?']},
   nextAt:new Date(Date.now()+3600000).toISOString(),authenticated:true,remaining:3,signals:[],messages:[],people:[],me};
 const base = {region:'서울특별시',day:'2026-11-17',slot:'am',at:1,sent:false,received:false,own:false};
@@ -332,7 +332,7 @@ function clientFixture(hash) {
     const mode=flightCheck||sessionStorage.fixtureMode||'member';
     // Pajang person IDs and Auth user IDs deliberately differ, including for administrators.
     const accepted=sessionStorage.accepted==='yes';
-    const friend={id:'peer1',name:'라온',age:28,interest:'walk',region:'경기도',body:'함께 걸어요.',range:15,bearing:315};
+    const friend={id:'peer1',name:'라온',age:28,avatarId:9,interest:'walk',region:'경기도',body:'함께 걸어요.',range:15,bearing:315};
     const offered={id:'peer2',name:'유진',age:30,interest:'book',region:'서울특별시'};
     const nearDirection={id:'near-northwest',name:'가온',interest:'walk',region:'서울특별시',body:'가까운 공원에서 걸어요.',range:1,bearing:315};
     const sameCell=[
@@ -666,6 +666,9 @@ async function checkNavigation(page){
       if(pathname==='/shared/location/location.js')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../../shared/location/location.js'))});
       if(pathname==='/shared/content/text-length.mjs')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../../shared/content/text-length.mjs'))});
       const file=pathname.slice(project.length)||'index.html';
+      if(/^assets\/(?:avatars(?:-male)?-20261125-\d{2}|avatar-bg-20261125-[1-8])\.webp$/.test(file)){
+        return route.fulfill({contentType:'image/webp',body:await fs.readFile(path.join(feature,file))});
+      }
       if(legacyLocationPage&&file==='location.mjs')return route.fulfill({contentType:'text/javascript',body:'export async function prepareLocation(state){return state;}'});
       if(!['station.html','station.css','support.css','radar-motion.css','member.mjs','member-main.mjs','load-station.mjs','location.mjs','letterroom.css','dialog-surface.css','assets/favicon.svg','shell.css','entry-design.css','entry-design.mjs','shell.mjs','account-toolbar.mjs','account-toolbar.css','signal-purchase.css','index.html','entry.mjs','preview.mjs','preview.css','questions.mjs','regions.json','dialog.mjs','feed.html'].includes(file))return route.abort();
       const mime={html:'text/html',css:'text/css',mjs:'text/javascript',json:'application/json',svg:'image/svg+xml'}[path.extname(file).slice(1)];
@@ -1093,6 +1096,24 @@ async function checkNavigation(page){
     await selectMenu('마음함');await page.goBack();
     await page.getByText('안녕하세요!',{exact:true}).waitFor();
     assert.equal(await composer.inputValue(),'반가워요, 라온님.');
+    const scenery=page.locator('.pj-chat-scenery');
+    const visibleRoom=await scenery.evaluate(scene=>{
+      const peer=scene.querySelector('.pj-chat-peer .full'),self=scene.querySelector('.pj-chat-self .full');
+      function character(el){
+        let alpha=1;
+        for(let at=el;at&&at!==scene.parentElement;at=at.parentElement)alpha*=Number(getComputedStyle(at).opacity);
+        const rect=el.getBoundingClientRect();
+        return {center:rect.x+rect.width/2,height:rect.height,alpha};
+      }
+      return {peer:character(peer),self:character(self),pointer:getComputedStyle(scene).pointerEvents,
+        blur:getComputedStyle(scene.querySelector('.pj-chat-backdrop')).filter};
+    });
+    assert.ok(visibleRoom.peer.center<visibleRoom.self.center,'the peer is on the left and I am on the right');
+    for(const figure of [visibleRoom.peer,visibleRoom.self]){
+      assert.ok(figure.height>40&&figure.alpha>0&&figure.alpha<1,'both figures are visible and translucent');
+    }
+    assert.equal(visibleRoom.pointer,'none');
+    assert.match(visibleRoom.blur,/blur\([1-9]/);
     await capture('chat-mobile');
     const send=page.getByRole('button',{name:'메시지 보내기'});
     await page.evaluate(()=>window.failReply=true);
@@ -1120,6 +1141,13 @@ async function checkNavigation(page){
     await page.waitForURL('**/*chat=peer2');
     await page.getByText('두 사람의 대화가 열렸어요.').waitFor();
     await selectMenu('내 파장');await page.getByRole('heading',{name:'내 파장'}).waitFor();
+    const portrait=page.locator('.account-heading [role="img"]');
+    assert.equal(await portrait.getAttribute('data-gender-tone'),'male');
+    assert.match(await portrait.evaluate(el=>getComputedStyle(el).backgroundImage),/avatars-male-20261125-25\.webp/);
+    assert.ok(await portrait.evaluate(el=>{
+      const style=getComputedStyle(el),box=el.getBoundingClientRect();
+      return box.width>0&&Math.abs(box.width-box.height)<2&&parseFloat(style.borderRadius)>0;
+    }),'the selected upper-body portrait remains circular');
     await expectHeaderClean();
     assert.equal(await page.getByRole('link',{name:'아지트 가기',exact:true}).count(),0);
     assert.equal(await accountHome.getAttribute('href'),'/world.html?tab=hub');

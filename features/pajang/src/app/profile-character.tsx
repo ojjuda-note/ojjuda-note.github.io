@@ -1,6 +1,7 @@
 import {useId,useRef,useState} from "react";
 import femaleNames from "./profile-character-names.json";
 import maleNames from "./profile-character-male-names.json";
+import {profileGender} from "../lib/station";
 
 export type ProfileAvatar={id:number;form:"full"|"mini";bg:number};
 export const defaultAvatar:ProfileAvatar={id:1,form:"full",bg:0};
@@ -25,17 +26,58 @@ export function sameAvatar(a:ProfileAvatar,b:ProfileAvatar){
 export function validAvatar(value:unknown):value is ProfileAvatar{
   if(!value||typeof value!=="object")return false;
   const a=value as ProfileAvatar;
-  return Number.isInteger(a.id)&&a.id>=1&&a.id<=roster.length
+  return isCharacterId(a.id)
     &&(a.form==="mini"||a.form==="full")&&Number.isInteger(a.bg)&&a.bg>=0&&a.bg<backgrounds.length;
 }
-function Figure({id,form}:{id:number;form:ProfileAvatar["form"]}){
-  const index=localIndex(id),col=(index%2)*2+(form==="mini"?0:1),row=Math.floor((index%4)/2);
+// Source sprite cells are 312 × 492. The first collection has varying headroom;
+// these are the top painted rows of its miniatures, measured in atlas order.
+const femaleMiniTop=[
+  106,80,98,107,89,85,76,78,61,66,57,65,86,89,76,82,95,99,94,89,
+  99,95,97,105,83,75,74,73,88,91,59,79,103,106,92,121,95,94,78,78,
+  101,93,103,100,98,100,90,115,83,84,72,91,84,68,83,82,86,91,71,83,
+  125,109,105,129,94,85,91,81,106,106,100,111,82,94,97,100,88,85,72,74,
+  133,125,127,126,91,88,78,83,105,112,93,99,104,108,106,96,91,102,101,109
+];
+function isCharacterId(id:unknown):id is number{
+  return typeof id==="number"&&Number.isInteger(id)&&id>=1&&id<=roster.length;
+}
+function characterSprite(id:number,form:ProfileAvatar["form"]){
+  const index=localIndex(id);
   const prefix=collectionFor(id)==="남자"?"avatars-male-20261125-":"avatars-20261125-";
   const atlas=String(Math.floor(index/4)+1).padStart(2,"0");
+  return {image:'url("'+assetRoot+prefix+atlas+'.webp")',
+    column:(index%2)*2+(form==="mini"?0:1),row:Math.floor((index%4)/2)};
+}
+function Figure({id,form}:{id:number;form:ProfileAvatar["form"]}){
+  const sprite=characterSprite(id,form);
   return <span className={"pj-character-figure "+form} aria-hidden="true" style={{
-    backgroundImage:'url("'+assetRoot+prefix+atlas+'.webp")',
-    backgroundPosition:(col*100/3)+'% '+(row*100)+'%'
+    backgroundImage:sprite.image,backgroundPosition:(sprite.column*100/3)+"% "+(sprite.row*100)+"%"
   }}/>;
+}
+
+export function CharacterPortrait({id,gender}:{id?:number;gender?:string|null}){
+  const selected=isCharacterId(id)?id:defaultAvatar.id;
+  const sprite=characterSprite(selected,"mini");
+  const top=femaleMiniTop[selected-1]??113;
+  const size=Math.round((488-top)*0.65);
+  const x=sprite.column*312+(312-size)/2;
+  const y=sprite.row*492+top-9;
+  const visibleGender=profileGender(gender);
+  const name=roster[selected-1].name+" 대두형 상반신";
+  return <span className="avatar pj-character-portrait" role="img" data-gender-tone={visibleGender?.tone}
+    aria-label={visibleGender?name+" · "+visibleGender.name:name} style={{
+      backgroundImage:sprite.image,backgroundSize:(1248/size*100)+"% "+(984/size*100)+"%",
+      backgroundPosition:(x/(1248-size)*100)+"% "+(y/(984-size)*100)+"%"
+    }}/>;
+}
+
+export function ChatScenery({self,peer}:{self?:number;peer?:number}){
+  const [scene]=useState(()=>1+Math.floor(Math.random()*(backgrounds.length-1)));
+  return <div className="pj-chat-scenery" aria-hidden="true">
+    <div className="pj-chat-backdrop" style={{backgroundImage:'url("'+backgroundUrl(scene)+'")'}}/>
+    {isCharacterId(peer)&&<div className="pj-chat-peer"><Figure id={peer} form="full"/></div>}
+    {isCharacterId(self)&&<div className="pj-chat-self"><Figure id={self} form="full"/></div>}
+  </div>;
 }
 export function ProfileCharacter({avatar,onChange,disabled}:{avatar:ProfileAvatar;onChange:(avatar:ProfileAvatar)=>void;disabled:boolean}){
   const [panel,setPanel]=useState<"background"|"character"|null>(null);
