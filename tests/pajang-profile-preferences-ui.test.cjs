@@ -296,7 +296,15 @@ async function openGroup(dialog,label) {
     for(const width of [320,390]){
       await page.setViewportSize({width,height:844});
       const circle=await preview.boundingBox(),art=await preview.locator('.pj-character-preview-art').boundingBox();
-      const name=await dialog.getByRole('heading',{name:'은하',exact:true}).boundingBox();
+      const nickname=dialog.getByRole('heading',{name:'은하',exact:true});
+      const name=await nickname.boundingBox();
+      const textCenter=await nickname.evaluate(heading=>{
+        const range=document.createRange();
+        range.selectNodeContents(heading);
+        const text=range.getBoundingClientRect();
+        return text.left+text.width/2;
+      });
+      assert.ok(Math.abs(textCenter-(circle.x+circle.width/2))<=1,'nickname text is centered beneath the circle');
       assert.equal(circle.width,200);assert.equal(circle.height,200);
       assert.equal(art.height,172);
       assert.ok(Math.abs(circle.x+circle.width/2-(name.x+name.width/2))<=1,'the circle is centered across the dialog content');
