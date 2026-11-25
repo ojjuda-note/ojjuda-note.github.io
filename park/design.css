@@ -79,9 +79,17 @@ html body .shell > .col > .main { container: park-content / inline-size; }
   .detail-screen .detail-layout { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); }
   .detail-screen .reply-card { flex-basis: 80%; }
 }
+/* The independent Park navigation stays fixed until 900px. Reserve space even
+   before the viewport observer measures it and when browser chrome changes. */
+@media (max-width: 899px) {
+  html:not([data-park-embedded]) body .shell > .col > .main:has(> #detail:not([hidden])) {
+    padding-bottom: calc(max(150px, var(--app-nav-height, 64px) + 32px) + var(--app-viewport-bottom, 0px));
+  }
+}
 @media (max-width: 779px) {
   .shell > .col > .main:has(> #detail:not([hidden])) {
-    padding: 4px 12px calc(16px + var(--app-nav-height) + var(--app-viewport-bottom));
+    padding-top: 4px;
+    padding-inline: 12px;
   }
 }
 
