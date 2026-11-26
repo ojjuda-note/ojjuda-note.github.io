@@ -195,6 +195,7 @@
     "tank"
   ],
   "generatedAssets": {
+    "note/vendor/garu-ko-0.14.0/dist/browser.js": "note/vendor/build.mjs",
     "park/even-g2.bundle.mjs": "note/vendor/build.mjs",
     "note/vendor/mediabunny-1.66.2.mjs": "note/vendor/build.mjs",
     "note/vendor/mediabunny-aac-encoder-1.66.2.mjs": "note/vendor/build.mjs",

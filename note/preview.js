@@ -569,7 +569,7 @@ function analyzeTagBody(body) {
   const result = wordTaggerLoading.then(analyze => analyze(body))
     .catch(() => noteRpc('suggest_card_tags', { p_body: body }))
     .then(words => {
-      if (!Array.isArray(words)) throw Error('자동 태그를 불러오지 못했어요.');
+      if (!Array.isArray(words) || !words.every(word => typeof word === 'string')) throw Error('자동 태그를 불러오지 못했어요.');
       return words;
     });
   tagAnalysis = { body, result };
@@ -919,6 +919,7 @@ function initialComposerTags(raw = '') {
 function setAutoTags(words) {
   const seen = new Set(manualTags.map(t => t.toLowerCase()));
   const explicit = Array.from(text.value.matchAll(/#([\p{L}\p{N}_]+)/gu), match => match[1]);
+  words ??= explicit;
   const available = new Map(words.map(word => [word.toLowerCase(), word]));
   const candidates = [...explicit.map(t => available.get(t.toLowerCase())), ...words];
   autoTagsNow = [];
@@ -937,14 +938,17 @@ function setAutoTags(words) {
 async function refreshAutoTags() {
   const body = text.value, run = composerRun;
   if (!autoTagMode || maskedTextLength(body) > 200) return false;
+  let words;
   try {
-    const words = body.trim() ? (wordTagger ? wordTagger(body) : await analyzeTagBody(body)) : [];
-    if (!autoTagMode || composingCardTags || run !== composerRun || text.value !== body || backdrop.hidden) return false;
-    const before = tags.value;
-    setAutoTags(words);
-    if (before !== tags.value) { updateComposer(); recordDraft(); }
-    return true;
-  } catch { return false; }
+    words = body.trim() ? (wordTagger ? wordTagger(body) : await analyzeTagBody(body)) : [];
+  } catch {
+    // Suggestions are optional. Keep manual tags and hashtags from this exact draft.
+  }
+  if (!autoTagMode || composingCardTags || run !== composerRun || text.value !== body || backdrop.hidden) return false;
+  const before = tags.value;
+  setAutoTags(words);
+  if (before !== tags.value) { updateComposer(); recordDraft(); }
+  return true;
 }
 function noteTagEdit() {
   const now = tagList(tags.value);
@@ -1125,7 +1129,8 @@ function syncComposeInk(selected, style, previewTags) {
   cancelAnimationFrame(composeInkFrame);
   const run = ++composeInkRun;
   canvas.hidden = !on;
-  if (!on) { delete canvas.dataset.inkReady; composeInkComposing = false; }
+  delete canvas.dataset.inkReady;
+  if (!on) composeInkComposing = false;
   syncComposeInkDisplay();
   if (!on || composeInkComposing) return;
   const body = text.value, options = inkOptions(style, 720, previewTags, photo);
@@ -3183,9 +3188,13 @@ async function publishCard() {
     const run = composerRun;
     if (pendingTagSubmit === run) return;
     pendingTagSubmit = run;
-    noteTagEdit();
-    const analyzed = await refreshAutoTags();
-    if (pendingTagSubmit === run) pendingTagSubmit = null;
+    let analyzed;
+    try {
+      noteTagEdit();
+      analyzed = await refreshAutoTags();
+    } finally {
+      if (pendingTagSubmit === run) pendingTagSubmit = null;
+    }
     if (run !== composerRun || backdrop.hidden || busy) return;
     if (!analyzed) { composeMessage.textContent = '자동 태그를 확인하지 못했어요. 다시 등록해 주세요.'; return; }
   }
