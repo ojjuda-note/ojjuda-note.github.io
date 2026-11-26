@@ -1572,6 +1572,8 @@ async function checkNavigation(page){
     assert.equal(await page.locator('.scope-person').count(),0);
     assert.equal(await sameCellPeople.count(),0,'turning location off in Park clears every same-cell marker');
     console.log('PASS shared Park/Pajang setting changes update the mounted radar in both directions');
+    // This scenario needs a fresh fix after the earlier navigation and timing checks.
+    await context.setGeolocation({latitude:37.5665,longitude:126.978,accuracy:30});
     await context.grantPermissions(['geolocation']);
     await page.evaluate(()=>{localStorage.locationEnabled='true';sessionStorage.removeItem('ojjuda:location-cell:member');});
     await page.goto(origin+'/world.html?warm-location=1');
