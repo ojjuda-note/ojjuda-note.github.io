@@ -14,24 +14,75 @@ function toBase64(parts) {
   return btoa(binary);
 }
 
+// Older servers and phone WebViews can still deliver an ordinary or buffered response.
+export async function readVoiceReply(response,onQuestion) {
+  if(!response.ok || !response.headers.get('content-type')?.includes('application/x-ndjson')) {
+    const data=await response.json();
+    if(!response.ok) throw Error(data.error || 'unavailable');
+    return data;
+  }
+  let question,answer,buffer='';
+  function event(line) {
+    if(!line.trim()) return;
+    const item=JSON.parse(line);
+    if(item.error) throw Error(item.error);
+    if(typeof item.question==='string' && !question) {question=item.question;onQuestion?.(question);}
+    if(typeof item.answer==='string') answer=item.answer;
+  }
+  if(response.body?.getReader) {
+    const reader=response.body.getReader(),decoder=new TextDecoder();
+    try {
+      while(true) {
+        const {value,done}=await reader.read();
+        if(done) break;
+        buffer+=decoder.decode(value,{stream:true});
+        const lines=buffer.split('\n');
+        buffer=lines.pop();
+        for(const line of lines) event(line);
+      }
+      event(buffer+decoder.decode());
+    } finally {reader.releaseLock();}
+  } else {
+    for(const line of (await response.text()).split('\n')) event(line);
+  }
+  if(!answer || !question) throw Error('provider');
+  return {question,answer};
+}
+
+function conversationPages(question,reply) {
+  const lines=[];
+  for(const [label,text] of [['내 질문',question],['GPT',reply]]) {
+    const chars=Array.from(label+' · '+text.replace(/\s+/g,' ').trim());
+    for(let i=0;i<chars.length;i+=12) lines.push(chars.slice(i,i+12).join(''));
+  }
+  const pages=[];
+  for(let i=0;i<lines.length;i+=4) pages.push(lines.slice(i,i+4).join('\n'));
+  return pages;
+}
+
 export function createG2Voice({microphone, request, changed, forgetToken}) {
   let token='', phase='idle', message='', page=0, history=[], current=null, sequence=0;
+  let question='', pages=[];
   let micWork=Promise.resolve(), controller=null, timer=null;
   // Serialize on/off, including a release before the host acknowledges opening.
   function setMic(on) {
     micWork=micWork.catch(()=>{}).then(()=>microphone(on));
     return micWork;
   }
-  function update(next,text='') { phase=next;message=text;page=0;changed(); }
+  function update(next,text='') {
+    phase=next;message=text;pages=question?conversationPages(question,text):[];
+    page=Math.min(page,Math.max(0,pages.length-1));changed();
+  }
   function reset() {
     ++sequence;
     clearTimeout(timer); controller?.abort(); controller=null;
     if(current) { current=null;void setMic(false).catch(()=>{}); }
-    history=[]; update('idle');
+    history=[]; question='';update('idle');
   }
   function setToken(value) { reset(); token=value || ''; }
   async function start() {
     if(current || phase==='sending') return;
+    question='';
     if(!token) { update('pair',errors.pair);return; }
     const run=++sequence;
     current={parts:[],bytes:0,peak:0};
@@ -61,18 +112,22 @@ export function createG2Voice({microphone, request, changed, forgetToken}) {
     current=null;clearTimeout(timer);
     const close=setMic(false).catch(()=>{});
     if(capture.bytes<8000 || capture.peak<32) { update('error',errors.silent);return; }
-    update('sending','GPT가 답하는 중…');
+    update('sending','질문을 글로 바꾸는 중…');
     const abort=new AbortController();controller=abort;
     const deadline=setTimeout(()=>abort.abort(),37000);
     try {
-      const result=await request({pcm:toBase64(capture.parts),history},token,abort.signal);
+      const result=await request({pcm:toBase64(capture.parts),history},token,abort.signal,text=>{
+        if(run!==sequence || !text) return;
+        question=text;update('sending','답변 작성 중…');
+      });
       if(run!==sequence) return;
       if(typeof result.answer!=='string' || typeof result.question!=='string') throw Error('provider');
+      question=result.question;
       history=[...history,result].slice(-3);
       update('answer',result.answer);
     } catch(error) {
       if(run!==sequence) return;
-      if(error.message==='pair') {token='';history=[];forgetToken();}
+      if(error.message==='pair') {token='';history=[];question='';forgetToken();}
       update(error.message==='pair'?'pair':'error',errors[error.message] || '연결을 확인하고 다시 말해 주세요.');
     } finally {
       clearTimeout(deadline); if(controller===abort) controller=null;
@@ -80,19 +135,18 @@ export function createG2Voice({microphone, request, changed, forgetToken}) {
     }
   }
   function screen() {
-    if(phase!=='answer') return message && 'GPT\n'+message;
-    const chars=Array.from(message),size=42,count=Math.max(1,Math.ceil(chars.length/size));
-    return 'GPT '+(count>1?(page+1)+'/'+count+' · ':'')+'탭 닫기\n'+chars.slice(page*size,(page+1)*size).join('');
+    if(!pages.length) return message && 'GPT\n'+message;
+    return (pages.length>1 ? (page+1)+'/'+pages.length+' ↕\n' : '')+pages[page];
   }
   function scroll(direction) {
-    if(phase!=='answer') return false;
-    page=Math.max(0,Math.min(Math.ceil(Array.from(message).length/42)-1,page+direction));changed();return true;
+    if(!pages.length) return false;
+    page=Math.max(0,Math.min(pages.length-1,page+direction));changed();return true;
   }
   function dismiss() {
-    if(phase==='answer'||phase==='error'||phase==='pair') {update('idle');return true;}
+    if(phase==='answer'||phase==='error'||phase==='pair') {question='';update('idle');return true;}
     return false;
   }
   return {start,finish,audio,reset,setToken,scroll,dismiss,screen,
     toggle:()=>current?finish():start(),
-    get phase(){return phase;},get message(){return message;},get paired(){return !!token;}};
+    get phase(){return phase;},get message(){return message;},get question(){return question;},get paired(){return !!token;}};
 }
