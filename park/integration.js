@@ -132,13 +132,13 @@
     }
     const apps = group('앱 다운로드');
     apps.classList.add('app-store-downloads');
-    const agitLink = link(apps, 'app-agit', '오쭈다 아지트 테스트 참여', 'https://play.google.com/apps/testing/kr.ojjuda.agit', true);
+    const agitLink = link(apps, 'app-agit', '오쭈다 아지트 테스트 참여', 'https://play.google.com/apps/testing/kr.ojjuda.agit?hl=ko', true);
     agitLink.dataset.storeApp = 'agit';
     agitLink.rel = 'noopener noreferrer';
     agitLink.setAttribute('aria-label', '오쭈다 아지트 비공개 테스트 참여 (새 창)');
     
     for (const [app, name] of [['pajang', '오쭈다 파장'], ['park', '오쭈다 공원']]) {
-      const storeLink = link(apps, `app-${app}`, `${name} 테스트 참여`, `https://play.google.com/apps/testing/kr.ojjuda.${app}`, true);
+      const storeLink = link(apps, `app-${app}`, `${name} 테스트 참여`, `https://play.google.com/apps/testing/kr.ojjuda.${app}?hl=ko`, true);
       storeLink.dataset.storeApp = app;
       storeLink.rel = 'noopener noreferrer';
       storeLink.setAttribute('aria-label', `${name} 비공개 테스트 참여 (새 창)`);
