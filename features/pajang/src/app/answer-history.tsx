@@ -15,7 +15,7 @@ export type DiscoveryAnswer = {
 };
 type Cursor = Record<string, unknown>;
 type Page = {items:DiscoveryAnswer[]; nextCursor:Cursor|null; total:number; remaining:number};
-type Result = {key:string; items:DiscoveryAnswer[]; total:number|null; next:Cursor|null; loading:boolean; changed:boolean; error:string};
+type Result = {key:string; items:DiscoveryAnswer[]; total:number|null; next:Cursor|null; loading:boolean; error:string};
 type Order = "recommend"|"latest"|"local";
 type Gender = "male"|"all"|"female";
 const genderOptions = [
@@ -31,14 +31,14 @@ declare global {
 type Intent = "first"|"more"|"check"|"changed";
 const rowKey = (row:DiscoveryAnswer) => row.peer+"/"+row.day+"/"+row.slot;
 const questionKey = (row:DiscoveryAnswer) => JSON.stringify([row.day,row.slot,row.question]);
-const empty = (key:string):Result => ({key,items:[],total:null,next:null,loading:true,changed:false,error:""});
+const empty = (key:string):Result => ({key,items:[],total:null,next:null,loading:true,error:""});
 type SavedPage = {until:number; result:Result};
 function firstPage(cache:Map<string,SavedPage>, key:string):Result {
   const saved=cache.get(key);
   return saved && saved.until>Date.now() ? {...saved.result,loading:true} : empty(key);
 }
 
-function useAnswers(filter:string, gender:Gender, order:Order, scope:string, openingScope:string, activity:string, visible:boolean) {
+function useAnswers(filter:string, gender:Gender, order:Order, scope:string, openingScope:string, activity:string, visible:boolean, selectedQuestion:{current:string}) {
   const likes=useAnswerLikes();
   const visibleRef=useRef(visible);
   visibleRef.current=visible;
@@ -48,74 +48,109 @@ function useAnswers(filter:string, gender:Gender, order:Order, scope:string, ope
   const load = useRef<(intent:Intent)=>void>(()=>{});
   useEffect(()=>{
     let active=true, pending=false, revision=0, pages=0;
+    let queuedRefresh=false, retryRefresh=false;
     let current=firstPage(cache,key);
     let controller:AbortController|undefined;
     function publish(next:Result) { current=next; setResult(next); }
     async function read(intent:Intent) {
       if (!visibleRef.current || document.hidden) return;
-      if (intent==="changed" && pages>1) {
-        if (!current.changed) publish({...current,changed:true});
-        return;
-      }
+      if (intent==="check" && retryRefresh) intent="changed";
+      if (intent==="changed" && pending) {queuedRefresh=true;return;}
       if (intent!=="first" && (pending || (intent==="more" && !current.next) || (intent==="check" && pages!==1))) return;
       const append=intent==="more";
-      const cursor=append?current.next:null;
+      const refresh=intent==="changed" || intent==="check";
+      const depth=refresh?Math.max(1,pages):1;
       const request=++revision;
       controller?.abort();
       controller=new AbortController();
       const {signal}=controller;
       pending=true;
       if (intent==="first") { pages=0; publish(firstPage(cache,key)); }
-      if (append) publish({...current,loading:true,error:""});
+      else publish({...current,loading:true,error:""});
       try {
         const likeVersion=likes?.checkpoint()??0;
         const db=await window.OjjudaGetClient();
         if (signal.aborted) return;
         const opening=intent==="first" && filter==="all" && order==="latest" && gender==="all"
           ? window.pajangTakeOpeningFeed?.(openingScope,signal) : undefined;
-        async function fetchPage(){
+        async function fetchPage(cursor:Cursor|null){
           const query=db.rpc("pajang_discovery_feed",{p_cursor:cursor,p_interest:filter,p_order:order,p_gender:gender});
           return typeof query.abortSignal==="function"?query.abortSignal(signal):query;
         }
-        const {data,error}=await (opening??fetchPage());
-        if (!active || request!==revision) return;
-        if (error) throw error;
-        const page=data as Page;
-        likes?.hydrate(page.items,likeVersion);
         const rows=new Map((append?current.items:[]).map(row=>[rowKey(row),row]));
-        for (const row of page.items) rows.set(rowKey(row),row);
-        pages=append?pages+1:1;
-        const next={key,items:[...rows.values()],next:page.nextCursor,total:page.total,loading:false,changed:append&&current.changed,error:""};
+        const questions=new Set<string>();
+        let cursor=append?current.next:null, readPages=0;
+        let first:Page|undefined, page:Page;
+        const visited=new Set<string>();
+        // Rebuild the loaded portion from fresh cursors. Keep the old carousel
+        // on screen until the complete replacement is ready.
+        do {
+          const cursorKey=JSON.stringify(cursor);
+          if (visited.has(cursorKey)) throw Error("repeated_feed_cursor");
+          visited.add(cursorKey);
+          const {data,error}=await (readPages===0 && opening?opening:fetchPage(cursor));
+          if (!active || request!==revision) return;
+          if (error) throw error;
+          page=data as Page;
+          first??=page;
+          for (const row of page.items) {
+            rows.set(rowKey(row),row);
+            questions.add(questionKey(row));
+          }
+          readPages++;
+          cursor=page.nextCursor;
+          if (readPages>=depth) {
+            const added=Math.max(0,first.total-(current.total??first.total));
+            if (!refresh || !selectedQuestion.current || questions.has(selectedQuestion.current) ||
+                rows.size>=current.items.length+added || !page.items.length) break;
+          }
+        } while (cursor);
+        pages=append?pages+1:readPages;
+        const next={key,items:[...rows.values()],next:cursor,total:page.total,loading:false,error:""};
+        likes?.hydrate(append?page.items:next.items,likeVersion);
         if (!append) {
+          retryRefresh=false;
           cache.delete(key);
           if (cache.size>=8) cache.delete(cache.keys().next().value!);
-          cache.set(key,{until:Date.now()+15_000,result:next});
+          cache.set(key,{until:Date.now()+15_000,result:{...next,items:first.items,next:first.nextCursor}});
         }
         publish(next);
       } catch (cause) {
         if (!active || request!==revision) return;
         const code=typeof cause==="object" && cause!==null && "code" in cause?cause.code:"";
         const denied=code==="42501"||code==="PGRST301"||code==="PGRST303";
-        if (denied) {pages=0;cache.clear();} else cache.delete(key);
+        if (denied) {pages=0;cache.clear();queuedRefresh=false;retryRefresh=false;} else cache.delete(key);
+        if (refresh && !denied && current.total!==null) {
+          retryRefresh=true;
+          publish({...current,loading:false});
+          return;
+        }
         publish({...(denied||intent==="first"?empty(key):current),loading:false,error:denied?"회원 정보를 확인한 뒤 다시 열어 주세요.":"답변을 불러오지 못했어요."});
       } finally {
-        if (request===revision) pending=false;
+        if (active && request===revision) {
+          pending=false;
+          if (queuedRefresh) {queuedRefresh=false;void read("changed");}
+        }
       }
     }
     load.current=read;
     void read("first");
     const onVisible=()=>{
       if (!document.hidden) {void read("first");return;}
-      cache.clear();++revision;controller?.abort();pages=0;pending=false;publish(empty(key));
+      cache.clear();++revision;controller?.abort();pages=0;pending=false;queuedRefresh=false;retryRefresh=false;publish(empty(key));
     };
     document.addEventListener("visibilitychange",onVisible);
     // Refresh the first page in place; scrolling back through earlier pages keeps its cursor.
     const poll=window.setInterval(()=>{if(!document.hidden)void read("check");},60000);
     return ()=>{active=false;controller?.abort();load.current=()=>{};window.clearInterval(poll);document.removeEventListener("visibilitychange",onVisible);};
-  },[key,filter,gender,order,cache,openingScope,likes]);
-  const wasVisible=useRef(visible);
-  useEffect(()=>{if(visible&&!wasVisible.current)load.current("changed");wasVisible.current=visible;},[visible]);
-  useEffect(()=>{cache.clear();load.current("changed");},[activity,cache]);
+  },[key,filter,gender,order,cache,openingScope,likes,selectedQuestion]);
+  const previous=useRef({visible,activity,key});
+  useEffect(()=>{
+    const before=previous.current;
+    previous.current={visible,activity,key};
+    if (activity!==before.activity) cache.clear();
+    if (visible && key===before.key && (!before.visible || activity!==before.activity)) load.current("changed");
+  },[visible,activity,key,cache]);
   return {result:result.key===key?result:firstPage(cache,key),load};
 }
 
@@ -175,7 +210,8 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
   const scope=JSON.stringify([station.authenticated,station.me?.id,station.me?.region,station.me?.interest,station.me?.at,station.day,station.slot,revision]);
   const activity=station.people.filter(p=>p.body).map(p=>p.id+":"+p.at).join(",");
   const openingScope=JSON.stringify([station.me?.id,station.day,station.slot]);
-  const {result,load}=useAnswers(filter,gender,order,scope,openingScope,activity,active);
+  const selectedQuestion=useRef("");
+  const {result,load}=useAnswers(filter,gender,order,scope,openingScope,activity,active,selectedQuestion);
   const groups=useMemo(()=>{
     const questions=new Map<string,DiscoveryAnswer[]>();
     for(const answer of result.items){
@@ -189,6 +225,7 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
   const advance=useRef<{scope:string;question:string;direction:1|-1}|null>(null);
   const index=Math.max(0,selection.scope===selectionScope?groups.findIndex(group=>questionKey(group[0])===selection.question):0);
   const selected=groups[index];
+  selectedQuestion.current=selected?questionKey(selected[0]):"";
   useEffect(()=>{
     if(result.loading)return;
     const pending=advance.current;
@@ -249,7 +286,6 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
         <option value="recommend">대표 취향순</option><option value="latest">최신순</option><option value="local">같은 지역순</option>
       </select><I n="chevron" s={13}/></label>
     </div>
-    {result.changed&&<p className="notice" role="status">답변 목록이 바뀌었어요.<button onClick={()=>load.current("first")}>새로고침</button></p>}
     {result.loading&&result.total===null&&<span className="answer-sr" role="status">답변을 불러오고 있어요.</span>}
     <div className="cardgrid" aria-busy={result.loading}>
       {result.loading&&result.total===null&&[0,1,2].map(i=><div className="answer-skeleton" key={i} aria-hidden="true"><i/><i/><i/><i/></div>)}
