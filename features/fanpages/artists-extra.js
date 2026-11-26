@@ -356,6 +356,7 @@
       id: 'kissoflife', name: 'KISS OF LIFE', korean: '키스오브라이프', category: 'girl', fan: 'KISSY', agency: 'S2 Entertainment',
       members: ['쥴리', '나띠', '벨', '하늘'],
       debut: '2023.07.05', debutWork: 'KISS OF LIFE', songs: ['쉿 (Shhh)', '안녕, 네버랜드'],
+      checkedAt: '2026.11.23',
       concept: '쥴리·나띠·벨·하늘 네 멤버가 각자의 개성과 목소리로 펼치는 음악과 퍼포먼스.',
       official: 'https://kissoflife.jp/', youtube: 'https://www.youtube.com/@KISSOFLIFE_official',
       photo: 'KISS OF LIFE at Music Bank (4K) 20240705 02.png', photoLabel: '뮤직뱅크 출근길', photoYear: '2024', credit: '티비텐 TV10', license: 'CC BY 3.0',
@@ -374,16 +375,24 @@
         { title: 'KISS OF LIFE', date: '2023.07.05', type: '데뷔 미니 1집 · 타이틀 쉿 (Shhh)', songs: ['쉿 (Shhh)', '안녕, 네버랜드', 'Sugarcoat (NATTY)', 'Countdown (BELLE)', 'Kitty Cat (JULIE)', 'Play Love Games (HANEUL)'], href: 'https://music.apple.com/us/album/kiss-of-life-ep/1694699906' }
       ],
       appearances: [
-        { date: '2026-12-05', title: '2026 Asia Artist Awards (AAA)', sub: '대만 가오슝 국가체육장 · 공식 12/5 출연진 · 현지 17:00 본 행사', href: 'https://www.asiaartistawards.com/en/news/3225' }
+        { date: '2026-11-25', title: '겨울 디지털 싱글 Greedy 발매', sub: '한국시간 18:00 · 공식 11/16 예고 · 정식 발매 전 미공개 수록곡은 미기재', href: 'https://kissoflife.town/post/3574' },
+        { date: '2026-12-05', title: '2026 Asia Artist Awards (AAA)', sub: '대만 가오슝 국가체육장 · 공식 12/5 출연진 · 현지 17:00 본 행사', href: 'https://www.asiaartistawards.com/en/news/3225' },
+        { date: '2027-01-15', timeZone: 'Europe/Paris', title: 'D AWARDS 2027 · 파리 DAY 1', sub: '프랑스 낭테르 Plenitude Arena · 11/23 18:00 파리시간 공식 예매 시작 · 좌석 재고 미확인', href: 'https://d-awards.world/' }
       ],
       schedules: [
         { title: '일본 컬럼비아 공식 일정', sub: '방송·행사·활동 및 변경 공지', href: 'https://columbia.jp/artist-info/kissoflife/calendar/' },
         { title: '일본 공식 공연·행사', sub: '컬럼비아 공식 공연·발매 이벤트 안내', href: 'https://columbia.jp/artist-info/kissoflife/live/' }
       ],
       news: [
+        { date: '2026.11.21', tag: '영상', title: '2026 KGMA 공식 비하인드 · [KI-OFF] 영상 공개', href: 'https://www.youtube.com/watch?v=6YfthbjU7AQ' },
+        { date: '2026.11.20', tag: '영상', title: 'LITTLE WORLD, BIG WISH · 공식 팬 커뮤니티 영상 공개', href: 'https://kissoflife.town/post/3598' },
+        { date: '2026.11.19', tag: '컴백', title: 'Greedy · Want it Ver. 공식 이미지 공개', href: 'https://kissoflife.town/post/3594' },
+        { date: '2026.11.18', tag: '영상', title: 'Greedy House · 겨울 싱글 공식 영상 공개', href: 'https://kissoflife.town/post/3586' },
+        { date: '2026.11.16', tag: '컴백', title: '겨울 디지털 싱글 Greedy · 11.25 18시 발매 발표', href: 'https://kissoflife.town/post/3574' },
         { date: '2026.11.09', tag: '수상', title: '2026 KGMA 베스트 스테이지·스타일 아이콘 2관왕 (11.08 시상)', href: 'https://star.ytn.co.kr/_sn/0117_202611091748308778' },
         { date: '2026.10.23', tag: '시상식', title: '12.05 가오슝 AAA 공식 출연 명단 발표', href: 'https://www.asiaartistawards.com/en/news/3225' },
         { date: '2026.10.12', tag: '무대', title: 'THE FIRST TAKE에서 SWEAT 일본어 버전 라이브 공개', href: 'https://columbia.jp/artist-info/kissoflife/media/94488.html' },
+        { date: '2026.10.01', tag: '시상식', title: '2027.01.15 파리 D AWARDS 출연 발표 · DAY 1', href: 'https://d-awards.world/' },
         { date: '2026.09.28', tag: '영상', title: 'THE FIRST TAKE에서 Sticky 라이브 공개', href: 'https://kissoflife.jp/page/media.html' },
         { date: '2026.09.06', tag: '수상', title: '2026 SKA 본상·베스트 여자 그룹상 2관왕', href: 'https://www.soompi.com/article/1868372wpp/winners-of-2026-spotv-k-pop-awards' },
         { date: '2026.08.27', tag: '음반', title: '일본 미니 2집 SWEAT -JAPANESE EP- 발매 발표 · 9.16 발매', href: 'https://prtimes.jp/main/html/rd/p/000005074.000019470.html' },
@@ -391,6 +400,7 @@
         { date: '2026.07.17', tag: '협업', title: '일본 SAISON CARD 팬 참여형 캠페인 발표 · 10.08 행사', href: 'https://kissoflife.jp/page/20260717.html' }
       ],
       merch: [
+        { title: '2027 시즌그리팅 NOW AIRING!', sub: 'S2·코팬글로벌 공식 제작 · 12/18 발매 예정 · 11/22 23:59 예약 마감 안내(품절 가능) · 재고는 판매처 확인', href: 'https://m.sound-wave.co.kr/product/kiss-of-life-%ED%82%A4%EC%8A%A4%EC%98%A4%EB%B8%8C%EB%9D%BC%EC%9D%B4%ED%94%84-2027-seasons-greetings-now-airing/29584/category/913/display/1/' },
         { title: 'SWEAT -JAPANESE EP- TYPE-A·B', sub: '일본 컬럼비아 공식 CD·트레이딩카드 구성 · 재고는 판매처 확인', href: 'https://columbia.jp/artist-info/kissoflife/discography/album.html' },
         { title: 'SWEAT -JAPANESE EP- 통상판', sub: '일본 컬럼비아 공식 CD · 판매 여부·가격은 판매처 확인', href: 'https://columbia.jp/artist-info/kissoflife/discography/album.html' },
         { title: 'KISS OF LIFE 일본 공식 MD', sub: '일본 공식 판매 2026.06.18 시작 · 현재 재고·가격은 판매처 확인', href: 'https://kissoflife.jp/page/20260618.html' }
