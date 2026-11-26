@@ -62,13 +62,14 @@ jobs:
           mkdir -p park-even-install
           cp "$RUNNER_TEMP/ojjuda-park.ehpk" park-even-install/
           (cd park-even-install && sha256sum ojjuda-park.ehpk > SHA256SUMS)
-          if ! command -v espeak-ng >/dev/null; then sudo apt-get -qq update && sudo apt-get -qq install -y espeak-ng; fi
+          if ! command -v espeak-ng >/dev/null; then sudo env NEEDRESTART_MODE=l apt-get -qq install --no-install-recommends -y espeak-ng || (sudo apt-get -qq update && sudo env NEEDRESTART_MODE=l apt-get -qq install --no-install-recommends -y espeak-ng); fi
           espeak-ng -v ko -s 145 -w "$RUNNER_TEMP/g2-question.wav" "안녕하세요. 저는 지금 공원에서 산책하고 있어요. 산책할 때 물을 얼마나 마시면 좋을까요?"
           /usr/bin/python3 - <<'PY'
-          import audioop, wave, pathlib, os
+          import array, wave, pathlib, os
           with wave.open(os.environ['RUNNER_TEMP']+'/g2-question.wav') as wav:
               assert wav.getsampwidth()==2 and wav.getnchannels()==1
-              data,_=audioop.ratecv(wav.readframes(wav.getnframes()),2,1,wav.getframerate(),16000,None)
+              samples=array.array('h',wav.readframes(wav.getnframes())); rate=wav.getframerate()
+              data=array.array('h',(samples[i*rate//16000] for i in range(len(samples)*16000//rate))).tobytes()
           pathlib.Path('park-even-install/synthetic-ko.pcm').write_bytes(data)
           PY
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
