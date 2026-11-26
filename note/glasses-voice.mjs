@@ -1,18 +1,4 @@
-// The Even SDK supplies mono 16-bit PCM at 16 kHz. Keep at most one short question.
-const maxBytes = 15 * 32000;
-const errors = {
-  pair:'휴대폰에서 공원 계정을 연결해 주세요.', code:'연결 코드를 다시 확인해 주세요.',
-  limit:'사용 한도에 도달했어요. 나중에 다시 시도해 주세요.',
-  silent:'목소리를 듣지 못했어요. 다시 말해 주세요.',
-  provider:'GPT에 연결하지 못했어요. 다시 시도해 주세요.'
-};
-function toBase64(parts) {
-  let binary = '';
-  for (const part of parts) {
-    for (let i=0; i<part.length; i+=8192) binary+=String.fromCharCode(...part.subarray(i,i+8192));
-  }
-  return btoa(binary);
-}
+import {speechBoundary} from './glasses-live.mjs?v=20261126-live1';
 
 // Older servers and phone WebViews can still deliver an ordinary or buffered response.
 export async function readVoiceReply(response,onQuestion) {
@@ -60,93 +46,108 @@ function conversationPages(question,reply) {
   return pages;
 }
 
-export function createG2Voice({microphone, request, changed, forgetToken}) {
-  let token='', phase='idle', message='', page=0, history=[], current=null, sequence=0;
-  let question='', pages=[];
-  let micWork=Promise.resolve(), controller=null, timer=null;
-  // Serialize on/off, including a release before the host acknowledges opening.
-  function setMic(on) {
-    micWork=micWork.catch(()=>{}).then(()=>microphone(on));
-    return micWork;
-  }
-  function update(next,text='') {
-    phase=next;message=text;pages=question?conversationPages(question,text):[];
+const errors={
+  pair:'휴대폰에서 공원 계정을 연결해 주세요.',limit:'오늘의 질문 한도에 도달했어요.',
+  silent:'목소리를 듣지 못했어요. 다시 질문해 주세요.',mic:'안경 마이크 연결과 권한을 확인해 주세요.',
+  provider:'실시간 음성 인식에 연결하지 못했어요. 다시 질문해 주세요.',
+  timeout:'음성 연결이 늦어졌어요. 다시 질문해 주세요.',network:'음성 연결이 끊겼어요. 다시 질문해 주세요.'
+};
+
+export function createG2Voice({microphone,openTurn,changed,forgetToken}) {
+  let token='',history=[],turn=null,phase='idle',message='',question='',page=0,pages=[];
+  let micWork=Promise.resolve();
+  const setMic=on=>micWork=micWork.catch(()=>{}).then(()=>microphone(on));
+  function update(next,text) {
+    phase=next;message=text;
+    pages=question && phase!=='listening'?conversationPages(question,message):[];
     page=Math.min(page,Math.max(0,pages.length-1));changed();
   }
-  function reset() {
-    ++sequence;
-    clearTimeout(timer); controller?.abort(); controller=null;
-    if(current) { current=null;void setMic(false).catch(()=>{}); }
-    history=[]; question='';update('idle');
+  function stopMic(t) {
+    clearTimeout(t.timer);clearTimeout(t.gap);
+    if(t.listening){t.listening=false;void setMic(false).catch(()=>{});}
   }
-  function setToken(value) { reset(); token=value || ''; }
+  function dispose() {
+    const t=turn;turn=null;
+    if(t){stopMic(t);t.link?.close();}
+  }
+  function reset(){dispose();history=[];question='';update('idle','');}
+  function fail(t,code) {
+    if(turn!==t)return;
+    dispose();
+    if(code==='pair'){token='';question='';history=[];forgetToken();}
+    update(code==='pair'?'pair':'error',errors[code]||errors.network);
+  }
+  function finish() {
+    const t=turn;
+    if(!t?.listening)return;
+    stopMic(t);
+    if(!t.link){fail(t,'silent');return;}
+    update('sending','질문 마무리 중…');t.link.finish();
+    if(turn===t)t.timer=setTimeout(()=>fail(t,'timeout'),50000);
+  }
   async function start() {
-    if(current || phase==='sending') return;
-    question='';
-    if(!token) { update('pair',errors.pair);return; }
-    const run=++sequence;
-    current={parts:[],bytes:0,peak:0};
-    update('starting','마이크 켜는 중…');
-    timer=setTimeout(()=>{if(run===sequence) void finish();},15000);
+    if(turn)return;
+    question='';page=0;
+    if(!token){update('pair',errors.pair);return;}
+    const t={listening:true,detector:speechBoundary(),pre:[],preBytes:0,bytes:0,link:null};
+    turn=t;update('starting','마이크 켜는 중…');
+    t.timer=setTimeout(()=>fail(t,'silent'),10000);
     try {
-      if(await setMic(true)!==true) throw Error();
-      if(run===sequence && current) update('listening','듣는 중…');
-    } catch {
-      if(run!==sequence) return;
-      clearTimeout(timer);current=null;void setMic(false).catch(()=>{});
-      update('error','Even 앱에서 안경 마이크 권한을 확인해 주세요.');
-    }
+      if(await setMic(true)!==true)throw Error();
+      if(turn===t && t.listening && phase==='starting')update('listening','듣는 중…');
+    }catch{fail(t,'mic');}
   }
   function audio(bytes) {
-    if(!current || !bytes?.byteLength) return;
-    const piece=new Uint8Array(bytes.buffer,bytes.byteOffset,Math.min(bytes.byteLength,maxBytes-current.bytes));
-    if(!piece.length) return;
-    const view=new DataView(piece.buffer,piece.byteOffset,piece.byteLength);
-    for(let i=0;i+1<piece.length;i+=2) current.peak=Math.max(current.peak,Math.abs(view.getInt16(i,true)));
-    current.parts.push(piece.slice());current.bytes+=piece.length;
-    if(current.bytes===maxBytes) void finish();
-  }
-  async function finish() {
-    if(!current) return;
-    const capture=current, run=++sequence;
-    current=null;clearTimeout(timer);
-    const close=setMic(false).catch(()=>{});
-    if(capture.bytes<8000 || capture.peak<32) { update('error',errors.silent);return; }
-    update('sending','질문을 글로 바꾸는 중…');
-    const abort=new AbortController();controller=abort;
-    const deadline=setTimeout(()=>abort.abort(),37000);
-    try {
-      const result=await request({pcm:toBase64(capture.parts),history},token,abort.signal,text=>{
-        if(run!==sequence || !text) return;
-        question=text;update('sending','답변 작성 중…');
-      });
-      if(run!==sequence) return;
-      if(typeof result.answer!=='string' || typeof result.question!=='string') throw Error('provider');
-      question=result.question;
-      history=[...history,result].slice(-3);
-      update('answer',result.answer);
-    } catch(error) {
-      if(run!==sequence) return;
-      if(error.message==='pair') {token='';history=[];question='';forgetToken();}
-      update(error.message==='pair'?'pair':'error',errors[error.message] || '연결을 확인하고 다시 말해 주세요.');
-    } finally {
-      clearTimeout(deadline); if(controller===abort) controller=null;
-      await close;
-    }
+    const t=turn;
+    if(!t?.listening || !bytes?.byteLength)return;
+    const length=Math.min(bytes.byteLength-(bytes.byteLength%2),90*32000-t.bytes);
+    if(length<=0){finish();return;}
+    const piece=new Uint8Array(bytes.buffer,bytes.byteOffset,length);
+    t.bytes+=length;
+    const {started,ended}=t.detector.push(piece);
+    if(!t.link){
+      t.pre.push(piece.slice());t.preBytes+=length;
+      while(t.pre.length>1 && t.preBytes-t.pre[0].length>=24000)t.preBytes-=t.pre.shift().length;
+      if(!started)return;
+      clearTimeout(t.timer);
+      t.timer=setTimeout(finish,90000);
+      try{
+        t.link=openTurn({token,history,
+          onText:text=>{if(turn===t){question=text;update(t.listening?'listening':'sending',t.listening?'듣는 중…':'질문 마무리 중…');}},
+          onFinal:text=>{if(turn===t){question=text;page=0;update('sending','답변 작성 중…');}},
+          onAnswer:result=>{
+            if(turn!==t)return;
+            dispose();question=result.question;history=[...history,result].slice(-3);page=0;update('answer',result.answer);
+          },onError:code=>fail(t,code)});
+        for(const pre of t.pre)t.link.audio(pre);
+        t.pre=[];
+      }catch{fail(t,'network');return;}
+    }else t.link.audio(piece);
+    if(turn!==t)return;
+    clearTimeout(t.gap);
+    if(ended||t.bytes===90*32000){finish();return;}
+    // Some hosts stop delivering silent frames after speech.
+    t.gap=setTimeout(finish,2800);
   }
   function screen() {
-    if(!pages.length) return message && 'GPT\n'+message;
-    return (pages.length>1 ? (page+1)+'/'+pages.length+' ↕\n' : '')+pages[page];
+    if(phase==='listening'&&question) {
+      const chars=Array.from(question.replace(/\s+/g,' ')).slice(-48),lines=[];
+      for(let i=0;i<chars.length;i+=12)lines.push(chars.slice(i,i+12).join(''));
+      return '내 질문 · 듣는 중\n'+lines.join('\n');
+    }
+    if(!pages.length)return message && 'GPT\n'+message;
+    return (pages.length>1?(page+1)+'/'+pages.length+' ↕\n':'')+pages[page];
   }
   function scroll(direction) {
-    if(!pages.length) return false;
+    if(turn?.listening)return true;
+    if(!pages.length)return false;
     page=Math.max(0,Math.min(pages.length-1,page+direction));changed();return true;
   }
-  function dismiss() {
-    if(phase==='answer'||phase==='error'||phase==='pair') {question='';update('idle');return true;}
-    return false;
+  function dismiss(){
+    if(!['answer','error','pair'].includes(phase))return false;
+    question='';update('idle','');return true;
   }
-  return {start,finish,audio,reset,setToken,scroll,dismiss,screen,
-    toggle:()=>current?finish():start(),
+  return {start,finish,audio,reset,scroll,dismiss,screen,setToken(value){token=value||'';reset();},
+    toggle:()=>turn?.listening?finish():start(),
     get phase(){return phase;},get message(){return message;},get question(){return question;},get paired(){return !!token;}};
 }

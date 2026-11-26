@@ -2,7 +2,7 @@ name: Package Park for Even G2
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [build/park-g2-live-1.3.0]
     paths:
       - 'note/even-app/**'
       - 'note/glasses*'
@@ -18,7 +18,7 @@ on:
       - 'scripts/build-park-even-app.mjs'
       - '.github/workflows/park-even-g2.yml'
 permissions:
-  contents: read
+  contents: write
 jobs:
   package:
     runs-on: ubuntu-latest
@@ -26,7 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          persist-credentials: false
+          persist-credentials: true
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
@@ -55,3 +55,24 @@ jobs:
           path: ${{ runner.temp }}/ojjuda-park.ehpk
           compression-level: 0
           if-no-files-found: error
+      - name: Stage verified installer and synthetic Korean voice sample
+        run: |
+          set -euo pipefail
+          node scripts/sync-section-versions.mjs
+          mkdir -p park-even-install
+          cp "$RUNNER_TEMP/ojjuda-park.ehpk" park-even-install/
+          (cd park-even-install && sha256sum ojjuda-park.ehpk > SHA256SUMS)
+          if ! command -v espeak-ng >/dev/null; then sudo apt-get -qq update && sudo apt-get -qq install -y espeak-ng; fi
+          espeak-ng -v ko -s 145 -w "$RUNNER_TEMP/g2-question.wav" "안녕하세요. 저는 지금 공원에서 산책하고 있어요. 산책할 때 물을 얼마나 마시면 좋을까요?"
+          /usr/bin/python3 - <<'PY'
+          import audioop, wave, pathlib, os
+          with wave.open(os.environ['RUNNER_TEMP']+'/g2-question.wav') as wav:
+              assert wav.getsampwidth()==2 and wav.getnchannels()==1
+              data,_=audioop.ratecv(wav.readframes(wav.getnframes()),2,1,wav.getframerate(),16000,None)
+          pathlib.Path('park-even-install/synthetic-ko.pcm').write_bytes(data)
+          PY
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add -- world.html park-even-install
+          git commit -m "Stage tested G2 1.3.0 installer and synthetic speech fixture"
+          git push origin HEAD:build/park-g2-live-1.3.0
