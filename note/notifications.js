@@ -91,7 +91,10 @@
     function syncBadges() {
       for (const item of document.querySelectorAll('[data-notification-dot]')) item.hidden = unread === 0;
       for(const item of document.querySelectorAll('[data-notification-badge]')) { item.hidden=!unread;item.textContent=unread>99?'99+':String(unread); }
-      for(const item of document.querySelectorAll('[data-note-my]')) item.setAttribute('aria-label',unread?`메뉴, 읽지 않은 알림 ${unread}개`:'메뉴');
+      for (const item of document.querySelectorAll('[data-note-my]')) {
+        const label = item.dataset.settingsLabel || '메뉴';
+        item.setAttribute('aria-label', unread ? `${label}, 읽지 않은 알림 ${unread}개` : label);
+      }
       for(const item of document.querySelectorAll('[data-notifications-open]')) item.setAttribute('aria-label',unread?`알림, 읽지 않은 알림 ${unread}개`:'알림');
     }
     function attach() {
@@ -317,7 +320,7 @@
             const counts = await rpc('notification_summary');
             if (current(run, user) && request === countRun && counts
               && validCount(counts.notifications) && validCount(counts.retention)) {
-              setUnread(counts.notifications, counts.retention); lastRefresh = Date.now();
+              setUnread(counts.notifications, counts.retention);
             }
             return;
           } catch (error) {
@@ -336,11 +339,12 @@
             if (retentionOk) {
               setUnread(notificationUnread, retentionCount(retention.value.filter(validRetention)));
             }
-            if (normalOk || retentionOk) lastRefresh = Date.now();
           }
         }
         finally {
           if (countRequest === holder) {
+            // Throttle passive refreshes after a timeout as well as after a successful read.
+            if (current(run, user) && request === countRun) lastRefresh = Date.now();
             countRequest = null;
             scheduleReadRefresh();
           }

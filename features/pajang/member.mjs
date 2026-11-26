@@ -63,11 +63,16 @@ export function showGate(message,login = false) {
     gate.append(link);
   }
 }
+function accountData({data,error}) {
+  if (error && (!error.status || error.status >= 500 || error.status === 408 || error.status === 429)) throw error;
+  return error ? null : data;
+}
+
 export async function requireMember(action='entry',onSession,onResult) {
   verifiedUser=undefined;
   try {
     const db=await client();
-    const {data:{session}}=await db.auth.getSession();
+    const session=accountData(await db.auth.getSession())?.session;
     if(!session?.user||session.user.is_anonymous){
       showGate('만 19세 이상 회원만 이용할 수 있어요. 로그인해 주세요.',true);return;
     }
@@ -92,8 +97,8 @@ export async function requireMember(action='entry',onSession,onResult) {
       db.auth.getUser(),db.rpc('pajang_member',{p_action:action,p_data:{}})
     ]);
     if(changed)return;
-    const user=identity.data?.user;
-    if(identity.error||!user||user.is_anonymous||user.id!==expected){
+    const user=accountData(identity)?.user;
+    if(!user||user.is_anonymous||user.id!==expected){
       showGate('회원 정보를 다시 확인해 주세요.',true);return;
     }
     if(result.error){

@@ -497,3 +497,36 @@ test('keyboard pagination focuses the new notification or retry, and respects a 
     assert.equal(doc.activeElement, bell);
   } finally { f.close(); }
 });
+
+test('a timed-out badge read waits for the next polling interval and keeps the last good count', async () => {
+  const f = fixture();
+  try {
+    await f.boot();
+    f.advance(15000);
+    f.calls.length = 0;
+    f.respond(() => ({error:{code:'57014',message:'statement timeout'}}));
+    await f.poll();
+    f.w.dispatchEvent(new f.w.Event('focus'));
+    f.visibility('visible');
+    await settle();
+    assert.equal(f.calls.length, 1);
+    assert.equal(f.badge().text, '5');
+    f.respond(() => ({data:{notifications:1,retention:0}}));
+    f.advance(15000);
+    await f.poll();
+    assert.equal(f.badge().text, '1');
+  } finally { f.close(); }
+});
+
+test('Park settings keeps its accessible name when notifications change', async () => {
+  const f = fixture();
+  try {
+    const button = f.w.document.querySelector('[data-note-my]');
+    button.dataset.settingsLabel = '설정';
+    await f.boot();
+    assert.equal(button.getAttribute('aria-label'), '설정, 읽지 않은 알림 5개');
+    f.respond(() => ({data:{notifications:0,retention:0}}));
+    await f.api.refresh();
+    assert.equal(button.getAttribute('aria-label'), '설정');
+  } finally { f.close(); }
+});

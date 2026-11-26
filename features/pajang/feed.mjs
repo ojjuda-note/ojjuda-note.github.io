@@ -1,4 +1,4 @@
-import {call, client, requireMember, showGate} from './member.mjs?v=20261126-adult-service1';
+import {call, client, requireMember, showGate} from './member.mjs?v=20261127-service-fixes1';
 
 const $ = id => document.getElementById(id);
 const cards = $('cards');

@@ -47,7 +47,8 @@
     if (previous.searchParams.get('from') === from && (sharedPage.test(previous.pathname) ||
         previous.pathname.startsWith('/admin/') || previous.pathname.startsWith('/features/organization/'))) return true;
     if (previous.pathname === '/') return previous.searchParams.get('next') === (from === 'park' ? 'note' : 'pajang');
-    return from === 'park' ? /^\/(park|note)\//.test(previous.pathname) : previous.pathname.startsWith('/features/pajang/');
+    if (from === 'park') return /^\/(park|note)\//.test(previous.pathname);
+    return /^\/pajang(?:\/index\.html|\/)?$/.test(previous.pathname) || previous.pathname.startsWith('/features/pajang/');
   }
   function hasPreviousPage() {
     // Navigation entries, when available, distinguish a same-site new tab from

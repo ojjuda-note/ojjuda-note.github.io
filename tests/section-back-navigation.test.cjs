@@ -423,3 +423,13 @@ test('a service document cannot return to Agit through an unrelated previous pag
     assert.deepEqual(f.replacements,[from === 'park' ? '/park/' : '/features/pajang/station.html?tab=profile']);
   }
 });
+
+test('Pajang help returns to the public address that opened it', () => {
+  for (const path of ['/pajang', '/pajang/?tab=profile', '/pajang/index.html']) {
+    const previous = 'https://ojjuda.test' + path;
+    const f = fixture({from:'pajang', previous});
+    assert.equal(f.history.pushes, 0);
+    f.back();
+    assert.equal(f.location.href, previous);
+  }
+});
