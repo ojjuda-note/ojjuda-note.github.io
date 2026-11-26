@@ -17,7 +17,9 @@ const main=match[0].replace(/<a href="\/park\/" class="back-link">.*?<\/a>/,'')
 const js=await readFile('note/glasses.js','utf8');
 const localJs=js.replace(/await import\('\/park\/even-g2\.bundle\.mjs\?[^']+'\)/,'window.OjjudaEvenG2');
 if (localJs===js || /(?:src|href)="\//.test(main)) throw Error('Check G2 package asset paths');
-await writeFile(join(output,'glasses.js'),localJs);
+const {build}=createRequire(resolve('note/vendor/package.json'))('esbuild');
+await build({stdin:{contents:localJs,resolveDir:resolve('note'),sourcefile:'glasses.js'},
+  outfile:join(output,'glasses.js'),bundle:true,format:'iife',platform:'browser',target:'es2020'});
 await writeFile(join(output,'index.html'),`<!doctype html>
 <html lang="ko" data-even-app="1"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1"><title>오쭈다 공원</title>
@@ -25,7 +27,6 @@ await writeFile(join(output,'index.html'),`<!doctype html>
 ${main}
 <script src="./even-g2.js"></script><script src="./location.js"></script><script src="./supabase.js"></script><script src="./boot.js"></script><script src="./glasses.js"></script>
 </body></html>`);
-const {build}=createRequire(resolve('note/vendor/package.json'))('esbuild');
 await build({entryPoints:['park/even-g2.bundle.mjs'],outfile:join(output,'even-g2.js'),bundle:true,
   format:'iife',globalName:'OjjudaEvenG2',platform:'browser',target:'es2020',minify:true});
 for (const [from,to] of [['note/glasses.css','glasses.css'],['note/even-app/boot.js','boot.js'],

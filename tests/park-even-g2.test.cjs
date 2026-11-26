@@ -43,7 +43,9 @@ async function setup({granted=false,user='member',installed=false,guestFix,nativ
     navigator:{permissions:{query:async()=>perm}},Intl,AbortController,CustomEvent,setInterval:cb=>(tick=cb,1),clearInterval(){},clearTimeout,
     setTimeout:(cb,ms)=>{const t=setTimeout(cb,ms);t.unref();return t;},
     fetch:weather || (async()=>({ok:true,json:async()=>({source:'kma',temperature:-2,label:'눈',expiresAt:clock+40000})}))};
-  vm.runInNewContext(readFileSync(path.join(root,'note/glasses.js'),'utf8'),ctx);
+  const {createSpeedMeter} = await import('../note/rokid-agent/lib/speed.js');
+  ctx.createSpeedMeter = createSpeedMeter;
+  vm.runInNewContext(readFileSync(path.join(root,'note/glasses.js'),'utf8').replace(/^import .*?;\r?\n/,''),ctx);
   await delay(20);
   return {window,document,perm,get,calls,hud:window.OJJUDA_GLASS_PREVIEW,
     revoke:()=>pref({enabled:false}),signOut:()=>auth('SIGNED_OUT',null),advance:ms=>{clock+=ms;tick();}};
@@ -53,6 +55,7 @@ test('current location on entry, nearby cards, consented weather, stale speed an
   const {get,hud,calls,revoke,advance,signOut}=await setup();
   assert.deepEqual(calls.map(c=>c.params.p_sort),['recent','nearby']);
   assert.equal(get('glass-first-body').textContent,'첫 카드');
+  assert.equal(get('glass-selected').hidden,false);
   assert.equal(get('glass-first-distance').textContent,'1km 이내');
   assert.equal(get('glass-second-distance').textContent,'2km 이내');
   assert.equal(get('glass-speed').textContent,'10.8 km/h');
@@ -159,7 +162,7 @@ test('the G2 renders distance inside the lower right of each message, within the
     for(const x of xs)assert.ok(x.xPosition+x.width<=576&&x.yPosition+x.height<=288);
     assert.equal(xs[1].content,'83% ⚡');assert.equal(xs[3].content,'0 km/h');
     if(reader){inside(xs[4],xs[6]);assert.equal(xs[6].content,'3km 이내');assert.match(xs[5].content,/답카드 1\/1/);}
-    else{inside(xs[4],xs[6]);inside(xs[5],xs[7]);assert.equal(xs[7].content,'2km 이내');}
+    else{assert.equal(xs[4].content,'▶ 첫째');assert.equal(xs[5].content,'둘째');inside(xs[4],xs[6]);inside(xs[5],xs[7]);assert.equal(xs[7].content,'2km 이내');}
   }
 });
 

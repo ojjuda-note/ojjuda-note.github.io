@@ -1,7 +1,7 @@
 # 오쭈다 공원
 
 - Name: 오쭈다 공원
-- Version: 1.0.0
+- Version: 1.0.1
 - Description: 현재 위치의 날씨와 가까운 공개 공원 카드, 카드에 달린 답카드를 읽는다.
 - Author: 오쭈다
 

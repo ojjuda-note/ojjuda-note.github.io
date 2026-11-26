@@ -34,7 +34,7 @@
       <time id="glass-clock" class="clock">--:--</time>
       <span id="glass-battery" class="battery" aria-label="안경 배터리">—%</span>
       <div class="messages">
-        <button id="glass-first" disabled aria-label="첫 번째 공원 카드 열기"><span id="glass-first-body" class="message-body"></span><span id="glass-first-distance" class="message-distance"></span></button>
+        <button id="glass-first" disabled aria-label="선택된 공원 카드 열기"><span class="message-body"><span id="glass-selected" aria-hidden="true" hidden>▶ </span><span id="glass-first-body"></span></span><span id="glass-first-distance" class="message-distance"></span></button>
         <button id="glass-second" disabled aria-label="두 번째 공원 카드 열기"><span id="glass-second-body" class="message-body"></span><span id="glass-second-distance" class="message-distance"></span></button>
       </div>
       <button type="button" id="glass-full" class="full" aria-label="본문 닫기" hidden><span class="reader-heading" id="glass-reader-heading"></span><span class="reader-body" id="glass-reader-body"></span><span class="message-distance" id="glass-reader-distance"></span></button>
@@ -61,6 +61,6 @@
   </main>
   <script src="/config.js?v=20261111-shared-member-auth1"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
-  <script src="/note/glasses.js?v=20261125-location-permission1" defer></script>
+  <script type="module" src="/note/glasses.js?v=20261126-hud1"></script>
 </body>
 </html>

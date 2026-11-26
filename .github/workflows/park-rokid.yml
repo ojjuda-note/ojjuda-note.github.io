@@ -3,16 +3,18 @@ name: Package Park for Rokid Glasses
 on:
   workflow_dispatch:
   push:
-    branches: [main, build/park-rokid-1.0.0]
+    branches: [main, build/park-rokid-1.0.1]
     paths:
       - 'note/rokid-agent/**'
       - 'tests/park-rokid.test.cjs'
+      - 'tests/park-glasses-speed.test.cjs'
       - 'park/rokid-glasses.html'
       - '.github/workflows/park-rokid.yml'
   pull_request:
     paths:
       - 'note/rokid-agent/**'
       - 'tests/park-rokid.test.cjs'
+      - 'tests/park-glasses-speed.test.cjs'
       - 'park/rokid-glasses.html'
       - '.github/workflows/park-rokid.yml'
 
@@ -31,7 +33,7 @@ jobs:
         with:
           node-version: '22'
       - name: Test the Park agent
-        run: node --test tests/park-rokid.test.cjs
+        run: node --test tests/park-rokid.test.cjs tests/park-glasses-speed.test.cjs
       - name: Pack and verify the AIX
         run: |
           set -euo pipefail
@@ -56,7 +58,7 @@ jobs:
 
   stage:
     needs: package
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/build/park-rokid-1.0.0'
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/build/park-rokid-1.0.1'
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -78,4 +80,4 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git commit -m 'Stage tested Rokid Park package and synced version'
-          git push origin HEAD:refs/heads/build/park-rokid-1.0.0
+          git push origin HEAD:refs/heads/build/park-rokid-1.0.1

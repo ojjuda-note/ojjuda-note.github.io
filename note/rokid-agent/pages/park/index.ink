@@ -1,4 +1,5 @@
 <script setup>
+import {createSpeedMeter} from '../../lib/speed.js';
 const configUrl = 'https://ojjuda.kr/park/even-public.json';
 const empty = {
   mode: 'feed', firstBody: '', firstDistance: '', secondBody: '', secondDistance: '',
@@ -55,11 +56,11 @@ export default {
   onShow() {
     if (this.session) return;
     const s={stop:new AbortController(),rows:[],at:0,stack:[],fix:null,grid:null,
-      order:'recent',feedRun:0,replyRun:0,nextFeed:0,weatherUntil:0,speedUntil:0};
+      order:'recent',feedRun:0,replyRun:0,nextFeed:0,weatherUntil:0,meter:createSpeedMeter()};
     this.session=s;
     this.setData({...empty});
     this.tick(s);
-    s.timer=setInterval(()=>this.tick(s),5000);
+    s.timer=setInterval(()=>this.tick(s),1000);
     if (typeof navigator.getBattery === 'function') {
       navigator.getBattery().then(b=>{
         if (this.session!==s || !b) return;
@@ -79,25 +80,25 @@ export default {
     const now=new Date(), b=s.battery, level=b && b.level;
     this.setData({clock:two(now.getHours())+':'+two(now.getMinutes()),
       battery:Number.isFinite(level)&&level>=0&&level<=1 ? Math.round(level*100)+'%'+(b.charging?' ⚡':'') : '—%',
-      speed:Date.now()<s.speedUntil ? s.speed : '— km/h'});
+      speed:(s.meter.read(Date.now()) ?? '—') + ' km/h'});
     if (s.weatherUntil && Date.now()>=s.weatherUntil) {
       s.weatherUntil=0; this.setData({weather:'날씨 갱신 중'});
     }
   },
   locate(s) {
     if(this.session!==s) return;
-    const later=()=>{s.locationTimer=setTimeout(()=>this.locate(s),12000);};
+    const later=(delay)=>{s.locationTimer=setTimeout(()=>this.locate(s),delay);};
     const lost=(error)=>{
       if(this.session!==s) return;
       const hadFix=!!s.fix;
-      s.fix=null; s.grid=null; s.weatherUntil=0; s.speedUntil=0; s.nextFeed=0;
+      s.fix=null; s.grid=null; s.weatherUntil=0; s.meter=createSpeedMeter(); s.nextFeed=0;
       this.setData({weather:error && error.code===1?'위치 권한 필요':'현재 위치 확인 필요',speed:'— km/h'});
       if(hadFix) {
         s.stack.forEach(f=>{f.rows.forEach(r=>{r.distance_band=null;});});
         s.rows.forEach(r=>{r.distance_band=null;});
         this.draw(s); this.feed(s,null);
       }
-      if(error && error.code!==1) later();
+      if(error && error.code!==1) later(12000);
     };
     try {
       if (!navigator.geolocation) { lost(null); return; }
@@ -109,10 +110,10 @@ export default {
           at<Date.now()-30000 || at>Date.now()+2000 ||
           (c.accuracy!=null && (!Number.isFinite(c.accuracy)||c.accuracy<0||c.accuracy>5000))) {lost({code:2});return;}
         s.fix={latitude:rounded(c.latitude),longitude:rounded(c.longitude)};
-        s.speed=Number.isFinite(c.speed)&&c.speed>=0 ? Math.round(c.speed*36)/10+' km/h' : '— km/h';
-        s.speedUntil=at+15000; this.tick(s);
+        s.meter.update({latitude:c.latitude,longitude:c.longitude,accuracy:c.accuracy,speed:c.speed,timestamp:at},Date.now());
+        this.tick(s);
         if(Date.now()>=s.nextFeed) {s.nextFeed=Date.now()+60000;this.feed(s,s.fix);}
-        this.loadWeather(s,weatherCell(c.latitude,c.longitude)); later();
+        this.loadWeather(s,weatherCell(c.latitude,c.longitude)); later(2000);
       },lost,{enableHighAccuracy:true,maximumAge:0,timeout:10000});
     } catch {lost({code:2});}
   },
@@ -253,7 +254,7 @@ export default {
     <view class="row"><text>{{clock}}</text><text>{{battery}}</text></view>
     <view wx:if="{{mode === 'feed'}}" class="feed">
       <view class="cards">
-        <view class="card"><text class="line">{{firstBody}}</text><text class="distance">{{firstDistance}}</text></view>
+        <view class="card"><text wx:if="{{firstBody}}" class="line">▶ {{firstBody}}</text><text class="distance">{{firstDistance}}</text></view>
         <view wx:if="{{secondBody}}" class="card"><text class="line">{{secondBody}}</text><text class="distance">{{secondDistance}}</text></view>
       </view>
     </view>

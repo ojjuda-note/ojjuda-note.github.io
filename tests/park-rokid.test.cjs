@@ -104,8 +104,9 @@ async function openPage({ locate = resolve => resolve(fix()), nearby = [first, s
   const ink = readFileSync(pagePath, 'utf8');
   const pageScript = ink.match(/<script\s+setup\s*>([\s\S]*?)<\/script>/);
   assert.ok(pageScript, 'The AIUI page must contain a setup script');
-  vm.runInNewContext(pageScript[1].replace(/\bexport default\b/, 'const definition =') + '\nPage(definition);', {
-    Page: register, navigator, fetch: fetchFixture, URL, URLSearchParams, AbortController,
+  const {createSpeedMeter} = await import('../note/rokid-agent/lib/speed.js');
+  vm.runInNewContext(pageScript[1].replace(/^import .*?;$/m,'').replace(/\bexport default\b/, 'const definition =') + '\nPage(definition);', {
+    createSpeedMeter, Page: register, navigator, fetch: fetchFixture, URL, URLSearchParams, AbortController,
     Date, Intl, setTimeout: schedule, setInterval: schedule, clearTimeout: id => timers.delete(id),
     clearInterval: id => timers.delete(id), console
   }, { filename: pagePath });

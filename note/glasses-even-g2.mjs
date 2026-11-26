@@ -21,7 +21,7 @@ export function g2Page(view) {
       box(7,'fulldist',441,194,119,30,reader.distance));
   } else {
     const summary = card => (view.sample ? '예시 · ' : '') + card.oneLine;
-    fields.push(box(5,'first',348,48,218,84,cards[0] ? summary(cards[0]) : '근처 카드 —',1,1),
+    fields.push(box(5,'first',348,48,218,84,cards[0] ? '▶ ' + summary(cards[0]) : '근처 카드 —',1,1),
       box(6,'second',348,143,218,84,cards[1] ? summary(cards[1]) : '—',0,1),
       box(7,'firstdist',443,100,118,29,cards[0]?.distance ?? ''),
       box(8,'seconddist',443,195,118,29,cards[1]?.distance ?? ''));
@@ -31,7 +31,7 @@ export function g2Page(view) {
 
 function simplePage(view) {
   const lines = view.reader ? [view.reader.title, view.reader.body, view.reader.distance] :
-    [view.time, ...view.cards.map(card => [card.oneLine,card.distance].filter(Boolean).join('  ')), view.weather];
+    [view.time, ...view.cards.map((card,i) => [(i === 0 ? '▶ ' : '') + card.oneLine,card.distance].filter(Boolean).join('  ')), view.weather, (view.speed ?? '—') + ' km/h'];
   const content = view.paused ? ' ' : lines.filter(Boolean).join('\n').slice(0,750);
   return {containerTotalNum:1,textObject:[box(1,'park',8,8,560,272,content || '오쭈다 공원',1)]};
 }

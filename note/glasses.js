@@ -1,3 +1,5 @@
+import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
+
 (() => {
   'use strict';
   const byId = id => document.getElementById(id);
@@ -11,7 +13,7 @@
   const samples = ['오늘은 조금 천천히 걸어도 괜찮아.', '길모퉁이에서 반가운 바람을 만났어요.', '이 길을 지나는 사람에게 작은 응원을 보내요.'];
   let db, owner, hardware, tracking, stopPreference = () => {};
   let rows = [], index = 0, thread = null, sample = false, feedRun = 0;
-  let battery = null, charging = false, weather = null, speed = null, speedUntil = 0;
+  let battery = null, charging = false, weather = null;
   let weatherHint = '날씨 · 현재 위치', permission, autoPaused = false;
   let source = 'recent', feedRequest;
   let paused = false;
@@ -41,7 +43,7 @@
         body:current.body, distance:current.distance, hasReplies:!!reply?.hasReplies,
         prev:t.at>0 || !!t.parent, next:t.at<t.items.length || (!t.busy && (!!t.next || t.error))};
     }
-    return {time:clock.format(now), battery, charging, speed:now<speedUntil ? speed : null,
+    return {time:clock.format(now), battery, charging, speed:tracking?.meter.read(now) ?? null,
       weather:weather && weather.expiresAt>now ? weather.text : weatherHint,
       cards, card:cards[0] || null, expanded:!!reader, reader, sample, paused};
   }
@@ -58,6 +60,7 @@
     byId('glass-battery').textContent = (battery == null ? '—' : battery) + '%' + (charging ? ' ⚡' : '');
     byId('glass-weather').textContent = view.weather;
     byId('glass-speed').textContent = (view.speed ?? '—') + ' km/h';
+    byId('glass-selected').hidden = !view.cards.length || view.expanded || view.paused;
     buttons.forEach((button,n) => {
       const slot = n ? 'second' : 'first', card = view.cards[n];
       byId('glass-'+slot+'-body').textContent = card?.oneLine ?? (n ? '—' : '공원 카드');
@@ -241,7 +244,7 @@
     feedRequest?.abort(); feedRequest=null;
     old?.controller.abort();
     clearTimeout(old?.timer);
-    weather = null; speed = null; speedUntil = 0;
+    weather = null;
     weatherHint = autoPaused ? '날씨 · 위치 꺼짐' : '날씨 · 현재 위치';
     locate.textContent = '현재 위치 확인'; locate.disabled = false;
     render();
@@ -295,8 +298,7 @@
     // Guests use the public feed's distance bands. Keep the precise fix on the phone.
     active.fix = active.owner ? {latitude,longitude} :
       {latitude:Math.round(latitude*1000)/1000, longitude:Math.round(longitude*1000)/1000};
-    speed = Number.isFinite(meters) && meters >= 0 ? Math.round(meters * 36) / 10 : null;
-    speedUntil = Math.min(at, Date.now()) + 15000;
+    active.meter.update({latitude,longitude,accuracy,speed:meters,timestamp:at}, Date.now());
     if (Date.now() >= active.nextFeed) {
       active.nextFeed = Date.now()+60000;
       void loadCards(active.fix, active);
@@ -307,7 +309,10 @@
   let locationFailed = false;
   async function beginLocation(manual=false) {
     if (paused || document.hidden || sample || tracking || !db || owner === undefined || !service) return;
-    const active = {owner, native:installed, controller:new AbortController(), nextFeed:0};
+    // Member web reads recheck account permissions with the server on every fix.
+    const interval = owner && !installed ? 10000 : 2000;
+    const active = {owner, native:installed, controller:new AbortController(), nextFeed:0,
+      meter:createSpeedMeter(interval === 10000 ? 15000 : 8000)};
     tracking=active; locationFailed=false;
     locate.textContent='위치 끄기'; weatherHint='현재 위치 확인 중'; render();
     if (!rows.length || source!=='recent') void loadCards(null,active,'위치 확인 중');
@@ -332,7 +337,7 @@
             Date.now()-at>30000 || at>Date.now()+2000 || (fix.accuracy!=null && (!Number.isFinite(fix.accuracy) || fix.accuracy<0 || fix.accuracy>5000)))
           throw Error('현재 위치를 확인하지 못했어요.');
         acceptFix(fix,active);
-        if (tracking===active) active.timer=setTimeout(()=>read().catch(fail),10000);
+        if (tracking===active) active.timer=setTimeout(()=>read().catch(fail),interval);
       }
       await read();
     } catch(error) { fail(error); }
@@ -436,7 +441,7 @@
     message.textContent = 'G2 연결을 기다리는 중…';
     let stage = 'SDK';
     try {
-      const sdk = await import('/park/even-g2.bundle.mjs?v=20261125-g2-gps1');
+      const sdk = await import('/park/even-g2.bundle.mjs?v=20261126-hud1');
       if (typeof sdk?.attachEvenG2 !== 'function') throw Error('SDK');
       stage = 'BRIDGE';
       hardware = await sdk.attachEvenG2(window.OJJUDA_GLASS_PREVIEW);
