@@ -28,3 +28,16 @@ details { max-width: 22rem; margin: 1rem auto; text-align: center; } details img
 .reader-heading { flex: none; font-size: .72em; color: #b4dcb6; }
 .reader-body { min-height: 0; overflow: auto; white-space: pre-wrap; }
 @media (max-width: 420px) { .message-body { -webkit-line-clamp: 1; } }
+.hud .ai-answer { position:absolute; inset:18% 43% 21% 3%; display:flex; flex-direction:column; gap:.2em; border:0; padding:0; }
+.ai-answer small { font-size:.75em; color:#a4c9a7; }
+.ai-answer span { overflow:auto; white-space:pre-wrap; }
+.ai-link { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:.5rem; }
+.ai-link label, .ai-link [role=status] { width:100%; text-align:center; }
+.ai-link input { max-width:12rem; font:inherit; text-transform:uppercase; }
+.ai-link a { color:inherit; }
+#glass-ai-code { font-variant-numeric:tabular-nums; }
+.g2-link-controls {display:grid;justify-items:center;gap:.6rem;text-align:center;margin:1rem auto}
+.g2-link-controls .g2-connect {display:inline-flex;align-items:center;min-height:44px;padding:.55rem 1.1rem;border-radius:.7rem;background:#b9f9bc;color:#102318;text-decoration:none;font-weight:650}
+.g2-link-controls summary {border:0;background:transparent;padding:.45rem}
+.g2-link-controls [role=status]:empty {display:none}
+.controls:has(#glass-ai-code:empty):has(#glass-ai-code-button[hidden]):has(#glass-ai-unpair[hidden]) { margin:0; }

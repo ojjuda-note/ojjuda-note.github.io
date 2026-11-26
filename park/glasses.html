@@ -24,7 +24,7 @@
 <meta name="twitter:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
   <link rel="icon" href="/favicon.svg?v=20261022-agit-logo2" type="image/svg+xml">
-  <link rel="stylesheet" href="/note/glasses.css?v=20261125-even-settings1">
+  <link rel="stylesheet" href="/note/glasses.css?v=20261126-easylink1">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261022-agit-logo2">
 <script src="/shared/navigation/section-back.js?v=20261123-independent-park1" data-return-to="park" defer></script></head>
 <body>
@@ -33,6 +33,7 @@
     <section class="hud" id="glass-view" aria-label="G2 화면 미리보기">
       <time id="glass-clock" class="clock">--:--</time>
       <span id="glass-battery" class="battery" aria-label="안경 배터리">—%</span>
+      <button type="button" class="ai-answer" id="glass-ai" hidden aria-label="GPT 답변 닫기"><small>GPT</small><span id="glass-ai-answer" aria-live="polite"></span></button>
       <div class="messages">
         <button id="glass-first" disabled aria-label="선택된 공원 카드 열기"><span class="message-body"><span id="glass-selected" aria-hidden="true" hidden>▶ </span><span id="glass-first-body"></span></span><span id="glass-first-distance" class="message-distance"></span></button>
         <button id="glass-second" disabled aria-label="두 번째 공원 카드 열기"><span id="glass-second-body" class="message-body"></span><span id="glass-second-distance" class="message-distance"></span></button>
@@ -46,10 +47,23 @@
       <button type="button" id="glass-next" disabled>다음</button>
       <button type="button" id="glass-children" hidden>달린 답카드 보기</button>
       <button type="button" id="glass-back" hidden>상위 답카드</button>
+      <button type="button" id="glass-ai-ask" hidden>GPT에 묻기</button>
       <button type="button" id="glass-locate">현재 위치 확인</button>
       <button type="button" id="glass-sample">예시 보기</button>
       <button type="button" id="glass-retry" hidden>카드 다시 불러오기</button>
     </div>
+    <div class="g2-link-controls" id="glass-ai-pair" hidden>
+      <a id="glass-ai-connect" class="g2-connect" target="_blank" rel="noopener noreferrer" hidden>공원 계정으로 연결</a>
+      <span id="glass-ai-link-status" role="status"></span>
+      <details><summary>코드로 연결</summary><div class="ai-link">
+      <label for="glass-ai-input">공원에서 받은 G2 연결 코드</label>
+      <a href="https://ojjuda.kr/park/glasses.html" target="_blank" rel="noopener">공원에서 코드 받기</a>
+      <input id="glass-ai-input" type="text" maxlength="18" autocapitalize="characters" autocomplete="off" spellcheck="false">
+      <button type="button" id="glass-ai-link">연결</button>
+      </div></details>
+    </div>
+    <div class="controls"><button type="button" id="glass-ai-code-button" hidden>G2 연결 코드 받기</button>
+      <button type="button" id="glass-ai-unpair" hidden>GPT 연결 해제</button><output id="glass-ai-code"></output></div>
     <p id="glass-status" class="status" role="status"></p>
     <p id="glass-signin" class="status" hidden><a class="back-link" href="/park/">공원 로그인</a></p>
     <details id="g2-setup" hidden><summary>개발용 G2 연결 QR</summary>
@@ -61,6 +75,6 @@
   </main>
   <script src="/config.js?v=20261111-shared-member-auth1"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
-  <script type="module" src="/note/glasses.js?v=20261126-hud1"></script>
+  <script type="module" src="/note/glasses.js?v=20261126-easylink1"></script>
 </body>
 </html>
