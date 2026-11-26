@@ -1,6 +1,6 @@
 import {call, client, sameMember, requireMember, showGate, answeredRound} from './member.mjs?v=20261126-adult-service1';
 import {mountStation, prepareProgram} from './load-station.mjs?v=20261125-lazy-station1';
-import {enhanceGuestGate} from './entry-design.mjs?v=20261122-org-display-only1';
+import {enhanceGuestGate} from './entry-design.mjs?v=20261126-guest-example1';
 import {prepareLocation} from './location.mjs?v=20261125-location-permission1';
 import {themeFor, interests} from './questions.mjs?v=20261120-question-copy1';
 import {maskedTextLength,textInputMaxLength} from '../../shared/content/text-length.mjs';

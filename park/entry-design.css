@@ -146,8 +146,8 @@
   justify-content: center;
   gap: 22px;
   min-width: 0;
-  min-height: 50px;
-  padding: 12px 20px;
+  min-height: 44px;
+  padding: 8px 16px;
   border: 1px solid var(--line);
   border-radius: 12px;
   font: 700 14px/1.5 var(--font-b);
@@ -155,10 +155,9 @@
   transition: background .15s, border-color .15s;
 }
 .park-entry-actions > .park-entry-signup {
-  flex: 1.25;
-  border-color: var(--accent);
-  background: var(--accent);
-  color: var(--on-accent);
+  flex: 1;
+  background: var(--surface);
+  color: var(--ink);
 }
 .park-entry-actions > .park-entry-login {
   flex: 1;
@@ -166,26 +165,26 @@
   color: var(--ink);
 }
 .park-entry-signup > span { font-size: 18px; font-weight: 400; }
-.park-entry-actions > .park-entry-signup:hover { border-color: var(--accent-hover); background: var(--accent-hover); }
-.park-entry-actions > .park-entry-login:hover { border-color: var(--accent); background: var(--accent-soft); }
+.park-entry-actions > a:hover { border-color: var(--accent); background: var(--accent-soft); }
 .park-entry-browse {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  min-height: 40px;
-  padding: 8px 4px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--ink-2);
-  font: 500 12px/1.5 var(--font-b);
+  min-height: 48px;
+  padding: 10px 22px;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font: 700 14px/1.5 var(--font-b);
   cursor: pointer;
 }
-.park-entry-browse > span { color: var(--accent-ink); font-size: 17px; }
-.park-entry-browse:hover { color: var(--accent-ink); }
+.park-entry-browse > span { font-size: 17px; }
+.park-entry-browse:hover { border-color: var(--accent-hover); background: var(--accent-hover); }
 .park-guest-entry :is(a, button):focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 4px; }
-.park-feed #feed-list { scroll-margin-top: 18px; }
+.park-feed :is(#feed-list, #park-feed-sort) { scroll-margin-top: 18px; }
+#park-feed-sort:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 4px; }
 @container park-grid (max-width: 320px) {
   .park-entry-main { min-height: 292px; padding: 25px 20px 26px; }
   .park-entry-title { font-size: 30px; }

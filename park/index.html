@@ -10,8 +10,8 @@
   } catch {}
   </script>
   <script src="/config.js?v=20261111-shared-member-auth1" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2" defer></script>
-  <script src="/park/opening.js?v=20261123-park-first-paint1" async></script>
+  <script id="park-database-sdk" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2" defer></script>
+  <script src="/park/opening.js?v=20261126-park-early-sdk1" async></script>
 <script src="/shared/location/location.js?v=20261125-location-permission1" defer></script>
   <script src="/park/route.js?v=20261123-independent-park1"></script>
   <script src="/shared/auth/invite-referral.js?v=20261119-invite-referral1" defer></script>
@@ -68,7 +68,7 @@
 <link rel="stylesheet" href="/note/composer-tools.css?v=20261120-video1" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="/park/card-grid.css?v=20261124-park-450">
 <link rel="stylesheet" href="/app/world/world-themes.css?v=20261119-auto-theme1">
-<link rel="stylesheet" href="/park/entry-design.css?v=20261119-park-entry1">
+<link rel="stylesheet" href="/park/entry-design.css?v=20261126-park-browse1">
 <script src="/app/world/world-themes.js?v=20261119-auto-theme1" defer></script>
 <script src="/app/world/world-weather.js?v=20261119-kma-current1" defer></script>
 <meta property="og:type" content="website">
@@ -186,16 +186,16 @@
               </div>
             </div>
             <div class="park-entry-footer">
+              <button id="park-entry-browse" class="park-entry-browse" type="button" aria-controls="park-feed-sort">카드 둘러보기<span aria-hidden="true">↓</span></button>
               <div class="park-entry-actions">
                 <a class="park-entry-signup" href="/?auth=signup&amp;next=note" target="_top">회원가입<span aria-hidden="true">↗</span></a>
                 <a class="park-entry-login" href="/?auth=login&amp;next=note" target="_top">로그인</a>
               </div>
-              <button id="park-entry-browse" class="park-entry-browse" type="button" aria-controls="feed-list">카드 둘러보기<span aria-hidden="true">↓</span></button>
             </div>
           </section>
           <div class="feed-layout">
             <div class="feed-column">
-              <div class="feed-sort-tabs tabs" role="group" aria-label="카드 정렬"></div>
+              <div id="park-feed-sort" class="feed-sort-tabs tabs" role="group" aria-label="카드 정렬" tabindex="-1"></div>
           <a class="back-link" href="/park/even-g2.html" target="_top">G2 안경으로 보기</a>
               <div class="feed-list park-photo-cards" id="feed-list" aria-live="polite"><p class="park-feed-loading-status" role="status">🌷 쭈가 오늘의 카드를 모으는 중…</p>
                 <div class="park-skeleton-card" aria-hidden="true"><div class="park-skeleton-photo"><span class="park-skeleton-quote"></span><span class="park-skeleton-quote short"></span></div><div class="park-skeleton-meta"><span></span><span></span></div></div>
@@ -313,7 +313,7 @@
   <script src="/features/friends/friend-messages.js?v=20261125-local-settings1" defer></script>
   <script src="/park/account-settings.js?v=20261125-local-settings1" defer></script>
   <script src="/park/friends.js?v=20261125-local-settings1" defer></script>
-  <script src="/park/integration.js?v=20261125-rokid1" defer></script>
+  <script src="/park/integration.js?v=20261126-park-browse1" defer></script>
   <!-- The brush renderer is optional for the first cards and initializes after Park is usable. -->
   <script src="/note/calligraphy-motifs.js?v=20261117-park-phrase1" defer></script>
   <script src="/note/calligraphy.js?v=20261125-card-contrast1" defer></script>

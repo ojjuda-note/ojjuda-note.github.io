@@ -118,7 +118,7 @@ function installAccountFixture() {
 
 const spaces = [
   { id: 'agit', url: '/world.html?tab=hub', selector: '.agit-guest-hero', title: '우리의 아지트', next: 'world',
-    login: '.agit-entry-secondary', signup: '.agit-entry-primary' },
+    login: '.agit-entry-account a[href*="auth=login"]', signup: '.agit-entry-account a[href*="auth=signup"]' },
   { id: 'park', url: '/park/', selector: '#park-guest-entry', title: '공원', next: 'note',
     login: '#park-guest-entry a[href*="auth=login"]', signup: '#park-guest-entry a[href*="auth=signup"]' },
   { id: 'pajang', url: '/features/pajang/', selector: '#gate > .pajang-invitation', title: '오늘의 한마디.', next: 'pajang',
@@ -248,6 +248,12 @@ async function openSpace(page, space) {
         if (space.id === 'agit') await page.waitForFunction(() => {
           const image = document.querySelector('.agit-guest-hero img'); return image?.complete && image.naturalWidth > 0;
         });
+        if (space.id === 'agit') {
+          const choices = gate.locator('.agit-entry-services');
+          assert.equal(await choices.getByRole('button', { name: '오락실 둘러보기' }).getAttribute('data-tab'), 'arcade');
+          assert.equal(await choices.getByRole('link', { name: '공원' }).getAttribute('href'), '/park/');
+          assert.equal(await choices.getByRole('link', { name: '파장' }).getAttribute('href'), '/pajang/');
+        }
         if (space.id === 'park') await surface.locator('#feed-list article').first().waitFor();
         if (space.id === 'pajang') assert.equal(await page.locator('#welcome').isVisible(), false);
         await settled(surface);
@@ -326,8 +332,15 @@ async function openSpace(page, space) {
     const parkFrame = await openSpace(page, spaces[1]);
     await parkFrame.locator('#feed-list article').first().waitFor();
     const feedBefore = await parkFrame.locator('#feed-list').evaluate(node => node.getBoundingClientRect().top);
-    await parkFrame.locator('#park-entry-browse').click();
+    const browse = parkFrame.getByRole('button', { name: '카드 둘러보기' });
+    assert.equal(await parkFrame.locator('.park-entry-footer').locator('button, a').first().getAttribute('id'), 'park-entry-browse');
+    assert.ok((await browse.boundingBox()).height >= 48, 'the primary browse action is comfortably tappable');
+    await browse.press('Enter');
     await parkFrame.waitForFunction(before => document.getElementById('feed-list').getBoundingClientRect().top < before - 30, feedBefore);
+    const filters = parkFrame.getByRole('group', { name: '카드 정렬' });
+    assert.equal(await filters.evaluate(node => document.activeElement === node), true, 'keyboard users arrive at card filters');
+    await parkFrame.keyboard.press('Tab');
+    assert.equal(await filters.evaluate(node => node.contains(document.activeElement)), true, 'Tab reaches the first card filter');
     await parkFrame.evaluate(() => entryFixture.setMember(true));
     await parkFrame.locator('#park-guest-entry').waitFor({ state: 'hidden' });
     await parkFrame.evaluate(() => entryFixture.setMember(false));
