@@ -2,10 +2,12 @@ name: Package Park for Even G2
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: ['build/park-g2-voice-1.1.0']
     paths:
       - 'note/even-app/**'
       - 'note/glasses*'
+      - 'tests/park-g2-voice.test.mjs'
+      - 'supabase/functions/park-g2-voice/**'
       - 'note/rokid-agent/lib/speed.js'
       - 'tests/park-glasses-speed.test.cjs'
       - 'note/vendor/package*.json'
@@ -14,7 +16,7 @@ on:
       - 'scripts/build-park-even-app.mjs'
       - '.github/workflows/park-even-g2.yml'
 permissions:
-  contents: read
+  contents: write
 jobs:
   package:
     runs-on: ubuntu-latest
@@ -22,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          persist-credentials: false
+          persist-credentials: true
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
@@ -34,7 +36,7 @@ jobs:
           tools="$RUNNER_TEMP/even-tools"
           npm install --prefix "$tools" --no-audit --no-fund --save-exact @evenrealities/evenhub-cli@0.2.0 @supabase/supabase-js@2.117.2
           node scripts/build-park-even-app.mjs "$RUNNER_TEMP/even-dist" "$tools"
-          node --test tests/park-even-g2.test.cjs tests/park-glasses-speed.test.cjs
+          node --test tests/park-even-g2.test.cjs tests/park-glasses-speed.test.cjs tests/park-g2-voice.test.mjs
           # Use a real file origin, as on a phone. The SDK must load before any native bridge exists.
           google-chrome --headless --disable-gpu --no-sandbox --disable-dev-shm-usage \
             --host-resolver-rules="MAP * ~NOTFOUND" --virtual-time-budget=14000 --dump-dom \
@@ -51,3 +53,16 @@ jobs:
           path: ${{ runner.temp }}/ojjuda-park.ehpk
           compression-level: 0
           if-no-files-found: error
+
+      - name: Stage the verified beta installer and synchronized Park version
+        run: |
+          set -euo pipefail
+          node scripts/sync-section-versions.mjs
+          mkdir -p park-even-install
+          cp "$RUNNER_TEMP/ojjuda-park.ehpk" park-even-install/
+          (cd park-even-install && sha256sum ojjuda-park.ehpk > SHA256SUMS)
+          git add -- world.html park-even-install
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Stage tested Park G2 1.1.0 package and version'
+          git push origin HEAD:build/park-g2-voice-1.1.0
