@@ -2,11 +2,12 @@
   "package_id": "kr.ojjuda.park",
   "edition": "202601",
   "name": "오쭈다 공원",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "min_sdk_version": "0.0.16",
   "entrypoint": "index.html",
   "supported_languages": ["ko"],
   "permissions": [
+    {"name":"g2-microphone","desc":"질문할 때만 G2 마이크를 켜고 음성을 OpenAI로 보내 글로 답을 받습니다."},
     {"name":"location","desc":"현재 위치의 날씨와 가까운 공원 카드를 표시합니다."},
     {
       "name": "network",

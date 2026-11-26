@@ -6,6 +6,8 @@ on:
     paths:
       - 'note/even-app/**'
       - 'note/glasses*'
+      - 'tests/park-g2-voice.test.mjs'
+      - 'supabase/functions/park-g2-voice/**'
       - 'note/rokid-agent/lib/speed.js'
       - 'tests/park-glasses-speed.test.cjs'
       - 'note/vendor/package*.json'
@@ -34,7 +36,7 @@ jobs:
           tools="$RUNNER_TEMP/even-tools"
           npm install --prefix "$tools" --no-audit --no-fund --save-exact @evenrealities/evenhub-cli@0.2.0 @supabase/supabase-js@2.117.2
           node scripts/build-park-even-app.mjs "$RUNNER_TEMP/even-dist" "$tools"
-          node --test tests/park-even-g2.test.cjs tests/park-glasses-speed.test.cjs
+          node --test tests/park-even-g2.test.cjs tests/park-glasses-speed.test.cjs tests/park-g2-voice.test.mjs
           # Use a real file origin, as on a phone. The SDK must load before any native bridge exists.
           google-chrome --headless --disable-gpu --no-sandbox --disable-dev-shm-usage \
             --host-resolver-rules="MAP * ~NOTFOUND" --virtual-time-budget=14000 --dump-dom \

@@ -45,7 +45,8 @@ async function setup({granted=false,user='member',installed=false,guestFix,nativ
     fetch:weather || (async()=>({ok:true,json:async()=>({source:'kma',temperature:-2,label:'눈',expiresAt:clock+40000})}))};
   const {createSpeedMeter} = await import('../note/rokid-agent/lib/speed.js');
   ctx.createSpeedMeter = createSpeedMeter;
-  vm.runInNewContext(readFileSync(path.join(root,'note/glasses.js'),'utf8').replace(/^import .*?;\r?\n/,''),ctx);
+  ctx.createG2Voice = (await import('../note/glasses-voice.mjs')).createG2Voice;
+  vm.runInNewContext(readFileSync(path.join(root,'note/glasses.js'),'utf8').replace(/^import .*?;\r?\n/gm,''),ctx);
   await delay(20);
   return {window,document,perm,get,calls,hud:window.OJJUDA_GLASS_PREVIEW,
     revoke:()=>pref({enabled:false}),signOut:()=>auth('SIGNED_OUT',null),advance:ms=>{clock+=ms;tick();}};
