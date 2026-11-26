@@ -75,23 +75,23 @@ world=world.slice(0,boot)+`
   }
   if(width<900){
    const buttons=await page.locator('.bottomnav>button').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return{id:n.dataset.tab,label:n.querySelector(':scope>span').textContent,x:r.x,width:r.width,height:r.height};}));
-   assert.deepEqual(buttons.map(({id,label})=>({id,label})),[{id:'hub',label:'아지트'},{id:'arcade',label:'오락실'},{id:'my',label:'설정'}],'the main menu has exactly its three current destinations');
+   assert.deepEqual(buttons.map(({id,label})=>({id,label})),[{id:'hub',label:'아지트'},{id:'group',label:'그룹'},{id:'arcade',label:'오락실'},{id:'my',label:'설정'}],'the main menu has its four current destinations');
    assert.ok(buttons.every(b=>b.width>=44&&b.height>=44),'every mobile menu has a reachable touch area');
    assert.ok(Math.max(...buttons.map(b=>b.width))-Math.min(...buttons.map(b=>b.width))<1,'mobile menus have equal widths');
-   assert.ok(buttons[0].x<width/4&&buttons.at(-1).x>width/2&&buttons.at(-1).x+buttons.at(-1).width<=width+1,'all three mobile menus span the bottom bar without overflow');
+   assert.ok(buttons[0].x<width/4&&buttons.at(-1).x>width/2&&buttons.at(-1).x+buttons.at(-1).width<=width+1,'all four mobile menus span the bottom bar without overflow');
   }
  }
  await page.setViewportSize({width:390,height:850});await page.evaluate(()=>{document.documentElement.dataset.worldTheme='autumn';designFixture.rank();});await page.screenshot({path:path.join(proof,'arcade-mobile.png'),fullPage:true});
  await page.locator('.bottomnav [data-tab=hub]').click();
  assert.equal(await page.evaluate(()=>designFixture.state.tab),'hub');
  assert.equal(await page.locator('.bottomnav [aria-current=page]').getAttribute('data-tab'),'hub','the Agit click selects its own destination');
- assert.deepEqual(await page.locator('[data-act=agit-daily]').evaluateAll(buttons=>buttons.map(button=>({id:button.dataset.v,images:button.querySelectorAll('img').length}))),[{id:'group',images:1},{id:'restaurants',images:1},{id:'festival',images:1}],'Hub preserves the current daily card order and covers');
+ assert.deepEqual(await page.locator('[data-act=agit-daily]').evaluateAll(buttons=>buttons.map(button=>({id:button.dataset.v,images:button.querySelectorAll('img').length}))),[{id:'restaurants',images:1},{id:'festival',images:1}],'Hub preserves the current daily card order and covers');
  assert.equal(await page.locator('#agit-daily h2').innerText(),'일상 둘러보기');
- assert.equal(await page.locator('#agit-daily a[href="/features/fanpages/index.html"]').count(),1,'Fanpage is visible as the second daily tile');
- assert.deepEqual(await page.locator('[data-act=agit-daily][aria-label*="회원 전용"]').evaluateAll(buttons=>buttons.map(button=>button.dataset.v)),['group'],'only Group requires membership in the current daily tools');
+ assert.equal(await page.locator('#agit-daily a[href="/features/fanpages/index.html"]').count(),1,'Fanpage is visible in the daily tools');
+ assert.deepEqual(await page.locator('[data-act=agit-daily][aria-label*="회원 전용"]').evaluateAll(buttons=>buttons.map(button=>button.dataset.v)),[],'the remaining daily tools open to guests');
  const dailyCovers=page.locator('#agit-daily img, .agit-reading-grid img');
  assert.deepEqual(await dailyCovers.evaluateAll(images=>images.map(image=>image.getAttribute('src'))),
-  ['group','fanpages','restaurants','festival','biorhythm','tarot','saju'].map(id=>'/features/home/daily-'+id+'.webp'));
+  ['fanpages','restaurants','festival','biorhythm','tarot','saju'].map(id=>'/features/home/daily-'+id+'.webp'));
  const readings=page.locator('.agit-reading-grid > a');
  assert.deepEqual(await readings.locator('strong').allTextContents(),['바이오리듬','타로','사주']);
  for(const width of [320,768,390]){
