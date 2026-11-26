@@ -132,24 +132,19 @@
     }
     const apps = group('앱 다운로드');
     apps.classList.add('app-store-downloads');
-    const agitLink = link(apps, 'app-agit', '오쭈다 아지트', 'https://play.google.com/store/apps/details?id=kr.ojjuda.agit&hl=ko', true);
+    const agitLink = link(apps, 'app-agit', '오쭈다 아지트 테스트 참여', 'https://play.google.com/apps/testing/kr.ojjuda.agit', true);
     agitLink.dataset.storeApp = 'agit';
     agitLink.rel = 'noopener noreferrer';
-    agitLink.setAttribute('aria-label', '오쭈다 아지트 Google Play에서 보기 (새 창)');
+    agitLink.setAttribute('aria-label', '오쭈다 아지트 비공개 테스트 참여 (새 창)');
     
     for (const [app, name] of [['pajang', '오쭈다 파장'], ['park', '오쭈다 공원']]) {
-      const storeLink = link(apps, `app-${app}`, name, `https://play.google.com/store/apps/details?id=kr.ojjuda.${app}`, true);
+      const storeLink = link(apps, `app-${app}`, `${name} 테스트 참여`, `https://play.google.com/apps/testing/kr.ojjuda.${app}`, true);
       storeLink.dataset.storeApp = app;
       storeLink.rel = 'noopener noreferrer';
-      storeLink.setAttribute('aria-label', `${name} Google Play에서 보기 (새 창)`);
+      storeLink.setAttribute('aria-label', `${name} 비공개 테스트 참여 (새 창)`);
     }
     const appStoreNote = node('p', 'app-store-note');
-    appStoreNote.append(document.createTextNode('앱 이름을 누르면 Google Play 페이지가 열립니다. 아지트 비공개 테스트 참여가 필요하면 '));
-    const agitTesterLink = node('a', '', '먼저 참여');
-    agitTesterLink.href = 'https://play.google.com/apps/testing/kr.ojjuda.agit';
-    agitTesterLink.target = '_blank';
-    agitTesterLink.rel = 'noopener noreferrer';
-    appStoreNote.append(agitTesterLink, document.createTextNode('한 뒤 설치하세요.'));
+    appStoreNote.append(document.createTextNode('앱 이름을 누르면 해당 앱의 비공개 테스트 참여 페이지가 열립니다. 참여를 완료한 뒤 Google Play에서 설치할 수 있습니다.'));
     apps.parentElement.append(appStoreNote);
     const preferences = group('이용 설정');
     if (owner) {
