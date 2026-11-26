@@ -132,6 +132,8 @@ export async function attachEvenG2(hud) {
   redraw();
   return {startLocation,stopLocation,microphone:on=>bridge.audioControl(on),
     loadVoiceToken:()=>bridge.getLocalStorage('park-g2-voice-v1'),
+    loadLinkRequest:()=>bridge.getLocalStorage('park-g2-link-request-v1'),
+    saveLinkRequest:value=>bridge.setLocalStorage('park-g2-link-request-v1',value),
     saveVoiceToken:value=>bridge.setLocalStorage('park-g2-voice-v1',value),
     dispose() {
     alive=false;
