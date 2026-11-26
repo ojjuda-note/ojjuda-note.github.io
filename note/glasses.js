@@ -1,4 +1,4 @@
-import {createG2Voice} from './glasses-voice.mjs?v=20261126-voice1';
+import {createG2Voice,readVoiceReply} from './glasses-voice.mjs?v=20261126-transcript1';
 import {createG2Link} from './glasses-link.mjs?v=20261126-easylink1';
 import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
 
@@ -20,15 +20,14 @@ import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
   let source = 'recent', feedRequest;
   let paused = false;
   let pairRun=0, codeTimer, voiceDeviceGeneration=0;
-  async function voiceRequest(payload,token,signal) {
+  async function voiceRequest(payload,token,signal,onQuestion) {
     if (!config?.supabaseKey) throw Error('unavailable');
     const headers={'Content-Type':'application/json',apikey:config.supabaseKey};
     if(token) headers['x-park-device']=token;
+    if(onQuestion) headers.Accept='application/x-ndjson';
     const res=await fetch(config.supabaseUrl+'/functions/v1/park-g2-voice',{method:'POST',headers,
       credentials:'omit',body:JSON.stringify(payload),signal});
-    const data=await res.json();
-    if(!res.ok) throw Error(data.error || 'unavailable');
-    return data;
+    return readVoiceReply(res,onQuestion);
   }
   const voice=createG2Voice({microphone:on=>hardware?.microphone(on),request:voiceRequest,changed:render,
     forgetToken:()=>{void hardware?.saveVoiceToken('').catch(()=>{});}});
@@ -90,7 +89,10 @@ import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
     const view = model();
     const panel=byId('glass-ai');
     panel.hidden=!view.voice || view.expanded || paused;
-    byId('glass-ai-answer').textContent=voice.message;
+    const conversation=voice.question?'내 질문 · '+voice.question+'\nGPT · '+voice.message:voice.message;
+    const answer=byId('glass-ai-answer');
+    if(answer.textContent!==conversation) answer.textContent=conversation;
+    byId('glass-ai-heading').hidden=!!voice.question;
     const ask=byId('glass-ai-ask');
     ask.hidden=!hardware || !voice.paired; ask.disabled=voice.phase==='sending';
     ask.textContent=['starting','listening'].includes(voice.phase)?'질문 보내기':'GPT에 묻기';

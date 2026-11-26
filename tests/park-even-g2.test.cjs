@@ -46,6 +46,7 @@ async function setup({granted=false,user='member',installed=false,guestFix,nativ
   const {createSpeedMeter} = await import('../note/rokid-agent/lib/speed.js');
   ctx.createSpeedMeter = createSpeedMeter;
   ctx.createG2Voice = (await import('../note/glasses-voice.mjs')).createG2Voice;
+  ctx.readVoiceReply = (await import('../note/glasses-voice.mjs')).readVoiceReply;
   ctx.createG2Link = (await import('../note/glasses-link.mjs')).createG2Link;
   vm.runInNewContext(readFileSync(path.join(root,'note/glasses.js'),'utf8').replace(/^import .*?;\r?\n/gm,''),ctx);
   await delay(20);
