@@ -638,7 +638,7 @@ async function checkNavigation(page){
   const hash=crypto.createHash('sha256').update(bundle).digest('hex');
   const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||undefined});
   try {
-    const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,locale:'ko-KR',geolocation:{latitude:37.5665,longitude:126.978,accuracy:30},permissions:['geolocation']});
+    const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,locale:'ko-KR',geolocation:{latitude:37.5665,longitude:126.978,accuracy:30},permissions:['geolocation','accelerometer','gyroscope','magnetometer']});
     const page=await context.newPage(), errors=[];
     await page.route('https://cdn.jsdelivr.net/**',route=>route.fulfill({contentType:'text/javascript',body:'/* Auth client is supplied by the config fixture. */'}));
     await page.route('**/functions/v1/theme-weather**',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({kind:null,expiresAt:Date.now()+600000})}));
@@ -1562,6 +1562,8 @@ async function checkNavigation(page){
       const preference=await service.preference(db,'member',{refresh:true});
       await service.setPreference(db,'member',enabled,preference.version);
     },enabled);
+    // Cross-service automatic reads require a current browser grant.
+    await context.grantPermissions(['geolocation'],{origin});
     await setShared(true);
     await page.waitForFunction(()=>document.querySelector('[role=switch]')?.getAttribute('aria-checked')==='true');
     await page.waitForFunction(()=>window.geoWrites.some(write=>write.automatic));
