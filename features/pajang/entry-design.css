@@ -142,6 +142,12 @@
 #gate .pajang-invitation-footer a.ojjuda-guest-account-login {background:var(--surface);color:var(--accent-ink)}
 #gate .pajang-invitation-footer .ojjuda-guest-account-actions>a:focus-visible {outline:3px solid var(--accent-ink);outline-offset:4px}
 #gate .pajang-entry-access {margin:14px 0 0;color:var(--ink-2);font-size:11px;line-height:1.7;text-align:center}
+#gate .pajang-guest-example {margin-top:14px;border:1px solid var(--accent);border-radius:12px;padding:0 12px;text-align:left;color:var(--ink-2)}
+.pajang-guest-example>summary {min-height:44px;display:list-item;align-content:center;cursor:pointer;color:var(--accent-ink);font-weight:650}
+.pajang-guest-example>summary:focus-visible {outline:2px solid var(--accent-ink);outline-offset:2px}
+#gate .pajang-guest-example p {margin:0 0 8px;font-size:.875rem;line-height:1.55}
+.pajang-guest-example .pajang-guest-example-question {font-weight:700}
+.pajang-guest-example-note {display:block;margin-bottom:12px}
 .pajang-public-settings {margin-top:18px;text-align:left}
 #gate .pajang-public-settings a.ojjuda-settings-row {display:flex;color:var(--settings-ink);font-weight:500}
 @media(hover:hover) {

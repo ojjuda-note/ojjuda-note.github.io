@@ -205,7 +205,7 @@
       <div class="agit-entry-top"><span>OJJUDA · AGIT</span><span>${escapeHtml(theme.name)}의 아지트</span></div>
       <div class="agit-entry-story"><h1>취향이 모이는<br><em>우리의 아지트</em></h1><p>그룹에서 모임 소식을 나누고, 오락실에서 함께 한 판 즐겨요.</p></div>
       <figure class="agit-entry-art"><img class="agit-hero-theme-art" src="/features/home/theme-illustrations/${theme.key}.webp?v=20261110-themes3" alt="" width="960" height="640" decoding="async" fetchpriority="high"><figcaption>잠깐의 여유, 함께하는 즐거움.</figcaption></figure>
-      <nav class="agit-entry-actions" aria-label="아지트 계정 시작"><a class="agit-entry-primary" href="/?auth=signup&next=world">회원가입 <span aria-hidden="true">↗</span></a><a class="agit-entry-secondary" href="/?auth=login&next=world">로그인</a></nav>
+      <div class="agit-entry-actions"><nav class="agit-entry-services" aria-label="오쭈다 둘러보기"><button type="button" class="agit-entry-primary" data-act="tab" data-tab="arcade">오락실 둘러보기</button><a class="agit-entry-secondary" href="/park/">공원</a><a class="agit-entry-secondary" href="/pajang/">파장</a></nav><nav class="agit-entry-account" aria-label="아지트 계정"><a href="/?auth=signup&next=world">회원가입</a><a href="/?auth=login&next=world">로그인</a></nav></div>
       <p class="agit-entry-note">그룹을 만들거나 가입하려면 로그인해 주세요.</p>
     </header>`;
   }

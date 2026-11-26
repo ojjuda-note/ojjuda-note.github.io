@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const source=fs.readFileSync(require('node:path').join(__dirname,'../park/opening.js'),'utf8');
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
-function fixture({user='one',card=false,error=false,host=false,started=false,pendingAuth=false}={}){
+function fixture({user='one',card=false,error=false,host=false,started=false,pendingAuth=false,sdkPending=false}={}){
   let finish,onAuth,reads=0,signal,unsubscribed=false;
   const images=[],listeners=new Map(),timers=new Map();let nextTimer=0;
   const db={auth:{getSession:pendingAuth?()=>new Promise(()=>{}):async()=>({data:{session:user?{user:{id:user}}:null}}),
@@ -16,11 +16,25 @@ function fixture({user='one',card=false,error=false,host=false,started=false,pen
     document:{documentElement:{hasAttribute:()=>false}},Image:class{set src(value){images.push(value);}},
     setTimeout:(fn,delay)=>{const id=++nextTimer;timers.set(id,{fn,delay});return id;},
     clearTimeout:id=>timers.delete(id),addEventListener:(name,fn)=>listeners.set(name,fn),removeEventListener:name=>listeners.delete(name)};
+  const docEvents = new Map(), sdkEvents = new Map();
+  if(sdkPending){
+    delete scope.supabase;
+    const events = map => ({
+      addEventListener:(type,fn)=>map.set(type,fn),
+      removeEventListener:(type,fn)=>{if(map.get(type)===fn)map.delete(type);}
+    });
+    Object.assign(scope.document,events(docEvents),{readyState:'loading',getElementById:id=>{
+      assert.equal(id,'park-database-sdk');return events(sdkEvents);
+    }});
+  }
   scope.window=scope;
   if(host){scope.parent={location:new URL('https://fixture.test/world.html'),OjjudaGetClient:async()=>db};delete scope.supabase;delete scope.OJJUDA_CONFIG;}
   if(started)scope.OjjudaParkFeedStarted=true;
   vm.runInNewContext(source,scope);
   return {scope,db,images,get reads(){return reads;},get signal(){return signal;},get unsubscribed(){return unsubscribed;},
+    sdk:(type)=>{if(type==='load')scope.supabase={createClient:()=>db};sdkEvents.get(type)?.();},
+    domReady:()=>docEvents.get('DOMContentLoaded')?.(),
+    get waitingForSdk(){return docEvents.size+sdkEvents.size;},
     fireTimer:delay=>{for(const [id,timer] of [...timers])if(timer.delay===delay){timers.delete(id);timer.fn();}},
     finish:()=>finish(),auth:user=>onAuth('SIGNED_IN',user?{user:{id:user}}:null),leave:()=>listeners.get('pagehide')?.()};
 }
@@ -72,4 +86,21 @@ test('an unfinished warm-up auth lookup never delays the first normal card reque
   assert.equal(f.reads,0);
   assert.equal(await f.scope.OjjudaParkOpening.take('one'),undefined);
   assert.equal(f.scope.OjjudaParkOpening.take,undefined);
+});
+
+test('standalone first cards can load before unrelated deferred tools finish',async()=>{
+  const f=fixture({sdkPending:true});await tick();assert.equal(f.reads,0);
+  f.sdk('load');await tick();
+  assert.equal(f.reads,1,'the SDK load, not DOMContentLoaded, starts the early read');
+  assert.equal(f.waitingForSdk,0);
+  f.domReady();assert.equal(f.reads,1,'DOMContentLoaded cannot start a duplicate read');
+  const pending=f.scope.OjjudaParkOpening.take('one');f.finish();
+  assert.equal((await pending).data[0].body,'fixture');
+});
+for(const event of ['error','leave']) test(`SDK waiting does not retain listeners on ${event}`,async()=>{
+  const f=fixture({sdkPending:true});await tick();assert.equal(f.waitingForSdk,3);
+  if(event==='leave') f.leave(); else f.sdk('error');
+  await tick();
+  assert.equal(f.waitingForSdk,0);
+  f.sdk('load');f.domReady();await tick();assert.equal(f.reads,0);
 });

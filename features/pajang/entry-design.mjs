@@ -63,7 +63,15 @@ export function enhanceGuestGate(){
   helpMenu.body.append(organization);settingsMenu.body.append(helpMenu.menu,serviceBanners);
   if(new URLSearchParams(location.search).get('tab')==='profile')settingsMenu.menu.open=true;
   list.append(settingsMenu.menu);settings.append(list);
-  footer.append(account,message,settings);invitation.append(opening,footer);
+  const example=make('details','pajang-guest-example');
+  example.append(
+    make('summary','','예시 답변 보기'),
+    make('p','pajang-guest-example-question','바쁜 하루 끝에 너를 편하게 해 주는 건 뭐야?'),
+    make('p','pajang-guest-example-answer','보기가 있으면 고르기: 동네 산책'),
+    make('p','pajang-guest-example-answer','직접 쓰기: 동네 한 바퀴 걷고 집에 와서 좋아하는 노래 한 곡을 들어요.'),
+    make('small','pajang-guest-example-note','파장 사용 예시 · 실제 회원 답변이 아니에요.')
+  );
+  footer.append(account,message,example,settings);invitation.append(opening,footer);
   gate.replaceChildren(invitation);
   return true;
 }

@@ -3,10 +3,10 @@
   'use strict';
   if(window.OjjudaParkFeedStarted)return;
   const opening={client:null};
-  let active=true,claimed=false,startedRead=false,owner,subscription,timer;
+  let active=true,claimed=false,startedRead=false,owner,subscription,timer,finishSdkWait;
   const controller=new AbortController();
   const cleanup=()=>{
-    active=false;controller.abort();clearTimeout(timer);subscription?.unsubscribe();
+    active=false;controller.abort();clearTimeout(timer);subscription?.unsubscribe();finishSdkWait?.();
     window.removeEventListener('pagehide',cleanup);
     // Release the closure holding the response, while keeping the shared client.
     delete window.OjjudaParkOpening?.take;
@@ -22,8 +22,22 @@
       }
     }catch{/* Standalone documents use their own authenticated client. */}
     if(!client){
-      if(!window.supabase?.createClient && document.readyState==='loading'){
-        await new Promise(resolve=>document.addEventListener('DOMContentLoaded',resolve,{once:true}));
+      if(!window.supabase?.createClient && document.readyState!=='complete'){
+        // The SDK is only one of many deferred scripts. Start when it finishes,
+        // rather than waiting for DOMContentLoaded and all the display tools.
+        await new Promise(resolve=>{
+          const sdk=document.getElementById('park-database-sdk');
+          finishSdkWait=()=>{
+            sdk?.removeEventListener('load',finishSdkWait);
+            sdk?.removeEventListener('error',finishSdkWait);
+            document.removeEventListener('DOMContentLoaded',finishSdkWait);
+            finishSdkWait=undefined;
+            resolve();
+          };
+          document.addEventListener('DOMContentLoaded',finishSdkWait,{once:true});
+          sdk?.addEventListener('load',finishSdkWait,{once:true});
+          sdk?.addEventListener('error',finishSdkWait,{once:true});
+        });
       }
       const config=window.OJJUDA_CONFIG;
       if(!active||!config?.supabaseUrl||!config?.supabaseKey||!window.supabase?.createClient)return;

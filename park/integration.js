@@ -29,7 +29,10 @@
   }
   document.getElementById('park-entry-browse')?.addEventListener('click', () => {
     if (!guestEntry || guestEntry.hidden || feed.hidden) return;
-    list.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    const target = document.getElementById('park-feed-sort');
+    if (!target || target.hidden) return;
+    target.focus({ preventScroll: true });
+    target.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   });
 
   function canLeave() {

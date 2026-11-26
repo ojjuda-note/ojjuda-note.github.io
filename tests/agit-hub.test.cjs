@@ -358,3 +358,13 @@ test('visit streak continues through yesterday but resets after a missed day',()
   assert.equal(hub.visitStreak(settings,date),3);
   assert.equal(hub.visitStreak(settings,plus(date,2)),0);
 });
+
+test('a guest can discover the Arcade from the main Agit entrance before creating an account',()=>{
+  const guest=hub.markup({}, {}, date, {guest:true});
+  assert.match(guest,/<nav class="agit-entry-services" aria-label="오쭈다 둘러보기"><button type="button" class="agit-entry-primary" data-act="tab" data-tab="arcade">오락실 둘러보기<\/button>/);
+  assert.match(guest,/href="\/park\/">공원/);
+  assert.match(guest,/href="\/pajang\/">파장/);
+  assert.match(guest,/href="\/\?auth=signup&next=world">회원가입/);
+  assert.match(guest,/href="\/\?auth=login&next=world">로그인/);
+  assert.doesNotMatch(hub.markup({}, {}, date),/class="agit-entry-primary"/,'keep the member entrance unchanged');
+});
