@@ -24,7 +24,7 @@
 <meta name="twitter:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
   <link rel="icon" href="/favicon.svg?v=20261022-agit-logo2" type="image/svg+xml">
-  <link rel="stylesheet" href="/note/glasses.css?v=20261126-voice1">
+  <link rel="stylesheet" href="/note/glasses.css?v=20261126-easylink1">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261022-agit-logo2">
 <script src="/shared/navigation/section-back.js?v=20261123-independent-park1" data-return-to="park" defer></script></head>
 <body>
@@ -52,12 +52,15 @@
       <button type="button" id="glass-sample">예시 보기</button>
       <button type="button" id="glass-retry" hidden>카드 다시 불러오기</button>
     </div>
-    <div class="ai-link" id="glass-ai-pair" hidden>
+    <div class="g2-link-controls" id="glass-ai-pair" hidden>
+      <a id="glass-ai-connect" class="g2-connect" target="_blank" rel="noopener noreferrer" hidden>공원 계정으로 연결</a>
+      <span id="glass-ai-link-status" role="status"></span>
+      <details><summary>코드로 연결</summary><div class="ai-link">
       <label for="glass-ai-input">공원에서 받은 G2 연결 코드</label>
       <a href="https://ojjuda.kr/park/glasses.html" target="_blank" rel="noopener">공원에서 코드 받기</a>
       <input id="glass-ai-input" type="text" maxlength="18" autocapitalize="characters" autocomplete="off" spellcheck="false">
       <button type="button" id="glass-ai-link">연결</button>
-      <span id="glass-ai-link-status" role="status"></span>
+      </div></details>
     </div>
     <div class="controls"><button type="button" id="glass-ai-code-button" hidden>G2 연결 코드 받기</button>
       <button type="button" id="glass-ai-unpair" hidden>GPT 연결 해제</button><output id="glass-ai-code"></output></div>
@@ -72,6 +75,6 @@
   </main>
   <script src="/config.js?v=20261111-shared-member-auth1"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
-  <script type="module" src="/note/glasses.js?v=20261126-voice1"></script>
+  <script type="module" src="/note/glasses.js?v=20261126-easylink1"></script>
 </body>
 </html>

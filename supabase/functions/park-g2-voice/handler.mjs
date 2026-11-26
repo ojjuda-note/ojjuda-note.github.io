@@ -30,11 +30,17 @@ export function makeHandler({rpc,openaiKey,send}) {
   return async req => {
     if(req.method==='OPTIONS') return new Response(null,{status:204,headers:cors});
     if(req.method!=='POST') return json(405,{error:'method'});
-    if(!openaiKey) return json(503,{error:'setup'});
     let body;
     try { body=await readBody(req); } catch { return json(400,{error:'input'}); }
     if(!body || typeof body!=='object') return json(400,{error:'input'});
     try {
+      if(body.action==='complete-link') {
+        const proof=req.headers.get('x-park-device');
+        if(!/^[a-f0-9]{64}$/.test(proof || '') || !Number.isSafeInteger(body.until)) return json(400,{error:'input'});
+        const linked=await rpc('park_g2_voice_complete',{p_proof:proof,p_until:body.until});
+        return json(200,{linked:linked===true});
+      }
+      if(!openaiKey) return json(503,{error:'setup'});
       if(body.action==='pair') {
         if(typeof body.code!=='string' || !/^[A-F0-9]{12}$/.test(body.code)) return json(400,{error:'code'});
         const token=await rpc('park_g2_voice_redeem',{p_code:body.code});

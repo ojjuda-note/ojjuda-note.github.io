@@ -36,4 +36,8 @@ details { max-width: 22rem; margin: 1rem auto; text-align: center; } details img
 .ai-link input { max-width:12rem; font:inherit; text-transform:uppercase; }
 .ai-link a { color:inherit; }
 #glass-ai-code { font-variant-numeric:tabular-nums; }
+.g2-link-controls {display:grid;justify-items:center;gap:.6rem;text-align:center;margin:1rem auto}
+.g2-link-controls .g2-connect {display:inline-flex;align-items:center;min-height:44px;padding:.55rem 1.1rem;border-radius:.7rem;background:#b9f9bc;color:#102318;text-decoration:none;font-weight:650}
+.g2-link-controls summary {border:0;background:transparent;padding:.45rem}
+.g2-link-controls [role=status]:empty {display:none}
 .controls:has(#glass-ai-code:empty):has(#glass-ai-code-button[hidden]):has(#glass-ai-unpair[hidden]) { margin:0; }
