@@ -1,4 +1,5 @@
-import {createG2Voice} from './glasses-voice.mjs?v=20261126-voice1';
+import {createG2Voice,readVoiceReply} from './glasses-voice.mjs?v=20261126-live1';
+import {openLiveTurn} from './glasses-live.mjs?v=20261126-live1';
 import {createG2Link} from './glasses-link.mjs?v=20261126-easylink1';
 import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
 
@@ -20,17 +21,18 @@ import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
   let source = 'recent', feedRequest;
   let paused = false;
   let pairRun=0, codeTimer, voiceDeviceGeneration=0;
-  async function voiceRequest(payload,token,signal) {
+  async function voiceRequest(payload,token,signal,onQuestion) {
     if (!config?.supabaseKey) throw Error('unavailable');
     const headers={'Content-Type':'application/json',apikey:config.supabaseKey};
     if(token) headers['x-park-device']=token;
+    if(onQuestion) headers.Accept='application/x-ndjson';
     const res=await fetch(config.supabaseUrl+'/functions/v1/park-g2-voice',{method:'POST',headers,
       credentials:'omit',body:JSON.stringify(payload),signal});
-    const data=await res.json();
-    if(!res.ok) throw Error(data.error || 'unavailable');
-    return data;
+    return readVoiceReply(res,onQuestion);
   }
-  const voice=createG2Voice({microphone:on=>hardware?.microphone(on),request:voiceRequest,changed:render,
+  let holding=false;
+  const voice=createG2Voice({microphone:on=>hardware?.microphone(on),changed:render,
+    openTurn:options=>openLiveTurn({...options,url:config.supabaseUrl.replace(/^https:/,'wss:')+'/functions/v1/park-g2-voice'}),
     forgetToken:()=>{void hardware?.saveVoiceToken('').catch(()=>{});}});
   let tokenReady=false;
   const easyLink=createG2Link({
@@ -41,11 +43,11 @@ import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
       if(await hardware.saveVoiceToken(proof)===false) throw Error('storage');
       voice.setToken(proof);
       byId('glass-ai-link-status').textContent='';
-      byId('g2-status').textContent='GPT 연결 완료 · 안경 터치패드를 길게 눌러 질문하세요.';
+      byId('g2-status').textContent='GPT 연결 완료 · 터치패드를 길게 눌러 ‘듣는 중’이 뜨면 말하세요.';
       render();
     },change:render
   });
-  function cancelVoice(){voice.reset();}
+  function cancelVoice(){holding=false;voice.reset();}
   function startVoice(){
     if(paused || document.hidden || !hardware) return;
     if(thread) closeThread();
@@ -84,13 +86,21 @@ import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
     }
     return {time:clock.format(now), battery, charging, speed:tracking?.meter.read(now) ?? null,
       weather:weather && weather.expiresAt>now ? weather.text : weatherHint,
-      voice:voice.screen(), cards, card:cards[0] || null, expanded:!!reader, reader, sample, paused};
+      voice:holding?'GPT\n계속 누르면 듣기 시작해요':voice.screen(), cards, card:cards[0] || null, expanded:!!reader, reader, sample, paused};
   }
   function render() {
     const view = model();
     const panel=byId('glass-ai');
     panel.hidden=!view.voice || view.expanded || paused;
-    byId('glass-ai-answer').textContent=voice.message;
+    const listening=voice.phase==='listening';
+    const conversation=holding?'계속 누르면 듣기 시작해요':voice.question?
+      '내 질문 · '+voice.question+(listening?'':'\nGPT · '+voice.message):voice.message;
+    const answer=byId('glass-ai-answer');
+    if(answer.textContent!==conversation) {
+      answer.textContent=conversation;
+      answer.scrollTop=listening?answer.scrollHeight:0;
+    }
+    byId('glass-ai-heading').hidden=!!voice.question;
     const ask=byId('glass-ai-ask');
     ask.hidden=!hardware || !voice.paired; ask.disabled=voice.phase==='sending';
     ask.textContent=['starting','listening'].includes(voice.phase)?'질문 보내기':'GPT에 묻기';
@@ -490,7 +500,8 @@ import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
     await hardware?.saveVoiceToken('').catch(()=>{});await easyLink.clear();render();
   };
   window.OJJUDA_GLASS_PREVIEW = Object.freeze({setBattery,setCards,move,select,getView:model,
-    startVoice,finishVoice:voice.finish,toggleVoice,voiceAudio:voice.audio,cancelVoice,
+    startVoice,toggleVoice,voiceAudio:voice.audio,cancelVoice,
+    holdVoice:on=>{holding=on && !paused && !document.hidden && !['starting','listening','sending'].includes(voice.phase);render();},
     glassesMove:d=>voice.scroll(d)||move(d),glassesSelect:()=>{
       if(['starting','listening'].includes(voice.phase)) return voice.finish();
       if(voice.phase!=='sending' && !voice.dismiss()) select();
@@ -536,7 +547,7 @@ import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
     message.textContent = 'G2 연결을 기다리는 중…';
     let stage = 'SDK';
     try {
-      const sdk = await import('/park/even-g2.bundle.mjs?v=20261126-easylink1');
+      const sdk = await import('/park/even-g2.bundle.mjs?v=20261126-live1');
       if (typeof sdk?.attachEvenG2 !== 'function') throw Error('SDK');
       stage = 'BRIDGE';
       hardware = await sdk.attachEvenG2(window.OJJUDA_GLASS_PREVIEW);

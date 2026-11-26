@@ -33,7 +33,7 @@
     <section class="hud" id="glass-view" aria-label="G2 화면 미리보기">
       <time id="glass-clock" class="clock">--:--</time>
       <span id="glass-battery" class="battery" aria-label="안경 배터리">—%</span>
-      <button type="button" class="ai-answer" id="glass-ai" hidden aria-label="GPT 답변 닫기"><small>GPT</small><span id="glass-ai-answer" aria-live="polite"></span></button>
+      <button type="button" class="ai-answer" id="glass-ai" hidden aria-label="질문과 GPT 답변 닫기"><small id="glass-ai-heading">GPT</small><span id="glass-ai-answer" aria-live="polite"></span></button>
       <div class="messages">
         <button id="glass-first" disabled aria-label="선택된 공원 카드 열기"><span class="message-body"><span id="glass-selected" aria-hidden="true" hidden>▶ </span><span id="glass-first-body"></span></span><span id="glass-first-distance" class="message-distance"></span></button>
         <button id="glass-second" disabled aria-label="두 번째 공원 카드 열기"><span id="glass-second-body" class="message-body"></span><span id="glass-second-distance" class="message-distance"></span></button>
@@ -75,6 +75,6 @@
   </main>
   <script src="/config.js?v=20261111-shared-member-auth1"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
-  <script type="module" src="/note/glasses.js?v=20261126-easylink1"></script>
+  <script type="module" src="/note/glasses.js?v=20261126-live1"></script>
 </body>
 </html>

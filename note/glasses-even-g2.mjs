@@ -91,22 +91,43 @@ export async function attachEvenG2(hud) {
   }
   const redraw = () => { void paint(); };
   window.addEventListener('ojjuda:glasses-view',redraw);
-  let releasedAt=-Infinity;
+  let releasedAt=-Infinity,holdAt=null,holdTimer;
+  function clearHold(){
+    clearTimeout(holdTimer);
+    if(holdAt!==null){holdAt=null;hud.holdVoice?.(false);}
+  }
+  function activateHold(){
+    if(holdAt===null)return;
+    clearHold();void hud.startVoice?.();
+  }
+  const hidden=()=>{if(window.document?.hidden)clearHold();};
+  window.addEventListener('pagehide',clearHold);
+  window.document?.addEventListener('visibilitychange',hidden);
   const offEvents = bridge.onEvenHubEvent(event => {
     if(event.audioEvent) {hud.voiceAudio?.(event.audioEvent.audioPcm);return;}
-    if(event.menuItemClickEvent?.itemID===1) {void hud.toggleVoice?.();return;}
+    if(event.menuItemClickEvent?.itemID===1) {clearHold();void hud.startVoice?.();return;}
     const envelope = event.sysEvent || event.textEvent;
     if (!envelope) return;
     const type = envelope.eventType ?? OsEventTypeList.CLICK_EVENT;
-    if (type === OsEventTypeList.LONG_PRESS_EVENT) {void hud.startVoice?.();return;}
-    if (type === OsEventTypeList.LONG_PRESS_RELEASE_EVENT) {releasedAt=Date.now();void hud.finishVoice?.();return;}
-    if (type === OsEventTypeList.DOUBLE_CLICK_EVENT) {hud.cancelVoice?.();void bridge.shutDownPageContainer(1);return;}
+    if (type === OsEventTypeList.LONG_PRESS_EVENT) {
+      if(holdAt===null){holdAt=Date.now();hud.holdVoice?.(true);holdTimer=setTimeout(activateHold,2000);}
+      return;
+    }
+    if (type === OsEventTypeList.LONG_PRESS_RELEASE_EVENT) {
+      releasedAt=Date.now();
+      if(holdAt!==null && releasedAt-holdAt>=2000)activateHold();else clearHold();
+      return;
+    }
+    if ([OsEventTypeList.FOREGROUND_EXIT_EVENT,OsEventTypeList.ABNORMAL_EXIT_EVENT,OsEventTypeList.SYSTEM_EXIT_EVENT].includes(type)){
+      clearHold();hud.cancelVoice?.();return;
+    }
+    if (type === OsEventTypeList.DOUBLE_CLICK_EVENT) {clearHold();hud.cancelVoice?.();void bridge.shutDownPageContainer(1);return;}
     if (type === OsEventTypeList.CLICK_EVENT && Date.now()-releasedAt>350) (hud.glassesSelect || hud.select)();
     else if (type === OsEventTypeList.SCROLL_TOP_EVENT) (hud.glassesMove || hud.move)(-1);
     else if (type === OsEventTypeList.SCROLL_BOTTOM_EVENT) (hud.glassesMove || hud.move)(1);
   });
   const battery = state => { if(!alive) return;
-    if(['disconnected','connectionFailed'].includes(state?.connectType)) hud.cancelVoice?.();
+    if(['disconnected','connectionFailed'].includes(state?.connectType)) {clearHold();hud.cancelVoice?.();}
     hud.setBattery(state?.batteryLevel,state?.isCharging);
   };
   battery(info?.status);
@@ -137,6 +158,8 @@ export async function attachEvenG2(hud) {
     saveVoiceToken:value=>bridge.setLocalStorage('park-g2-voice-v1',value),
     dispose() {
     alive=false;
+    clearHold();window.removeEventListener('pagehide',clearHold);
+    window.document?.removeEventListener('visibilitychange',hidden);
     window.removeEventListener('ojjuda:glasses-view',redraw);
     offEvents?.(); offDevice?.(); offLocation?.();
     if (listener) void stopLocation().catch(() => {});

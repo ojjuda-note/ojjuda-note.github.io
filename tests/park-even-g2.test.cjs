@@ -46,6 +46,8 @@ async function setup({granted=false,user='member',installed=false,guestFix,nativ
   const {createSpeedMeter} = await import('../note/rokid-agent/lib/speed.js');
   ctx.createSpeedMeter = createSpeedMeter;
   ctx.createG2Voice = (await import('../note/glasses-voice.mjs')).createG2Voice;
+  ctx.openLiveTurn = (await import('../note/glasses-live.mjs')).openLiveTurn;
+  ctx.readVoiceReply = (await import('../note/glasses-voice.mjs')).readVoiceReply;
   ctx.createG2Link = (await import('../note/glasses-link.mjs')).createG2Link;
   vm.runInNewContext(readFileSync(path.join(root,'note/glasses.js'),'utf8').replace(/^import .*?;\r?\n/gm,''),ctx);
   await delay(20);
@@ -216,4 +218,21 @@ test('G2 startup waits for a connected device, opens a simple page and retains c
   assert.match(bridge.starts[0].textObject[0].content,/공원 카드/);
   assert.match(bridge.updates.at(-1).content,/공원 카드/);
   device.dispose();
+});
+
+test('two-second reported hold latches voice; release and synthesized click never submit it',async()=>{
+  let handler,clock=100,timer,starts=0,selects=0;
+  const kinds={CLICK_EVENT:0,LONG_PRESS_EVENT:9,LONG_PRESS_RELEASE_EVENT:10,FOREGROUND_EXIT_EVENT:5};
+  const bridge={getDeviceInfo:async()=>({}),createStartUpPageContainer:async()=>0,rebuildPageContainer:async()=>true,
+    onEvenHubEvent:fn=>{handler=fn;return ()=>{};}};
+  const code=readFileSync(path.join(root,'note/glasses-even-g2.mjs'),'utf8').replace(/^import [^;]+;/,'').replaceAll('export ','');
+  const fakeSet=(fn,ms)=>{const id={fn,ms};if(ms===2000)timer=id;return id;};
+  const fakeClear=id=>{if(id && id===timer)timer=null;};
+  const attach=vm.runInNewContext(code+'\nattachEvenG2',{window:new EventTarget(),Date:{now:()=>clock},
+    waitForEvenAppBridge:async()=>bridge,OsEventTypeList:kinds,setTimeout:fakeSet,clearTimeout:fakeClear});
+  const device=await attach({getView:()=>({time:'12:00',cards:[],weather:''}),setBattery(){},startVoice(){starts++;},select(){selects++;}});
+  const event=n=>handler({sysEvent:{eventType:n}});
+  event(9);clock+=1999;event(10);assert.equal(starts,0);assert.equal(timer,null);
+  event(9);clock+=2000;timer.fn();assert.equal(starts,1);event(10);event(0);assert.equal(selects,0);assert.equal(starts,1);
+  event(9);event(5);assert.equal(timer,null);device.dispose();
 });

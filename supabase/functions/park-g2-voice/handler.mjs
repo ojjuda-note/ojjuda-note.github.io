@@ -26,6 +26,15 @@ function wave(pcm) {
   view.setUint16(34,16,true); tag(36,'data'); view.setUint32(40,pcm.length,true);
   return new Blob([header,pcm],{type:'audio/wav'});
 }
+export async function answerQuestion({question,history,openaiKey,send,signal}) {
+  const messages=[{role:'system',content:'스마트 안경 사용자와 대화합니다. 한국어로 핵심을 한두 문장, 가능하면 70자 이내의 평문으로 답하세요. 보이지 않는 카드, 위치, 주변 상황을 지어내지 마세요.'}];
+  for(const turn of history) messages.push({role:'user',content:turn.question},{role:'assistant',content:turn.answer});
+  messages.push({role:'user',content:question});
+  const response=await send('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{Authorization:'Bearer '+openaiKey,'Content-Type':'application/json'},signal,
+  body:JSON.stringify({model:'gpt-4.1-mini',messages,max_completion_tokens:180,store:false})});
+  if(!response.ok) return null;
+  return (await response.json()).choices?.[0]?.message?.content?.trim().slice(0,500);
+}
 export function makeHandler({rpc,openaiKey,send}) {
   return async req => {
     if(req.method==='OPTIONS') return new Response(null,{status:204,headers:cors});
@@ -67,13 +76,27 @@ export function makeHandler({rpc,openaiKey,send}) {
       if(!speech.ok) return json(502,{error:'provider'});
       const question=(await speech.json()).text?.trim().slice(0,500);
       if(!question) return json(422,{error:'silent'});
-      const messages=[{role:'system',content:'스마트 안경 사용자와 대화합니다. 한국어로 핵심을 한두 문장, 가능하면 70자 이내의 평문으로 답하세요. 보이지 않는 카드, 위치, 주변 상황을 지어내지 마세요.'}];
-      for(const turn of history) messages.push({role:'user',content:turn.question},{role:'assistant',content:turn.answer});
-      messages.push({role:'user',content:question});
-      const response=await send('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{...auth,'Content-Type':'application/json'},signal,
-        body:JSON.stringify({model:'gpt-4.1-mini',messages,max_completion_tokens:180,store:false})});
-      if(!response.ok) return json(502,{error:'provider'});
-      const answer=(await response.json()).choices?.[0]?.message?.content?.trim().slice(0,500);
+      const getAnswer=()=>answerQuestion({question,history,openaiKey,send,signal});
+      if(req.headers.get('accept')==='application/x-ndjson') {
+        const encoder=new TextEncoder();
+        const encode=event=>encoder.encode(JSON.stringify(event)+'\n');
+        let cancelled=false;
+        const stream=new ReadableStream({
+          start(controller) {
+            controller.enqueue(encode({question}));
+            void (async()=>{
+              let answer;
+              try {answer=await getAnswer();} catch {}
+              if(cancelled) return;
+              controller.enqueue(encode(answer ? {answer} : {error:'provider'}));
+              controller.close();
+            })();
+          },
+          cancel() {cancelled=true;}
+        });
+        return new Response(stream,{headers:{...cors,'Content-Type':'application/x-ndjson; charset=utf-8'}});
+      }
+      const answer=await getAnswer();
       return answer ? json(200,{question,answer}) : json(502,{error:'provider'});
     } catch { return json(503,{error:'unavailable'}); }
   };
