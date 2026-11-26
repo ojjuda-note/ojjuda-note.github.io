@@ -266,7 +266,7 @@ test('public Pajang preferences save atomically and relationship discovery prese
     assert.ok(!(await radar()).some(r=>r.id===person(2)));
   });
 
-  await t.test('registered catalog governs storage while explicit gender hiding masks every public portrait',async()=>{
+  const installGenderVisibility = async () => {
     await installPortraits();
     const discovery=read('20261117210000_pajang_discovery_gender.sql');
     await db.exec(discovery.slice(discovery.indexOf('create function public.pajang_discovery_visibility'),
@@ -275,6 +275,10 @@ test('public Pajang preferences save atomically and relationship discovery prese
     await db.exec(read('20261125114508_pajang_member_gender_borders.sql'));
     await db.exec(read('20261125120844_pajang_combined_visibility_defaults.sql'));
     await prepareRadar();
+  };
+
+  await t.test('registered catalog governs storage while explicit gender hiding masks every public portrait',async()=>{
+    await installGenderVisibility();
     await db.query('update pajang_private.people set avatar=$1 where id=$2',[{id:192,form:'mini',bg:6},person(1)]);
     await db.query('update ojjuda_account_internal.member_identity set gender=null where user_id=$1',[account(3)]);
     await db.exec(read('20261125134428_pajang_gender_bound_character_catalog.sql'));
@@ -361,6 +365,82 @@ test('public Pajang preferences save atomically and relationship discovery prese
     assert.equal((await state(10)).me.avatarId,101,'new male member default');
     await db.query("insert into ojjuda_account_internal.member_identity values($1,'1990-01-01','male')",[account(11)]);
     assert.equal((await state(11)).me.avatarId,101,'late registration sets the correct default');
+  });
+
+  await t.test('City Walk requires one 10-coin purchase and legacy editors retain the equipped outfit',async()=>{
+    await installGenderVisibility();
+    await db.exec(read('20261125134428_pajang_gender_bound_character_catalog.sql'));
+    await db.exec(read('20261125134429_pajang_station_gallery_avatars.sql'));
+    const membership=read('20261119033902_pajang_signal_purchase_preparation.sql');
+    await db.exec(membership.slice(membership.indexOf('create function pajang_private.require_signal_member()'),
+      membership.indexOf('revoke all on function pajang_private.require_signal_member')));
+    await db.exec(`
+      create schema ojjuda_note_internal;
+      create table ojjuda_note_internal.spend_requests(request_id uuid primary key,
+        user_id uuid references auth.users(id),kind text,coins integer,result jsonb);
+      alter table public.user_private add column coins integer;
+    `);
+    for(const [n,coins] of [[1,20],[2,19],[3,20],[4,9],[7,20]]){
+      await db.query('insert into public.user_private(user_id,coins) values($1,$2)',[account(n),coins]);
+    }
+    await db.query('update pajang_private.people set avatar=$1 where id=$2',[{id:205,form:'mini',bg:7},person(4)]);
+    await db.exec(read('20261125150231_pajang_character_purchases.sql'));
+    await db.exec(read('20261126161452_pajang_city_walk_avatars.sql'));
+
+    let request=1000;
+    const buy=(n,id,key=account(++request),target=person(n))=>as(account(n),()=>rpc('pajang_character_purchase',[target,id,key]));
+    const wire=version=>version===1?{}:{avatarCatalog:version};
+    const mine=(n,version=4)=>as(account(n),()=>rpc('pajang_profile_details',['mine',wire(version)]));
+    const saveOutfit=async(n,previousAvatar,avatar,version=4)=>{
+      const current=await mine(n,version);
+      return as(account(n),()=>rpc('pajang_profile_details',['save',{...wire(version),profilePerson:person(n),
+        fields:current.fields,preferences:{},preferencesVersion:current.preferencesVersion,previousAvatar,avatar}]));
+    };
+
+    assert.deepEqual((await mine(4,3)).avatar,{id:205,form:'mini',bg:7});
+    assert.deepEqual((await mine(4,4)).ownedCharacters,[205]);
+    for(const [n,id] of [[1,207],[2,206],[1,201],[2,208]]){
+      assert.equal((await buy(n,id)).reason,'invalid');
+    }
+    assert.equal((await buy(1,206,account(++request),person(3))).reason,'invalid');
+    assert.equal((await buy(4,207)).reason,'coins');
+    assert.equal((await mine(4)).characterCoins,9);
+    await db.query('update ojjuda_account_internal.member_identity set gender=null where user_id=$1',[account(3)]);
+    assert.equal((await buy(3,206)).reason,'invalid');
+    await assert.rejects(()=>buy(7,206),{code:'42501'});
+
+    for(const [n,id,fallback,start] of [[1,206,1,20],[2,207,101,19]]){
+      await as(account(n),()=>rpc('pajang_discovery_visibility',[true]));
+      const initial=(await mine(n)).avatar;
+      const picked={id,form:'mini',bg:4};
+      await assert.rejects(()=>saveOutfit(n,initial,picked),{code:'23514'});
+      const key=account(++request);
+      assert.equal((await buy(n,id,key)).charged,10);
+      assert.equal((await buy(n,id,key)).charged,0);
+      assert.equal((await buy(n,id)).charged,0);
+      assert.equal((await buy(n,n===1?204:205,key)).reason,'request_conflict');
+      assert.equal((await mine(n)).characterCoins,start-10);
+      assert.deepEqual((await mine(n)).ownedCharacters,[id]);
+      assert.deepEqual((await saveOutfit(n,initial,picked)).avatar,picked);
+      assert.equal((await profile(person(n),account(n))).avatarId,id);
+      for(const version of [1,2,3]){
+        const view=await mine(n,version);
+        const projected=version===1?1:fallback;
+        assert.deepEqual(view.avatar,{id:projected,catalogId:id,form:'mini',bg:version===1?4:version-1});
+        if(version===3)assert.deepEqual(view.ownedCharacters,[id]);
+        await assert.rejects(()=>saveOutfit(n,view.avatar,picked,version),{code:'23514'});
+        await saveOutfit(n,view.avatar,{...view.avatar,bg:version},version);
+        assert.deepEqual((await mine(n)).avatar,{...picked,bg:version});
+      }
+      await as(account(n),()=>rpc('pajang_discovery_visibility',[false]));
+      assert.equal((await profile(person(n),account(n))).avatarId,201);
+      assert.equal((await mine(n)).avatar.id,id);
+      await as(account(n),()=>rpc('pajang_discovery_visibility',[true]));
+      assert.equal((await profile(person(n),account(n))).avatarId,id);
+      const stale=(await mine(n,3)).avatar;
+      await saveOutfit(n,(await mine(n)).avatar,initial);
+      await assert.rejects(()=>saveOutfit(n,stale,{...stale,bg:7},3),{code:'40001'});
+    }
   });
 
   await t.test('account gender is selected at entry and an explicit hide survives profile reads',async()=>{

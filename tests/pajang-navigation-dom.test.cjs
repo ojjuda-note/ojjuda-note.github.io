@@ -14,7 +14,7 @@ for(const pathname of supportPaths)assert.ok(fs.statSync(path.join(root,pathname
 
 // Exercise the built React member program with real DOM/history events. The
 // network boundary is an in-memory member fixture, never a live user account.
-function fixture(t,url='https://ojjuda.test/features/pajang/station.html',{admin=false,radar=false,hidden=false,newOutfits=false}={}){
+function fixture(t,url='https://ojjuda.test/features/pajang/station.html',{admin=false,radar=false,hidden=false,outfits=null}={}){
   const errors=[];
   const console=new VirtualConsole();console.on('jsdomError',error=>errors.push(error.message));
   const dom=new JSDOM('<!doctype html><div id="station"></div>',{url,runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:console});
@@ -30,7 +30,7 @@ function fixture(t,url='https://ojjuda.test/features/pajang/station.html',{admin
   }
   const me={id:'me',name:'보리',gender:'male',avatarId:200,interest:'book',body:'내 답변',at:1};
   const peer={id:'peer',name:'라온',avatarId:9,interest:'walk',body:'함께 걸어요.',at:1,range:3,bearing:315};
-  if(newOutfits){me.avatarId=205;peer.avatarId=202;}
+  if(outfits){[me.avatarId,peer.avatarId]=outfits;}
   if(hidden){
     Object.assign(me,{gender:null,avatarId:201});
     Object.assign(peer,{gender:null,avatarId:201});
@@ -121,7 +121,7 @@ test('opening a chat from a feed profile returns to that feed instead of a fixed
 });
 
 test('own portrait and matched chat reuse selected outfits with a fresh scene on each entry', async t => {
-  const f=fixture(t,undefined,{newOutfits:true}), {w}=f, doc=w.document;
+  const f=fixture(t,undefined,{outfits:[205,202]}), {w}=f, doc=w.document;
   await f.until(()=>f.byText('nav a','내 파장'));
   await f.menu('내 파장');
   const portrait=doc.querySelector('.account-heading [role="img"]');
@@ -152,6 +152,25 @@ test('own portrait and matched chat reuse selected outfits with a fresh scene on
   await f.until(backdrop);
   assert.notEqual(backdrop(),firstScene,'reopening the same room draws another scene');
   assert.deepEqual(f.errors,[]);
+});
+
+test('City Walk displays the correct atlas cell for each member in portraits and chat',async t=>{
+  const f=fixture(t,undefined,{outfits:[207,206]}), doc=f.w.document;
+  await f.until(()=>f.byText('nav a','내 파장'));
+  await f.menu('내 파장');
+  const own=doc.querySelector('.account-heading [role="img"]');
+  await f.menu('마음함');
+  const peer=doc.querySelector('.listperson .pj-character-portrait');
+  await f.click('button','대화 열기');
+  await f.until(()=>doc.querySelector('.pj-chat-scenery'));
+  const scene=doc.querySelector('.pj-chat-scenery');
+  const peerFull=scene.querySelector('.pj-chat-peer .full'), ownFull=scene.querySelector('.pj-chat-self .full');
+  for(const figure of [own,peer,peerFull,ownFull]){
+    assert.match(figure.style.backgroundImage,/avatars-city-walk-20261127\.webp/);
+  }
+  const column=figure=>parseFloat(figure.style.backgroundPosition);
+  assert.ok(column(own)>column(peer));
+  assert.ok(column(ownFull)>column(peerFull));
 });
 
 test('outgoing signal and its result show the same member portrait',async t=>{

@@ -17,8 +17,8 @@ const formName=(form:ProfileAvatar["form"])=>form==="mini"?"대두형":"전신�
 export type AvatarCollection="female"|"male";
 // IDs 1–200 belong to the original atlases. ID 201 is reserved for the public disguise.
 const collections={
-  female:[...femaleNames.map((name,index)=>({id:index+1,name})),{id:202,name:"정류장의 오후"},{id:204,name:"갤러리 산책"}],
-  male:[...maleNames.map((name,index)=>({id:index+101,name})),{id:203,name:"정류장의 오후"},{id:205,name:"갤러리 산책"}]
+  female:[...femaleNames.map((name,index)=>({id:index+1,name})),{id:202,name:"정류장의 오후"},{id:204,name:"갤러리 산책"},{id:206,name:"도시의 산책"}],
+  male:[...maleNames.map((name,index)=>({id:index+101,name})),{id:203,name:"정류장의 오후"},{id:205,name:"갤러리 산책"},{id:207,name:"도시의 산책"}]
 };
 const roster=(["female","male"] as const).flatMap(collection=>
   collections[collection].map((entry,slot)=>({...entry,slot,collection,
@@ -63,6 +63,8 @@ function characterSprite(id:number,form:ProfileAvatar["form"],high=false){
     column:form==="mini"?0:1,row:0,columns:2,rows:1};
   if(id===153&&form==="full")return {image:'url("'+root+'avatar-153-full-20261126.webp")',
     column:0,row:0,columns:1,rows:1};
+  if(id===206||id===207)return {image:'url("'+root+'avatars-city-walk-20261127.webp")',
+    column:(id===206?0:2)+(form==="mini"?0:1),row:0,columns:4,rows:1};
   const {slot:index,collection}=byId.get(id)!;
   const prefix=collection==="male"?"avatars-male-":"avatars-";
   const revision=id>=202&&id<=205&&(collection==="male"||form==="mini")?"20261126":"20261125";

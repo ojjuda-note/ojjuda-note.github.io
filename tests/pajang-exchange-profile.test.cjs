@@ -66,7 +66,7 @@ async function fixture(t, {fields = {}, profile = {}, save, read, ready = true} 
   const state = {
     calls: [],
     successes: 0,
-    profile: {ownedCharacters:[2,3,102,103,205],characterCoins:20,fields: copy(fields), age: 35, gender: '남성', showAge: false, showGender: false,
+    profile: {ownedCharacters:[2,3,102,103,205,207],characterCoins:20,fields: copy(fields), age: 35, gender: '남성', showAge: false, showGender: false,
       person: profileId, name:'보리', region:'서울특별시', interest: 'book', preferences: emptyPreferences(), preferencesVersion: 3, ...profile},
   };
   window.profileId = profileId;
@@ -391,7 +391,7 @@ test('two submits while saving send one RPC and report success once', async t =>
   assert.equal(f.saves().length, 1);
 });
 
-test('the female catalog has 102 outfits with the short variant on the left and a separate backdrop', async t => {
+test('the female catalog has 103 outfits with the short variant on the left and a separate backdrop', async t => {
   const f = await fixture(t,{profile:{gender:'여성',showGender:true,avatarCollection:'female'}});
   const avatar = () => f.form().querySelector('[aria-label="내 캐릭터"]');
   const stage = () => avatar().querySelector('[role="img"]');
@@ -402,7 +402,7 @@ test('the female catalog has 102 outfits with the short variant on the left and 
   await turn();
   assert.ok(!f.button('남자'));
   const picker = avatar().querySelector(".pj-avatar-picker");
-  assert.equal(picker.querySelector("option:checked").textContent, "전체 (102종)");
+  assert.equal(picker.querySelector("option:checked").textContent, "전체 (103종)");
   assert.equal(picker.querySelector(".pj-avatar-pages + .pj-avatar-grid"), picker.querySelector(".pj-avatar-grid"));
   const names = new Set();
   for (let page = 1; page <= 13; page++) {
@@ -410,7 +410,7 @@ test('the female catalog has 102 outfits with the short variant on the left and 
     for (const pair of avatar().querySelectorAll('.pj-avatar-pair')) {
       const buttons = [...pair.querySelectorAll('button')];
       assert.deepEqual(buttons.map(b => b.textContent), ['대두형','전신형']);
-      for(const button of buttons)assert.match(button.querySelector('.pj-character-figure').style.backgroundImage,/\/avatars-(?:20261125-\d{2}|20261126-26)\.webp/);
+      for(const button of buttons)assert.match(button.querySelector('.pj-character-figure').style.backgroundImage,/\/avatars-(?:20261125-\d{2}|20261126-26|city-walk-20261127)\.webp/);
       names.add(pair.parentElement.querySelector('strong').textContent);
     }
     if (page < 13) { f.button('다음').click(); await turn(); }
@@ -419,8 +419,8 @@ test('the female catalog has 102 outfits with the short variant on the left and 
   assert.equal(picker.querySelector(".pj-avatar-pages span").textContent, "1 / 13");
   f.button('이전').click(); await turn();
   assert.equal(picker.querySelector(".pj-avatar-pages span").textContent, "13 / 13");
-  assert.equal(names.size, 102);
-  for(const name of ['정류장의 오후','갤러리 산책'])assert.ok(names.has(name));
+  assert.equal(names.size, 103);
+  for(const name of ['정류장의 오후','갤러리 산책','도시의 산책'])assert.ok(names.has(name));
   await f.set('캐릭터 검색', '책방 가는 날');
   assert.equal(avatar().querySelectorAll('.pj-avatar-pair').length,0,'search cannot reach the other catalog');
   await f.set('캐릭터 검색', '회색 후디');
@@ -447,7 +447,7 @@ test('the female catalog has 102 outfits with the short variant on the left and 
   assert.equal(avatar().querySelectorAll('.pj-character-figure').length, 1);
 });
 
-test('102 male outfits reuse every existing backdrop and reopen on the saved pair', async t => {
+test('103 male outfits reuse every existing backdrop and reopen on the saved pair', async t => {
   const f = await fixture(t,{profile:{gender:'남성',showGender:true,avatarCollection:'male'}});
   const region = () => f.form().querySelector('[aria-label="내 캐릭터"]');
   const stage = () => region().querySelector('[role="img"]');
@@ -485,7 +485,8 @@ test('102 male outfits reuse every existing backdrop and reopen on the saved pai
       for (const button of pair) {
         const figure = button.querySelector('.pj-character-figure');
         const therapist=button.getAttribute('aria-label')==='물리치료사 전신형';
-        const asset=therapist?'avatar-153-full-20261126.webp':'avatars-male-' + (atlas==='26'?'20261126':'20261125') + '-' + atlas + '.webp';
+        const cityWalk=card.querySelector('strong').textContent==='도시의 산책';
+        const asset=cityWalk?'avatars-city-walk-20261127.webp':therapist?'avatar-153-full-20261126.webp':'avatars-male-' + (atlas==='26'?'20261126':'20261125') + '-' + atlas + '.webp';
         assert.ok(figure.style.backgroundImage.includes(asset));
         sprites.add(figure.style.backgroundImage + ' ' + figure.style.backgroundPosition);
       }
@@ -493,15 +494,15 @@ test('102 male outfits reuse every existing backdrop and reopen on the saved pai
     }
     if (page < 12) await click('다음');
   }
-  assert.equal(looks.length, 102);
-  assert.equal(new Set(looks).size, 102);
-  assert.equal(sprites.size, 204);
+  assert.equal(looks.length, 103);
+  assert.equal(new Set(looks).size, 103);
+  assert.equal(sprites.size, 206);
 
-  const lastShort = looks[101] + ' 대두형';
+  const lastShort = looks[102] + ' 대두형';
   await click(lastShort);
   await click('이 모습 선택');
   assert.equal(region().querySelectorAll('.pj-character-figure').length, 1);
-  assert.ok(stage().querySelector('.pj-character-figure').style.backgroundImage.includes('avatars-male-20261126-26.webp'));
+  assert.ok(stage().querySelector('.pj-character-figure').style.backgroundImage.includes('avatars-city-walk-20261127.webp'));
   assert.ok(stage().getAttribute('aria-label').includes(chosenBackground));
   await click('배경 선택');
   assert.deepEqual(backgrounds(), sharedBackgrounds);
@@ -510,15 +511,15 @@ test('102 male outfits reuse every existing backdrop and reopen on the saved pai
   await waitFor(() => f.state.successes === 1, 'male outfit and shared backdrop should save');
 
   await f.reopen();
-  assert.ok(stage().getAttribute('aria-label').includes(looks[101]));
+  assert.ok(stage().getAttribute('aria-label').includes(looks[102]));
   assert.ok(stage().getAttribute('aria-label').includes(chosenBackground));
   await click('캐릭터 선택');
   assert.equal(f.button(lastShort).getAttribute('aria-pressed'), 'true');
   await click('다음');
   assert.equal(region().querySelector('.pj-avatar-pages span').textContent,'1 / 13');
   assert.ok(!f.button('여자'));
-  assert.deepEqual(f.saves()[0].p_data.avatar, {id:205,form:'mini',bg:8});
-  assert.ok(f.state.calls.every(call => call.p_data.avatarCatalog === 3));
+  assert.deepEqual(f.saves()[0].p_data.avatar, {id:207,form:'mini',bg:8});
+  assert.ok(f.state.calls.every(call => call.p_data.avatarCatalog === 4));
 });
 
 test('an older profile read uses the registered gender and preserves the original avatar for conflict detection',async t=>{

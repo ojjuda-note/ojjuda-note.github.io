@@ -255,7 +255,10 @@ async function checkCharacterViewer(page,editor) {
   const button=name=>viewer.getByRole('button',{name,exact:true});
   await editor.getByRole('button',{name:'흰 티와 청바지 대두형',exact:true}).click();
   await button('이전 캐릭터').click();
-  await viewer.getByText('갤러리 산책',{exact:true}).waitFor();
+  await viewer.getByText('도시의 산책',{exact:true}).waitFor();
+  assert.ok((await paintedHeight(viewer.locator('.pj-character-figure.mini'))).fraction>0.9);
+  await button('전신형').click();
+  assert.ok((await paintedHeight(viewer.locator('.pj-character-figure.full'))).fraction>0.9);
   await page.keyboard.press('ArrowRight');
   await viewer.getByText('흰 티와 청바지',{exact:true}).waitFor();
   await button('목록으로').click();
