@@ -1,6 +1,4 @@
-import {createG2Voice,readVoiceReply} from './glasses-voice.mjs?v=20261126-live1';
-import {openLiveTurn} from './glasses-live.mjs?v=20261126-live1';
-import {createG2Link} from './glasses-link.mjs?v=20261126-easylink1';
+import {cityAt} from './glasses-city.mjs?v=20261126-city1';
 import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
 
 (() => {
@@ -20,44 +18,6 @@ import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
   let weatherHint = '날씨 · 현재 위치', permission, autoPaused = false;
   let source = 'recent', feedRequest;
   let paused = false;
-  let pairRun=0, codeTimer, voiceDeviceGeneration=0;
-  async function voiceRequest(payload,token,signal,onQuestion) {
-    if (!config?.supabaseKey) throw Error('unavailable');
-    const headers={'Content-Type':'application/json',apikey:config.supabaseKey};
-    if(token) headers['x-park-device']=token;
-    if(onQuestion) headers.Accept='application/x-ndjson';
-    const res=await fetch(config.supabaseUrl+'/functions/v1/park-g2-voice',{method:'POST',headers,
-      credentials:'omit',body:JSON.stringify(payload),signal});
-    return readVoiceReply(res,onQuestion);
-  }
-  let holding=false;
-  const voice=createG2Voice({microphone:on=>hardware?.microphone(on),changed:render,
-    openTurn:options=>openLiveTurn({...options,url:config.supabaseUrl.replace(/^https:/,'wss:')+'/functions/v1/park-g2-voice'}),
-    forgetToken:()=>{void hardware?.saveVoiceToken('').catch(()=>{});}});
-  let tokenReady=false;
-  const easyLink=createG2Link({
-    load:()=>hardware.loadLinkRequest(), save:value=>hardware.saveLinkRequest(value),
-    complete:async(proof,until)=>(await voiceRequest({action:'complete-link',until},proof,AbortSignal.timeout(10000))).linked===true,
-    accept:async proof=>{
-      if(voice.paired || !hardware) throw Error('changed');
-      if(await hardware.saveVoiceToken(proof)===false) throw Error('storage');
-      voice.setToken(proof);
-      byId('glass-ai-link-status').textContent='';
-      byId('g2-status').textContent='GPT 연결 완료 · 터치패드를 길게 눌러 ‘듣는 중’이 뜨면 말하세요.';
-      render();
-    },change:render
-  });
-  function cancelVoice(){holding=false;voice.reset();}
-  function startVoice(){
-    if(paused || document.hidden || !hardware) return;
-    if(thread) closeThread();
-    return voice.start();
-  }
-  function toggleVoice(){
-    if(paused || document.hidden || !hardware) return;
-    if(thread) closeThread();
-    return voice.toggle();
-  }
   const dist = band => {
     if (band === '근처') return '1km 이내';
     return typeof band === 'string' && /^[1-9]\d{0,4}km$/.test(band) ? band + ' 이내' : '거리 미확인';
@@ -85,31 +45,11 @@ import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
         prev:t.at>0 || !!t.parent, next:t.at<t.items.length || (!t.busy && (!!t.next || t.error))};
     }
     return {time:clock.format(now), battery, charging, speed:tracking?.meter.read(now) ?? null,
-      weather:weather && weather.expiresAt>now ? weather.text : weatherHint,
-      voice:holding?'GPT\n계속 누르면 듣기 시작해요':voice.screen(), cards, card:cards[0] || null, expanded:!!reader, reader, sample, paused};
+      weather:[tracking?.city, weather && weather.expiresAt>now ? weather.text : weatherHint].filter(Boolean).join(' · '),
+      cards, card:cards[0] || null, expanded:!!reader, reader, sample, paused};
   }
   function render() {
     const view = model();
-    const panel=byId('glass-ai');
-    panel.hidden=!view.voice || view.expanded || paused;
-    const listening=voice.phase==='listening';
-    const conversation=holding?'계속 누르면 듣기 시작해요':voice.question?
-      '내 질문 · '+voice.question+(listening?'':'\nGPT · '+voice.message):voice.message;
-    const answer=byId('glass-ai-answer');
-    if(answer.textContent!==conversation) {
-      answer.textContent=conversation;
-      answer.scrollTop=listening?answer.scrollHeight:0;
-    }
-    byId('glass-ai-heading').hidden=!!voice.question;
-    const ask=byId('glass-ai-ask');
-    ask.hidden=!hardware || !voice.paired; ask.disabled=voice.phase==='sending';
-    ask.textContent=['starting','listening'].includes(voice.phase)?'질문 보내기':'GPT에 묻기';
-    byId('glass-ai-pair').hidden=paused || !hardware || !tokenReady || voice.paired;
-    const connect=byId('glass-ai-connect');
-    if(easyLink.href) connect.href=easyLink.href;
-    connect.hidden=!easyLink.href;
-    byId('glass-ai-code-button').hidden=installed || !owner || paused;
-    byId('glass-ai-unpair').hidden=!hardware || !voice.paired || paused;
     byId('glass-power').textContent = paused ? '화면 켜기' : '화면 끄기';
     byId('glass-view').hidden = paused;
     byId('glass-controls').hidden = paused;
@@ -287,7 +227,7 @@ import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
       if (position && !cards.length) {
         return loadCards(null,expected,'30km 이내 카드 없음');
       }
-      const label = order==='nearby' ? '현재 위치 · 가까운 순' : '공개 카드 · 최신순';
+      const label = order==='nearby' ? [expected?.city,'가까운 순'].filter(Boolean).join(' · ') : '공개 카드 · 최신순';
       setCards(cards.slice(0,30),[note,label].filter(Boolean).join(' · '),order);
       if (!rows.length) status.textContent = '아직 공개 카드가 없어요.';
     } catch {
@@ -339,7 +279,7 @@ import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
       const data=await response.json();
       if (!current()) return;
       if (data.source!=='kma' || !(data.expiresAt>Date.now()) || (!Number.isFinite(data.temperature)&&!data.label)) throw Error('weather');
-      weather={text:['현재 위치',Number.isFinite(data.temperature) ? data.temperature+'°C' : '',data.label].filter(Boolean).join(' · '),expiresAt:data.expiresAt};
+      weather={text:[Number.isFinite(data.temperature) ? data.temperature+'°C' : '',data.label].filter(Boolean).join(' · '),expiresAt:data.expiresAt};
       active.weatherRetry=data.expiresAt; weatherHint='날씨 갱신 중';
     } catch(error) {
       if (current()) weatherHint=error?.code==='disabled'?'날씨 · 위치 사용 제한':'기상청 응답 대기';
@@ -356,6 +296,8 @@ import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
         Math.abs(longitude)>180 || !Number.isFinite(at) || Date.now()-at > 30000 || at > Date.now()+2000) return;
     if (active.lastFix && at < active.lastFix) return;
     active.lastFix = at;
+    const city = accuracy == null || (Number.isFinite(accuracy) && accuracy >= 0 && accuracy <= 5000) ? cityAt(latitude,longitude) : '';
+    if(city!==active.city){active.city=city;active.nextFeed=0;}
     // Guests use the public feed's distance bands. Keep the precise fix on the phone.
     active.fix = active.owner ? {latitude,longitude} :
       {latitude:Math.round(latitude*1000)/1000, longitude:Math.round(longitude*1000)/1000};
@@ -433,7 +375,7 @@ import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
   function togglePower() {
     paused=!paused;
     if (paused) {
-      cancelVoice(); stopTracking(); closeThread();
+      stopTracking(); closeThread();
       if (!sample) setCards([]);
     } else if (!sample) {
       autoLocate();
@@ -462,54 +404,10 @@ import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
     if (['ArrowLeft','ArrowRight'].includes(event.key)) { event.preventDefault(); move(event.key === 'ArrowLeft' ? -1 : 1); }
     else if (event.key === 'Escape' && thread) back();
   });
-  byId('glass-ai-ask').onclick=toggleVoice;
-  byId('glass-ai-connect').onclick=event=>{
-    if(!easyLink.opened()) {event.preventDefault();void easyLink.prepare();return;}
-    byId('glass-ai-link-status').textContent='공원에서 연결을 승인한 뒤 돌아오세요.';
-  };
-  byId('glass-ai').onclick=()=>voice.dismiss();
-  byId('glass-ai-code-button').onclick=async()=>{
-    const button=byId('glass-ai-code-button'), output=byId('glass-ai-code'), account=owner;
-    if(!account || button.disabled) return;
-    button.disabled=true;
-    try {
-      const {data,error}=await db.schema('public').rpc('park_g2_voice_code');
-      if(error || !/^[A-F0-9]{12}$/.test(data)) throw Error();
-      if(account!==owner) return;
-      output.textContent=data.match(/.{4}/g).join('-')+' · 5분 동안 유효';
-      clearTimeout(codeTimer);codeTimer=setTimeout(()=>{output.textContent='';},300000);
-    } catch {if(account===owner) output.textContent='연결 코드를 받지 못했어요. 다시 눌러 주세요.';}
-    finally{button.disabled=false;}
-  };
-  byId('glass-ai-link').onclick=async()=>{
-    const run=++pairRun, input=byId('glass-ai-input'), note=byId('glass-ai-link-status');
-    const code=input.value.replace(/[-\s]/g,'').toUpperCase();
-    if(!/^[A-F0-9]{12}$/.test(code)) {note.textContent='12자리 코드를 입력해 주세요.';return;}
-    const button=byId('glass-ai-link');button.disabled=true;note.textContent='연결 중…';
-    try{
-      const {token}=await voiceRequest({action:'pair',code},null,AbortSignal.timeout(12000));
-      if(run!==pairRun || !/^[a-f0-9]{64}$/.test(token)) return;
-      if(await hardware.saveVoiceToken(token)===false) throw Error('storage');
-      if(run!==pairRun) return;
-      input.value='';note.textContent='';voice.setToken(token);await easyLink.clear();render();
-    } catch {if(run===pairRun) note.textContent='연결에 실패했어요. 새 코드를 받아 다시 입력해 주세요.';}
-    finally{button.disabled=false;}
-  };
-  byId('glass-ai-unpair').onclick=async()=>{
-    ++pairRun;++voiceDeviceGeneration;voice.setToken('');
-    await hardware?.saveVoiceToken('').catch(()=>{});await easyLink.clear();render();
-  };
   window.OJJUDA_GLASS_PREVIEW = Object.freeze({setBattery,setCards,move,select,getView:model,
-    startVoice,toggleVoice,voiceAudio:voice.audio,cancelVoice,
-    holdVoice:on=>{holding=on && !paused && !document.hidden && !['starting','listening','sending'].includes(voice.phase);render();},
-    glassesMove:d=>voice.scroll(d)||move(d),glassesSelect:()=>{
-      if(['starting','listening'].includes(voice.phase)) return voice.finish();
-      if(voice.phase!=='sending' && !voice.dismiss()) select();
-    },
     setLocation: fix => acceptFix(fix,tracking)});
   let lastTick = '';
   const timer = setInterval(() => {
-    if(hardware && tokenReady && !voice.paired && !paused && !document.hidden) void easyLink.check();
     const v = model();
     const next = [v.time,v.speed,v.weather].join('|');
     if (next !== lastTick) { lastTick = next; render(); }
@@ -521,7 +419,6 @@ import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
       subscription = db.auth.onAuthStateChange((_event,session) => {
         const id = session?.user && !session.user.is_anonymous ? session.user.id : null;
         if (owner === id) return;
-        cancelVoice();byId('glass-ai-code').textContent='';
         owner = id; autoPaused=false; locationFailed=false; sample=false; stopTracking(); closeThread();
         setCards([], '공개 카드 불러오는 중');
         stopPreference(); stopPreference = () => {};
@@ -547,15 +444,10 @@ import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
     message.textContent = 'G2 연결을 기다리는 중…';
     let stage = 'SDK';
     try {
-      const sdk = await import('/park/even-g2.bundle.mjs?v=20261126-live1');
+      const sdk = await import('/park/even-g2.bundle.mjs?v=20261126-city1');
       if (typeof sdk?.attachEvenG2 !== 'function') throw Error('SDK');
       stage = 'BRIDGE';
       hardware = await sdk.attachEvenG2(window.OJJUDA_GLASS_PREVIEW);
-      const generation=++voiceDeviceGeneration;
-      try {const token=await hardware.loadVoiceToken();if(generation===voiceDeviceGeneration && /^[a-f0-9]{64}$/.test(token)) voice.setToken(token);}catch{}
-      tokenReady=true;
-      if(!voice.paired) {await easyLink.prepare();void easyLink.check(true);}
-      render();
       byId('g2-setup').hidden = true;
       message.textContent = 'G2 화면을 열었어요.';
     } catch (error) {
@@ -569,9 +461,7 @@ import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
   }
   byId('g2-reconnect').onclick = connectG2;
   document.addEventListener('visibilitychange', () => {
-    if(!document.hidden && hardware && tokenReady && !voice.paired && !paused) void easyLink.check(true);
     if (document.hidden) {
-      cancelVoice();
 
       if (!sample) { stopTracking(); closeThread(); setCards([]); }
     } else if (!sample) {
@@ -580,7 +470,6 @@ import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
     }
   });
   window.addEventListener('pagehide', event => {
-    cancelVoice();
     closeThread();
     stopTracking();
     if (!event.persisted) { clearInterval(timer); stopPreference(); permission?.removeEventListener('change',permissionChanged); subscription?.unsubscribe(); hardware?.dispose(); }

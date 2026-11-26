@@ -1,6 +1,5 @@
 import {AppLocationAccuracy, OsEventTypeList, waitForEvenAppBridge} from '@evenrealities/even_hub_sdk';
 
-const voiceMenu={menuItems:[{itemID:1,itemName:'GPT에 묻기'}]};
 function box(id, name, x, y, w, h, content, capture = 0, border = 0) {
   return {containerID:id, containerName:name, xPosition:x, yPosition:y, width:w, height:h,
     content, isEventCapture:capture, borderWidth:border, borderColor:10, paddingLength:border ? 4 : 0};
@@ -10,7 +9,7 @@ export function g2Page(view) {
   if (view.paused) return {containerTotalNum:1,textObject:[box(1,'standby',0,0,576,288,' ',1)]};
   const cards = view.cards;
   const fields = [
-    box(1,'clock',12,6,320,view.reader ? 32 : 224,view.voice && !view.reader ? view.time+'\n\n'+view.voice : view.time),
+    box(1,'clock',12,6,150,32,view.time),
     box(2,'battery',454,6,118,32,(view.battery ?? '—') + '%' + (view.charging ? ' ⚡' : '')),
     box(3,'weather',12,248,325,36,view.weather),
     box(4,'speed',426,248,146,36,(view.speed ?? '—') + ' km/h')
@@ -27,14 +26,14 @@ export function g2Page(view) {
       box(7,'firstdist',443,100,118,29,cards[0]?.distance ?? ''),
       box(8,'seconddist',443,195,118,29,cards[1]?.distance ?? ''));
   }
-  return {containerTotalNum:fields.length,textObject:fields,menuObject:voiceMenu};
+  return {containerTotalNum:fields.length,textObject:fields};
 }
 
 function simplePage(view) {
   const lines = view.reader ? [view.reader.title, view.reader.body, view.reader.distance] :
-    [view.time, view.voice, ...view.cards.map((card,i) => [(i === 0 ? '▶ ' : '') + card.oneLine,card.distance].filter(Boolean).join('  ')), view.weather, (view.speed ?? '—') + ' km/h'];
+    [view.time, ...view.cards.map((card,i) => [(i === 0 ? '▶ ' : '') + card.oneLine,card.distance].filter(Boolean).join('  ')), view.weather, (view.speed ?? '—') + ' km/h'];
   const content = view.paused ? ' ' : lines.filter(Boolean).join('\n').slice(0,750);
-  return {containerTotalNum:1,textObject:[box(1,'park',8,8,560,272,content || '오쭈다 공원',1)],menuObject:voiceMenu};
+  return {containerTotalNum:1,textObject:[box(1,'park',8,8,560,272,content || '오쭈다 공원',1)]};
 }
 
 const attemptedStartup = new WeakSet();
@@ -91,45 +90,16 @@ export async function attachEvenG2(hud) {
   }
   const redraw = () => { void paint(); };
   window.addEventListener('ojjuda:glasses-view',redraw);
-  let releasedAt=-Infinity,holdAt=null,holdTimer;
-  function clearHold(){
-    clearTimeout(holdTimer);
-    if(holdAt!==null){holdAt=null;hud.holdVoice?.(false);}
-  }
-  function activateHold(){
-    if(holdAt===null)return;
-    clearHold();void hud.startVoice?.();
-  }
-  const hidden=()=>{if(window.document?.hidden)clearHold();};
-  window.addEventListener('pagehide',clearHold);
-  window.document?.addEventListener('visibilitychange',hidden);
   const offEvents = bridge.onEvenHubEvent(event => {
-    if(event.audioEvent) {hud.voiceAudio?.(event.audioEvent.audioPcm);return;}
-    if(event.menuItemClickEvent?.itemID===1) {clearHold();void hud.startVoice?.();return;}
     const envelope = event.sysEvent || event.textEvent;
     if (!envelope) return;
     const type = envelope.eventType ?? OsEventTypeList.CLICK_EVENT;
-    if (type === OsEventTypeList.LONG_PRESS_EVENT) {
-      if(holdAt===null){holdAt=Date.now();hud.holdVoice?.(true);holdTimer=setTimeout(activateHold,2000);}
-      return;
-    }
-    if (type === OsEventTypeList.LONG_PRESS_RELEASE_EVENT) {
-      releasedAt=Date.now();
-      if(holdAt!==null && releasedAt-holdAt>=2000)activateHold();else clearHold();
-      return;
-    }
-    if ([OsEventTypeList.FOREGROUND_EXIT_EVENT,OsEventTypeList.ABNORMAL_EXIT_EVENT,OsEventTypeList.SYSTEM_EXIT_EVENT].includes(type)){
-      clearHold();hud.cancelVoice?.();return;
-    }
-    if (type === OsEventTypeList.DOUBLE_CLICK_EVENT) {clearHold();hud.cancelVoice?.();void bridge.shutDownPageContainer(1);return;}
-    if (type === OsEventTypeList.CLICK_EVENT && Date.now()-releasedAt>350) (hud.glassesSelect || hud.select)();
-    else if (type === OsEventTypeList.SCROLL_TOP_EVENT) (hud.glassesMove || hud.move)(-1);
-    else if (type === OsEventTypeList.SCROLL_BOTTOM_EVENT) (hud.glassesMove || hud.move)(1);
+    if (type === OsEventTypeList.DOUBLE_CLICK_EVENT) { void bridge.shutDownPageContainer(1); return; }
+    if (type === OsEventTypeList.CLICK_EVENT) hud.select();
+    else if (type === OsEventTypeList.SCROLL_TOP_EVENT) hud.move(-1);
+    else if (type === OsEventTypeList.SCROLL_BOTTOM_EVENT) hud.move(1);
   });
-  const battery = state => { if(!alive) return;
-    if(['disconnected','connectionFailed'].includes(state?.connectType)) {clearHold();hud.cancelVoice?.();}
-    hud.setBattery(state?.batteryLevel,state?.isCharging);
-  };
+  const battery = state => { if (alive) hud.setBattery(state?.batteryLevel,state?.isCharging); };
   battery(info?.status);
   const offDevice = bridge.onDeviceStatusChanged?.(battery);
   const offLocation = bridge.onAppLocationChanged?.(fix => listener?.(fix));
@@ -151,15 +121,8 @@ export async function attachEvenG2(hud) {
     });
   }
   redraw();
-  return {startLocation,stopLocation,microphone:on=>bridge.audioControl(on),
-    loadVoiceToken:()=>bridge.getLocalStorage('park-g2-voice-v1'),
-    loadLinkRequest:()=>bridge.getLocalStorage('park-g2-link-request-v1'),
-    saveLinkRequest:value=>bridge.setLocalStorage('park-g2-link-request-v1',value),
-    saveVoiceToken:value=>bridge.setLocalStorage('park-g2-voice-v1',value),
-    dispose() {
+  return {startLocation,stopLocation,dispose() {
     alive=false;
-    clearHold();window.removeEventListener('pagehide',clearHold);
-    window.document?.removeEventListener('visibilitychange',hidden);
     window.removeEventListener('ojjuda:glasses-view',redraw);
     offEvents?.(); offDevice?.(); offLocation?.();
     if (listener) void stopLocation().catch(() => {});
