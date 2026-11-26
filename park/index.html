@@ -3,17 +3,6 @@
 <head>
   <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'">
   <script>
-  // Resume G2 approval in this tab after a Park sign-in.
-  try {
-    const request = sessionStorage.getItem('park-g2-return');
-    if (window.top === window && request) {
-      sessionStorage.removeItem('park-g2-return');
-      const match = /^([a-f0-9]{64})\.(\d{10})$/.exec(request);
-      if (match && Number(match[2]) * 1000 > Date.now()) location.replace('/park/g2-connect.html#' + request);
-    }
-  } catch {}
-  </script>
-  <script>
   // Preserve the legacy World iframe only when that exact same-origin host owns us.
   try {
     if (parent !== window && parent.location.origin === location.origin && parent.location.pathname === '/world.html')

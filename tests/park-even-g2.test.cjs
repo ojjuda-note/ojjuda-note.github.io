@@ -37,7 +37,7 @@ async function setup({granted=false,user='member',installed=false,guestFix,nativ
     readGuestPosition:guestFix || (async()=>({latitude:37.56654,longitude:126.9781,accuracy:12,capturedAt:clock})),
     weatherGrid:()=>({nx:60,ny:127}),
     observe(_db,_acct,cb){pref=cb;return ()=>{};},weatherCell:()=>({nx:60,ny:127}),
-    readPosition:async()=>({latitude:37,longitude:127,accuracy:5,speed:3,capturedAt:clock})};
+    readPosition:async()=>({latitude:37.5665,longitude:126.978,accuracy:5,speed:3,capturedAt:clock})};
   window.OjjudaEvenG2={readPhonePosition:nativeFix};
   const ctx={window,document,location:{href:'https://ojjuda.kr/park/glasses.html'},URL,URLSearchParams,Date:Clock,
     navigator:{permissions:{query:async()=>perm}},Intl,AbortController,CustomEvent,setInterval:cb=>(tick=cb,1),clearInterval(){},clearTimeout,
@@ -45,10 +45,7 @@ async function setup({granted=false,user='member',installed=false,guestFix,nativ
     fetch:weather || (async()=>({ok:true,json:async()=>({source:'kma',temperature:-2,label:'눈',expiresAt:clock+40000})}))};
   const {createSpeedMeter} = await import('../note/rokid-agent/lib/speed.js');
   ctx.createSpeedMeter = createSpeedMeter;
-  ctx.createG2Voice = (await import('../note/glasses-voice.mjs')).createG2Voice;
-  ctx.openLiveTurn = (await import('../note/glasses-live.mjs')).openLiveTurn;
-  ctx.readVoiceReply = (await import('../note/glasses-voice.mjs')).readVoiceReply;
-  ctx.createG2Link = (await import('../note/glasses-link.mjs')).createG2Link;
+  ctx.cityAt=(await import('../note/glasses-city.mjs')).cityAt;
   vm.runInNewContext(readFileSync(path.join(root,'note/glasses.js'),'utf8').replace(/^import .*?;\r?\n/gm,''),ctx);
   await delay(20);
   return {window,document,perm,get,calls,hud:window.OJJUDA_GLASS_PREVIEW,
@@ -63,7 +60,7 @@ test('current location on entry, nearby cards, consented weather, stale speed an
   assert.equal(get('glass-first-distance').textContent,'1km 이내');
   assert.equal(get('glass-second-distance').textContent,'2km 이내');
   assert.equal(get('glass-speed').textContent,'10.8 km/h');
-  assert.equal(get('glass-weather').textContent,'현재 위치 · -2°C · 눈');
+  assert.equal(get('glass-weather').textContent,'서울 · -2°C · 눈');
   assert.equal(hud.getView().card.count,3);
   hud.setBattery(0,true);assert.equal(get('glass-battery').textContent,'0% ⚡');
   hud.setBattery(null);assert.equal(get('glass-battery').textContent,'—%');
@@ -74,7 +71,7 @@ test('current location on entry, nearby cards, consented weather, stale speed an
 });
 test('existing permission starts nearby cards and preserves a temperature-only KMA observation',async()=>{
   const {get,hud,calls,perm}=await setup({granted:true,weather:async()=>({ok:true,json:async()=>({source:'kma',temperature:0,label:'',expiresAt:Date.now()+60000})})});
-  assert.deepEqual(calls.map(c=>c.params.p_sort),['recent','nearby']);assert.equal(get('glass-weather').textContent,'현재 위치 · 0°C');
+  assert.deepEqual(calls.map(c=>c.params.p_sort),['recent','nearby']);assert.equal(get('glass-weather').textContent,'서울 · 0°C');
   perm.state='denied';perm.dispatchEvent(new Event('change'));assert.equal(hud.getView().card,null);
   const guest=await setup({user:null,granted:true});
   assert.deepEqual(guest.calls.map(c=>[c.params.p_sort,c.params.p_lat]),[['recent',null],['nearby',37.567]]);
@@ -87,7 +84,7 @@ test('guest GPS retains public replies and switches off without retaining distan
   hud.select();await delay(0);hud.move(1);
   assert.equal(hud.getView().reader.body,'공개 답카드');
   hud.select();
-  assert.equal(get('glass-status').textContent,'현재 위치 · 가까운 순');
+  assert.equal(get('glass-status').textContent,'서울 · 가까운 순');
   assert.ok(!calls.some(c=>c.name==='glasses_replies'));
   get('glass-locate').onclick();await delay(0);
   assert.equal(get('glass-first-body').textContent,'공개 원글');
@@ -98,14 +95,14 @@ test('a location without nearby cards keeps its weather and shows clearly marked
   const {get}=await setup({user:null,nearby:[]});
   assert.match(get('glass-status').textContent,/30km 이내 카드 없음.*최신순/);
   assert.equal(get('glass-first-distance').textContent,'');
-  assert.match(get('glass-weather').textContent,/현재 위치/);
+  assert.match(get('glass-weather').textContent,/서울/);
 });
 test('installed guest uses phone GPS independently of the glasses display and sends only a weather grid',async()=>{
   const urls=[];
   const {get,calls}=await setup({installed:true,user:null,guestFix:()=>assert.fail('unexpected web GPS'),
     nativeFix:async()=>({latitude:37.56654,longitude:126.9781,timestamp:Date.now()}),
     weather:async url=>{urls.push(url.toString());return {ok:true,json:async()=>({source:'kma',temperature:5,expiresAt:Date.now()+60000})};}});
-  assert.equal(get('glass-weather').textContent,'현재 위치 · 5°C');
+  assert.equal(get('glass-weather').textContent,'서울 · 5°C');
   assert.equal(new URL(urls[0]).searchParams.get('cell'),'60,127');
   assert.ok(!urls[0].includes('37.56'));
   assert.equal(calls.at(-1).params.p_lat,37.567);
@@ -220,19 +217,13 @@ test('G2 startup waits for a connected device, opens a simple page and retains c
   device.dispose();
 });
 
-test('two-second reported hold latches voice; release and synthesized click never submit it',async()=>{
-  let handler,clock=100,timer,starts=0,selects=0;
-  const kinds={CLICK_EVENT:0,LONG_PRESS_EVENT:9,LONG_PRESS_RELEASE_EVENT:10,FOREGROUND_EXIT_EVENT:5};
-  const bridge={getDeviceInfo:async()=>({}),createStartUpPageContainer:async()=>0,rebuildPageContainer:async()=>true,
-    onEvenHubEvent:fn=>{handler=fn;return ()=>{};}};
-  const code=readFileSync(path.join(root,'note/glasses-even-g2.mjs'),'utf8').replace(/^import [^;]+;/,'').replaceAll('export ','');
-  const fakeSet=(fn,ms)=>{const id={fn,ms};if(ms===2000)timer=id;return id;};
-  const fakeClear=id=>{if(id && id===timer)timer=null;};
-  const attach=vm.runInNewContext(code+'\nattachEvenG2',{window:new EventTarget(),Date:{now:()=>clock},
-    waitForEvenAppBridge:async()=>bridge,OsEventTypeList:kinds,setTimeout:fakeSet,clearTimeout:fakeClear});
-  const device=await attach({getView:()=>({time:'12:00',cards:[],weather:''}),setBattery(){},startVoice(){starts++;},select(){selects++;}});
-  const event=n=>handler({sysEvent:{eventType:n}});
-  event(9);clock+=1999;event(10);assert.equal(starts,0);assert.equal(timer,null);
-  event(9);clock+=2000;timer.fn();assert.equal(starts,1);event(10);event(0);assert.equal(selects,0);assert.equal(starts,1);
-  event(9);event(5);assert.equal(timer,null);device.dispose();
+test('resolves city boundaries locally including counties and islands', async()=>{
+  const {cityAt}=await import('../note/glasses-city.mjs');
+  for(const [lat,lon,expected] of [[37.5665,126.978,'서울'],[37.2636,127.0286,'수원시'],[35.1796,129.0756,'부산'],[33.4996,126.5312,'제주시'],[33.2541,126.5601,'서귀포시'],[37.8315,127.5095,'가평군'],[34.8118,126.3922,'목포시'],[35.1595,126.8526,'광주'],[35,132,''],[0,0,'']]){
+    assert.equal(cityAt(lat,lon),expected);
+  }
+  const manifest=JSON.parse(readFileSync(path.join(root,'note/even-app/app.json'),'utf8'));
+  assert.deepEqual(manifest.permissions.map(x=>x.name).sort(),['location','network']);
+  const sdk=readFileSync(path.join(root,'note/glasses-even-g2.mjs'),'utf8');
+  assert.doesNotMatch(sdk,/audioControl|voiceMenu|startVoice/);
 });
