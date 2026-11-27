@@ -1,4 +1,4 @@
-import {round,element} from './controls.mjs?v=20261127-firsthands1';
+import {round,element} from './controls.mjs?v=20261127-coach1';
 const W=200,H=100,R=4;
 const pockets=[[4,4],[100,3],[196,4],[4,96],[100,97],[196,96]];
 // Equal-mass elastic impacts on a small practice table, in table coordinates.
@@ -49,15 +49,27 @@ const setups={
 };
 function table(mode){
   const spec=setups[mode],pool=mode==='pool8';
-  return round(spec.title,{angle:spec.angle,power:spec.power,shot:null},(u,s)=>{
-    u.cue(pool?'흰 공으로 줄무늬 공을 오른쪽 위 포켓에 보내세요. 검은 8번 공은 아직 남겨 둬요.':mode==='carom3'?'흰 공이 두 공에 모두 닿아야 해요. 두 번째 공을 맞히기 전에 쿠션을 세 번 이상 거치세요.':'흰 공을 쳐서 빨간 공 두 개를 모두 맞혀요. 노란 공은 피하세요.');
+  return round(spec.title,{angle:0,power:spec.power,shot:null},(u,s)=>{
+    const positions=s.mirror?spec.pos.map(([x,y])=>[x,H-y]):spec.pos;
+    const pocket=s.mirror?'오른쪽 아래':'오른쪽 위';
+    u.cue(pool?'흰 공으로 줄무늬 공을 '+pocket+' 포켓에 보내세요. 검은 8번 공은 아직 남겨 둬요.':mode==='carom3'?'흰 공이 두 공에 모두 닿아야 해요. 두 번째 공을 맞히기 전에 쿠션을 세 번 이상 거치세요.':'흰 공을 쳐서 빨간 공 두 개를 모두 맞혀요. 노란 공은 피하세요.');
     const field=element('div','round-pool');field.setAttribute('aria-label','연습 당구대');u.board.append(field);
     const dot=(cls,x,y)=>{const n=element('i',cls);n.style.left=x/W*100+'%';n.style.top=y/H*100+'%';field.append(n);return n;};
     if(pool)pockets.forEach(([x,y])=>dot('pocket',x,y));
-    const ray=dot('cue-ray',...spec.pos[0]);
-    const dots=spec.pos.map(([x,y],i)=>dot('pool-ball ball-'+(i===0?'white':pool?(i===1?'stripe':'black'):mode==='carom3'&&i===1?'yellow':i===3?'yellow':'red'),x,y));
+    const ray=dot('cue-ray',...positions[0]);
+    const dots=positions.map(([x,y],i)=>dot('pool-ball ball-'+(i===0?'white':pool?(i===1?'stripe':'black'):mode==='carom3'&&i===1?'yellow':i===3?'yellow':'red'),x,y));
     function aim(){ray.style.transform='rotate('+s.angle+'deg)';}aim();
-    const a=u.range('조준 각도',s.angle,-180,180,v=>{s.angle=v;aim();}),p=u.range('힘',s.power,25,90,v=>s.power=v);
+    const a=u.range('조준 각도',s.angle,-180,180,v=>{s.angle=v;aim();});
+    // Fine adjustment is reachable on screens narrower than the 361 angle values.
+    const dial=a.closest('label'),row=element('div','angle-dial');
+    dial.replaceWith(row);row.append(dial);
+    for(const delta of [-1,1]){
+      const n=element('button','round-key',delta<0?'−':'+');
+      n.setAttribute('aria-label',delta<0?'각도 1도 낮추기':'각도 1도 높이기');
+      n.disabled=!!s.shot||!!s.done;
+      n.onclick=()=>{a.value=String(s.angle+delta);a.dispatchEvent(new Event('input',{bubbles:true}));};row.append(n);
+    }
+    const p=u.range('힘',s.power,25,90,v=>s.power=v);
     if(s.shot||s.done){ray.hidden=true;a.disabled=p.disabled=true;}
     if(s.final)s.final.forEach(([x,y,out],i)=>{dots[i].style.left=x/W*100+'%';dots[i].style.top=y/H*100+'%';dots[i].hidden=out;});
     if(s.shot){
@@ -68,9 +80,9 @@ function table(mode){
       }
       u.later(duration,()=>{const rails=events.filter(e=>e.rail).length,hits=new Set(events.filter(e=>e.ball).map(e=>e.ball));
         if(score(mode,events))return u.finish(pool?'줄무늬 공을 넣었어요. 내 그룹의 공을 모두 넣은 뒤에 8번을 노려요.':mode==='carom3'?'쿠션 조건을 채우고 두 번째 대상구까지 맞혀 1점이에요.':'빨간 공 두 개에 모두 닿아 1점이에요.',{shot:null,final:frames.at(-1)});
-        u.change({shot:null},pool?'포켓에 들어가지 않았어요. 줄무늬 공과 오른쪽 위 구멍을 잇는 선을 따라 조준해 보세요.':'이번 샷은 대상구 '+[1,2].filter(i=>hits.has(i)).length+'개, 쿠션 '+rails+'회예요. 다시 조준해 보세요.');});
+        u.change({shot:null},pool?'포켓에 들어가지 않았어요. 줄무늬 공과 '+pocket+' 구멍을 잇는 선을 따라 조준해 보세요.':'이번 샷은 대상구 '+[1,2].filter(i=>hits.has(i)).length+'개, 쿠션 '+rails+'회예요. 다시 조준해 보세요.');});
     }
-    u.buttons([['샷',()=>u.change({shot:roll(spec.pos,s.angle,s.power,pool)}),!!s.shot],['기본 조준',()=>u.change({angle:spec.angle,power:spec.power}),!!s.shot]]);
+    u.buttons([['샷',()=>u.change({shot:roll(positions,s.angle,s.power,pool)}),!!s.shot],['기본 조준',()=>u.change({angle:s.mirror?-spec.angle:spec.angle,power:spec.power}),!!s.shot]]);
   });
 }
 export const billiardGames=Object.fromEntries(Object.keys(setups).map(id=>[id,table(id)]));

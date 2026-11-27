@@ -185,8 +185,8 @@
     let referenceUsed=false;
     body.addEventListener('click',advancedBeforeLoad,{once:true});
     steps.addEventListener('click',advancedBeforeLoad,{once:true});
-    const catalog=options.party?'/games/drinking/rehearsals.mjs?v=20261127-firsthands1':'/shared/games/rounds/arcade.mjs?v=20261127-firsthands1';
-    Promise.all([import('/shared/games/rounds/controls.mjs?v=20261127-firsthands1'),import(catalog)]).then(([controls,collection])=>{
+    const catalog=options.party?'/games/drinking/rehearsals.mjs?v=20261127-coach1':'/shared/games/rounds/arcade.mjs?v=20261127-coach1';
+    Promise.all([import('/shared/games/rounds/coach.mjs?v=20261127-coach1'),import(catalog)]).then(([controls,collection])=>{
       if(!header.isConnected||!collection.rounds[lesson.id])return;
       const switcher=el('nav','practice-views');switcher.setAttribute('aria-label','튜토리얼 보기');
       const play=el('button','','첫 판 연습'),reference=el('button','','동작별 도움말');
@@ -194,7 +194,7 @@
       const pane=el('section','round-pane');body.before(pane);pane.dataset.game=lesson.id;
       const finishRound=el('button','ap-done',options.finishLabel||'연습 마치기');
       finishRound.onclick=options.finish;actions.append(finishRound);
-      const session=controls.mount(pane,collection.rounds[lesson.id],{local:!!options.local,onComplete:done=>{finishRound.disabled=!done;}});
+      const session=controls.mount(pane,collection.rounds[lesson.id],{guide:collection.coaches[lesson.id],local:!!options.local,onComplete:done=>{finishRound.disabled=!done;}});
       let playing=null;
       function switchTo(want,focus=false){
         if(playing===want)return;

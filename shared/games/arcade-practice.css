@@ -186,3 +186,24 @@ dialog.arcade-practice::backdrop {background:rgb(11 23 23 / 70%);}
 :where(.lesson-view) .jumper{width:34px;height:34px;border:2px solid #ecdfb4;border-radius:50%;background:center/cover url('/assets/design/games/runner.webp');box-shadow:0 2px 5px #13374766;}
 :where(.lesson-view) .round-photos.enlarged{grid-template-columns:1fr;}:where(.lesson-view) .enlarged .round-photo{max-width:390px;width:100%;margin:auto;}
 :where(.lesson-view) .territory .claimed{background:#a2d8b9;color:#286d50;}:where(.lesson-view) .territory.photo.reveal .claimed{background:transparent;color:#f0ffe0;}
+
+/* Each lesson puts its next move on the playing surface, within the tap target. */
+.lesson-view .coach-meta{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 6px;}
+.lesson-view .coach-label{font:700 12px/1.4 system-ui,sans-serif;letter-spacing:.015em;color:inherit;}
+.lesson-view .coach-progress{display:flex;gap:3px;width:66px;flex-shrink:0;}
+.lesson-view .coach-progress i{height:4px;flex:1;background:#71857b;border-radius:8px;}
+.lesson-view .coach-progress [data-at=past]{background:#4fba96;}
+.lesson-view .coach-progress [data-at=now]{background:#edaa40;}
+.lesson-view .coach-tools{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;}
+.lesson-view .coach-tool{min-height:44px;min-width:44px;cursor:pointer;margin:0;padding:4px 8px;background:transparent;color:inherit;border:1px solid transparent;border-radius:8px;font:650 13px/1.3 system-ui,sans-serif;}
+.lesson-view .coach-tool:first-child,.lesson-view .coach-tool:hover,.lesson-view .coach-tool:focus-visible{border-color:currentColor;}
+.lesson-view .coach-tool:disabled{opacity:.5;cursor:default;}
+.lesson-view .coach-why{margin:6px 0;padding:5px 10px;border-inline-start:3px solid #c48d33;font:500 13px/1.55 system-ui,sans-serif;word-break:keep-all;color:inherit;}
+.lesson-view .round-pane [data-coach-target]{outline:3px solid #ffce66!important;outline-offset:-4px;box-shadow:inset 0 0 0 5px #704710!important;}
+.lesson-view .round-pane input[data-coach-target]{outline-offset:0;}
+.lesson-view .round-pane [hidden]{display:none!important;}
+.lesson-view .coach-board .round-cue{word-break:keep-all;overflow-wrap:anywhere;}
+.lesson-view .round-pane .rehearsal-feedback:empty{display:none;}
+.lesson-view .angle-dial{display:flex;align-items:center;gap:4px;}
+.lesson-view .angle-dial .round-range{flex:1;min-width:0;}
+.lesson-view .angle-dial .round-key{flex:0 0 44px;min-width:44px;padding:0;font-size:19px;}
