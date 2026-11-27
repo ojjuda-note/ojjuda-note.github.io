@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-27",
+  "updatedAt": "2026-11-28",
   "events": [
     {
       "id": "gongju-gunbam-2026",
@@ -9368,7 +9368,7 @@
       "title": "2026 크리스마스트리 문화축제",
       "category": "local",
       "section": "festival",
-      "start": "2026-11-27",
+      "start": "2026-11-26",
       "end": "2027-01-15",
       "region": "인천",
       "city": "연수구",
@@ -9378,20 +9378,23 @@
       "lng": null,
       "geoApprox": false,
       "locationStatus": "unmapped",
-      "summary": "연수구청 한마음광장을 중심으로 성탄 트리와 연말연시 조명을 선보이는 문화축제입니다.",
-      "scheduleNote": "인천관광 11/3 안내 기준 11/27~2027/1/15. 세부 점등시간·공연일정 공식 안내 확인.",
-      "priceNote": "공식 안내 확인",
-      "accessNote": "행사장 운영 조건과 점등 시간은 연수구 주최 측 후속 안내 확인.",
-      "sourceUrl": "https://itour.incheon.go.kr/tourinfo/ntbd/detail.do?bbsNo=56350",
-      "sourceName": "인천광역시·인천관광공사 인천투어",
-      "sourceCheckedAt": "2026-11-07",
+      "summary": "연수구청 한마음광장에서 크리스마스트리와 포토존을 전시합니다.",
+      "scheduleNote": "2026년 11월 26일~2027년 1월 15일 상시 전시. 조명 점등 매일 17:00~22:00. 11월 26일 17:30 점등식은 종료된 별도 행사.",
+      "priceNote": "무료",
+      "accessNote": "현장 상황에 따라 운영 일정 변경 가능. 영종·운서 행사와 별개입니다.",
+      "sourceUrl": "https://www.ysfac.or.kr/user/cultural/events_view.php?search=YToxOntzOjEwOiJldmVudF9jb2RlIjtzOjk6IjAwMjAwMjAwNCI7fQ%3D%3D&sq=417",
+      "sourceName": "연수문화재단·연수구",
+      "sourceCheckedAt": "2026-11-28",
       "tags": [
         "겨울축제",
         "크리스마스",
         "트리",
         "빛축제"
       ],
-      "status": "scheduled"
+      "status": "scheduled",
+      "verificationSources": [
+        "https://itour.incheon.go.kr/tourinfo/ntbd/detail.do?bbsNo=56350"
+      ]
     },
     {
       "category": "local",
@@ -17643,7 +17646,7 @@
     },
     {
       "id": "gwangalli-m-drone-laser-20261114",
-      "title": "광안리 M 드론×레이저쇼 〈가을빛 숲속 마을〉",
+      "title": "광안리 M 드론라이트쇼 〈가을빛 숲속 마을〉",
       "category": "local",
       "section": "festival",
       "start": "2026-11-14",
@@ -17655,20 +17658,21 @@
       "lat": 35.153,
       "lng": 129.119,
       "geoApprox": true,
-      "sourceCheckedAt": "2026-11-09",
-      "status": "scheduled",
-      "summary": "부산 광안리 해변에서 펼쳐지는 2026년 11월 정기 드론·레이저 빛 공연. 해당 날짜의 공식 프로그램 주제는 ‘가을빛 숲속 마을’입니다.",
-      "scheduleNote": "11-14(토) 공연 예정. 공연 시각은 주최 측 공식 누리집 확인. 악천후·통신 환경에 따라 전날 또는 당일에도 지연·취소될 수 있음.",
-      "priceNote": "무료 관람 구역·유료 좌석 여부는 운영기관 공식 안내 확인.",
-      "accessNote": "해당 날짜 하루의 빛 공연이며, 11월 14~28일 매일 열리는 행사가 아닙니다. 기상 사유 취소 공지를 당일 확인하세요.",
-      "sourceUrl": "https://www.visitbusan.net/schedule/view.do?boardId=BBS_0000009&dataSid=6449&menuCd=DOM_000000204012000000",
-      "sourceName": "부산광역시 공식 관광포털 비짓부산",
+      "sourceCheckedAt": "2026-11-28",
+      "status": "cancelled",
+      "summary": "11월 14일 예정됐던 공연은 부산지역 우천 예보로 취소되었습니다.",
+      "scheduleNote": "2026년 11월 14일 19:00·21:00 두 회 모두 취소(11월 13일 주최 측 공지).",
+      "priceNote": "무료 관람 공연(취소)",
+      "accessNote": "해당 날짜 공연은 취소되었습니다.",
+      "sourceUrl": "https://www.gwangallimdrone.co.kr/notice/11weol-14il-to-gwanganri-m-deuronraiteusyo-gongyeon-cwiso-annae",
+      "sourceName": "수영구 광안리 M 드론라이트쇼 공식 취소 공지",
       "verificationSources": [
-        "https://www.gwangallimdrone.co.kr/"
+        "https://www.visitbusan.net/schedule/view.do?boardId=BBS_0000009&dataSid=6449&menuCd=DOM_000000204012000000",
+        "https://www.gwangallimdrone.co.kr/notice/gwanganri-m-deuronraiteusyo-11weol-gongyeon-peurogeuraem-annae-2",
+        "https://www.busan.go.kr/eng/bsnews01/1763224"
       ],
       "tags": [
         "드론",
-        "레이저",
         "빛",
         "야경",
         "광안리"
@@ -17721,18 +17725,21 @@
       "lat": 35.153,
       "lng": 129.119,
       "geoApprox": true,
-      "sourceCheckedAt": "2026-11-27",
+      "sourceCheckedAt": "2026-11-28",
       "status": "scheduled",
       "summary": "광안리 해변의 토요일 드론 공연. 11월 28일 주제는 ‘어벤져스: 둠스데이 in 광안리’이며, 별도 레이저쇼 표기는 11월 21일 공연에 해당합니다.",
       "scheduleNote": "11월 28일(토) 19:00·21:00 두 차례, 회당 약 12분. 날씨나 기술 문제로 전날 또는 당일 지연·취소될 수 있음.",
       "priceNote": "무료 관람",
-      "accessNote": "해당 날짜 하루의 빛 공연이며, 11월 14~28일 매일 열리는 행사가 아닙니다. 기상 사유 취소 공지를 당일 확인하세요.",
+      "accessNote": "11월 28일 하루 두 차례 공연 예정. 11월 28일 새벽 확인 당시 공식 취소 공지를 찾지 못했으며, 출발 전 당일 최신 공지를 재확인하세요.",
       "sourceUrl": "https://www.busan.go.kr/eng/bsnews01/1763224",
       "sourceName": "부산광역시 공식 11월 공연 안내",
       "verificationSources": [
         "https://www.gwangallimdrone.co.kr/",
         "https://www.visitbusan.net/schedule/view.do?boardId=BBS_0000009&dataSid=6449&menuCd=DOM_000000204012000000",
-        "https://www.busan.go.kr/eng/bsnews01/1763224"
+        "https://www.busan.go.kr/eng/bsnews01/1763224",
+        "https://www.gwangallimdrone.co.kr/notice/gwanganri-m-deuronraiteusyo-11weol-gongyeon-peurogeuraem-annae-2",
+        "https://www.gwangallimdrone.co.kr/overview",
+        "https://www.gwangallimdrone.co.kr/notice"
       ],
       "tags": [
         "드론",
@@ -18210,12 +18217,12 @@
       "lng": null,
       "geoApprox": false,
       "summary": "제13회 해운대빛축제는 딥 다이브 해운대를 주제로 바다와 심해를 표현한 빛 조형물과 미디어아트를 선보인다.",
-      "scheduleNote": "11월 28일 점등식, 축제 운영 18:00~23:00. 세부 프로그램은 공식 안내 확인.",
+      "scheduleNote": "11월 28일 해운대해수욕장 점등식 18:00~19:00(불꽃쇼 18:15~18:25). 축제 기간 점등 18:00~23:00, 체험프로그램 18:00~21:00.",
       "priceNote": "무료",
       "accessNote": "구간별 운영 및 교통 통제는 방문 전 공식 안내 확인.",
-      "sourceUrl": "https://www.mcst.go.kr/site/s_culture/festival/festivalView.jsp?pRo=12&pSeq=12038",
-      "sourceName": "문화체육관광부 지역축제",
-      "sourceCheckedAt": "2026-11-24",
+      "sourceUrl": "https://visitbusan.net/schedule/view.do?boardId=BBS_0000009&dataSid=6503&menuCd=DOM_000000204012000000",
+      "sourceName": "부산광역시 공식 관광포털 비짓부산·해운대구",
+      "sourceCheckedAt": "2026-11-28",
       "tags": [
         "빛축제",
         "겨울축제",
@@ -18225,6 +18232,7 @@
       ],
       "status": "scheduled",
       "verificationSources": [
+        "https://www.mcst.go.kr/site/s_culture/festival/festivalView.jsp?pRo=12&pSeq=12038",
         "https://traveli.visitkorea.or.kr/kfes/detail/fstvlDetail.do?cntntsNm=%ED%95%B4%EC%9A%B4%EB%8C%80%EB%B9%9B%EC%B6%95%EC%A0%9C&fstvlCntntsId=b3b7a23c-c7f6-45db-930a-b139e4d8cd9f"
       ]
     },
@@ -24630,6 +24638,204 @@
       "geoApprox": false,
       "locationStatus": "unmapped",
       "sourceCheckedAt": "2026-11-27",
+      "status": "scheduled"
+    },
+    {
+      "id": "busan-gwangbokro-winter-light-tree-202627",
+      "title": "2026 광복로 겨울빛 트리축제",
+      "category": "local",
+      "section": "festival",
+      "start": "2026-12-04",
+      "end": "2027-01-31",
+      "region": "부산",
+      "city": "중구",
+      "venue": "광복로·광복중앙로 일원",
+      "address": "부산광역시 중구 광복로 45 일원",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "locationStatus": "unmapped",
+      "summary": "광복로 일대에서 대형 성탄 트리와 거리 조명, 빛 조형물을 전시하는 겨울 축제입니다.",
+      "scheduleNote": "2026년 12월 4일~2027년 1월 31일 17:30~22:30. 별도 거리공연 일정과 구분.",
+      "priceNote": "공식 안내 확인",
+      "accessNote": "세부 구역 운영과 관람 조건은 공식 안내 확인.",
+      "sourceUrl": "https://visitbusan.net/schedule/view.do?boardId=BBS_0000009&dataSid=6505&menuCd=DOM_000000204019000000",
+      "sourceName": "비짓부산·부산 중구",
+      "sourceCheckedAt": "2026-11-28",
+      "tags": [
+        "빛축제",
+        "크리스마스",
+        "트리",
+        "야경"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "gwangalli-m-drone-laser-20261205",
+      "title": "광안리 M 드론×레이저쇼 〈푸른 심해의 비밀〉",
+      "category": "local",
+      "section": "festival",
+      "start": "2026-12-05",
+      "end": "2026-12-05",
+      "region": "부산",
+      "city": "수영구",
+      "venue": "광안리 해변",
+      "address": "부산 수영구 광안해변로 219",
+      "lat": 35.153,
+      "lng": 129.119,
+      "geoApprox": true,
+      "summary": "광안리 해변 정기 공연의 12월 5일 주제는 ‘푸른 심해의 비밀’입니다. 레이저 연출 포함.",
+      "scheduleNote": "12월 5일 19:00·21:00 두 차례 예정.",
+      "priceNote": "무료 관람",
+      "accessNote": "우천·강풍·통신 상황에 따라 당일에도 지연 또는 취소 가능. 방문 전 최신 공지 확인.",
+      "sourceUrl": "https://www.gwangallimdrone.co.kr/notice/gwanganri-m-deuronraiteusyo-12weol-gongyeon-peurogeuraem-annae-3",
+      "sourceName": "수영구 광안리 M 드론라이트쇼 12월 공식 프로그램",
+      "sourceCheckedAt": "2026-11-28",
+      "verificationSources": [
+        "https://www.gwangallimdrone.co.kr/overview",
+        "https://www.gwangallimdrone.co.kr/notice",
+        "https://www.busan.go.kr/eng/bsnews01/1763224"
+      ],
+      "tags": [
+        "드론",
+        "야경",
+        "광안리",
+        "레이저"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "gwangalli-m-drone-laser-20261212",
+      "title": "광안리 M 드론라이트쇼 〈얼음왕국: 사라진 태양〉",
+      "category": "local",
+      "section": "festival",
+      "start": "2026-12-12",
+      "end": "2026-12-12",
+      "region": "부산",
+      "city": "수영구",
+      "venue": "광안리 해변",
+      "address": "부산 수영구 광안해변로 219",
+      "lat": 35.153,
+      "lng": 129.119,
+      "geoApprox": true,
+      "summary": "광안리 해변 정기 공연의 12월 12일 주제는 ‘얼음왕국: 사라진 태양’입니다.",
+      "scheduleNote": "12월 12일 19:00·21:00 두 차례 예정.",
+      "priceNote": "무료 관람",
+      "accessNote": "우천·강풍·통신 상황에 따라 당일에도 지연 또는 취소 가능. 방문 전 최신 공지 확인.",
+      "sourceUrl": "https://www.gwangallimdrone.co.kr/notice/gwanganri-m-deuronraiteusyo-12weol-gongyeon-peurogeuraem-annae-3",
+      "sourceName": "수영구 광안리 M 드론라이트쇼 12월 공식 프로그램",
+      "sourceCheckedAt": "2026-11-28",
+      "verificationSources": [
+        "https://www.gwangallimdrone.co.kr/overview",
+        "https://www.gwangallimdrone.co.kr/notice",
+        "https://www.busan.go.kr/eng/bsnews01/1763224"
+      ],
+      "tags": [
+        "드론",
+        "야경",
+        "광안리"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "gwangalli-m-drone-laser-20261219",
+      "title": "광안리 M 드론×레이저쇼 〈호빵맨의 겨울빵학 in 광안리〉",
+      "category": "local",
+      "section": "festival",
+      "start": "2026-12-19",
+      "end": "2026-12-19",
+      "region": "부산",
+      "city": "수영구",
+      "venue": "광안리 해변",
+      "address": "부산 수영구 광안해변로 219",
+      "lat": 35.153,
+      "lng": 129.119,
+      "geoApprox": true,
+      "summary": "광안리 해변 정기 공연의 12월 19일 주제는 ‘호빵맨의 겨울빵학 in 광안리’입니다. 레이저 연출 포함.",
+      "scheduleNote": "12월 19일 19:00·21:00 두 차례 예정.",
+      "priceNote": "무료 관람",
+      "accessNote": "우천·강풍·통신 상황에 따라 당일에도 지연 또는 취소 가능. 방문 전 최신 공지 확인.",
+      "sourceUrl": "https://www.gwangallimdrone.co.kr/notice/gwanganri-m-deuronraiteusyo-12weol-gongyeon-peurogeuraem-annae-3",
+      "sourceName": "수영구 광안리 M 드론라이트쇼 12월 공식 프로그램",
+      "sourceCheckedAt": "2026-11-28",
+      "verificationSources": [
+        "https://www.gwangallimdrone.co.kr/overview",
+        "https://www.gwangallimdrone.co.kr/notice",
+        "https://www.busan.go.kr/eng/bsnews01/1763224"
+      ],
+      "tags": [
+        "드론",
+        "야경",
+        "광안리",
+        "레이저"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "gwangalli-m-drone-laser-20261226",
+      "title": "광안리 M 드론라이트쇼 〈산타와 친구들, 미션 클리어!〉",
+      "category": "local",
+      "section": "festival",
+      "start": "2026-12-26",
+      "end": "2026-12-26",
+      "region": "부산",
+      "city": "수영구",
+      "venue": "광안리 해변",
+      "address": "부산 수영구 광안해변로 219",
+      "lat": 35.153,
+      "lng": 129.119,
+      "geoApprox": true,
+      "summary": "광안리 해변 정기 공연의 12월 26일 주제는 ‘산타와 친구들, 미션 클리어!’입니다.",
+      "scheduleNote": "12월 26일 19:00·21:00 두 차례 예정.",
+      "priceNote": "무료 관람",
+      "accessNote": "우천·강풍·통신 상황에 따라 당일에도 지연 또는 취소 가능. 방문 전 최신 공지 확인.",
+      "sourceUrl": "https://www.gwangallimdrone.co.kr/notice/gwanganri-m-deuronraiteusyo-12weol-gongyeon-peurogeuraem-annae-3",
+      "sourceName": "수영구 광안리 M 드론라이트쇼 12월 공식 프로그램",
+      "sourceCheckedAt": "2026-11-28",
+      "verificationSources": [
+        "https://www.gwangallimdrone.co.kr/overview",
+        "https://www.gwangallimdrone.co.kr/notice",
+        "https://www.busan.go.kr/eng/bsnews01/1763224"
+      ],
+      "tags": [
+        "드론",
+        "야경",
+        "광안리"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "gwangalli-m-drone-laser-20261231",
+      "title": "광안리 M 드론×레이저쇼 〈2027 카운트다운〉",
+      "category": "local",
+      "section": "festival",
+      "start": "2026-12-31",
+      "end": "2026-12-31",
+      "region": "부산",
+      "city": "수영구",
+      "venue": "광안리 해변",
+      "address": "부산 수영구 광안해변로 219",
+      "lat": 35.153,
+      "lng": 129.119,
+      "geoApprox": true,
+      "summary": "새해를 맞는 광안리 특별 드론·레이저 공연. 공식 프로그램 포스터 안내 기준 드론 3,000대 규모.",
+      "scheduleNote": "12월 31일 23:50 시작 예정, 특별공연 1회. 종료 시각은 공식 안내 확인.",
+      "priceNote": "특별공연 관람 조건은 공식 안내 확인.",
+      "accessNote": "우천·강풍·통신 상황에 따라 당일에도 지연 또는 취소 가능. 방문 전 최신 공지 확인.",
+      "sourceUrl": "https://www.gwangallimdrone.co.kr/notice/gwanganri-m-deuronraiteusyo-12weol-gongyeon-peurogeuraem-annae-3",
+      "sourceName": "수영구 광안리 M 드론라이트쇼 12월 공식 프로그램",
+      "sourceCheckedAt": "2026-11-28",
+      "verificationSources": [
+        "https://www.gwangallimdrone.co.kr/overview",
+        "https://www.gwangallimdrone.co.kr/notice"
+      ],
+      "tags": [
+        "드론",
+        "야경",
+        "광안리",
+        "레이저",
+        "카운트다운"
+      ],
       "status": "scheduled"
     }
   ]
