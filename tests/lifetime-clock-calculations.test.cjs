@@ -72,8 +72,16 @@ test('resaving the same birthday or answers on a later day keeps the same estima
 });
 
 test('Korean birth time, leap days, newborns and the trend crossing', t => {
-  const { api, id, submit, elapsed } = page(t, { birth: '1983-04-17', fields: { basis: 'men' } });
+  const { api, id, w, submit, elapsed } = page(t, { birth: '1983-04-17', fields: { basis: 'men' } });
   assert.equal(elapsed(), kst('2074-01-17T00:00:00'));
+  const nowFunction = w.Date.now;
+  const eleventhSecond = api.current().born + 364628000;
+  for (const [offset, expected] of [[-1000, '00:00:10'], [0, '00:00:11'], [1000, '00:00:11']]) {
+    w.Date.now = () => eleventhSecond + offset;
+    api.tick();
+    assert.equal(id('life-time').textContent, expected);
+  }
+  w.Date.now = nowFunction;
   id('birth-time').value = '14:37';
   submit('birth-form');
   assert.equal(elapsed(), kst('2074-01-17T14:37:00'));

@@ -135,8 +135,9 @@ function tick() {
   clearTimeout(timer);
   if(!clock || document.hidden) return;
   const now=Math.floor(Date.now()/1000)*1000;
-  const progress=Math.max(0,(now-clock.born)/(clock.target-clock.born));
-  const lifeSeconds=DAY*progress;
+  const elapsed=Math.max(0,(now-clock.born)/1000);
+  const span=(clock.target-clock.born)/1000;
+  const lifeSeconds=(elapsed*DAY)/span;
   drawLifeDial(lifeSeconds,timeText(Math.floor(lifeSeconds)));
   const inBonus=now>=clock.target;
   const bonusDay=Math.floor((now+KST)/(DAY*1000))-Math.floor((clock.target+KST)/(DAY*1000));
