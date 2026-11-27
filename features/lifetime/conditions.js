@@ -77,7 +77,7 @@ const conditionSections = {
   ],
   social:[
     ["household","누구와 함께 사나요?",optionalGroups.household],
-    ["pet","지금 어떤 반려동물과 함께 사나요?",{dog:"강아지",cat:"고양이",other:"다른 동물",mixed:"여러 종류",none:"없어요"},"반려동물과 수명에 관한 연구는 더보기에서 볼 수 있어요."],
+    ["pet","지금 어떤 반려동물과 함께 사나요?",{dog:"강아지",cat:"고양이",other:"다른 동물",mixed:"여러 종류",none:"없어요"}],
     ["marriage","현재 결혼 상태는 어떤가요?",optionalGroups.marriage],
     ["education","어느 학교까지 졸업했나요?",optionalGroups.education]
   ],
