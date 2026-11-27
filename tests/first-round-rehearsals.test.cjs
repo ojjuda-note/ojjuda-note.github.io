@@ -63,7 +63,7 @@ test('all opening rounds finish with their actual controls and leave game state 
         }
         for(const step of walk)await act(panel,step);
         await p.locator('.round-pane[data-complete="true"]:visible').waitFor();
-        assert.ok((await panel.locator('.round-status').innerText()).length>=10);
+        assert.ok((await panel.locator('.rehearsal-feedback').innerText()).length>=10);
         assert.ok(await panel.evaluate(n=>n.scrollWidth<=n.clientWidth+1));
         const broken=await panel.locator('img').evaluateAll(async imgs=>{await Promise.all(imgs.map(i=>i.decode().catch(()=>{})));return imgs.filter(i=>!i.naturalWidth).map(i=>i.src);});
         assert.deepEqual(broken,[]);

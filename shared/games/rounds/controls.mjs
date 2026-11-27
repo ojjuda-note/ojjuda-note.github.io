@@ -14,9 +14,9 @@ export function mount(host,spec,{local=false,onComplete}={}){
   const title=element('h3','round-title',spec.title);
   const prompt=element('p','round-cue');prompt.setAttribute('aria-live','polite');
   const board=element('div','round-surface');
-  const status=element('p','round-status');status.setAttribute('role','status');
+  const status=element('p','rehearsal-feedback');status.setAttribute('role','status');
   const restart=element('button','round-restart','처음부터');restart.onclick=reset;
-  const head=element('div','round-head');head.append(title,restart);
+  const head=element('div','rehearsal-head');head.append(title,restart);
   host.append(head,prompt,board,status);
   function cancel(){alarms.forEach(clearTimeout);alarms=[];}
   function reset(){state=structuredClone(spec.initial);message='';render();onComplete(false);}
