@@ -23,6 +23,13 @@
     title.textContent = heading.textContent;
     heading.replaceWith(title);
     section.querySelector('.section-index')?.remove();
+    const allGuides = document.createElement('a');
+    allGuides.className = 'text-link';
+    allGuides.href = '/guide.html#guide-contents';
+    allGuides.textContent = '전체 사용법 보기';
+    const links = document.createElement('p');
+    links.append(allGuides);
+    section.append(links);
     document.querySelector('main').replaceChildren(section);
     document.title = (returnTo === 'park' ? '공원' : '파장') + ' 사용법 | 오쭈다';
   }
