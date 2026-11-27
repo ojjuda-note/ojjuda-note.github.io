@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<base href="/features/lifetime/">
+<link rel="canonical" href="https://ojjuda.kr/lifetime/">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f2f5f4">
+<title>수명시계</title>
+<link rel="stylesheet" href="style.css">
+<script defer src="population.js"></script>
+<script defer src="research.js"></script>
+<script defer src="estimate.js"></script>
+<script defer src="conditions.js"></script>
+<script defer src="survival.js"></script>
+<script defer src="clock-scenery.js"></script>
+<script defer src="clock-display.js"></script>
+<script defer src="clock.js"></script>
+<script defer src="focus-download.js"></script>
+</head>
+<body>
+<main>
+  <header><span class="clockmark" aria-hidden="true"></span><h1>수명시계</h1></header>
+  <details id="birth-settings" class="birth-settings" open>
+    <summary>생일 입력</summary>
+    <form id="birth-form">
+      <div class="fields">
+        <div class="field"><label for="birth">생년월일</label><input type="date" id="birth" required></div>
+        <div class="field"><label for="birth-time">태어난 시각 (선택)</label><input type="time" id="birth-time" step="60" aria-describedby="birth-time-note"><small id="birth-time-note">모르면 00시로 계산해요.</small></div>
+      </div>
+      <button type="submit" class="apply">저장</button>
+    </form>
+  </details>
+  <section class="instrument" aria-label="수명시계">
+    <div class="life-reading">
+      <canvas id="sky-window" aria-hidden="true"></canvas>
+      <div class="face-header"><h2 id="life-label">내 생의 24시간</h2>
+        <span class="phase" id="phase-badge"><b id="meridiem">—</b><span id="daypart">—</span></span>
+      </div>
+      <div class="dial">
+        <div class="dial-inner" aria-hidden="true">
+          <div class="dial-ticks"></div><div id="dial-numbers"></div>
+          <div class="hand hour-hand" id="hour-hand"></div><div class="hand minute-hand" id="minute-hand"></div>
+          <div class="hand second-hand" id="second-hand"></div><div class="hand-pin"></div>
+        </div>
+        <time id="life-time" role="timer" aria-live="off">--:--:--</time>
+      </div>
+      <p class="encouragement" id="encouragement"></p>
+    </div>
+    <div class="remaining-reading"><h2 id="remaining-label">남은 추정 수명</h2>
+      <div id="flip-board" aria-hidden="true"></div>
+      <span class="sr-only" id="remaining" role="timer" aria-live="off">—</span>
+    </div>
+  </section>
+  <button class="open-conditions" id="open-conditions" type="button" aria-haspopup="dialog" aria-controls="condition-dialog">조건 넣기</button>
+  <p id="save-feedback" class="save-feedback" role="status"></p>
+  <dialog id="condition-dialog" aria-labelledby="dialog-title">
+    <form id="condition-form">
+      <header class="form-head"><h2 id="dialog-title" tabindex="-1">조건 넣기</h2><button id="cancel-x" type="button" aria-label="닫기">×</button></header>
+      <div class="form-body">
+        <section><h3>기본 정보</h3><div class="fields" id="base-fields"></div></section>
+        <section><h3>생활 조건</h3>
+          <div class="fields" id="daily-fields"></div>
+        </section>
+        <section><h3>생활습관</h3><div class="fields" id="habit-fields"></div></section>
+        <section><h3>가족과 생활</h3><div class="fields" id="social-fields"></div></section>
+        <details class="preferences" id="extra-conditions"><summary>생활·건강 정보 더 넣기</summary><div class="fields" id="extra-fields"></div></details>
+        <details class="preferences" id="play-conditions"><summary>왠지 오래 살 것 같은 이유</summary>
+          <div id="play-questions"></div>
+          <label id="previous-story-bonus" hidden><input id="keep-previous-stories" type="checkbox"><span id="previous-story-label">지난 질문 보너스 유지</span></label>
+        </details>
+        <details class="preferences" id="exam-conditions"><summary>검진 결과 넣기</summary><p class="optional-note">검진표가 있으면 아는 수치만 골라 주세요.</p><div class="fields" id="health-fields"></div></details>
+      </div>
+      <footer class="form-actions"><button id="cancel" type="button">취소</button><button type="submit" class="apply">저장</button></footer>
+    </form>
+  </dialog>
+  <details class="more"><summary>더보기</summary>
+    <div id="birth-edit-position"></div>
+    <h3>계산식</h3>
+    <p><strong>내 생의 24시간</strong> = 태어난 뒤 지난 시간 ÷ 전체 추정 생애 × 24시간</p>
+    <p><strong>남은 추정 수명</strong> = 전체 추정 생애 − 태어난 뒤 지난 시간</p>
+    <p>한국 시간으로 태어난 시각부터 계산해요. 시각을 비우면 생일 당일 00:00을 사용해요. 예상 시점을 지나도 바늘은 같은 속도로 돌고 표시 시간은 24시간을 넘어 계속 늘어나요. 아래에는 예상 시점을 지나 실제로 살아온 시간이 쌓여요.</p>
+    <div id="model-method">
+      <p id="as-of"></p>
+      <div class="formula-card">
+        <p><strong>나이별 통합 사망률</strong> = 전국의 같은 나이·성별 사망률 × 지역 보정 × 입력한 조건들의 위험 배수</p>
+        <p><strong>남은 수명</strong> = 전국 기대여명 × (조건을 반영한 생존곡선 면적 ÷ 전국 생존곡선 면적)</p>
+      </div>
+      <p>나이를 한 살씩 높여 가며 살아 있을 확률을 이어서 계산해요. 생존곡선 면적은 앞으로 살아 있을 시간을 모두 합한 값이에요.</p>
+      <p id="comparison-detail"></p><p id="bonus-explanation" hidden></p>
+      <p id="play-detail" hidden></p>
+      <div id="result-detail"></div>
+      <details class="reference"><summary>전체 자료와 계산 기준</summary>
+        <div id="evidence-catalog"></div>
+        <p>놀이 시계 = 통계로 구한 시각 + 이야기당 1일 + ‘사람’ 1일 − 스트레스 점수당 1일 − 여행·운전 ‘예’마다 1일 − 선택한 엄지당 1일</p>
+        <p>핀란드 연구에서는 지난 한 달의 스트레스를 네 단계로 조사했어요. <a href="https://pubmed.ncbi.nlm.nih.gov/32152164/" target="_blank" rel="noopener">스트레스 연구</a></p>
+        <p>스웨덴에서는 반려견과 사는 사람의 사망률이 낮았고, 영국에서는 뚜렷한 차이가 없었어요. 반려동물과 함께 사는지는 수명을 늘리거나 줄이는 값으로 쓰지 않아요. <a href="https://pubmed.ncbi.nlm.nih.gov/29150678/" target="_blank" rel="noopener">스웨덴 연구</a> · <a href="https://pubmed.ncbi.nlm.nih.gov/29241716/" target="_blank" rel="noopener">영국 연구</a></p>
+        <p>전국은 2024년 생명표를 쓰고, 지역은 2023년 같은 나이·성별의 지역과 전국 사망률 비율로 보정해요. 성별을 비우면 남녀의 생존 결과를 전국 평균에 맞춰 합쳐요.</p>
+        <p>생활습관을 함께 조사한 연구는 묶어서 한 번 반영해요. 일부만 답하면 그 답과 일치하는 사람들의 분포를 사용해요. 빈 항목은 별도의 배수를 넣지 않아요.</p>
+        <p>기간이 정해진 연구는 추적 기간까지만 위험 차이를 적용해요. 혼인·학력·등록 장애·새로 진단받은 당뇨처럼 남은 수명의 차이를 제시한 자료는 같은 차이가 나는 사망률 배수로 환산해요. 보험료 소득 구간은 국내 연구의 1년 사망확률을 사용해요.</p>
+        <p>식은 서로 다른 연구의 배수를 곱할 수 있다고 가정해요. 알려진 중복은 한 번만 쓰지만, 소득과 학력처럼 함께 움직이는 조건의 영향을 완전히 나누기는 어려워요. 이 조합은 개인의 수명을 예측하는 방법으로 검증되지 않은 참고용 시나리오예요.</p>
+        <p>자가 보유와 사망률을 비교한 국내 연구도 있어요. 전세·월세를 구분하거나 소득과 따로 계산할 근거가 부족해 원문을 함께 실었어요.</p>
+        <p>대기오염·장시간 노동·사회적 고립 연구도 볼 수 있어요. 특정 사망 원인이나 질병 발생을 다룬 수치, 현재 문진으로 노출을 알 수 없는 수치는 계산에서 제외해요.</p>
+        <div class="sources">
+          <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4802872/" target="_blank" rel="noopener">자가 보유</a>
+          <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11080206/" target="_blank" rel="noopener">대기오염</a>
+          <a href="https://www.who.int/news/item/17-05-2021-long-working-hours-increasing-deaths-from-heart-disease-and-stroke-who-ilo" target="_blank" rel="noopener">장시간 노동</a>
+          <a href="https://pubmed.ncbi.nlm.nih.gov/37337095/" target="_blank" rel="noopener">사회적 고립</a>
+        </div>
+      </details>
+    <div class="sources">
+      <a href="https://www.mods.go.kr/boardDownload.es?bid=208&amp;list_no=439533&amp;seq=1" target="_blank" rel="noopener">전국 생명표</a>
+      <a href="https://mods.go.kr/boardDownload.es?bid=208&amp;list_no=434042&amp;seq=3" target="_blank" rel="noopener">지역 생명표</a>
+      <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7314763/#Tab3" target="_blank" rel="noopener">생활습관 연구</a>
+      <a href="https://pubmed.ncbi.nlm.nih.gov/42383937/" target="_blank" rel="noopener">1인 가구 연구</a>
+      <a href="https://www.mods.go.kr/boardDownload.es?bid=10820&amp;list_no=442130&amp;seq=7" target="_blank" rel="noopener">1인 가구 분포</a>
+      <a href="https://kostat.go.kr/boardDownload.es?bid=203&amp;list_no=437767&amp;seq=3" target="_blank" rel="noopener">인구총조사</a>
+      <a href="https://mods.go.kr/boardDownload.es?bid=204&amp;list_no=271983&amp;seq=2" target="_blank" rel="noopener">혼인상태생명표</a>
+      <a href="https://doi.org/10.1186/1475-9276-11-71" target="_blank" rel="noopener">학력별 기대여명</a>
+      <a href="https://www.korea.kr/goNews/resources/attaches/2011.12/02/96e1fe600efad4f222611c7cd478b602.pdf" target="_blank" rel="noopener">2010년 전국 생명표</a>
+    </div>
+  </div>
+  </details>
+  <nav class="service-banners" aria-label="오쭈다 서비스">
+    <a class="service-banner agit" href="https://ojjuda.kr/world.html?tab=hub" target="_blank" rel="noopener noreferrer">
+      <span><strong>아지트</strong><small>모임·게임</small></span>
+      <img src="agit.webp" width="310" height="207" loading="lazy" decoding="async" alt="">
+    </a>
+    <a class="service-banner park" href="https://ojjuda.kr/park/" target="_blank" rel="noopener noreferrer">
+      <span><strong>공원</strong><small>일상·소통</small></span>
+      <img src="park.webp" width="260" height="260" loading="lazy" decoding="async" alt="">
+    </a>
+    <a class="service-banner pajang" href="https://ojjuda.kr/features/pajang/" target="_blank" rel="noopener noreferrer">
+      <span><strong>파장</strong><small>19+ 소개팅</small></span>
+      <img src="pajang.webp" width="260" height="260" loading="lazy" decoding="async" alt="">
+    </a>
+    <a class="service-banner focus" id="focus-download" href="https://play.google.com/store/apps/details?id=kr.framenote.camera.studio&amp;hl=ko">
+      <span><strong>포커스</strong><small id="focus-download-status" aria-live="polite">APK 다운로드</small></span>
+      <img src="focus.webp" width="260" height="260" loading="lazy" decoding="async" alt="">
+    </a>
+  </nav>
+  <noscript>초 단위 시계를 보려면 브라우저에서 자바스크립트를 켜 주세요.</noscript>
+</main>
+</body>
+</html>
