@@ -27,6 +27,7 @@ async function presentation({concealed = false, reducedMotion = false} = {}) {
     if (!this.open) return;
     this.removeAttribute('open');this.dispatchEvent(new w.Event('close'));
   };
+  w.eval(fs.readFileSync(path.join(root,'shared/games/lesson-panel.js'),'utf8'));
   for (const name of ['game-guides.js','presentation.js'])
     w.eval(fs.readFileSync(path.join(root,'games/drinking',name),'utf8'));
   const dialog = type => w.document.querySelector('[data-drinking-dialog="'+type+'"]');

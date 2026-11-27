@@ -10,6 +10,7 @@ function fixture() {
   const w=dom.window;
   w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
   w.HTMLDialogElement.prototype.close=function(){this.open=false;};
+  w.eval(source('shared/games/lesson-panel.js'));
   w.eval(source('shared/games/arcade-practice.js'));
   return {dom,w,practice:w.OjjudaArcadePractice,doc:w.document};
 }
@@ -20,7 +21,11 @@ test('practice does not launch or save a game until the user continues, and eith
     assert.ok(practice.show('sacheonseong',{onContinue:next}));
     const tiles=doc.querySelectorAll('.ap-tile');
     tiles[2].click();tiles[1].click();tiles[0].click();
-    assert.equal(launches,0);assert.equal(doc.querySelector('.ap-done').hidden,false);
+    assert.equal(launches,0);assert.equal(doc.querySelector('.ap-done').disabled,false);
+    doc.querySelector('.ap-done').click();
+    doc.querySelectorAll('.ap-tile')[1].click();
+    doc.querySelector('.ap-done').click();
+    doc.querySelectorAll('.ap-tile')[0].click();
     doc.querySelector('.ap-done').click();
     assert.equal(launches,1);assert.equal(practice.show('sacheonseong',{onContinue:next}),false);
     assert.ok(practice.show('sacheonseong',{replay:true}));
@@ -51,4 +56,37 @@ test('all music identifiers have scores, including every single-phone party game
     for(const {id} of w.DrinkingTableView.localGames)assert.ok(ids.includes(id),id);
   } finally {dom.window.close();}
   assert.ok(!ids.includes('archery'));assert.equal(new Set(ids).size,ids.length);
+});
+
+test('each game and rule variant has three reachable exercises with private retry and free navigation',()=>{
+ const {dom,w,doc,practice}=fixture();
+ try{
+  const ids=source('shared/games/arcade-music.js').match(/const games = new Set\('([^']+)'/)[1].split(' ');
+  w.eval(source('games/drinking/game-guides.js'));
+  for(const id of [...ids,'screw_flat','carom3','pool8']){
+   const variants=w.DrinkingGameGuides[id]?[false,true]:[null];
+   for(const local of variants){
+    const spec=local===null?practice.info(id):{id,name:id,goal:w.DrinkingGameGuides[id].goal,
+      steps:w.DrinkingPracticeSteps(id,local),art:'',theme:'jade'};
+    assert.ok(spec,id);assert.equal(spec.steps.length,3,id);
+    const host=doc.createElement('section');doc.body.append(host);
+    let finished=0;
+    w.OjjudaLessonPanel.board(host,spec,{close(){},finish(){finished++;}});
+    const tabs=host.querySelectorAll('.lesson-tab');
+    for(let i=0;i<3;i++){
+     const stage=spec.steps[i];tabs[i].click();assert.equal(tabs[i].getAttribute('aria-current'),'step');
+     const choices=host.querySelectorAll('.ap-tile');
+     const wrong=[...choices].findIndex((_,n)=>!stage.path.includes(n));
+     if(wrong>=0){choices[wrong].click();assert.equal(host.querySelector('.ap-feedback').textContent,stage.hint);}
+     for(const n of stage.any?stage.path.slice(0,1):stage.path)choices[n].click();
+     assert.equal(host.querySelector('.ap-done').disabled,false,id+' '+stage.label);
+     assert.equal(host.querySelector('.ap-feedback').dataset.state,'success');
+    }
+    tabs[0].click();assert.equal(host.querySelector('.ap-done').disabled,false);
+    host.querySelectorAll('.lesson-hint')[1].click();assert.equal(host.querySelector('.ap-done').disabled,true);
+    tabs[2].click();host.querySelector('.ap-done').click();assert.equal(finished,1);host.remove();
+   }
+  }
+  assert.equal(practice.info('carom4').id,'billiards');assert.equal(practice.info('screw_box').id,'screw');
+ }finally{dom.window.close();}
 });

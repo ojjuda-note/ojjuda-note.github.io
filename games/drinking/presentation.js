@@ -10,24 +10,6 @@
   function seen(key) {
     try {return seenGuides.has(key)||localStorage.getItem(key)==='1';} catch {return seenGuides.has(key);}
   }
-  const practice = {
-    croc:['이빨 하나를 골라 눌러요.','이빨 🦷','다음 사람 차례예요.'],
-    bottle:['돌아가는 병을 멈춰 보세요.','병 멈추기','병 끝이 가리킨 자리를 확인해요.'],
-    bomb:['주제가 과일이에요. 아직 나오지 않은 ‘사과’를 말하고 차례를 넘겨요.','다음 사람','같은 답은 다시 말할 수 없어요.'],
-    stopwatch:['목표 시간을 마음속으로 센 뒤 눌러요.','멈추기','실전에서는 목표에 가까운 사람이 이겨요.'],
-    liar:['내 제시어를 혼자 확인해요.','내 카드 보기','바다 🌊 · 다른 사람에게는 힌트만 말해요.'],
-    king:['내 번호를 나만 확인해요.','번호 보기','내 번호는 2번이에요.'],
-    truth:['질문에 답하기 어려우면 넘길 수 있어요.','패스','다음 차례로 넘어갔어요.'],
-    initial:['초성 ㅅㄱ에 맞는 두 글자 단어를 말해 보세요.','말했어요','사과, 수건처럼 초성이 맞으면 돼요.'],
-    minority:['둘 중 더 적은 사람이 고를 것 같은 쪽을 선택하세요.','바다 / 산','한 표를 골랐어요.'],
-    mission:['내 제시어를 확인하고 몸짓으로 표현해요.','제시어 보기','고양이 🐈'],
-    fingers:['“오늘 아침을 먹었다”에 해당하면 하나 접으세요.','하나 접기','손가락 네 개가 남았어요.'],
-    imagevote:['질문에 가장 잘 어울리는 친구에게 투표해요.','친구에게 한 표','선택을 비밀로 남겼어요.'],
-    updown:['50에 대한 힌트는 업이에요. 더 큰 수를 불러요.','65','50보다 큰 수를 골랐어요.'],
-    secretcount:['내 차례에 버튼을 한 번 눌러 보세요.','누르기','한 번 눌렀어요. 최대 세 번까지 눌러요.'],
-    partyroulette:['이번 판의 가상 결과를 확인해 보세요.','결과 보기','팡! 화면이 가리킨 사람이 당첨이에요.'],
-    shapematch:['녹색 동그라미가 보일 때 눌러요.','🟢','녹색 동그라미를 눌렀어요.']
-  };
   const focusable = 'button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
   const glassAsset = '/games/drinking/assets/result-glass-v2.webp?v=20261114-result-glass2';
   let active = null;
@@ -351,40 +333,40 @@
     const panel = open('guide', `${data.title} 하는 법`, manual);
     if (!panel) return false;
     active.guidePending = false;
-    const body = node('div', 'dp-dialog-body dp-guide-body');
-    const goal = node('p', 'dp-guide-goal', data.goal);
-    goal.id = 'dp-guide-goal';
-    panel.setAttribute('aria-describedby', goal.id);
-    const steps = node('ol', 'dp-guide-steps');
-    for (const text of data.steps || []) steps.append(node('li', '', text));
-    body.append(goal, steps);
-    if (data.resultNote) body.append(node('p', 'dp-guide-note', data.resultNote));
+    const ui=window.OjjudaLessonPanel;
+    if (!ui || !window.DrinkingPracticeSteps) {
+      const body=node('div','dp-dialog-body dp-guide-body');
+      body.append(node('p','dp-guide-goal',data.goal));
+      const steps=node('ol','dp-guide-steps');
+      data.steps.forEach(text=>steps.append(node('li','',text)));body.append(steps);
+      panel.append(body);footer(panel,manual?'닫기':'건너뛰기');return true;
+    }
+    const id=active.kind;
+    const steps=window.DrinkingPracticeSteps(id,active.local);
+    steps.forEach((step,i)=>{step.rule=[data.steps[i],i===2?data.resultNote:''].filter(Boolean).join(' ');});
+    const art=id==='croc'?'/games/croc/art/croc.webp':'/games/drinking/local/art/'+id+'.webp';
+    const settings=node('details','lesson-settings');
+    settings.append(node('summary','','소리 설정'));
     if (!active.local && window.PartyFX) {
-      const label = node('label', 'dp-guide-sound');
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.checked = window.PartyFX.prefs.sound;
-      checkbox.addEventListener('change', () => window.PartyFX.change('sound', checkbox.checked));
-      label.append(checkbox, ' 게임 효과음');
-      body.append(label);
+      const label=node('label','dp-guide-sound');
+      const box=document.createElement('input');box.type='checkbox';box.checked=window.PartyFX.prefs.sound;
+      box.onchange=()=>window.PartyFX.change('sound',box.checked);
+      label.append(box,' 게임 효과음');settings.append(label);
     }
-    const [task,action,result]=practice[active.kind];
-    const sample=node('div','dp-guide-example');
-    const instruction=node('p','',task);
-    instruction.setAttribute('role','status');
-    sample.append(instruction);
-    for(const label of action.split(' / ')) {
-      const tryIt=node('button','dp-primary',label);
-      tryIt.type='button';
-      tryIt.onclick=()=>{instruction.textContent=result; sample.querySelectorAll('button').forEach(b=>b.disabled=true);};
-      sample.append(tryIt);
-    }
-    const music=node('button','dp-primary','배경음악');
-    music.type='button'; music.dataset.arcadeMusicToggle='';
-    body.append(sample,music);
-    panel.append(body);
+    const music=node('button','dp-guide-music','배경음악');music.type='button';music.dataset.arcadeMusicToggle='';
+    settings.append(music);
+    const dismiss=panel.querySelector('[data-drinking-close]');panel.replaceChildren(dismiss);
+    panel.classList.add('dp-lesson-panel');
+    panel.setAttribute('aria-labelledby','lesson-title');
+    const theme=['liar','mission','secretcount','shapematch','partyroulette'].includes(id)?'night':
+      ['bottle','updown','stopwatch','initial'].includes(id)?'ocean':['king','bomb','fingers'].includes(id)?'amber':'rose';
+    const caution=id==='shapematch'?'주의 · 실제 게임에 갑작스러운 귀신 그림과 비명이 나와요.':'';
+    ui.board(panel,{id,name:data.title,goal:data.goal,steps,art,theme,layout:'cards',caution},{
+      close:()=>close(),finish:()=>close(),settings,party:true,
+      closeLabel:manual?'닫기':'건너뛰기',finishLabel:'연습 마치기'
+    });
     window.OjjudaArcadeMusic?.refresh();
-    footer(panel, manual ? '닫기' : '건너뛰기');
+    focusDialog();
     return true;
   }
 

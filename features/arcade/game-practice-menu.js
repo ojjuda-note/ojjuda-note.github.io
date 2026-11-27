@@ -16,23 +16,29 @@
     const dialog = document.createElement('dialog');
     dialog.className='arcade-practice ap-picker';
     dialog.setAttribute('aria-label','게임별 튜토리얼');
-    const heading=document.createElement('h2');
-    heading.className='ap-title'; heading.textContent='게임별 튜토리얼';
-    const list=document.createElement('div');
-    list.className='ap-game-list';
-    const close=document.createElement('button');
-    close.type='button'; close.className='ap-skip'; close.textContent='닫기';
-    const dismiss=()=>{ dialog.close(); dialog.remove(); button.focus(); };
-    close.onclick=dismiss;
-    dialog.oncancel=event=>{event.preventDefault();dismiss();};
-    for (const card of available(root)) {
-      const item=document.createElement('button');
-      item.type='button'; item.className='ap-tile';
-      item.textContent=card.querySelector('.game-name,span:last-child')?.firstChild?.textContent.trim() || card.getAttribute('aria-label') || gameId(card);
-      item.onclick=()=>{dismiss();practice.show(gameId(card),{replay:true});};
-      list.append(item);
+    const {el}=window.OjjudaLessonPanel;
+    const heading=el('h2','ap-title','게임별 튜토리얼');
+    const head=el('header','picker-head');
+    const list=el('div','ap-game-list');
+    const close=el('button','ap-skip','닫기');
+    const search=el('input','picker-search');search.type='search';search.placeholder='게임 이름 검색';search.setAttribute('aria-label','게임 이름 검색');
+    const empty=el('p','picker-empty','일치하는 게임이 없어요.');empty.hidden=true;
+    const dismiss=()=>{dialog.close();dialog.remove();button.focus({preventScroll:true});};
+    close.onclick=dismiss;dialog.oncancel=e=>{e.preventDefault();dismiss();};
+    for(const card of available(root)){
+      const id=gameId(card),meta=practice.info(id);
+      const item=el('button','ap-tile');
+      const art=el('img','');art.alt='';art.src=meta.art;art.loading='lazy';
+      item.append(art,el('span','',meta.name));item.dataset.name=meta.name;
+      item.onclick=()=>{dismiss();practice.show(id,{replay:true});};list.append(item);
     }
-    dialog.append(heading,list,close); document.body.append(dialog); dialog.showModal();
+    search.oninput=()=>{
+      const term=search.value.replace(/\s/g,'').toLowerCase();
+      for(const item of list.children)item.hidden=!item.dataset.name.replace(/\s/g,'').toLowerCase().includes(term);
+      empty.hidden=!!list.querySelector('button:not([hidden])');
+    };
+    head.append(heading,close);dialog.append(head,search,list,empty);
+    document.body.append(dialog);dialog.showModal();close.focus({preventScroll:true});
   }
   // Listen before the arcade's dedicated navigation handlers (including Chacha).
   // Continuing activates the current original card, preserving room/adult/access checks.
