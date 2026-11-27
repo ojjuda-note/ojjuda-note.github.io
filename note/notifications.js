@@ -56,7 +56,7 @@
   }
   let instance;
 
-  function install({ client, getUserId = () => null, refreshClosedBadge = true, onOpenCard, onOpenInquiry, onKeepCard, onOpenWorld, canOpenWorldTarget = () => true, allowInviteNavigation = true, onGiftClaimed, onOpenGroup = id => location.assign('/groups/#room=' + encodeURIComponent(id)) } = {}) {
+  function install({ app = 'agit', client, getUserId = () => null, refreshClosedBadge = true, onOpenCard, onOpenInquiry, onKeepCard, onOpenWorld, canOpenWorldTarget = () => true, allowInviteNavigation = true, onGiftClaimed, onOpenGroup = id => location.assign('/groups/#room=' + encodeURIComponent(id)) } = {}) {
     if (instance || !client?.schema || !client?.auth) return instance;
     let identity = getUserId() || null, identityRun = 0, viewRun = 0, listRun = 0, countRun = 0;
     let items = [], retentionItems = [], cursor = null, snapshotAt = null, hasMore = false;
@@ -81,7 +81,7 @@
     attach();
 
     const appRpcs={list_notifications:'list_app_notifications',notification_unread_count:'app_notification_unread_count',notification_summary:'app_notification_summary',mark_notifications_read:'mark_app_notifications_read'};
-    async function rpc(name, args = {}) { const { data, error } = await (appRpcs[name] ? client.rpc(appRpcs[name],args) : client.schema('ojjuda_note').rpc(name,args)); if (error) throw error; return data; }
+    async function rpc(name, args = {}) { const { data, error } = await (appRpcs[name] ? client.rpc(appRpcs[name],{...args,p_app:app}) : client.schema('ojjuda_note').rpc(name,args)); if (error) throw error; return data; }
     const validCount=value=>Number.isSafeInteger(value)&&value>=0;
     const missingSummary=error=>['PGRST202','42883'].includes(error?.code)
       && /\b(?:public\.)?app_notification_summary\b/.test(String(error.message||''));
@@ -199,10 +199,14 @@
       const gift = item.kind === 'visit_gift';
       const update = ['daily_update','broadcast_update'].includes(item.kind)
         && typeof item.summary === 'string' && item.summary.length <= 200;
-      const text = update ? updateCopy(item.kind, item.summary) : el('p', retention
+      const cardAction = app === 'park' && (retention || ['reply','like'].includes(item.kind))
+        && UUID.test(item.card_id || '') && typeof onOpenCard === 'function';
+      const message = retention
         ? item.reason === 'parent_due' ? '상위 카드와 함께 공개 종료 예정이에요.' : '내 카드가 곧 공개 종료돼요.'
         : item.kind === 'drinking_invite' ? `${item.sender_name || '친구'}님이 ‘${item.room_title || '술게임방'}’에 초대했어요.`
-        : item.kind === 'group_invite' && item.group_name ? `${item.sender_name || '방장'}님이 ‘${item.group_name}’ 그룹에 초대했어요.` : COPY[item.kind], 'nn-copy');
+        : item.kind === 'group_invite' && item.group_name ? `${item.sender_name || '방장'}님이 ‘${item.group_name}’ 그룹에 초대했어요.` : COPY[item.kind];
+      const text = update ? updateCopy(item.kind, item.summary) : cardAction
+        ? button(message, () => void openItem(item), 'nn-copy nn-card-link') : el('p', message, 'nn-copy');
       const meta = el('div', undefined, 'nn-meta'), source = el('span',item.source==='updates'?'오쭈다':item.kind==='drinking_invite'?'술게임':item.kind==='group_invite'?'그룹':item.kind==='inquiry_reply'?'문의':item.source==='world'?(item.kind==='world_message'?'쪽지':'친구'):'익명카드','nn-source'), state = el('span', item.read_at ? '읽음' : '안 읽음');
       const time = el('time'); const created = new Date(item.created_at);
       if (Number.isFinite(created.getTime())) { time.dateTime = created.toISOString(); time.textContent = created.toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }); }
@@ -276,7 +280,7 @@
       updateControls(); keepFocus();
       const requests = [rpc('list_notifications', { p_limit: 30,
         p_before_created_at: after?.created_at || null, p_before_id: after?.id || null })];
-      if (!more) requests.push(rpc('list_retention_alerts'));
+      if (!more && app === 'park') requests.push(rpc('list_retention_alerts'));
       const results = await Promise.allSettled(requests);
       if (!currentView(run, user, view) || request !== listRun) return;
       if (readRefreshPending && document.visibilityState === 'visible') {
@@ -284,7 +288,7 @@
         return loadPage();
       }
       const normal = results[0], retention = results[1];
-      let generalOk = false, retentionOk = more, firstNewId;
+      let generalOk = false, retentionOk = more || app !== 'park', firstNewId;
       if (normal.status === 'fulfilled' && normal.value && Array.isArray(normal.value.items)) {
         const data = normal.value;
         const incoming = data.items.filter(item => item && validNoticeId(item.id) && Object.hasOwn(COPY, item.kind) && Number.isFinite(Date.parse(item.created_at)));
@@ -300,7 +304,7 @@
         hasMore = Boolean(data.has_more && cursor);
         setUnread(data.unread_count); generalOk = true;
       }
-      if (!more && retention.status === 'fulfilled' && Array.isArray(retention.value)) {
+      if (!more && retention?.status === 'fulfilled' && Array.isArray(retention.value)) {
         retentionItems = retention.value.filter(validRetention).map(item => ({ ...item, originalKind: item.kind, kind: 'retention' }));
         setUnread(notificationUnread, retentionCount(retentionItems)); retentionOk = true;
       }
@@ -328,7 +332,7 @@
             const counts = await rpc('notification_summary');
             if (current(run, user) && request === countRun && counts
               && validCount(counts.notifications) && validCount(counts.retention)) {
-              setUnread(counts.notifications, counts.retention);
+              setUnread(counts.notifications, app === 'park' ? counts.retention : 0);
             }
             return;
           } catch (error) {
@@ -338,7 +342,7 @@
           }
           if (!current(run, user) || request !== countRun) return;
           const [normal, retention] = await Promise.allSettled([
-            rpc('notification_unread_count'), rpc('list_retention_alerts')
+            rpc('notification_unread_count'), app === 'park' ? rpc('list_retention_alerts') : []
           ]);
           if (current(run, user) && request === countRun) {
             const normalOk = normal.status === 'fulfilled' && validCount(normal.value);
@@ -431,6 +435,11 @@
       const target=world?item.target_id:item.kind==='inquiry_reply'?item.inquiry_id:item.card_id;
       const action=world?onOpenWorld:item.kind==='inquiry_reply'?onOpenInquiry:onOpenCard;
       if(typeof action!=='function'||!(world?validNoticeId(target)&&['guestbook','friends','media','message'].includes(item.target_type)&&canOpenWorldTarget(item.target_type):UUID.test(target||'')))return;
+      if (!currentView(run,user,view)) return;
+      if (app === 'park' && ['reply','like','retention'].includes(item.kind)) {
+        void markSeenOnNavigate(item);
+        close(); action(target); return;
+      }
       saving=true;updateControls();keepFocus();await markSeenOnNavigate(item);
       if(!currentView(run,user,view))return;
       saving=false;close();
@@ -484,6 +493,11 @@
       if (saving || loading || item.kind !== 'retention' || !retentionItems.some(value => value.id === item.id)
         || typeof onKeepCard !== 'function') return;
       const run=identityRun,user=identity,view=viewRun;
+      if (!currentView(run,user,view)) return;
+      if (app === 'park' && ['reply','like','retention'].includes(item.kind)) {
+        void markSeenOnNavigate(item);
+        close(); action(target); return;
+      }
       saving=true;updateControls();keepFocus();await markSeenOnNavigate(item);
       if(!currentView(run,user,view))return;
       saving=false;close();onKeepCard(item.card_id,item.originalKind);

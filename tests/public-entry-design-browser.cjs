@@ -67,6 +67,8 @@ function installAccountFixture() {
     kind: 'memo', body: ['느리게 걸어도 괜찮은 하루.', '오늘 만난 작은 다정함.', '잠깐 쉬어가는 마음.'][i % 3],
     background_key: String(10 + i), tags: [], created_at: '2026-11-19T01:00:00Z'
   }));
+  const reply = { ...cards[1], kind:'comment', parent_id:cards[0].id, body:'답글 알림으로 열린 카드' };
+  const notice = { id:'note:'+reply.id, source:'note', kind:'reply', card_id:reply.id, created_at:reply.created_at };
   const client = state.client = {
     auth: {
       getSession: async () => ({ data: { session: state.session }, error: null }),
@@ -82,6 +84,12 @@ function installAccountFixture() {
       state.calls.push({ name, args });
       if (name === 'list_cards') return result(cards);
       if (name === 'get_note_state') return result({});
+      if (name === 'get_card') return result(args.p_id===reply.id ? reply : null);
+      if (state.checkReply && args?.p_app==='park') {
+        if (name==='app_notification_summary') return result({notifications:1,retention:0});
+        if (name==='list_app_notifications') return result({items:[notice],unread_count:1,as_of:notice.created_at});
+        if (name==='mark_app_notifications_read') return result(1);
+      }
       if (name === 'app_notification_summary') return result({ notifications: 0, retention: 0 });
       if (name === 'list_app_notifications') return result({ items: [], unread_count: 0, as_of: '2026-11-19T00:00:00Z', has_more: false, next_cursor: null });
       if (name === 'beta_charge_status') return result({ ok: true, enabled: true, coins: 0, left: 5, limit: 5 });
@@ -330,6 +338,13 @@ async function openSpace(page, space) {
     await parkFrame.waitForFunction(before => document.getElementById('feed-list').getBoundingClientRect().top < before - 30, feedBefore);
     await parkFrame.evaluate(() => entryFixture.setMember(true));
     await parkFrame.locator('#park-guest-entry').waitFor({ state: 'hidden' });
+    await parkFrame.evaluate(() => { entryFixture.checkReply=true; });
+    await parkFrame.locator('[data-notifications-open]:visible').first().click();
+    await parkFrame.getByRole('button',{name:'내 카드에 새 답글이 달렸어요.'}).click();
+    await parkFrame.locator('#detail').getByText('답글 알림으로 열린 카드',{exact:true}).first().waitFor();
+    assert.equal(new URL(parkFrame.url()).searchParams.get('card'),'12345678-1234-4123-8123-000000000002');
+    assert.equal(await parkFrame.locator('#note-notification-backdrop').isVisible(),false);
+    await parkFrame.locator('#detail .back-button').click();
     await parkFrame.evaluate(() => entryFixture.setMember(false));
     await parkFrame.locator('#park-guest-entry').waitFor({ state: 'visible' });
     await parkFrame.locator('#park-guest-entry a[href*="auth=login"]').click();

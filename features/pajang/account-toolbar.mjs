@@ -1,5 +1,5 @@
 import {client} from './member.mjs?v=20261127-service-fixes1';
-import '../../note/notifications.js?v=20261127-battery1';
+import '../../note/notifications.js?v=20261127-app-inbox1';
 import '../wallet/ju-charge.js?v=20261119-pajang-toolbar1';
 
 // This public toolbar shares the same authenticated client as the member app.
@@ -169,7 +169,7 @@ export function installPajangToolbar() {
           if(!acceptBalance(coins,owner))return;
           window.dispatchEvent(new CustomEvent('pajang:balance',{detail:{userId:owner,coins}}));
         }});
-        notifications=window.OjjudaNotifications.install({client:db,getUserId:()=>userId,
+        notifications=window.OjjudaNotifications.install({app:'pajang',client:db,getUserId:()=>userId,
           onOpenInquiry:showInquiry,
           allowInviteNavigation:false,
           onGiftClaimed:()=>void refreshBalance()

@@ -4320,6 +4320,7 @@ window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id |
   }
 });
 notificationController = window.OjjudaNoteNotifications?.install({
+  app: 'park',
   refreshClosedBadge: !parkEmbedded, // World owns the visible bell when Park is embedded.
   onGiftClaimed: userId => loadWorldBalance(userId),
   client, getUserId: () => session?.user?.id || null,

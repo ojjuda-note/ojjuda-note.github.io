@@ -32,7 +32,8 @@ async function fixture(t,{user='member-a',anonymous=false,readBalance,getSession
     async rpc(name,args){
       calls.push({name,args,user:session?.user?.id});
       if(name==='app_notification_summary')return {data:{notifications:2,retention:0}};
-      if(name==='list_app_notifications')return {data:{items,unread_count:2,as_of:'2026-11-19T00:00:00Z',has_more:false,next_cursor:null}};
+      if(name==='list_app_notifications')return {data:{items:args.p_app==='pajang'
+        ? items.filter(item=>['inquiry_reply','broadcast_update','daily_update','visit_gift'].includes(item.kind)) : items,unread_count:2,as_of:'2026-11-19T00:00:00Z',has_more:false,next_cursor:null}};
       if(name==='get_my_inquiry')return getInquiry(args.p_id);
       if(name==='list_retention_alerts')return {data:retention};
       if(name==='beta_charge_status')return {data:{ok:true,enabled:true,coins,left:5,limit:5}};
@@ -123,7 +124,7 @@ test('member toolbar shows server balance, opens the shared inbox and charges fr
   assert.ok(f.balanceEvents.some(event=>event.userId==='member-a'&&event.coins===80));
 });
 
-test('Park card and retention notifications can be read without leaving Pajang',async t=>{
+test('Pajang requests only its own inbox and skips Park retention',async t=>{
   const created='2026-11-19T00:00:00Z',card='a0000000-0000-4000-8000-000000000001';
   const notice='b0000000-0000-4000-8000-000000000001',retention='c0000000-0000-4000-8000-000000000001';
   const f=await fixture(t,{
@@ -131,11 +132,10 @@ test('Park card and retention notifications can be read without leaving Pajang',
     retention:[{id:retention,kind:'memo',card_id:card,created_at:created,archive_due_at:created}]
   });
   f.bell().click();await settle();
-  for(const id of [notice,retention]){
-    const row=f.w.document.querySelector('[data-notification-id="'+id+'"]');
-    assert.ok(row?.querySelector('[data-notification-read]'));
-    assert.equal(row.querySelector('[data-notification-open],a'),null);
-    assert.doesNotMatch(row.textContent,/카드 보기|영구보관/);
+  assert.equal(f.w.document.querySelector('[data-notification-id]'),null);
+  assert.equal(f.calls.some(call=>call.name==='list_retention_alerts'),false);
+  for(const name of ['list_app_notifications','app_notification_summary']){
+    assert.equal(f.calls.find(call=>call.name===name)?.args.p_app,'pajang');
   }
   assert.equal(f.w.location.pathname,'/features/pajang/station.html');
 });
@@ -156,8 +156,7 @@ test('inquiry replies open inside Pajang and an account switch clears a pending 
   const open=async()=>{
     f.bell().click();await settle();
     const world=document.querySelector('[data-notification-id="'+worldId+'"]');
-    assert.ok(world?.querySelector('[data-notification-read]'));
-    assert.equal(world.querySelector('[data-notification-open]'),null);
+    assert.equal(world,null);
     document.querySelector('[data-notification-open="'+replyId+'"]').click();await settle();
     return document.querySelector('dialog.pajang-inquiry-dialog');
   };
@@ -265,7 +264,7 @@ test('Pajang standalone entry defers shared inbox and charging code until first 
   assert.match(shell,/window\.OjjudaPajangHistory\?\.canLeave\?\.\(\)!==false/);
   for(const file of ['index.html','station.html']){
     const html=fs.readFileSync(path.join(root,'features/pajang',file),'utf8');
-    assert.match(html,/shell\.mjs\?v=20261127-battery1/);
+    assert.match(html,/shell\.mjs\?v=20261127-app-inbox1/);
   }
 });
 

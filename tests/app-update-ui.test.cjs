@@ -59,10 +59,9 @@ test('member inbox displays safe daily and monthly changes; old popup is not mou
     assert.match(styles,/\.nn-update-daily-section\{[^}]*border-bottom:1px solid var\(--line\)/,
       'daily headings and descriptions are grouped with visual separation');
     const park = fs.readFileSync(path.join(__dirname, '../park/index.html'), 'utf8');
-    for (const entry of [world, park]) {
-      assert.match(entry, /note\/notifications\.js\?v=20261116-inbox-paging1"/,
-        'both inbox entry points load the released notification script');
-    }
+    const releasedInbox = html => html.match(/note\/notifications\.js\?v=([\w-]+)"/)?.[1];
+    assert.ok(releasedInbox(world));
+    assert.equal(releasedInbox(park),releasedInbox(world),'both entries use the same inbox release');
     assert.equal(w.document.querySelectorAll('.nn-source').length,4);
     assert.ok([...w.document.querySelectorAll('.nn-source')].every(n=>n.textContent==='오쭈다'));
     w.document.querySelector('[data-notification-read="daily:2026-11-06"]').click(); await tick();

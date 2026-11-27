@@ -29,7 +29,7 @@ function fixture({user='member-a',handle,refreshClosedBadge,options={}}={}){
   const invoke=async(schema,name,args)=>{calls.push({schema,name,user:identity,args});return responder(name,args,identity,schema);};
   const client={rpc:(name,args)=>invoke('public',name,args),schema:schema=>({rpc:(name,args)=>invoke(schema,name,args)}),
     auth:{onAuthStateChange(callback){authCallback=callback;}}};
-  w.eval(source);const api=w.OjjudaNotifications.install({client,getUserId:()=>identity,refreshClosedBadge,onOpenGroup:id=>openedGroups.push(id),...options});
+  w.eval(source);const api=w.OjjudaNotifications.install({app:'park',client,getUserId:()=>identity,refreshClosedBadge,onOpenGroup:id=>openedGroups.push(id),...options});
   return {dom,w,api,calls,channels,broadcasts,openedGroups,
     badge:()=>({hidden:w.document.querySelector('#note-notification-badge').hidden,text:w.document.querySelector('#note-notification-badge').textContent}),
     respond:callback=>{responder=callback;},advance:ms=>{clock+=ms;},
@@ -542,5 +542,45 @@ test('polling is disarmed for guests, hidden tabs and logout, and rearms once on
     const before=f.calls.length;f.advance(30000);await f.poll();assert.equal(f.calls.length,before);
     f.visibility('visible');f.visibility('visible');await settle();assert.equal(f.intervalCount(),1);
     await f.user(null);assert.equal(f.intervalCount(),0);
+  }finally{f.close();}
+});
+
+test('Park reply opens from its text while the read receipt is pending',async()=>{
+  const card=uuid(12),receipt=deferred(),opened=[];
+  const notice={id:'note:'+uuid(11),source:'note',kind:'reply',card_id:card,created_at:'2026-11-27T00:00:00Z'};
+  const f=fixture({options:{app:'park',onOpenCard:id=>opened.push(id)},handle:(name,args)=>{
+    if(name==='list_retention_alerts')return {data:[]};
+    assert.equal(args.p_app,'park');
+    if(name==='app_notification_summary')return {data:{notifications:1,retention:0}};
+    if(name==='list_app_notifications')return {data:{items:[notice],unread_count:1,as_of:notice.created_at}};
+    if(name==='mark_app_notifications_read')return receipt.promise;
+    throw Error(name);
+  }});
+  try{
+    await f.boot();f.api.open();await settle();
+    const row=f.w.document.querySelector('[data-notification-id]');
+    const message=row.querySelector('button.nn-copy');
+    assert.match(message.textContent,/새 답글/);message.click();
+    assert.deepEqual(opened,[card]);assert.equal(f.api.isOpen(),false);
+    const write=f.calls.find(call=>call.name==='mark_app_notifications_read');
+    assert.equal(write.args.p_ids[0],notice.id);
+    receipt.resolve({data:1});await settle();
+  }finally{f.close();}
+});
+
+test('Agit scopes badges, list, fallback and bulk read without querying Park retention',async()=>{
+  const f=fixture({options:{app:'agit'},handle:(name,args)=>{
+    assert.equal(args.p_app,'agit');
+    if(name==='app_notification_summary')return missing();
+    if(name==='app_notification_unread_count')return {data:1};
+    if(name==='list_app_notifications')return {data:{items:[],unread_count:1,as_of:'2026-11-27T00:00:00Z'}};
+    if(name==='mark_app_notifications_read')return {data:1};
+    throw Error(name);
+  }});
+  try{
+    await f.boot();assert.equal(f.badge().text,'1');
+    f.api.open();await settle();f.w.document.getElementById('note-notifications-read-all').click();await settle();
+    assert.ok(f.calls.some(call=>call.name==='mark_app_notifications_read'&&call.args.p_before));
+    assert.ok(f.calls.every(call=>call.args.p_app==='agit'));
   }finally{f.close();}
 });
