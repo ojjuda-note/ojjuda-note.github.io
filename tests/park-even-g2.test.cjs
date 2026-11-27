@@ -8,7 +8,7 @@ const root=path.resolve(__dirname,'..');
 const row=(id,body,band,extra={})=>({id,body,distance_band:band,kind:'memo',tags:[],...extra});
 const cards=[row('a','첫 카드','근처'),row('b','둘째 카드','2km'),row('c','먼 카드','12km'),row('z','숨김','근처',{tags:['19금']})];
 
-async function setup({granted=false,user='member',installed=false,guestFix,nativeFix,replies,weather,nearby=cards,recent=[row('pub','공개 원글',null)],publicItems=[]}={}) {
+async function setup({now=Date.now(),granted=false,user='member',installed=false,guestFix,nativeFix,replies,weather,nearby=cards,recent=[row('pub','공개 원글',null)],publicItems=[]}={}) {
   const elements=new Map(), window=new EventTarget();
   const get=id=>{
     if(!elements.has(id))elements.set(id,Object.assign(new EventTarget(),{parentElement:{},textContent:'',focus(){},hidden:false}));
@@ -16,7 +16,7 @@ async function setup({granted=false,user='member',installed=false,guestFix,nativ
   };
   const document=Object.assign(new EventTarget(),{getElementById:get,hidden:false,documentElement:{dataset:installed?{evenApp:'1'}:{}}});
   const perm=Object.assign(new EventTarget(),{state:granted?'granted':'prompt'});
-  let clock=Date.now(),tick,pref,auth;
+  let clock=now,tick,pref,auth;
   class Clock extends Date {static now(){return clock;}}
   const calls=[];
   const db={auth:{onAuthStateChange(cb){
@@ -146,10 +146,18 @@ test('visible replies use their own bands, paginate, retry and discard stale res
   assert.equal(get('glass-reader-body').textContent,'먼 카드');
   assert.equal(JSON.stringify(hud.getView()).includes('latitude'),false);
 });
+test('local midnight updates the clock, date and weekday together',async()=>{
+  const {get,hud,advance}=await setup({now:new Date(2026,10,27,23,59,59,900).getTime()});
+  assert.equal(get('glass-clock').textContent,'23:59 · 11월 27일 (금)');
+  advance(200);
+  assert.equal(hud.getView().time,'00:00');
+  assert.equal(get('glass-clock').textContent,'00:00 · 11월 28일 (토)');
+});
+
 test('the G2 renders distance inside the lower right of each message, within the container limit',async()=>{
   const file=readFileSync(path.join(root,'note/glasses-even-g2.mjs'),'utf8').replace(/^import [^;]+;/,'');
   const {g2Page}=await import('data:text/javascript;base64,'+Buffer.from(file).toString('base64'));
-  const v={time:'18:00',battery:83,charging:true,speed:0,weather:'2°C',cards:[
+  const v={time:'18:00',clockText:'18:00 · 12월 31일 (목)',battery:83,charging:true,speed:0,weather:'2°C',cards:[
     {oneLine:'첫째',distance:'1km 이내'},{oneLine:'둘째',distance:'2km 이내'}]};
   const inside=(frame,label)=>{
     assert.ok(label.xPosition>frame.xPosition+frame.width/3);
@@ -161,6 +169,7 @@ test('the G2 renders distance inside the lower right of each message, within the
     const p=g2Page({...v,reader}),xs=p.textObject;
     assert.ok(p.containerTotalNum<=8);assert.equal(xs.filter(x=>x.isEventCapture===1).length,1);
     for(const x of xs)assert.ok(x.xPosition+x.width<=576&&x.yPosition+x.height<=288);
+    assert.equal(xs[0].content,v.clockText);assert.ok(xs[0].xPosition+xs[0].width<xs[1].xPosition);
     assert.equal(xs[1].content,'83% ⚡');assert.equal(xs[3].content,'0 km/h');
     if(reader){inside(xs[4],xs[6]);assert.equal(xs[6].content,'3km 이내');assert.match(xs[5].content,/답카드 1\/1/);}
     else{assert.equal(xs[4].content,'▶ 첫째');assert.equal(xs[5].content,'둘째');inside(xs[4],xs[6]);inside(xs[5],xs[7]);assert.equal(xs[7].content,'2km 이내');}

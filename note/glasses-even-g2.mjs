@@ -9,7 +9,7 @@ export function g2Page(view) {
   if (view.paused) return {containerTotalNum:1,textObject:[box(1,'standby',0,0,576,288,' ',1)]};
   const cards = view.cards;
   const fields = [
-    box(1,'clock',12,6,150,32,view.time),
+    box(1,'clock',12,6,426,32,view.clockText ?? view.time),
     box(2,'battery',454,6,118,32,(view.battery ?? '—') + '%' + (view.charging ? ' ⚡' : '')),
     box(3,'weather',12,248,325,36,view.weather),
     box(4,'speed',426,248,146,36,(view.speed ?? '—') + ' km/h')
@@ -30,8 +30,9 @@ export function g2Page(view) {
 }
 
 function simplePage(view) {
-  const lines = view.reader ? [view.reader.title, view.reader.body, view.reader.distance] :
-    [view.time, ...view.cards.map((card,i) => [(i === 0 ? '▶ ' : '') + card.oneLine,card.distance].filter(Boolean).join('  ')), view.weather, (view.speed ?? '—') + ' km/h'];
+  const clock = view.clockText ?? view.time;
+  const lines = view.reader ? [clock, view.reader.title, view.reader.body, view.reader.distance] :
+    [clock, ...view.cards.map((card,i) => [(i === 0 ? '▶ ' : '') + card.oneLine,card.distance].filter(Boolean).join('  ')), view.weather, (view.speed ?? '—') + ' km/h'];
   const content = view.paused ? ' ' : lines.filter(Boolean).join('\n').slice(0,750);
   return {containerTotalNum:1,textObject:[box(1,'park',8,8,560,272,content || '오쭈다 공원',1)]};
 }
