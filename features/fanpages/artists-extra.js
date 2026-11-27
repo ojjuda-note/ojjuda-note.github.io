@@ -223,7 +223,7 @@
       members: ['루카', '파리타', '아사', '아현', '라미', '로라', '치키타'],
       debut: '2024.04.01', debutWork: 'BABYMONS7ER', songs: ['SHEESH', 'LIKE THAT'],
       concept: '2023년 BATTER UP을 발표하고, 2024년 4월 일곱 멤버로 정식 데뷔한 YG의 걸그룹.',
-      checkedAt: '2026.11.18',
+      checkedAt: '2026.11.23',
       official: 'https://ygfamily.com/ko/artists/babymonster/profile', youtube: 'https://www.youtube.com/@BABYMONSTER',
       photo: 'BabyMonster Promoting drip on 2024112.png', photoLabel: 'DRIP 활동', photoYear: '2024', credit: 'SBS Radio', license: 'CC BY 3.0',
       morePhotos: [
@@ -244,10 +244,6 @@
         { title: 'BATTER UP', date: '2023.11.27', type: '첫 디지털 싱글', songs: ['BATTER UP'], href: 'https://www.ygfamily.com/en/artists/babymonster/discography/1578' }
       ],
       appearances: [
-        { date: '2026-11-18', title: 'MTV JAPAN BABYMONSTER VideoSelects 재방송', sub: '일본 MTV · 21:00~22:00 (현지 시간)', href: 'https://www.sonymusic.co.jp/artist/BABYMONSTER/info/587656' },
-        { date: '2026-11-20', title: '2026 MAMA AWARDS', sub: '일본 오사카 교세라 돔 · 18:00 (현지·한국 동일) · 첫날 출연', href: 'https://help-origin.unext.jp/info-video/detail/info177c' },
-        { date: '2026-11-21', title: 'CHOOM 월드투어 · 타이베이', sub: '대만 Taipei Arena · 현지 19:30', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
-        { date: '2026-11-22', title: 'CHOOM 월드투어 · 타이베이', sub: '대만 Taipei Arena · 현지 18:00', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
         { date: '2026-11-28', title: 'CHOOM 월드투어 · 싱가포르', sub: 'Singapore Indoor Stadium · 현지 18:00', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
         { date: '2026-11-29', title: 'CHOOM 월드투어 · 싱가포르 추가 공연', sub: 'Singapore Indoor Stadium · 현지 18:00', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
         { date: '2026-12-02', title: '2026 FNS 가요제 제1야 · 첫 출연', sub: '후지TV 계열 방송 · 18:30~23:18 방송 시간(개별 출연 시간 미공개)', href: 'https://yg-babymonster-official.jp/news/media/2830/' },
@@ -267,6 +263,10 @@
         { title: '일본 공식 미디어·일정', sub: '일본 방송·발매 일정', href: 'https://yg-babymonster-official.jp/schedule' }
       ],
       news: [
+        { date: '2026.11.20', tag: '시상', title: '2026 MAMA AWARDS Fans’ Choice 여성 TOP 10 수상', href: 'https://en.yna.co.kr/view/AEN20261121001851315' },
+        { date: '2026.11.20', tag: '무대', title: 'MAMA 공식 4K 무대 · INTRO·DESERVE·춤 (CHOOM) 특별 편곡', href: 'https://mnetplus.world/media/en/videos/6b00200a4c0c30085e2fb1b9' },
+        { date: '2026.11.20', tag: '매체', title: '일본 패션지 ViVi 2027년 1월호 발매 · 약 2년 만의 출연, 인터뷰·특전 카드', href: 'https://yg-babymonster-official.jp/news/media/2843/' },
+        { date: '2026.11.19', tag: '굿즈', title: 'DESERVE 일본 공식 MD 11월 21일 오후 6시 온라인 판매 발표', href: 'https://yg-babymonster-official.jp/news/goods/2839/' },
         { date: '2026.11.13', tag: '방송', title: 'MTV JAPAN 12월 22일 BEST ARTIST COLLECTION 특집 방송 확정', href: 'https://yg-babymonster-official.jp/news/media/2834/' },
         { date: '2026.11.11', tag: '공연', title: '2027년 코첼라 4월 11·18일 출연 확정 (YG 발표)', href: 'https://ygfamily.com/en/news/report/7601' },
         { date: '2026.11.03', tag: '방송', title: '12월 2일 후지TV 2026 FNS 가요제 제1야 첫 출연 발표', href: 'https://yg-babymonster-official.jp/news/media/2830/' },
@@ -277,6 +277,7 @@
         { date: '2026.09.25', tag: '협업', title: '루카·아사, 일본 패션 브랜드 SNIDEL 홍보대사 선정', href: 'https://prtimes.jp/main/html/rd/p/000004511.000018505.html' }
       ],
       merch: [
+        { title: 'DESERVE 일본 공식 MD', sub: 'BABYMONSTER 일본 공식 숍 · 11.21 18:00 JST 온라인 판매 시작 · 1회 결제 6,000엔마다 선착순 랜덤 트레이딩 카드 1장 · 재고·조건은 판매처 확인', href: 'https://yg-babymonster-official.jp/news/goods/2839/' },
         { title: 'CHOOM 일본 투어 실황 LIVE Blu-ray', sub: '12.23 발매 예정 · BLACK/WHITE 초회 한정판 및 일반판 · 구매·특전은 공식 안내 확인', href: 'https://yg-babymonster-official.jp/news/release/2820/' },
         { title: 'CHOOM 일본 투어 LIVE ALBUM CD', sub: '12.23 발매 예정 · 라이브 23트랙 · 디지털 음원도 같은 날 발매 예정', href: 'https://yg-babymonster-official.jp/news/release/2820/' },
         { title: 'DESERVE 공식 MD 예약 판매', sub: 'YG SELECT · 11.06 11:00 시작 · 한정 수량, 품절 여부 판매처 확인', href: 'https://www.ygselect.com/article/event/12/657823/' },
