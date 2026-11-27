@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<base href="/features/lifetime/">
+<link rel="canonical" href="https://ojjuda.kr/lifetime/">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f2f5f4">
+<title>수명시계</title>
+<link rel="stylesheet" href="style.css">
+<script defer src="population.js"></script>
+<script defer src="research.js"></script>
+<script defer src="estimate.js"></script>
+<script defer src="conditions.js"></script>
+<script defer src="survival.js"></script>
+<script defer src="clock-scenery.js"></script>
+<script defer src="clock-display.js"></script>
+<script defer src="clock.js"></script>
+</head>
+<body>
+<main>
+  <header><span class="clockmark" aria-hidden="true"></span><h1>수명시계</h1></header>
+  <details id="birth-settings" class="birth-settings" open>
+    <summary>생일 입력</summary>
+    <form id="birth-form">
+      <div class="fields">
+        <div class="field"><label for="birth">생년월일</label><input type="date" id="birth" required></div>
+        <div class="field"><label for="birth-time">태어난 시각 (선택)</label><input type="time" id="birth-time" step="60" aria-describedby="birth-time-note"><small id="birth-time-note">모르면 00시로 계산해요.</small></div>
+      </div>
+      <button type="submit" class="apply">저장</button>
+    </form>
+  </details>
+  <section class="instrument" aria-label="수명시계">
+    <div class="life-reading">
+      <canvas id="sky-window" aria-hidden="true"></canvas>
+      <div class="face-header"><h2 id="life-label">내 생의 24시간</h2>
+        <span class="phase" id="phase-badge"><b id="meridiem">—</b><span id="daypart">—</span></span>
+      </div>
+      <div class="dial">
+        <div class="dial-inner" aria-hidden="true">
+          <div class="dial-ticks"></div><div id="dial-numbers"></div>
+          <div class="hand hour-hand" id="hour-hand"></div><div class="hand minute-hand" id="minute-hand"></div>
+          <div class="hand second-hand" id="second-hand"></div><div class="hand-pin"></div>
+        </div>
+        <time id="life-time" role="timer" aria-live="off">--:--:--</time>
+      </div>
+      <p class="encouragement" id="encouragement"></p>
+    </div>
+    <div class="remaining-reading"><h2 id="remaining-label">남은 추정 수명</h2>
+      <div id="flip-board" aria-hidden="true"></div>
+      <span class="sr-only" id="remaining" role="timer" aria-live="off">—</span>
+    </div>
+  </section>
+  <button class="open-conditions" id="open-conditions" type="button" aria-haspopup="dialog" aria-controls="condition-dialog">조건 넣기</button>
+  <p id="save-feedback" class="save-feedback" role="status"></p>
+  <dialog id="condition-dialog" aria-labelledby="dialog-title">
+    <form id="condition-form">
+      <header class="form-head"><h2 id="dialog-title" tabindex="-1">조건 넣기</h2><button id="cancel-x" type="button" aria-label="닫기">×</button></header>
+      <div class="form-body">
+        <section><h3>기본 정보</h3><div class="fields" id="base-fields"></div></section>
+        <section><h3>생활 조건</h3>
+          <div class="fields" id="daily-fields"></div>
+        </section>
+        <section><h3>생활습관</h3><div class="fields" id="habit-fields"></div></section>
+        <section><h3>가족과 생활</h3><div class="fields" id="social-fields"></div></section>
+        <details class="preferences" id="extra-conditions"><summary>생활·건강 정보 더 넣기</summary><div class="fields" id="extra-fields"></div></details>
+        <details class="preferences" id="play-conditions"><summary>왠지 오래 살 것 같은 이유</summary>
+          <div id="play-questions"></div>
+          <label id="previous-story-bonus" hidden><input id="keep-previous-stories" type="checkbox"><span id="previous-story-label">지난 질문 보너스 유지</span></label>
+        </details>
+        <details class="preferences" id="exam-conditions"><summary>검진 결과 넣기</summary><p class="optional-note">검진표가 있으면 아는 수치만 골라 주세요.</p><div class="fields" id="health-fields"></div></details>
+      </div>
+      <footer class="form-actions"><button id="cancel" type="button">취소</button><button type="submit" class="apply">저장</button></footer>
+    </form>
+  </dialog>
+  <details class="more"><summary>더보기</summary>
+    <div id="birth-edit-position"></div>
+    <p>전국·지역 생명표와 생활습관 연구를 바탕으로, 과거의 수명 증가 추세가 이어진다고 가정해 예상한 시간이에요.</p>
+  </details>
+  <nav class="service-banners" aria-label="오쭈다 서비스">
+    <a class="service-banner agit" href="https://ojjuda.kr/world.html?tab=hub" target="_blank" rel="noopener noreferrer">
+      <span><strong>아지트</strong><small>모임·게임</small></span>
+      <img src="agit.webp" width="310" height="207" loading="lazy" decoding="async" alt="">
+    </a>
+    <a class="service-banner park" href="https://ojjuda.kr/park/" target="_blank" rel="noopener noreferrer">
+      <span><strong>공원</strong><small>일상·소통</small></span>
+      <img src="park.webp" width="260" height="260" loading="lazy" decoding="async" alt="">
+    </a>
+    <a class="service-banner pajang" href="https://ojjuda.kr/features/pajang/" target="_blank" rel="noopener noreferrer">
+      <span><strong>파장</strong><small>19+ 소개팅</small></span>
+      <img src="pajang.webp" width="260" height="260" loading="lazy" decoding="async" alt="">
+    </a>
+    <a class="service-banner focus" href="https://github.com/ojjuda-note/ojjuda-note.github.io/releases/download/focus-v0.15.15/OjjudaFocus-Studio-0.15.15.apk" download="OjjudaFocus-Studio-0.15.15.apk">
+      <span><strong>포커스</strong><small>APK 다운로드</small></span>
+      <img src="focus.webp" width="260" height="260" loading="lazy" decoding="async" alt="">
+    </a>
+  </nav>
+  <noscript>초 단위 시계를 보려면 브라우저에서 자바스크립트를 켜 주세요.</noscript>
+</main>
+</body>
+</html>
