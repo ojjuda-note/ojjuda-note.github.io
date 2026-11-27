@@ -175,7 +175,7 @@ async function appHarness(saved = null, ammoOptions = {}) {
   const bulletEffects = new vm.SyntheticModule(Object.keys(bulletEffectFrames), function () {
     for (const [name, frames] of Object.entries(bulletEffectFrames)) this.setExport(name, (...args) => frames.push(args.slice(1)));
   }, { context });
-  const game = new vm.SourceTextModule(gameSource + '\nexport const testApi = { state, get progress(){return progress;}, get ammo(){return ammo;}, startStage, resetRound, finishRound, showShop, equipItem, installScope, equippedScope, hasScope, maximumZoom, setAimZoom, installLaser, activeLaser, laserEnabled, setLaserSettings, adjustLaser, resetLaser, toggleLaser, setLaserStep, laserFrame, openLaserAdjustments, closeLaserAdjustments, save, closeModal, activeBow, activeArrow, activeBullet, aimAngles, shotParams, effectiveSway, isSteady, get camera(){return camera;}, sceneItems, resize, project, onImpact, retryAmmo, showStabilizers, buyStabilizer, useStabilizer, aimBounds, cinematicFrame, renderTime, adminTrialRequested:false, adminTrialActive:false, get pointer(){return pointer;} };', { context, identifier: 'game.mjs' });
+  const game = new vm.SourceTextModule(gameSource + '\nexport const testApi = { state, get progress(){return progress;}, planBalloon, balloonPosition, checkBalloon, get ammo(){return ammo;}, startStage, resetRound, finishRound, showShop, equipItem, installScope, equippedScope, hasScope, maximumZoom, setAimZoom, installLaser, activeLaser, laserEnabled, setLaserSettings, adjustLaser, resetLaser, toggleLaser, setLaserStep, laserFrame, openLaserAdjustments, closeLaserAdjustments, save, closeModal, activeBow, activeArrow, activeBullet, aimAngles, shotParams, effectiveSway, isSteady, get camera(){return camera;}, sceneItems, resize, project, onImpact, retryAmmo, showStabilizers, buyStabilizer, useStabilizer, aimBounds, cinematicFrame, renderTime, adminTrialRequested:false, adminTrialActive:false, get pointer(){return pointer;} };', { context, identifier: 'game.mjs' });
   await game.link(specifier => specifier.startsWith('./engine.mjs') ? engine : specifier.startsWith('./animal-zones.mjs') ? animals : specifier.startsWith('./view.mjs') ? view : specifier.startsWith('./cinematic.mjs') ? cinematic : specifier.startsWith('./bullet-cinematic.mjs') ? bulletCinematic : specifier.startsWith('./bullet-effects.mjs') ? bulletEffects : specifier.startsWith('./coach.mjs') ? coach : specifier.startsWith('./laser.mjs') ? laser : specifier.startsWith('./ammo-client.mjs') ? ammoModule : specifier.startsWith('./coin-exchange.mjs') ? coinExchangeModule : scenery);
   await game.evaluate();
   await flush();
@@ -5592,4 +5592,52 @@ test('round report plots only measured hits and clears when replaying a stage', 
   assert.match(app.getElement('modalContent').innerHTML,/1회.*10점/);
   assert.match(app.getElement('modalContent').innerHTML,/평균 착탄 · 중앙/);
   app.api.closeModal();app.api.resetRound();assert.equal(state.shotLog.length,0);
+});
+
+test('bonus balloon rolls once per round and varies both turn and delay', async () => {
+  const app=await appHarness();
+  const {api}=app,stage=api.state.stage;
+  let appearances=0;
+  for(let i=0;i<10000;i++){
+    let first=true;
+    const bonus=api.planBalloon(stage,5,()=>{if(first){first=false;return i/10000;}return .5;});
+    if(bonus)appearances++;
+  }
+  assert.equal(appearances,500);
+  const sample=(turn,delay)=>{const draws=[.04999,turn,delay,.9,.3,.7];return api.planBalloon(stage,5,()=>draws.shift());};
+  const early=sample(0,0),late=sample(.99,.99);
+  assert.equal(early.turn,0);assert.equal(late.turn,3);assert.ok(late.delay>early.delay);
+  app.setRandom(()=>.05);api.resetRound();assert.equal(api.state.balloon,null);
+  app.frames(120);assert.equal(api.state.balloon,null);
+  app.setRandom(()=>0);api.resetRound();
+  const b=api.state.balloon;api.showShop();app.frames(60);
+  assert.equal(b.started,null);api.closeModal();app.frames(10);assert.equal(b.started,null);
+  app.frames(20);assert.ok(b.started!==null);
+  assert.ok(api.balloonPosition(b,b.started+2).y>api.balloonPosition(b,b.started).y);
+  assert.equal(api.balloonPosition(b,b.started+10.1),null);
+});
+
+test('a flying arrow pops the balloon and credits exactly 200 shop coins once', async () => {
+  const app=await appHarness(),{api}=app,{state}=api;
+  const draw=preciseMainDraw(app);
+  draw.pad.emit('pointerup',draw.coords);await app.flush();
+  assert.equal(state.mode,'flight');
+  const coins=api.progress.coins;
+  const z=.55,radius=.22,age=(app.engine.PLAYER.y-radius)/(.24+z*.033);
+  const b={x:0,z,radius,phase:0,started:state.time-age,popped:null};
+  state.balloon=b;
+  const from={x:3,y:1.65,z:0},to={x:3,y:1.65,z:2};
+  api.checkBalloon(from,to,state.time,state.time+.01);
+  assert.equal(api.progress.coins,coins);
+  app.until(()=>b.popped!==null);
+  assert.equal(api.progress.coins,coins+200);assert.equal(state.earned,200);
+  assert.equal(app.snapshot().coins,coins+200);
+  assert.equal(state.score,0);assert.equal(api.progress.hits,0);
+  assert.match(app.getElement('toast').textContent,/200 코인/);
+  api.checkBalloon({...from,x:0},{...to,x:0},state.time,state.time+.01);
+  assert.equal(api.progress.coins,coins+200);
+  app.until(()=>state.mode==='settling');
+  assert.equal(state.score,10);assert.equal(api.progress.hits,1);
+  assert.equal(state.earned,200+app.engine.getScoreCoinReward(10,state.stage.id));
+  assert.equal(api.progress.coins,coins+state.earned);
 });
