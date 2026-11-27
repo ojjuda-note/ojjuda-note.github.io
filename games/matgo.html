@@ -50,6 +50,7 @@ body.matgo-locked>:not(#matgo-gate):not(#matgo-entry-loading){display:none!impor
 <script src="/shared/games/game-results.js?v=20261120-service-actions1"></script>
 <style>.modal>.card:has(> .game-result-card){padding:0;background:transparent;border:0;box-shadow:none;width:min(430px,100%);max-width:430px}</style>
 <link rel="stylesheet" href="/shared/games/arcade-return.css?v=20261112-arcade-entry-return1">
+<script defer src="/shared/games/arcade-music.js?v=20261127-arcade-practice1" data-game="matgo"></script>
 </head>
 <body class="matgo-locked" data-mp-entry="true" data-mp-entry-pending>
 <section id="matgo-gate" aria-labelledby="matgo-gate-title" hidden>
@@ -478,7 +479,7 @@ function modal(html,handlers,result=false,goStop=false){ const m=document.create
 function cardEl(c,cls=''){ const d=document.createElement('div'); d.className='c '+cls; d.innerHTML=c?cardSVG(c):backSVG; d.dataset.id=c?c.id:''; return d; }
 function capsHTML(p){ const c=game.caps[p]; const groups=[['광',c.filter(x=>x.k==='gwang')],['열끗',c.filter(x=>x.k==='yul'&&!x.asPi)],['띠',c.filter(x=>x.k==='tti')],['피',c.filter(isPi)]]; return `<div class="caps">${groups.map(([n,arr])=>`<div class="cap"><span class="lb">${n} ${n==='피'?arr.reduce((s,x)=>s+piVal(x),0):arr.length}</span>${arr.map(x=>`<div class="c" data-id="${x.id}">${cardSVG(x)}</div>`).join('')}</div>`).join('')}</div>`; }
 function mount(){
-  app.innerHTML=`<div class="top"><h1><em>맞고</em></h1><span class="sp"></span><button class="pill money" id="money" aria-label="골드 잔액과 충전"></button><details class="game-menu"><summary class="pill" id="menu" aria-label="게임 메뉴">⋯</summary><div class="menu-options"><div class="gold-pending" id="goldPending" aria-live="polite" hidden></div><button class="pill" id="sound" type="button" aria-label="효과음 끄기" aria-pressed="true">🔊</button><button class="pill" id="rules">규칙</button><button class="pill" id="online">회원 대결</button><button class="pill" id="gukjin" hidden></button></div></details><button class="pill" id="exit">나가기</button></div>
+  app.innerHTML=`<div class="top"><h1><em>맞고</em></h1><span class="sp"></span><button class="pill money" id="money" aria-label="골드 잔액과 충전"></button><details class="game-menu"><summary class="pill" id="menu" aria-label="게임 메뉴">⋯</summary><div class="menu-options"><div class="gold-pending" id="goldPending" aria-live="polite" hidden></div><button type="button" data-arcade-music-toggle class="pill" aria-label="배경음악 켜기·끄기">배경음악</button><button class="pill" id="sound" type="button" aria-label="효과음 끄기" aria-pressed="true">🔊</button><button class="pill" id="rules">규칙</button><button class="pill" id="online">회원 대결</button><button class="pill" id="gukjin" hidden></button></div></details><button class="pill" id="exit">나가기</button></div>
   <p id="round-rules-note" class="round-rules-note" role="status" hidden>이전 판 이어하기 · 바닥뻑 규칙은 다음 판부터 적용</p>
   <div class="zone op"><div class="who"><b class="cpu-opponent">${cpuPortraitHTML()}<span class="cpu-name">컴퓨터 <small id="cpuLevel"></small></span></b> <span id="opHand"></span><span class="ppuk-count" id="opPpuk" hidden></span> <span class="go" id="opGo" hidden></span><span class="pts" id="opPts"></span></div><div class="caps" id="capsOp"></div><div class="hand op" id="handOp"></div></div>
   <div class="floor"><div class="fl" id="fl"></div><div class="deck"><button id="tazza-mode" class="tazza-button" type="button" aria-pressed="false"><span>타짜모드</span><small>다음 판 · 5쭈</small></button><div class="back">${backSVG}</div><small id="deckN"></small></div></div>
@@ -488,7 +489,7 @@ function mount(){
   logEl=$('#log');
   $('#tazza-mode').onclick=()=>{if(tazza.starting||ui.dealing||!access.allowed())return;tazza.toggle();syncTazza();toast(tazza.queued?'다음 판 예약 완료 · 지금 패는 그대로, 다음 판 시작 때 5쭈를 사용해요.':'타짜모드 예약을 취소했어요.',1800);};
   vent.mount();syncTazza();
-  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261120-service-actions1&open='+Date.now());};
+  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261127-arcade-practice1&open='+Date.now());};
   $('#exit').onclick=()=>{if(window.parent!==window)window.parent.postMessage({type:'ojjuda:matgo:close'},location.origin);else location.href='../world.html?tab=arcade';};
   document.querySelectorAll('.menu-options button').forEach(b=>b.addEventListener('click',()=>document.querySelector('.game-menu').open=false));
   $('#money').onclick=()=>showRefill();

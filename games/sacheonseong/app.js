@@ -27,7 +27,7 @@
     if(!state.sound)return;
     try{audioContext ||= new(window.AudioContext||window.webkitAudioContext)();audioContext.resume();const notes=kind==='win'?[523,659,784,1047]:kind==='match'?[659,880]:[440];notes.forEach((frequency,i)=>{const osc=audioContext.createOscillator(),gain=audioContext.createGain(),at=audioContext.currentTime+i*.08;osc.type='sine';osc.frequency.value=frequency;gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(.055,at+.015);gain.gain.exponentialRampToValueAtTime(.001,at+.22);osc.connect(gain);gain.connect(audioContext.destination);osc.start(at);osc.stop(at+.24);});}catch{}
   }
-  function begin(){if(!state.startedAt){prepareGlobalResult();state.startedAt=Date.now();save();}}
+  function begin(){window.OjjudaArcadeMusic?.setPlaying(true);if(!state.startedAt){prepareGlobalResult();state.startedAt=Date.now();save();}}
   const rankingMonth=()=>new Date(Date.now()+8*3600000).toISOString().slice(0,7);
   function currentGlobalResult(result){return result===globalResult&&state.runId===result.runId&&state.stage===result.stage&&window.OjjudaSacheonseongOnline?.owner?.()===result.owner&&rankingMonth()===result.period;}
   function validSnapshot(snapshot,result){return snapshot?.ok===true&&snapshot.owner===result.owner&&snapshot.period===result.period&&Array.isArray(snapshot.rows);}
@@ -195,6 +195,7 @@
     renderBoard();updateStats();restoreHint();syncTools();
   }
   function newStage(stage,pendingPurchase=null){
+    window.OjjudaArcadeMusic?.setPlaying(false);
     globalResult=null;
     stage=Math.min(E.MAX_STAGE,Math.max(1,stage));cancelRemovals();clearSelection();$('completion').hidden=true;$('next').disabled=true;locked=false;customSize=null;overview=true;panHintDismissed=false;
     // Fix the shape for this attempt; rotation only changes the drawing size.
@@ -263,6 +264,7 @@
   }
   function showCompletion(rank){
     if(!completedRound())return;
+    window.OjjudaArcadeMusic?.setPlaying(false);
     locked=true;const final=state.stage===E.MAX_STAGE;
     const title=$('win-title');if(title)title.textContent=final?'200개의 정원을 모두 완성했어요!':`${state.stage}단계 정원 완성!`;
     $('win-desc').innerHTML=`${state.stage}단계 · <strong class="win-time">${time(state.finishedMs)}</strong>`;
@@ -463,6 +465,8 @@
   const lastStage=Number.isInteger(saved?.stage)&&saved.stage>=1&&saved.stage<=E.MAX_STAGE?saved.stage:1;
   state={unlocked:Number.isInteger(saved?.unlocked)?Math.min(E.MAX_STAGE,Math.max(1,saved.unlocked)):1,sound:!!saved?.sound};
   newStage(lastStage,pending);
+  $('practice').onclick=()=>window.OjjudaArcadePractice?.show('sacheonseong',{replay:true});
+  if (!pending) window.OjjudaArcadePractice?.show('sacheonseong');
   setInterval(()=>{
     if(state.finishedMs==null)$('timer').textContent=time(ms());
     else if(globalResult&&!currentGlobalResult(globalResult)){

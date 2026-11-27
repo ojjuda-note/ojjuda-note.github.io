@@ -125,6 +125,9 @@ body[data-world^="life"] #biomeMeter{border-color:var(--biome-edge);box-shadow:0
 #demoStageSelect{width:100%;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--space);color:var(--ink);font:inherit}
 @media (prefers-reduced-motion: reduce){#ovText p.new{animation:none}#toast,#lifeProgress i{transition:none}}
 </style>
+<script defer src="/shared/games/arcade-music.js?v=20261127-arcade-practice1" data-game="saetbyeol"></script>
+<link rel="stylesheet" href="/shared/games/arcade-practice.css?v=20261127-arcade-practice1">
+<script defer src="/shared/games/arcade-practice.js?v=20261127-arcade-practice1" data-game="saetbyeol"></script>
 </head>
 <body data-mode="entry">
 <main id="starEntry" aria-label="샛별키우기 시작화면">
@@ -164,7 +167,7 @@ body[data-world^="life"] #biomeMeter{border-color:var(--biome-edge);box-shadow:0
   <div class="monthly-bulssi-entry"><a class="monthly-bulssi-link" href="/features/arcade/monthly-ranking.html?game=saetbyeol" target="_blank" rel="noopener noreferrer">🏆 이번 달 1~10위 · 내 순위</a></div>
 </div></div>
 <div id="toast" class="serif" role="status"></div>
-<div id="settings"><button id="catalogBtn">천체 도감 · 50종</button><label id="demoStageWrap" for="demoStageSelect" hidden>관리자 체험 단계<select id="demoStageSelect"></select></label><button id="demoBtn" hidden disabled></button><button id="sndBtn"></button><button id="resetBtn">처음부터 다시</button></div>
+<div id="settings"><button type="button" data-practice-replay>튜토리얼</button><button id="catalogBtn">천체 도감 · 50종</button><label id="demoStageWrap" for="demoStageSelect" hidden>관리자 체험 단계<select id="demoStageSelect"></select></label><button id="demoBtn" hidden disabled></button><button type="button" data-arcade-music-toggle aria-label="배경음악 켜기·끄기">배경음악</button><button id="sndBtn"></button><button id="resetBtn">처음부터 다시</button></div>
 <section id="chapterSelect" role="dialog" aria-modal="true" aria-labelledby="chapterTitle" hidden>
   <div class="chapter-shell">
     <header class="chapter-heading"><div><span class="chapter-kicker">샛별키우기 · 우주의 여정</span><h2 id="chapterTitle" class="serif">어느 별로 떠날까요?</h2><p>이전 챕터의 엔딩을 보면 다음 별이 열려요.</p></div><button id="chapterClose" type="button" aria-label="챕터 선택 닫기">닫기</button></header>

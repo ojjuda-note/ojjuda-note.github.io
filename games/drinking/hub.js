@@ -8,7 +8,7 @@
   const gameMin = kind => ['liar','king','minority','mission'].includes(kind) ? 3 : 2;
   const codePattern = /^[A-Z0-9]{6}$/;
   const params = new URL(location.href).searchParams;
-  const entryRevision = '20261120-service-actions1';
+  const entryRevision = '20261127-arcade-practice1';
   const localPlay = byId('local-play');
   let openingLocal = false;
   localPlay?.addEventListener('click', async event => {
