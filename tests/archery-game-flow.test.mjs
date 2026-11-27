@@ -5662,3 +5662,35 @@ test('the live arrow recedes from the camera at both phone and desktop widths', 
     assert.ok(snapshots[2]<snapshots[0]*.64,'the late-flight arrow has a smaller onscreen scale');
   }
 });
+
+test('a held touch survives mobile toolbar resizing and still releases exactly once', async () => {
+  const app = await appHarness(), pad = app.getElement('aimTouchpad');
+  app.resize(390, 480);
+  const down = {pointerId: 4, pointerType: 'touch', clientX: 186, clientY: 417};
+  pad.emit('pointerdown', down);
+  app.advanceTo(app.now + 320);
+  const started = app.api.state.drawStarted;
+  app.resize(390, 437);
+  assert.equal(app.api.state.mode, 'drawing');
+  assert.equal(app.api.state.drawStarted, started);
+  const before = baseAimScreen(app);
+  const up = {...down, clientX: 206, clientY: 407};
+  pad.emit('pointermove', up);
+  const after = baseAimScreen(app);
+  assert.ok(Math.abs(after.x-before.x-20) < 1e-8 && Math.abs(after.y-before.y+10) < 1e-8);
+  pad.emit('pointerup', up);pad.emit('lostpointercapture', up);pad.emit('pointerup', up);
+  assert.equal(app.api.state.used, 1);
+});
+
+test('touch duration follows the press and lift timestamps when event delivery is delayed', async () => {
+  const app = await appHarness(), pad = app.getElement('aimTouchpad');
+  const pressed = app.now + 5;
+  app.advanceTo(pressed + 130, {frame: false});
+  pad.emit('pointerdown', {pointerType: 'touch', timeStamp: pressed});
+  const lifted = pressed + 500;
+  app.advanceTo(lifted + 240, {frame: false});
+  pad.emit('pointerup', {pointerType: 'touch', timeStamp: lifted});
+  assert.equal(app.api.state.used, 1);
+  assert.equal(app.api.state.charge, .4);
+  assert.equal(app.api.state.shot.startedAt, app.now);
+});
