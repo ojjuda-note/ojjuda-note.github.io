@@ -1,143 +1,170 @@
-/* A practice round never starts a real game or submits a score. */
+/* Game-specific, reversible practice positions. No game state or score is used. */
 (() => {
   'use strict';
-  const lessons = {
-    sacheonseong: {name:'사천성', prompt:'같은 꽃 두 장을 차례로 눌러 보세요.', tiles:['🌸','🌸','🍃'], path:[0,1], pair:true, result:'같은 패를 연결했어요.'},
-    solitaire: {name:'솔리테어', prompt:'하트 A를 고른 뒤 빈 미션칸에 놓아 보세요.', tiles:['♥ A','♣ 7','빈 미션칸'], path:[0,2], result:'A부터 같은 무늬를 차례로 모아요.'},
-    onecard: {name:'원카드', prompt:'바닥은 빨강 5예요. 같은 색이나 숫자의 카드를 내세요.', tiles:['파랑 3','노랑 5','초록 8'], path:[1], result:'숫자 5가 같아서 낼 수 있어요.'},
-    mines: {name:'지뢰찾기', prompt:'숫자 1 옆에 남은 닫힌 칸은 하나예요. 그 칸을 길게 눌러 깃발을 꽂으세요.', tiles:['열린 칸','숫자 1','닫힌 칸'], path:[2], hold:true, result:'⚑ 지뢰가 있는 칸을 표시했어요.'},
-    saetbyeol: {name:'샛별키우기', prompt:'탐험 중인 샛별을 위해 먹이를 골라 보세요.', tiles:['빈 공간','먹이 ✦'], path:[1], result:'먹이를 모아 샛별을 키워요.'},
-    screw: {name:'나사 풀기', prompt:'박스에서 보이는 나사 머리를 눌러 빼 보세요.', tiles:['판자','나사 🔩','판자'], path:[1], result:'가려진 나사는 모형을 돌려 찾아요.'},
-    screw_flat: {name:'나사 풀기 · 평면형', prompt:'나사를 누르고 옮길 빈 구멍을 골라 보세요.', tiles:['나사 🔩','빈 구멍 ○','철판'], path:[0,1], result:'철판을 잡고 있던 나사를 옮겼어요.'},
-    spot: {name:'틀린그림찾기', prompt:'보기는 🌳 🌸 🌳예요. 아래에서 달라진 곳을 누르세요.', tiles:['🌳','🍎','🌳'], path:[1], result:'가운데 꽃이 사과로 바뀌었어요.'},
-    mole: {name:'두더지 잡기', prompt:'구멍에서 나온 두더지를 잡아 보세요.', tiles:['빈 구멍','두더지','폭탄'], path:[1], result:'두더지를 잡았어요!'},
-    runner: {name:'쭈달리기', prompt:'앞에 끊긴 발판이 있어요. 뛰어넘어 보세요.', tiles:['슬라이드','점프 ↑'], path:[1], result:'점프를 한 번 더 누르면 2단 점프예요.'},
-    stacker: {name:'탑 쌓기', prompt:'위 블록이 아래 블록과 겹칠 때 멈춰 보세요.', timing:true, tiles:['블록 놓기'], result:'겹친 부분 위로 다음 블록을 쌓아요.'},
-    breakout: {name:'벽돌깨기', prompt:'공이 오른쪽으로 내려와요. 공 아래에 받침대를 놓으세요.', tiles:['왼쪽','가운데','오른쪽 ●'], path:[2], result:'받침대로 공을 튕겨 벽돌을 깨요.'},
-    chacha_rush: {name:'차차 러시!', prompt:'가운데 차선에 장애물이 있어요. 빈 차선으로 피하세요.', tiles:['차량','장애물','빈 차선 →'], path:[2], result:'빈 차선으로 이동했어요.'},
-    janggi: {name:'장기', prompt:'졸을 고르고 바로 앞의 빈자리를 눌러 한 칸 전진해 보세요.', tiles:['졸 卒','앞 한 칸','뒤 한 칸'], path:[0,1], result:'졸을 한 칸 움직였어요.'},
-    chess: {name:'체스', prompt:'백 폰을 골라 바로 앞의 빈칸으로 옮겨 보세요.', tiles:['♙ 폰','앞 한 칸','옆 한 칸'], path:[0,1], result:'폰을 한 칸 전진시켰어요.'},
-    billiards: {name:'당구', prompt:'4구 연습이에요. 흰 수구로 맞힐 빨간 공 두 개를 골라 보세요.', tiles:['🔴','🟡','🔴'], path:[0,2], pair:true, result:'4구에서는 빨간 공 두 개를 맞혀요.'},
-    carom3: {name:'당구 · 3쿠션', prompt:'내 수구가 두 번째 공을 맞히기 전까지 거쳐야 할 쿠션 수를 고르세요.', tiles:['1회','2회','3회 이상'], path:[2], result:'쿠션을 세 번 이상 거치면 득점할 수 있어요.'},
-    pool8: {name:'당구 · 8볼', prompt:'내 공을 모두 넣었어요. 마지막에 넣을 공을 골라 보세요.', tiles:['하얀 수구','검은 8번 공'], path:[1], result:'내 공을 모두 넣은 뒤 8번 공을 노려요.'},
-    yut: {name:'윷놀이', prompt:'‘개’가 나왔어요. 출발할 말을 고르고 두 칸 앞으로 가세요.', tiles:['내 말','한 칸','두 칸'], path:[0,2], result:'개는 두 칸이에요.'},
-    tour: {name:'마블', prompt:'주사위를 굴려 말을 움직여 보세요.', tiles:['주사위 굴리기 🎲'], path:[0], result:'주사위 눈만큼 말을 옮겨요.'},
-    tank: {name:'탱크게임', prompt:'내 탱크 차례예요. 위치를 바꾸는 버튼을 눌러 보세요.', tiles:['왼쪽 이동 ◀','차례 종료'], path:[0], result:'내 차례에 탱크의 위치를 바꿀 수 있어요.'},
-    ttang: {name:'월드땅따먹기', prompt:'내 땅에서 바깥으로 나간 뒤 다시 내 땅으로 돌아오세요.', tiles:['바깥으로 →','내 땅으로 ↩'], path:[0,1], result:'선을 닫아 새 땅을 차지했어요.'},
-    photo_ttang: {name:'포토땅따먹기', prompt:'테두리 밖으로 선을 그었다가 내 땅으로 돌아오세요.', tiles:['선 그리기','내 땅으로 ↩'], path:[0,1], result:'둘러싼 영역의 사진이 열려요.'},
-    matgo: {name:'맞고', prompt:'손에 든 1월 송학과 같은 달의 바닥패를 고르세요.', tiles:['3월 벚꽃','1월 송학','8월 공산'], path:[1], result:'같은 달의 패를 가져왔어요.'},
+  const view=window.OjjudaLessonPanel;
+  if(!view)return;
+  const {el,step:s}=view;
+  const make=(name,goal,theme,layout,steps)=>({name,goal,theme,layout,steps});
+  const lessons={
+    sacheonseong:make('사천성','길이 이어지는 같은 그림 두 장을 찾아 판을 비워요.','jade','tiles',[
+      s('짝 찾기','연습판 · 매화 두 장','같은 매화 두 장을 차례로 눌러 보세요.','🌸|매화;🌸|매화;🍃|잎',[0,1],'매화 두 장이 짝이에요. 어느 쪽을 먼저 눌러도 돼요.','분홍 꽃끼리 짝이에요. 한 장을 고른 뒤 다른 꽃을 누르세요.',{pair:true,follow:'이제 다른 매화 한 장을 누르세요.'}),
+      s('길 잇기','왼쪽 매화와 오른쪽 매화 사이에 다른 패가 있어요.','다른 패를 통과하지 않는 길을 골라 보세요.','→|가운데 패 통과;⤴|빈 윗줄로 돌아가기',[1],'위로, 옆으로, 아래로. 두 번 꺾이는 빈길로도 짝을 이을 수 있어요.','가로와 세로로만 이어요. 두 번까지 꺾어도 되니 윗줄을 보세요.',{scene:'link'}),
+      s('층 읽기','같은 그림이라도 다른 패가 위에 포개질 수 있어요.','아래 패를 쓰려면 어느 짝부터 치워야 할까요?','▣|위에 드러난 짝;▧|아래 가려진 짝',[0],'위쪽 짝을 먼저 치우면 가려졌던 패가 드러나요.','지금 손댈 수 있는 패는 위에 드러난 패예요.')]),
+    solitaire:make('솔리테어','네 무늬를 각각 A부터 K까지 미션칸에 모아요.','felt','cards',[
+      s('미션칸','빈 미션칸 · 손에 하트 A가 있어요.','하트 A를 골라 빈 미션칸에 놓아 보세요.','♥|하트 A;♣|클로버 7;□|빈 미션칸',[0,2],'하트 미션칸이 열렸어요. 다음 하트 2를 이 자리에 올릴 수 있어요.','미션칸의 첫 장은 꼭 A예요.',{move:true}),
+      s('카드 옮기기','작업줄 맨 아래에 검은 7이 있어요.','검은 7 아래에 놓을 카드를 고르세요.','♠|검은 6;♥|빨간 6;♦|빨간 8',[1],'작업줄은 색을 번갈아 한 숫자씩 낮춰요. 빨간 6 아래에는 검은 5가 와요.','먼저 숫자 6을 찾고, 그중 검은색과 반대인 카드를 고르세요.'),
+      s('빈 줄 쓰기','작업줄 하나를 비웠어요.','비어 있는 작업줄의 첫 카드로 무엇을 놓을까요?','♦|다이아 A;♣|클로버 K;♥|하트 2',[1],'빈 작업줄에는 K를 놓아요. A는 미션칸으로 보내세요.','작업줄과 미션칸의 시작 카드는 달라요. 작업줄은 가장 높은 카드부터예요.')]),
+    onecard:make('원카드','바닥 카드의 색이나 숫자를 맞춰 손패를 먼저 비워요.','felt','cards',[
+      s('숫자 맞추기','바닥 카드 · 빨강 5','빨강이 없어도 낼 수 있는 패를 찾으세요.','3|파랑 3;5|노랑 5;4|초록 4',[1],'색이 달라도 숫자가 5로 같아서 낼 수 있어요.','바닥의 숫자는 5예요.'),
+      s('색 맞추기','이제 바닥 카드는 노랑 5예요.','다음 손패에서 색이 이어지는 카드를 내세요.','2|노랑 2;7|파랑 7;6|초록 6',[0],'노랑 2를 냈어요. 다음 사람은 노랑이나 숫자 2를 맞출 수 있어요.','이번에는 숫자가 달라도 노랑이면 돼요.'),
+      s('패 가져오기','바닥은 노랑 2 · 손패는 파랑 3과 초록 4이에요.','맞는 패가 하나도 없을 때 할 일을 고르세요.','▤|더미에서 뽑기;4|초록 4 내기',[0],'한 장 받고 차례를 넘겨요. 손패 두 장에서 한 장을 남길 때는 먼저 원카드!를 누르세요.','둘 다 색과 숫자가 달라요. 가운데 더미를 이용하세요.')]),
+    mines:make('지뢰찾기','숫자를 단서로 지뢰가 없는 칸을 모두 열어요.','slate','tiles',[
+      s('숫자 읽기','열린 숫자 1 · 주변 여덟 칸','숫자 1이 알려 주는 것은 무엇일까요?','⚑|주변 지뢰 1개;◷|남은 시간 1초',[0],'가로·세로·대각선을 포함해 맞닿은 여덟 칸에 지뢰 하나가 있어요.','숫자는 주변 지뢰 개수예요.'),
+      s('깃발 꽂기','숫자 1 주변에 닫힌 칸이 하나만 남았어요.','닫힌 칸을 길게 눌러 깃발을 꽂으세요.','·|열린 칸;1|숫자 1;□|닫힌 칸',[2],'깃발을 표시했어요. 키보드에서는 칸을 골라 Enter로 표시할 수 있어요.','닫힌 칸에 0.4초 정도 손을 대세요.',{hold:2,after:['','','깃발 ⚑']}),
+      s('안전 칸','숫자 1 옆의 확실한 지뢰 한 곳에 깃발을 꽂았어요.','그 숫자에 붙어 있는 다른 칸은 어떻게 할까요?','□|열기;⚑|모두 깃발 꽂기',[0],'필요한 지뢰 1개를 이미 찾았으니 나머지 이웃은 안전해요.','깃발의 위치가 확실하면 숫자와 개수를 비교하세요.')]),
+    saetbyeol:make('샛별키우기','작은 불씨로 빛과 금속을 모아 더 큰 별로 진화해요.','night','trail',[
+      s('탐험','첫 탐험 · 불씨와 작은 천체','불씨를 고르고 작은 천체까지 움직여 보세요.','✦|내 불씨;●|작은 천체;·|빈 공간',[0,1],'천체를 태워 자원을 모아요. 실제 탐험에서는 손가락으로 끌거나 마우스를 움직여요.','빈 공간을 지나 가까운 천체로 다가가세요.',{move:true}),
+      s('성장','탐험에서 빛과 금속을 모았어요.','모은 자원을 쓸 메뉴를 고르세요.','✧|성장 · 강화;☰|도감',[0],'별자리의 가지를 강화하면 다음 성장 목표에 가까워져요.','도감은 기록을 보는 곳이에요. 성장은 강화 메뉴에서 해요.'),
+      s('다음 단계','다섯 영역 중 한 영역의 강화 목표가 남았어요.','보스 도전을 열려면 무엇부터 할까요?','✦|남은 영역 강화;⚑|즉시 보스 도전',[0],'현재 단계의 다섯 영역 목표를 채우면 보스에 도전할 수 있어요.','강화 화면에서 아직 목표를 채우지 못한 영역을 찾아요.')]),
+    screw:make('나사 풀기 · 박스형','모형을 돌려 같은 색 나사를 세 개씩 상자에 모아요.','amber','tiles',[
+      s('나사 찾기','모형 정면 · 나사 머리가 보이는 곳','돌릴 수 있는 부품을 골라 보세요.','▰|판자;⊕|나사 머리;▦|상자 바닥',[1],'보이는 나사 머리를 누르면 나사가 빠져요.','판을 잡고 있는 십자 모양을 찾아보세요.'),
+      s('색 모으기','파란 상자 · 파란 나사 2 / 3','상자를 바로 채울 나사를 고르세요.','⊕|빨강;⊕|파랑;⊕|노랑',[1],'파란 나사 세 개가 모여 상자가 완성됐어요.','열려 있는 상자의 색부터 확인하세요.'),
+      s('뒤쪽 보기','정면에는 필요한 색이 없어요.','뒤에 가려진 나사를 찾으려면 어떻게 할까요?','⟳|모형 돌리기;⊕|다른 색부터 빼기',[0],'모형을 돌리면 다른 면이 보여요. 보관칸을 채우기 전에 다음 색을 찾으세요.','모형을 끌면 뒷면도 살필 수 있어요.')]),
+    screw_flat:make('나사 풀기 · 평면형','나사를 빈 구멍으로 옮겨 철판을 떨어뜨려요.','amber','tiles',[
+      s('나사 옮기기','철판 왼쪽에 나사 하나, 옆에 빈 구멍 하나','나사를 고르고 빈 구멍을 누르세요.','⊕|나사;○|빈 구멍;▰|철판',[0,1],'나사를 옮겨 철판을 고정하던 자리가 비었어요.','나사를 먼저 고른 다음 비어 있는 구멍을 골라요.',{move:true}),
+      s('구멍 보기','위 철판이 구멍 하나를 덮고 있어요.','나사를 옮길 수 있는 구멍을 고르세요.','▣|가려진 구멍;○|열린 구멍',[1],'위에 철판이 겹친 자리는 쓸 수 없어요.','구멍의 테두리가 드러난 곳을 찾아요.'),
+      s('철판 풀기','철판 한 장을 나사 하나가 받치고 있어요.','마지막 나사를 어디로 옮길까요?','○|철판 밖 빈 구멍;⊕|이미 찬 구멍',[0],'마지막 고정점이 사라지면 철판이 떨어져 아래쪽이 열려요.','다음 철판에 쓸 빈자리도 남겨 두세요.')]),
+    spot:make('틀린그림찾기','두 그림을 같은 위치끼리 비교해 달라진 곳을 모두 찾아요.','jade','tiles',[
+      s('두 그림 비교','위는 기준 그림, 아래는 고를 그림이에요.','아래 그림에서 달라진 곳을 눌러 보세요.','🌳|나무;🍎|사과;🌳|나무',[1],'위 그림의 가운데 꽃이 아래에서는 사과로 바뀌었어요.','위아래 가운데를 비교해 보세요.',{reference:['🌳','🌸','🌳']}),
+      s('위치 살피기','두 번째 그림 · 왼쪽부터 한 칸씩 살펴요.','이번에 모양이 바뀐 자리는 어디일까요?','☀|해;☁|구름;☂|우산',[2],'오른쪽 별이 우산으로 바뀌었어요. 그림을 구역별로 보면 놓치는 곳이 줄어요.','마지막 칸의 실루엣을 확인해요.',{reference:['☀','☁','☆']}),
+      s('하트 지키기','하트 1개 · 남은 차이 1개','마지막 차이가 잘 보이지 않을 때 어떻게 할까요?','◎|양쪽 같은 구역 비교;✳|여러 곳 빠르게 누르기',[0],'잘못 누르면 하트를 잃어요. 같은 구역을 확인한 뒤 한 번만 누르세요.','하트가 하나일 때는 확인한 차이만 선택하세요.')]),
+    mole:make('두더지 잡기','구멍을 살피고 두더지가 나온 자리만 정확하게 눌러요.','amber','holes',[
+      s('첫 타격','두더지 한 마리가 올라왔어요.','두더지가 있는 구멍을 눌러 보세요.','○|빈 구멍;🐹|두더지;○|빈 구멍',[1],'올라온 동안 눌러야 잡을 수 있어요. 두더지가 숨으면 다음 구멍을 보세요.','가운데 구멍에 두더지가 보여요.'),
+      s('금색 두더지','보통 두더지와 금색 두더지가 함께 올라왔어요.','한 번에 3점을 얻는 두더지를 고르세요.','🐹|보통;✦|금색;○|빈 구멍',[1],'금색 두더지를 잡으면 3점을 얻어요.','금색으로 빛나는 두더지를 찾아요.'),
+      s('폭탄 피하기','오른쪽 구멍에는 폭탄이 있어요.','점수를 잃지 않고 잡을 대상을 고르세요.','🐹|두더지;●|폭탄',[0],'폭탄은 누르면 2점이 깎여요. 두더지만 골라 누르세요.','검은 폭탄은 지나가게 두세요.')]),
+    runner:make('쭈달리기','해마와 함께 진주를 모으며 끊긴 발판과 장애물을 넘어요.','ocean','trail',[
+      s('점프','해마 앞에서 발판이 끊겼어요.','빈틈을 넘을 동작을 고르세요.','↑|점프;↓|슬라이드',[0],'해마가 발판을 넘었어요. 공중에서 점프를 한 번 더 쓸 수 있어요.','바닥이 끊길 때는 위로 뛰어요.'),
+      s('2단 점프','첫 점프 뒤, 더 높은 발판이 앞에 있어요.','공중에서 높은 발판으로 올라가 보세요.','↑|한 번 더 점프;↓|급강하',[0],'두 번째 점프로 높이를 더 얻었어요. 착지하면 다시 두 번 뛸 수 있어요.','착지하기 전에도 한 번 더 뛸 수 있어요.'),
+      s('낮은 길','위쪽 발판에서 아래층으로 내려가려 해요.','아래쪽 길로 내려갈 동작을 고르세요.','↓|슬라이드;↑|점프',[0],'위층에서는 슬라이드로 아래로 빠져요. 바닥에서는 몸을 낮춰요.','아래 방향 조작을 써 보세요.')]),
+    stacker:make('탑 쌓기','움직이는 블록을 아래층과 포개 탑을 높이 쌓아요.','amber','pieces',[
+      s('첫 층','아래 블록이 보이는 자리가 착지 구간이에요.','두 블록이 포개질 때 놓아 보세요.','▰|블록 놓기',[0],'겹친 부분이 다음 층의 발판이 돼요.','위 블록이 가운데의 아래 블록과 겹칠 때 눌러요.',{timing:true}),
+      s('남는 폭','아랫블록과 새 블록이 절반만 겹쳤어요.','다음 층에 남을 부분을 고르세요.','▰|겹친 절반;▬|블록 전체',[0],'바깥으로 튀어나온 부분이 잘려서 다음 착지 폭이 좁아져요.','아래에서 받쳐 주는 부분만 남아요.'),
+      s('다시 놓기','이번에는 블록 폭이 더 좁아요.','짧아진 발판과 겹치는 순간에 다시 놓으세요.','▰|블록 놓기',[0],'폭을 넓게 남길수록 다음 층을 맞추기 쉬워요.','아랫블록의 가운데를 기준으로 기다리세요.',{timing:true,narrow:true})]),
+    breakout:make('벽돌깨기','받침대로 공을 되받아쳐 위쪽 벽돌을 깨요.','night','trail',[
+      s('공 받기','공이 화면 오른쪽으로 내려오고 있어요.','공을 받을 위치를 고르세요.','←|왼쪽;·|가운데;→|오른쪽',[2],'공이 내려올 곳으로 받침대를 옮기면 공이 다시 올라가요.','공의 현재 위치보다 내려오는 방향을 보세요.'),
+      s('벽돌 구별','숫자 2 벽돌과 ∞ 벽돌이 있어요.','공을 두 번 맞혀 없앨 수 있는 벽돌을 고르세요.','2|숫자 벽돌;∞|무적 벽돌',[0],'숫자 벽돌은 두 번 맞으면 깨져요. ∞ 벽돌은 남아요.','숫자는 필요한 타격과 관련 있어요.'),
+      s('아이템 고르기','노란 상자와 검은 상자가 떨어져요.','받침대 확대 같은 도움을 노릴 상자를 고르세요.','🟨|노란 상자;⬛|검은 상자',[0],'노란 상자는 받침대 확대나 공 감속을 줘요. 검은 상자는 플레이를 더 어렵게 할 수 있어요.','노란 상자는 받을 만한 보너스예요.')]),
+    chacha_rush:make('차차 러시!','도로 앞쪽을 보고 막힌 차선을 피해 달려요.','ocean','trail',[
+      s('빈 차선','왼쪽과 가운데는 막혔고 오른쪽 차선이 비었어요.','비어 있는 차선으로 이동하세요.','▰|막힌 왼쪽;▰|막힌 가운데;→|빈 오른쪽',[2],'오른쪽으로 피했어요. 바로 앞 칸이 비었는지 먼저 보세요.','오른쪽 차선에 장애물이 없어요.'),
+      s('점프 쓰기','부스트 게이지 100% · 점프 한 번에 40%를 써요.','점프 한 번 뒤 남을 게이지는 얼마일까요?','40|40%;60|60%;70|70%',[1],'점프 뒤에는 60%가 남아요. 차선 변경과 점프 중 상황에 맞는 동작을 골라요.','100에서 점프에 드는 40을 빼요.'),
+      s('부스터 관리','부스트 게이지 35% · 점프는 40%, 부스터는 30%예요.','지금 남은 양으로 쓸 수 있는 동작을 고르세요.','↑|점프;»|부스터',[1],'부스터를 쓰면 5%가 남아요. 앞길이 비었는지 보고 가속하세요.','남은 35%와 각 동작에 드는 양을 비교하세요.')]),
+    janggi:make('장기','말마다 다른 길을 익혀 상대 궁을 위협하는 장군을 만들어요.','amber','board',[
+      s('졸 움직이기','초의 졸 · 위쪽이 상대 진영이에요.','졸을 바로 앞의 자리에 옮겨 보세요.','·|앞 왼쪽;＋|앞 한 칸;·|앞 오른쪽;·|왼쪽;卒|내 졸;·|오른쪽',[4,1],'졸은 앞으로 한 칸, 또는 옆으로 한 칸 갈 수 있어요. 뒤로는 가지 못해요.','아래 가운데 졸을 고르고 바로 위 칸을 누르세요.',{columns:3,move:true}),
+      s('차의 길','같은 가로줄 끝에 상대 말이 있고 중간은 비었어요.','차가 상대 말까지 가는 길을 고르세요.','↗|대각선;→|가로 직선;↷|말 뛰어넘기',[1],'차는 빈 가로나 세로 길을 따라 여러 칸 갈 수 있어요. 중간의 말을 넘지는 못해요.','지금은 궁성 밖의 가로줄이에요.'),
+      s('장군에 대응','상대 차가 내 궁을 곧장 노리고 있어요.','이번 차례에 먼저 해결할 일을 고르세요.','宮|궁을 안전하게 지키기;卒|먼 졸 전진',[0],'궁을 피하거나, 공격을 막거나, 공격하는 말을 잡아 위협을 풀어요.','내 궁에 걸린 장군부터 해결해야 해요.')]),
+    chess:make('체스','기물의 길을 익히고 상대 킹이 피할 수 없는 체크메이트를 만들어요.','slate','board',[
+      s('폰 전진','백 차례 · 백 폰이 e2에 있어요.','e2의 폰을 바로 앞 e3로 옮겨 보세요.','·|d3;＋|e3;·|f3;·|d2;♙|e2;·|f2',[4,1],'폰이 한 칸 전진했어요. 바로 앞이 비어 있어야 전진할 수 있어요.','아래 가운데 e2를 고르고 바로 위 e3를 누르세요.',{columns:3,move:true}),
+      s('폰으로 잡기','e3 백 폰 · 대각선 d4에 검은 폰이 있어요.','백 폰으로 상대 말을 잡을 칸을 고르세요.','♟|d4;·|e4;·|f4;·|d3;♙|e3;·|f3',[0],'폰은 움직일 때는 앞으로, 상대 말을 잡을 때는 앞 대각선으로 가요.','d4의 검은 폰이 앞 대각선에 있어요.',{columns:3}),
+      s('체크 풀기','상대 기물이 내 킹을 위협해 체크가 걸렸어요.','이번 차례의 우선순위를 고르세요.','♔|킹을 지키기;♙|반대편 폰 전진',[0],'킹을 옮기거나 공격을 막거나 공격 기물을 잡아요. 피할 방법이 없으면 체크메이트예요.','이번 수 뒤에 내 킹이 위협받지 않아야 해요.')]),
+    billiards:make('당구 · 4구','내 수구로 한 번에 빨간 공 두 개를 맞혀 득점해요.','felt','felt',[
+      s('공 구별','내 수구는 흰 공, 상대 수구는 노란 공이에요.','이번에 맞혀야 하는 두 공을 고르세요.','🔴|빨강 1;🟡|상대 수구;🔴|빨강 2',[0,2],'빨간 공 두 개가 득점 대상이에요. 맞히는 순서는 상관없어요.','노란 공은 상대 수구예요. 두 빨간 공을 찾아요.',{pair:true,follow:'다른 빨간 공도 골라 보세요.'}),
+      s('득점 확인','내 수구가 빨강 1과 빨강 2를 모두 맞혔어요.','이 샷의 결과를 고르세요.','+1|1점 획득;0|득점 없음',[0],'상대 수구를 건드리지 않고 빨간 공 둘을 맞히면 1점이고 차례가 이어져요.','두 대상구를 모두 맞혔어요.'),
+      s('상대 수구','다음 샷의 경로에 노란 상대 수구가 있어요.','득점을 지키려면 어떤 경로를 고를까요?','↷|상대 수구를 피하는 길;→|상대 수구를 먼저 맞히는 길',[0],'4구에서는 상대 수구를 맞히면 감점돼요. 샷 전에 두 빨간 공까지의 길을 살펴요.','노란 공을 맞히지 않는 경로를 골라요.')]),
+    carom3:make('당구 · 3쿠션','두 번째 대상구를 맞히기 전에 내 수구가 쿠션에 세 번 이상 닿아야 해요.','felt','felt',[
+      s('쿠션 세기','수구가 긴 벽, 짧은 벽에 차례로 닿았어요.','지금까지의 쿠션 수를 고르세요.','1|한 번;2|두 번;3|세 번',[1],'벽에 두 번 닿았어요. 지금 두 번째 대상구를 맞히면 쿠션이 부족해요.','닿은 벽의 횟수를 세세요.'),
+      s('조건 채우기','첫 대상구를 맞혔고 현재 쿠션은 두 번이에요.','두 번째 대상구 전에 어디를 더 거쳐야 할까요?','▰|쿠션 한 번 더;●|두 번째 공 바로 맞히기',[0],'이제 쿠션이 세 번이에요. 두 번째 대상구까지 맞히면 조건이 완성돼요.','세 번째 벽 접촉이 아직 남았어요.'),
+      s('결과 읽기','두 번째 대상구를 먼저 맞힌 후 세 번째 쿠션에 닿았어요.','이 샷은 득점일까요?','+1|득점;0|득점 없음',[1],'세 번째 쿠션은 두 번째 대상구보다 먼저여야 해요.','횟수와 순서를 함께 확인하세요.')]),
+    pool8:make('당구 · 8볼','내 그룹의 공을 모두 넣고 마지막으로 검은 8번 공을 넣어요.','felt','felt',[
+      s('내 그룹','내 그룹은 줄무늬예요.','먼저 넣을 공을 고르세요.','●|단색 3번;◒|줄무늬 10번;❽|검은 8번',[1],'내 그룹인 줄무늬 공부터 줄여요. 8번은 마지막까지 남겨요.','번호보다 먼저 내 그룹인지 보세요.'),
+      s('마지막 한 개','줄무늬 12번 하나와 8번 공이 남았어요.','이번 차례의 대상은 무엇일까요?','◒|줄무늬 12번;❽|8번 공',[0],'12번까지 넣으면 내 그룹이 비어요.','내 그룹의 마지막 공이 아직 테이블 위에 있어요.'),
+      s('마무리','이제 내 그룹의 공을 전부 넣었어요.','승리를 노릴 공을 고르세요.','❽|8번 공;○|흰 수구',[0],'내 공을 모두 넣은 뒤 8번을 넣어야 해요. 먼저 넣으면 패배예요.','흰 공은 치는 공이에요. 마지막 대상은 검은 공이에요.')]),
+    yut:make('윷놀이','던진 결과로 말을 옮겨 우리 편 말을 도착시켜요.','amber','trail',[
+      s('말 옮기기','윷 결과 · 개','내 말을 고르고 알맞은 이동 거리를 누르세요.','●|내 말;①|한 칸;②|두 칸',[0,2],'개는 두 칸이에요. 도·개·걸·윷·모는 차례로 1~5칸이에요.','개는 도보다 한 칸 더 가요.',{move:true}),
+      s('한 번 더','이번에는 네 개가 같은 면인 윷이 나왔어요.','이 결과로 할 수 있는 일을 고르세요.','↻|한 번 더 던지기;×|이동 포기',[0],'윷이나 모가 나오면 한 번 더 던져요. 남은 결과를 보고 어떤 말에 쓸지 고르세요.','윷과 모에는 추가 던지기가 있어요.'),
+      s('말 업기','도착할 칸에 우리 편 말이 먼저 와 있어요.','무슨 일이 일어날까요?','●●|업어서 함께 이동;↩|우리 말이 출발로',[0],'우리 편 말끼리는 업을 수 있어요. 업힌 말은 다음에 같이 움직여요.','상대 말을 잡는 상황과 구별해요.')]),
+    tour:make('마블','도시를 사고 통행료를 모으며 파산이나 독점 승리를 노려요.','ocean','trail',[
+      s('주사위','내 차례 · 출발 칸','말을 움직이기 위한 첫 동작을 고르세요.','⚄|주사위 굴리기;⌂|도시부터 구매',[0],'주사위 눈만큼 이동한 뒤 도착한 칸에서 할 일을 정해요.','먼저 도착할 칸을 정해야 해요.'),
+      s('도시 사기','주인 없는 도시에 도착했고 살 돈이 충분해요.','이 도시를 내 자산으로 만들려면 어떻게 할까요?','⌂|구매;→|그냥 통과',[0],'이제 다른 사람이 이 도시에 도착하면 통행료를 받을 수 있어요.','주인 없는 도시에 도착했을 때 구매를 선택할 수 있어요.'),
+      s('독점 보기','한 줄의 도시 중 한 칸만 더 가지면 줄 전체가 내 것이 돼요.','마지막 도시까지 가지면 어떤 승리일까요?','▰|라인 독점;⚑|관광지 독점',[0],'한 줄을 모두 가지면 라인 독점으로 즉시 승리해요.','관광지 수가 아니라 한 줄의 소유권을 보고 있어요.')]),
+    tank:make('탱크게임','내 차례에 연료와 화면의 조작 게이지를 확인하며 대결해요.','slate','trail',[
+      s('차례 확인','화면에 내 차례가 표시되고 연료가 남았어요.','게임 속 탱크의 위치를 바꿀 버튼을 고르세요.','◀|왼쪽 이동;■|차례 종료',[0],'화면의 이동 버튼으로 자리를 바꿔요. 이동할 때는 연료가 줄어요.','위치를 옮길 때는 방향 버튼을 사용해요.'),
+      s('연료 보기','이동 버튼을 눌렀더니 연료 막대가 줄었어요.','남은 이동 가능량은 어디에서 볼까요?','▰|연료 막대;♥|체력 표시',[0],'연료는 이동에 쓰고 체력은 피해를 받을 때 줄어요.','연료와 체력은 다른 표시예요.'),
+      s('화면 읽기','상대 차례로 넘어갔어요.','내가 다시 조작할 때를 어디에서 확인할까요?','⚑|차례 표시;▦|배경색',[0],'차례 표시가 내 탱크로 돌아오면 다시 조작해요.','현재 차례인 플레이어 이름을 확인하세요.')]),
+    ttang:make('월드땅따먹기','내 영역을 나갔다 돌아와 선 안쪽을 내 땅으로 만들어요.','jade','trail',[
+      s('선 그리기','내 땅 가장자리에 말이 있어요.','내 땅에서 출발해 빈 영역으로 나가 보세요.','■|내 땅;·|빈 영역;×|막힌 길',[0,1],'밖에서는 이동한 자리에 선이 생겨요. 아직 내 땅으로 확정되지는 않았어요.','내 땅을 고른 뒤 빈 곳으로 나가세요.',{move:true}),
+      s('영역 닫기','밖으로 그린 선 끝에 있어요.','둘러싼 땅을 차지하려면 어디로 갈까요?','↩|내 땅으로;→|계속 바깥으로',[0],'내 땅에 돌아오면 열린 선이 닫히고 영역이 늘어요.','출발한 영역으로 다시 연결하세요.'),
+      s('선 지키기','밖으로 나온 선 가까이에 상대가 있어요.','현재 선을 빨리 닫는 경로를 고르세요.','↩|가까운 내 땅으로;⤴|더 멀리 돌아가기',[0],'짧게 닫으면 선을 내놓는 시간이 줄어요. 영역을 조금씩 넓혀 보세요.','긴 선을 남기기 전에 돌아올 길을 확인하세요.')]),
+    photo_ttang:make('포토땅따먹기','선을 닫아 가려진 사진을 조금씩 드러내요.','ocean','trail',[
+      s('선 긋기','이미 열린 테두리 옆에 가려진 구역이 있어요.','테두리에서 가려진 쪽으로 나가세요.','■|열린 테두리;▧|가려진 곳',[0,1],'가려진 곳을 지나면 선이 생겨요. 사진은 아직 열리지 않았어요.','열린 테두리에서 시작하세요.',{move:true}),
+      s('사진 열기','가려진 구역을 세 방향으로 둘렀어요.','사진이 드러나려면 선을 어디에 연결할까요?','↩|내 땅;×|내가 그린 선',[0],'내 땅에 돌아와 영역을 닫으면 안쪽 사진이 드러나요.','이미 그은 선 대신 안전한 내 땅을 찾아요.'),
+      s('경로 고르기','앞쪽에는 몹이 있고 옆에는 열린 테두리가 있어요.','이번 영역을 안전하게 마칠 길을 고르세요.','→|몹 쪽;↩|열린 테두리',[1],'몹이나 내 선에 닿으면 탈락해요. 짧게 돌아와 다음 구역을 노리세요.','몹과 내 선을 피하는 길을 골라요.')]),
+    matgo:make('맞고','손패와 바닥패의 달을 맞춰 패를 모으고 점수가 나면 고·스톱을 정해요.','amber','cards',[
+      s('달 맞추기','내 손패 · 1월 송학','같은 달인 바닥패를 골라 보세요.','✿|3월 벚꽃;松|1월 송학;☾|8월 공산',[1],'1월과 1월이 맞았어요. 그림이 달라도 같은 달이면 짝이 돼요.','꽃의 색보다 몇 월 패인지 확인하세요.'),
+      s('패 모으기','내가 얻은 패 중 피가 모이고 있어요.','점수를 확인할 때 어느 곳을 볼까요?','▤|내가 먹은 패;▥|아직 안 뒤집은 더미',[0],'먹은 패를 광·띠·열끗·피로 나눠 점수를 계산해요.','아직 더미 안에 있는 패는 점수가 아니에요.'),
+      s('고와 스톱','점수가 나서 고와 스톱을 고를 수 있어요.','지금 점수로 판을 끝내려면 무엇을 누를까요?','↻|고;■|스톱',[1],'스톱은 지금 끝내고, 고는 더 높은 점수를 노려 판을 이어가요.','현재 점수를 확정하는 선택은 스톱이에요.')]),
+    bang:make('뱅!','역할에 따라 승리 목표가 달라요. 카드와 체력을 보며 내 차례를 운영해요.','amber','cards',[
+      s('역할 보기','이번 연습에서 내 역할은 보안관이에요.','보안관의 목표를 고르세요.','★|무법자와 배신자 제거;♢|보안관 제거',[0],'보안관은 마을 편이에요. 역할은 승리 목표를, 캐릭터는 특수 능력을 정해요.','내 역할 카드에 적힌 승리 조건을 봐요.'),
+      s('카드 대응','상대가 뱅! 카드를 냈고 내 손에는 빗나감!이 있어요.','피해를 피할 카드를 고르세요.','↷|빗나감!;⊞|역마차',[0],'빗나감!으로 뱅! 한 장에 대응해요. 대응할 패가 없다면 체력이 줄어요.','카드 이름과 효과를 함께 확인하세요.'),
+      s('턴 마치기','내 체력은 3이고 손패는 4장이에요.','턴 종료 때 버릴 카드 수는 몇 장일까요?','1|한 장;3|세 장',[0],'턴이 끝날 때 손패를 현재 체력 수까지 줄여요. 게임 입구의 실전 튜토리얼에서 카드로 직접 연습할 수 있어요.','손패가 체력보다 딱 한 장 많아요.')])
   };
-  const aliases = {screw_box:'screw',carom4:'billiards'};
-  const canonical = id => aliases[id] || id;
-  const supports = id => Object.hasOwn(lessons, canonical(id));
-  const memory = new Set();
-  const storageKey = id => 'ojjuda.arcade.practice.v1.' + id;
-  function seen(id) {
-    if (memory.has(id)) return true;
-    try { return localStorage.getItem(storageKey(id)) === '1'; } catch { return false; }
+  const aliases={screw_box:'screw',carom4:'billiards'};
+  const modes=[['screw','screw_flat'],['billiards','carom3','pool8']];
+  const art={screw_flat:'screw',billiards:'carom4',carom3:'carom4',pool8:'carom4',chacha_rush:'chacha-rush'};
+  function info(id){
+    const l=lessons[id];if(!l)return null;
+    return {...l,id,art:id==='yut'?'/games/yut/cover.webp':'/assets/design/games/'+(art[id]||id)+'.webp'};
   }
-  function remember(id) {
-    memory.add(id);
-    try { localStorage.setItem(storageKey(id),'1'); } catch {}
-  }
-  function element(tag, cls, text) {
-    const node = document.createElement(tag);
-    node.className = cls;
-    if (text) node.textContent = text;
-    if (tag === 'button') node.type = 'button';
-    return node;
-  }
+  const canonical=id=>aliases[id]||id;
+  const supports=id=>Object.hasOwn(lessons,canonical(id));
+  const memory=new Set();
+  const key=id=>'ojjuda.arcade.practice.v1.'+id;
+  function seen(id){try{return memory.has(id)||localStorage.getItem(key(id))==='1';}catch{return memory.has(id);}}
+  function remember(id){memory.add(id);try{localStorage.setItem(key(id),'1');}catch{}}
   let current;
-  function show(id, {replay=false, onContinue, title}={}) {
-    id = canonical(id);
-    if (!supports(id) || (!replay && seen(id)) || typeof HTMLDialogElement === 'undefined') return false;
-    if (current) return true;
-    const lesson = lessons[id];
-    const dialog = element('dialog','arcade-practice');
-    const heading = element('h2','ap-title',title || lesson.name);
-    heading.id = 'arcade-practice-title';
-    dialog.setAttribute('aria-labelledby',heading.id);
-    const prompt = element('p','ap-prompt',lesson.prompt);
-    const choices = element('div','ap-choices');
-    const feedback = element('p','ap-feedback');
-    feedback.setAttribute('role','status');
-    const skip = element('button','ap-skip',replay ? '닫기' : '건너뛰기');
-    const accept = element('button','ap-done',onContinue ? '게임으로' : '완료');
-    accept.hidden = true;
-    dialog.append(element('small','ap-eyebrow','조작 연습'),heading,prompt);
-    let moving, base;
-    if (lesson.timing) {
-      const track = element('div','ap-track');
-      track.setAttribute('aria-hidden','true');
-      moving = element('i','ap-moving'); base = element('i','ap-base');
-      track.append(moving,base); dialog.append(track);
-    }
-    let step = 0, first = -1;
-    const buttons = lesson.tiles.map((label,index) => {
-      const button = element('button','ap-tile',label);
-      let startedAt=null, held=false;
-      if (lesson.hold) {
-        button.style.touchAction='manipulation'; button.style.userSelect='none';
-        button.oncontextmenu=event=>event.preventDefault();
-        button.onpointerdown=()=>{startedAt=performance.now();held=false;};
-        button.onpointerup=()=>{held=startedAt!==null && performance.now()-startedAt>=350;startedAt=null;};
-        button.onpointercancel=()=>{startedAt=null;held=false;};
-      }
-      button.onclick = event => {
-        if (lesson.hold && event.detail!==0 && !held) {feedback.textContent='손을 조금 더 오래 대세요.';return;}
-        if (lesson.timing) {
-          const a=moving.getBoundingClientRect(), b=base.getBoundingClientRect();
-          if (a.right<=b.left || a.left>=b.right) {
-            feedback.textContent='조금 빗나갔어요. 다시 놓아 보세요.'; return;
-          }
-          moving.style.animationPlayState='paused';
-        } else {
-          const correct = lesson.pair ? lesson.path.includes(index) && index !== first : index===lesson.path[step];
-          if (!correct) { feedback.textContent='다른 칸을 골라 보세요.'; return; }
-          first=index; step++;
-          button.setAttribute('aria-pressed','true');
-          if (step < lesson.path.length) { feedback.textContent=lesson.pair?'짝이 되는 패를 눌러 보세요.':'이제 다음 칸을 눌러 보세요.'; return; }
-        }
-        buttons.forEach(tile=>tile.disabled=true);
-        feedback.textContent=lesson.result;
-        skip.hidden=true; accept.hidden=false; accept.focus();
-      };
-      choices.append(button);
-      return button;
-    });
-    dialog.append(choices,feedback,skip,accept);
-    const finish = () => {
-      if (current !== dialog) return;
-      remember(id);
-      current=null;
-      dialog.close(); dialog.remove();
+  function show(id,{replay=false,onContinue}={}){
+    const origin=canonical(id);
+    if(!supports(origin)||(!replay&&seen(origin))||typeof HTMLDialogElement==='undefined')return false;
+    if(current)return true;
+    const previous=document.activeElement,dialog=el('dialog','arcade-practice ap-dialog');
+    dialog.setAttribute('aria-labelledby','lesson-title');
+    const finish=()=>{
+      if(current!==dialog)return;
+      remember(origin);remember(id);current=null;
+      dialog.close();dialog.remove();
+      if(previous?.isConnected)previous.focus({preventScroll:true});
       onContinue?.();
     };
-    skip.onclick=accept.onclick=finish;
-    dialog.oncancel = event => { event.preventDefault(); finish(); };
-    document.body.append(dialog);
-    try { dialog.showModal(); } catch { dialog.remove(); return false; }
-    current=dialog;
-    return true;
-  }
-  // A direct visit may restore an existing game or arrive from an invitation.
-  // Keep its entry controls available; opening a game from the arcade gives the full lesson.
-  function offer(id,host) {
-    if (!host || !supports(id) || seen(canonical(id))) return;
-    const button=element('button','ap-entry-link','조작 연습');
-    button.onclick=()=>{if(show(id))button.remove();};
-    host.append(button);
-  }
-  window.OjjudaArcadePractice = {supports,show,offer};
-  const standalone=document.currentScript?.dataset.game;
-  if (supports(standalone)) {
-    const options=new URL(location.href).searchParams;
-    const invited=['room','join','invite','code','create','party','resume','mode'].some(key=>options.has(key));
-    if (!invited && window===window.parent) {
-      offer(standalone,document.querySelector('.game-entry') || document.querySelector('.entry-actions,.wallet-menu-panel,div#settings'));
+    function render(which){
+      id=which;
+      const group=modes.find(ids=>ids.includes(which));
+      let modeControl;
+      if(group){
+        modeControl=el('label','lesson-mode','규칙 선택');
+        const select=el('select','');
+        group.forEach(v=>{const o=el('option','',lessons[v].name.split(' · ')[1]);o.value=v;select.append(o);});
+        select.value=which;select.onchange=()=>{render(select.value);dialog.querySelector('select').focus();};modeControl.append(select);
+      }
+      dialog.replaceChildren();
+      view.board(dialog,info(which),{close:finish,finish,modeControl,closeLabel:replay?'닫기':'건너뛰기',finishLabel:onContinue?'게임으로':'연습 마치기'});
     }
-    document.addEventListener('click',event=>{
-      if(event.target.closest?.('[data-practice-replay]')) show(standalone,{replay:true});
-    });
+    render(origin);dialog.oncancel=e=>{e.preventDefault();finish();};
+    document.body.append(dialog);
+    try{dialog.showModal();}catch{dialog.remove();return false;}
+    current=dialog;dialog.querySelector('.ap-title').tabIndex=-1;dialog.querySelector('.ap-title').focus({preventScroll:true});return true;
+  }
+  function offer(id,host){
+    if(!host||!supports(id)||seen(canonical(id)))return;
+    const b=el('button','ap-entry-link','조작 연습');b.onclick=()=>show(id,{replay:true});host.append(b);
+  }
+  window.OjjudaArcadePractice={supports,show,offer,info:id=>info(canonical(id))};
+  const standalone=document.currentScript?.dataset.game;
+  if(supports(standalone)){
+    const options=new URL(location.href).searchParams;
+    const invited=['room','join','invite','code','create','party','resume','mode'].some(k=>options.has(k));
+    if(!invited&&!['matgo','photo_ttang'].includes(standalone)&&window===window.parent)offer(standalone,document.querySelector('.game-entry')||document.querySelector('.entry-actions,.wallet-menu-panel,div#settings'));
+    document.addEventListener('click',e=>{if(!e.target.closest?.('[data-practice-replay]'))return;
+      if(standalone==='matgo' && !window.OjjudaMatgoAccess?.allowed())return;
+      if(standalone==='photo_ttang' && !window.OjjudaPhotoTtangAccess?.allowed())return;
+      show(standalone,{replay:true});});
   }
 })();

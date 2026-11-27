@@ -172,6 +172,15 @@ function leaveTutorial(){
 function tutorialAction(action,value){
  if(action==='tutorial-exit'){leaveTutorial();return;}
  if(action==='tutorial-restart'){beginTutorial();return;}
+ if(action==='tutorial-back'){
+  if(!tutorial.step)return;
+  // Rebuild only the isolated, seeded practice table, including its selected card.
+  const before=tutorial.step-1,previous=new Tutorial();
+  for(let i=0;i<before;i++){const expected=previous.expected();if(!previous.act(expected.action,expected.value))return;}
+  tutorial=previous;game=previous.game;selected=previous.selected;targeting=previous.targeting;
+  practicePreview=null;modal=null;tutorialFocusStep=-1;render();return;
+ }
+
  if(action==='tutorial-play'){tutorial=null;tutorialOrigin=null;start();return;}
  if(action==='tutorial-resume'&&saved){if(window.OjjudaGameResults?.canPlay?.()===false)return;tutorial=null;tutorialOrigin=null;game=new Game(JSON.parse(JSON.stringify(saved)));settings={...game.s.options,role:'random'};page='game';selected=null;targeting=false;modal=null;eliminationSeen=false;resultSeen=false;render();return;}
  if(!tutorial.act(action,value)){toast(tutorial.lesson.tip);return;}
@@ -184,11 +193,11 @@ function paintTutorial(){
  if(!tutorial||tutorial.done){coach.hidden=true;coach.innerHTML='';document.documentElement.style.setProperty('--coach-space','0px');return;}
  if(guideOpen()){coach.hidden=true;document.documentElement.style.setProperty('--coach-space','0px');return;}
  const l=tutorial.lesson,expected=tutorial.expected();
- coach.hidden=false;coach.innerHTML=`<div class="coach-top"><span>직접 따라 배우기 <b>${l.chapter+1} / 6</b></span><button data-action="tutorial-exit">건너뛰기</button></div><div class="coach-progress" aria-label="${CHAPTERS[l.chapter]} 단계">${CHAPTERS.map((name,i)=>`<span class="${i<l.chapter?'complete':i===l.chapter?'current':''}" title="${name}"></span>`).join('')}</div><div class="coach-copy" aria-live="polite"><h2>${l.title}</h2><p>${l.body}</p></div><div class="coach-bottom"><span>${l.tip}</span>${expected.action==='tutorial-next'?`<button class="primary" data-action="tutorial-next">${l.button||'다음'} →</button>`:'<b class="coach-tap">빛나는 곳을 눌러보세요</b>'}</div>`;
+ coach.hidden=false;coach.innerHTML=`<div class="coach-top"><span>직접 따라 배우기 · <b>${CHAPTERS[l.chapter]} ${l.chapter+1}/${CHAPTERS.length}</b></span><div class="coach-nav">${tutorial.step?'<button data-action="tutorial-back">이전</button>':''}<button data-action="tutorial-exit">건너뛰기</button></div></div><div class="coach-progress" aria-label="${CHAPTERS[l.chapter]} 단계">${CHAPTERS.map((name,i)=>`<span class="${i<l.chapter?'complete':i===l.chapter?'current':''}" title="${name}"></span>`).join('')}</div><div class="coach-copy" aria-live="polite"><h2>${l.title}</h2><p>${l.body}</p></div><div class="coach-bottom"><span>${l.tip}</span>${expected.action==='tutorial-next'?`<button class="primary" data-action="tutorial-next">${l.button||'다음'} →</button>`:'<b class="coach-tap">빛나는 곳을 눌러보세요</b>'}</div>`;
  // Only the current exercise action is enabled. Exit and restart remain available.
  document.querySelectorAll('#app button, #overlay button').forEach(button=>{
   const action=button.dataset.action;
-  if(!['sound','tutorial-exit','tutorial-restart','card','catalog','catalogCard','characterCatalog','characterGuide','ownCharacter','guidePrevious','guideNext','previewClose','zoom','close','equipmentInfo','discardTop'].includes(action)&&!tutorial.accepts(action,button.dataset.value)){button.disabled=true;button.classList.add('training-muted');}
+  if(!['sound','tutorial-exit','tutorial-restart','tutorial-back','card','catalog','catalogCard','characterCatalog','characterGuide','ownCharacter','guidePrevious','guideNext','previewClose','zoom','close','equipmentInfo','discardTop'].includes(action)&&!tutorial.accepts(action,button.dataset.value)){button.disabled=true;button.classList.add('training-muted');}
  });
  const target=tutorial.focus()?document.querySelector(tutorial.focus()):null;
  if(target)target.classList.add('tutorial-focus');

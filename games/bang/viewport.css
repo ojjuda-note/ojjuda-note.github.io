@@ -308,3 +308,9 @@ body.game-screen{height:100dvh;min-height:0;overflow:hidden;padding:0}
  .game-screen .pile{width:29px;height:45px}
  .game-screen .card-back span{font-size:9px}
 }
+
+#tutorial-coach .coach-top{align-items:center;}
+#tutorial-coach .coach-nav{display:flex;gap:5px;align-items:center;}
+#tutorial-coach .coach-nav button{min-height:36px;padding:4px 9px;}
+#tutorial-coach .coach-copy h2{letter-spacing:-.035em;}
+@media(pointer:coarse){#tutorial-coach .coach-nav button{min-height:44px;}}

@@ -108,6 +108,9 @@ a.big{display:flex;align-items:center;justify-content:center;text-decoration:non
 <script src="/shared/games/game-results.js?v=20261120-service-actions1"></script>
 <style>.overlay>.panel:has(> .game-result-card){padding:0;background:transparent;border:0;box-shadow:none;width:min(430px,100%);max-width:430px}.game-result-extra .fullimg{display:block;max-height:min(34vh,calc(100dvh - 380px))!important;margin:0 auto 8px}@media(max-height:520px){.game-result-extra .fullimg{display:none}}</style>
 <script defer src="/shared/games/arcade-music.js?v=20261127-ensemble1" data-game="photo_ttang"></script>
+<link rel="stylesheet" href="/shared/games/arcade-practice.css?v=20261127-guided-practice1">
+<script defer src="/shared/games/lesson-panel.js?v=20261127-guided-practice1"></script>
+<script defer src="/shared/games/arcade-practice.js?v=20261127-guided-practice1" data-game="photo_ttang"></script>
 </head>
 <body>
 <canvas id="gameCanvas"></canvas>
@@ -121,7 +124,7 @@ a.big{display:flex;align-items:center;justify-content:center;text-decoration:non
 <div class="ge-icon" aria-hidden="true">🖼️</div><span class="ge-kicker">오쭈다 오락실</span><h1 class="ge-title">포토땅따먹기</h1><p class="ge-copy">땅을 넓혀 가려진 사진을 완성해보세요.</p><div class="row2" role="group" aria-label="사진 종류 선택"><button class="big a ge-primary" id="photoStart" type="button" data-t="base" aria-pressed="true">기본</button><button class="big a ge-primary" id="photoPublicStart" type="button" data-t="public" aria-pressed="false">공개</button></div><p class="ge-hint" id="photoEntryStatus" role="status" hidden></p><span class="ge-hint">실루엣 90%를 채우면 사진이 공개돼요.</span><span id="cleared"></span><details class="ge-more"><summary>사진 선택 · 내 사진 등록</summary>
   <div class="tabs"><button class="tab" data-t="all">사진 판</button><button class="tab" data-t="review" id="tabReview" style="display:none">승인</button></div>
   <button class="big b2" id="uploadBtn" style="display:none">＋ 내 사진으로 판 만들기</button>
-  <div class="grid" id="grid"></div></details><details class="ge-more"><summary>게임 방법 · 조작 설정</summary><p>드래그로 이동 · PC 방향키<br>내 땅으로 돌아오면 영역 차지<br>몹·내 선에 닿으면 탈락</p><div data-game-settings="photo_ttang"></div></details>
+  <div class="grid" id="grid"></div></details><details class="ge-more"><summary>게임 방법 · 조작 설정</summary><button type="button" class="ge-secondary" data-practice-replay>튜토리얼</button><p>드래그로 이동 · PC 방향키<br>내 땅으로 돌아오면 영역 차지<br>몹·내 선에 닿으면 탈락</p><div data-game-settings="photo_ttang"></div></details>
 </div></div>
 <script src="/assets/photo-ttang/men-stages-v2.js"></script>
 <script>
