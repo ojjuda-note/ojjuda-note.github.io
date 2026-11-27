@@ -5,6 +5,7 @@
   if (document[installed]) return;
   document[installed] = true;
   const pages = {
+    lifetime: { title: '오쭈다 수명시계', text: '내 인생을 하루로 보면 지금은 몇 시일까요?', path: 'https://ojjuda.kr/lifetime/' },
     festival: { title: '축제일정 · 오쭈다', text: '전국 축제와 행사 일정을 지도와 캘린더에서 확인해 보세요.', path: '/world.html?game=festival' },
     restaurants: { title: '인증맛집 · 오쭈다', text: '지역과 음식 종류별로 인증맛집을 찾아보세요.', path: '/world.html?game=restaurants' },
     agit: { title: '아지트 · 오쭈다', text: '오쭈다 아지트로 초대해요.', path: '/world.html?tab=hub', invite: true },

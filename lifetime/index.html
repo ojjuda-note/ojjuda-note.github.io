@@ -6,7 +6,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#f2f5f4">
 <title>수명시계</title>
-<link rel="stylesheet" href="/features/lifetime/style.css?v=569135ff0">
+<meta property="og:type" content="website">
+<meta property="og:title" content="오쭈다 수명시계">
+<meta property="og:description" content="내 인생을 하루로 보면 지금은 몇 시일까요?">
+<meta property="og:url" content="https://ojjuda.kr/lifetime/">
+<link rel="stylesheet" href="/shared/share/page-share.css?v=6123ec516">
+<script defer src="/shared/share/page-share.js?v=3b563446c"></script>
+<link rel="stylesheet" href="/features/lifetime/style.css?v=2cb0c237a">
 <script defer src="/features/lifetime/population.js?v=5f56da251"></script>
 <script defer src="/features/lifetime/research.js?v=5bc04de35"></script>
 <script defer src="/features/lifetime/estimate.js?v=4e6c0937e"></script>
@@ -18,7 +24,13 @@
 </head>
 <body>
 <main>
-  <header><span class="clockmark" aria-hidden="true"></span><h1>수명시계</h1></header>
+  <header>
+    <span class="clockmark" aria-hidden="true"></span><h1>수명시계</h1>
+    <button type="button" class="page-share-button" data-share-page="lifetime">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m8.5 10.5 7-4m-7 7 7 4"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="5" r="3"/><circle cx="18" cy="19" r="3"/></svg>
+      공유하기
+    </button>
+  </header>
   <details id="birth-settings" class="birth-settings" open>
     <summary>생일 입력</summary>
     <form id="birth-form">

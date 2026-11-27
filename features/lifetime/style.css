@@ -78,6 +78,20 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 main{max-width:652px;padding:clamp(24px,6vh,62px) clamp(14px,4vw,25px) 32px}
 main>header{margin-bottom:16px;color:#fbf7ff;gap:12px}
 main>header h1{font-size:clamp(1.45rem,4.5vw,1.9rem);font-weight:680}
+main>header .page-share-button {
+  margin-inline-start:auto;
+  gap:7px;
+  padding:6px 13px;
+  border-color:#d7c9fa58;
+  background:#1d2033dd;
+  color:#f5edff;
+  font-size:.875rem;
+  font-weight:600;
+}
+main>header .page-share-button svg { display:block; color:#dfc6fa; }
+main>header .page-share-button:hover { background:#37304c; }
+main>header .page-share-button:focus-visible { outline-color:#e2c7ff; }
+dialog.page-share-dialog { height:auto; margin:auto; }
 .clockmark{border-color:#cdb6ea}.clockmark:before,.clockmark:after{background:#dbbcf5}
 .instrument{isolation:isolate;overflow:hidden;border:1px solid #d7c9fa49;border-radius:23px;background:#141626;box-shadow:0 16px 48px #0203117a,inset 0 0 0 1px #ffffff0c}
 .life-reading{position:relative;display:grid;justify-items:center;isolation:isolate;overflow:hidden;padding:15px 17px 19px;min-width:0;background:#252544}
