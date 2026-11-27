@@ -17,6 +17,9 @@
  const option=$('#ranking-game'),period=$('#ranking-period'),status=$('#ranking-status');
  const list=$('#ranking-leaders'),mine=$('#ranking-mine'),mineRow=$('#ranking-mine-row'),refresh=$('#ranking-refresh');
  const params=new URL(location.href).searchParams;
+ const playLink=$('#ranking-play');
+ let playStore=params.get('play_store')==='1';
+ try{playStore ||= sessionStorage.getItem('ojjuda:play-store:agit:v1')==='1';}catch{}
  const raw=params.get('game');
  let game=byId.has(raw)?raw:aliases[raw]||'sacheonseong';
  let client=null,request=0,resetTimer=null,lastEndsAt=0,viewerId;
@@ -145,8 +148,19 @@
   }finally{if(id===request)refresh.disabled=false;}
  }
  for(const [id,meta] of byId){const choice=document.createElement('option');choice.value=id;choice.textContent=meta.name;option.append(choice);}
+ function updatePlayLink(destination){
+  if(playStore||game==='poker'||game==='roulette'){
+   playLink.hidden=true;
+   playLink.removeAttribute('href');
+   return;
+  }
+  playLink.href='/world.html?game='+encodeURIComponent(destination);
+  playLink.setAttribute('aria-label',byId.get(game).name+' 게임 바로가기');
+  playLink.hidden=false;
+ }
  option.value=game;
- option.addEventListener('change',()=>{game=option.value;const url=new URL(location.href);url.searchParams.set('game',game);history.replaceState(null,'',url);void load();});
+ updatePlayLink(['carom4','carom3','pool8'].includes(raw)?raw:game);
+ option.addEventListener('change',()=>{game=option.value;updatePlayLink(game);const url=new URL(location.href);url.searchParams.set('game',game);history.replaceState(null,'',url);void load();});
  refresh.addEventListener('click',()=>void load());
  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&lastEndsAt&&Date.now()>=lastEndsAt)void load();});
  void load();
