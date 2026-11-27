@@ -84,7 +84,7 @@ dialog.arcade-practice::backdrop {background:rgb(11 23 23 / 70%);}
 .ap-picker .picker-empty{padding:8px 20px 22px;color:#49594f;}
 .ap-entry-link{min-height:32px;padding:4px 8px;color:inherit;background:transparent;border:1px solid currentColor;border-radius:8px;font:inherit;font-size:12px;cursor:pointer;}
 @media(max-width:360px),(max-height:610px){.lesson-head{grid-template-columns:58px minmax(0,1fr);gap:12px;padding:13px 15px 11px;}.lesson-view .lesson-cover{width:58px;height:58px;border-radius:10px;}.lesson-body{padding:12px 15px 2px;}.lesson-steps{padding:0 9px;}.lesson-actions{padding:8px 15px;}.lesson-mode,.lesson-settings{margin-inline:15px;}.lesson-view .ap-tile{font-size:13px;}.lesson-view .lesson-goal{font-size:13px;}.lesson-diagram svg{height:47px;}}
-@media(max-height:420px){.lesson-actions{position:static;}.lesson-head{grid-template-columns:44px 1fr;}.lesson-view .lesson-cover{width:44px;height:44px;}.lesson-view .lesson-tab{min-height:38px;}}
+@media(max-height:420px){.lesson-actions{z-index:1;}.lesson-head{grid-template-columns:44px 1fr;}.lesson-view .lesson-cover{width:44px;height:44px;}.lesson-view .lesson-tab{min-height:38px;}}
 
 .dp-lesson-panel .lesson-head{padding-right:48px;}
 .dp-lesson-panel > .dp-dismiss{position:absolute;top:5px;right:5px;min-width:40px;min-height:44px;color:#41544c;background:transparent;border:0;box-shadow:none;}
