@@ -166,7 +166,7 @@ async function appHarness(saved = null, ammoOptions = {}) {
   const laser = new vm.SourceTextModule(laserSource, { context, identifier: 'laser.mjs' });
   const coinExchangeModule = new vm.SourceTextModule(coinExchangeSource, { context, identifier: 'coin-exchange.mjs' });
   const ammoModule = new vm.SourceTextModule(ammoSource, { context, identifier: 'ammo-client.mjs' });
-  const sceneryNames = ['drawScenery', 'drawAnimal', 'drawClay', 'drawUfo', 'drawObstacle', 'drawPasser', 'drawEquipmentIcon', 'drawFirstPersonBow', 'drawBullseyeImpact', 'drawBullseyeVignette'];
+  const sceneryNames = ['drawScenery', 'drawRangeTarget', 'drawAnimal', 'drawClay', 'drawUfo', 'drawObstacle', 'drawPasser', 'drawEquipmentIcon', 'drawFirstPersonBow', 'drawBullseyeImpact', 'drawBullseyeVignette'];
   const scenery = new vm.SyntheticModule(sceneryNames, function () {
     for (const name of sceneryNames) this.setExport(name, name === 'drawScenery' ? (_ctx, _w, _h, options) => { sceneryFrame = options; } : name === 'drawFirstPersonBow' ? (_ctx, _w, _h, options) => { firstPersonFrame = options; } : name === 'drawAnimal' ? (...args) => animalFrames.push(args.slice(1)) : name === 'drawBullseyeImpact' ? (...args) => bullseyeFrames.push(args.slice(1)) : name === 'drawBullseyeVignette' ? (...args) => vignetteFrames.push(args.slice(1)) : noop);
   }, { context });
@@ -5640,4 +5640,25 @@ test('a flying arrow pops the balloon and credits exactly 200 shop coins once', 
   assert.equal(state.score,10);assert.equal(api.progress.hits,1);
   assert.equal(state.earned,200+app.engine.getScoreCoinReward(10,state.stage.id));
   assert.equal(api.progress.coins,coins+state.earned);
+});
+
+test('the live arrow recedes from the camera at both phone and desktop widths', async () => {
+  for(const [width,height] of [[390,415],[980,540]]){
+    const stage=lessonStageId('fixed-intro',50);
+    const app=await appHarness(progressForStage({version:1,stageCatalog:STAGE_CATALOG,lastStage:stage,sound:false}));
+    app.resize(width,height);
+    const {pad,coords}=preciseMainDraw(app);
+    pad.emit('pointerup',coords);await app.flush();
+    const {state}=app.api;
+    const snapshots=[];
+    for(const depth of [8,22,38]){
+      app.until(()=>state.mode==='flight'&&state.shot.position.z>=depth);
+      const point=app.api.project(state.shot.position);
+      assert.ok(point.visible&&point.x>0&&point.x<width&&point.y>0&&point.y<height);
+      snapshots.push(point.scale);
+      assert.ok(app.api.sceneItems(app.engine.targetAt(state.stage,state.time)).some(item=>item.kind==='flight-shadow'));
+    }
+    assert.ok(snapshots[0]>snapshots[1]&&snapshots[1]>snapshots[2]);
+    assert.ok(snapshots[2]<snapshots[0]*.64,'the late-flight arrow has a smaller onscreen scale');
+  }
 });
