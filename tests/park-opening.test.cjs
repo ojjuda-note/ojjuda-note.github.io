@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const source=fs.readFileSync(require('node:path').join(__dirname,'../park/opening.js'),'utf8');
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
-function fixture({user='one',card=false,error=false,host=false,started=false,pendingAuth=false}={}){
+function fixture({user='one',card=false,error=false,host=false,started=false,pendingAuth=false,waitingSdk=false}={}){
   let finish,onAuth,reads=0,signal,unsubscribed=false;
   const images=[],listeners=new Map(),timers=new Map();let nextTimer=0;
   const db={auth:{getSession:pendingAuth?()=>new Promise(()=>{}):async()=>({data:{session:user?{user:{id:user}}:null}}),
@@ -18,9 +18,16 @@ function fixture({user='one',card=false,error=false,host=false,started=false,pen
     clearTimeout:id=>timers.delete(id),addEventListener:(name,fn)=>listeners.set(name,fn),removeEventListener:name=>listeners.delete(name)};
   scope.window=scope;
   if(host){scope.parent={location:new URL('https://fixture.test/world.html'),OjjudaGetClient:async()=>db};delete scope.supabase;delete scope.OJJUDA_CONFIG;}
+  const sdk=new EventTarget();
+  if(waitingSdk){
+    delete scope.supabase;
+    scope.document=Object.assign(new EventTarget(),scope.document,{
+      readyState:'interactive',getElementById:id=>id==='park-auth-sdk'?sdk:null
+    });
+  }
   if(started)scope.OjjudaParkFeedStarted=true;
   vm.runInNewContext(source,scope);
-  return {scope,db,images,get reads(){return reads;},get signal(){return signal;},get unsubscribed(){return unsubscribed;},
+  return {scope,db,images,sdk,get reads(){return reads;},get signal(){return signal;},get unsubscribed(){return unsubscribed;},
     fireTimer:delay=>{for(const [id,timer] of [...timers])if(timer.delay===delay){timers.delete(id);timer.fn();}},
     finish:()=>finish(),auth:user=>onAuth('SIGNED_IN',user?{user:{id:user}}:null),leave:()=>listeners.get('pagehide')?.()};
 }
@@ -72,4 +79,24 @@ test('an unfinished warm-up auth lookup never delays the first normal card reque
   assert.equal(f.reads,0);
   assert.equal(await f.scope.OjjudaParkOpening.take('one'),undefined);
   assert.equal(f.scope.OjjudaParkOpening.take,undefined);
+});
+
+test('standalone Park starts its first card request when the SDK is ready, before DOMContentLoaded',async()=>{
+  const f=fixture({waitingSdk:true});
+  assert.equal(f.reads,0);
+  f.scope.supabase={createClient:()=>f.db};
+  f.sdk.dispatchEvent(new Event('load'));await tick();
+  assert.equal(f.reads,1);
+  f.scope.document.dispatchEvent(new Event('DOMContentLoaded'));await tick();
+  assert.equal(f.reads,1);
+  const pending=f.scope.OjjudaParkOpening.take('one');
+  f.finish();assert.equal((await pending).data[0].body,'fixture');
+});
+
+test('leaving before the SDK is ready does not start a late request',async()=>{
+  const f=fixture({waitingSdk:true});
+  f.leave();
+  f.scope.supabase={createClient:()=>f.db};
+  f.sdk.dispatchEvent(new Event('load'));await tick();
+  assert.equal(f.reads,0);
 });

@@ -1,7 +1,6 @@
 import {call, client, sameMember, requireMember, showGate, answeredRound} from './member.mjs?v=20261127-service-fixes1';
 import {mountStation, prepareProgram} from './load-station.mjs?v=20261127-service-fixes1';
 import {enhanceGuestGate} from './entry-design.mjs?v=20261122-org-display-only1';
-import {prepareLocation} from './location.mjs?v=20261125-location-permission1';
 import {themeFor, interests} from './questions.mjs?v=20261120-question-copy1';
 import {maskedTextLength,textInputMaxLength} from '../../shared/content/text-length.mjs';
 
@@ -196,7 +195,8 @@ async function start(firstEntry) {
   void client().then(async db=>{
     const {data:{session}}=await db.auth.getSession();
     if(!session?.user||locationRead.signal.aborted||!await sameMember(db))return;
-    await prepareLocation(entry,db,session.user.id,{signal:locationRead.signal});
+    const {prepareLocation}=await import('./location.mjs?v=20261125-location-permission1');
+    if(!locationRead.signal.aborted)await prepareLocation(entry,db,session.user.id,{signal:locationRead.signal});
   }).catch(()=>{});
   if(entry.locationNotice)status.textContent=entry.locationNotice;
   const write = $('write');

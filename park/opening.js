@@ -22,8 +22,23 @@
       }
     }catch{/* Standalone documents use their own authenticated client. */}
     if(!client){
-      if(!window.supabase?.createClient && document.readyState==='loading'){
-        await new Promise(resolve=>document.addEventListener('DOMContentLoaded',resolve,{once:true}));
+      if(!window.supabase?.createClient && document.readyState!=='complete'){
+        // The deferred SDK follows config.js. Start as soon as it executes,
+        // even when unrelated deferred scripts are still downloading.
+        const sdk=document.getElementById('park-auth-sdk');
+        await new Promise(resolve=>{
+          function ready(){
+            sdk?.removeEventListener('load',ready);
+            sdk?.removeEventListener('error',ready);
+            document.removeEventListener('DOMContentLoaded',ready);
+            controller.signal.removeEventListener('abort',ready);
+            resolve();
+          }
+          sdk?.addEventListener('load',ready);
+          sdk?.addEventListener('error',ready);
+          document.addEventListener('DOMContentLoaded',ready,{once:true});
+          controller.signal.addEventListener('abort',ready,{once:true});
+        });
       }
       const config=window.OJJUDA_CONFIG;
       if(!active||!config?.supabaseUrl||!config?.supabaseKey||!window.supabase?.createClient)return;

@@ -2,6 +2,7 @@
 <html lang="ko" data-world-theme="classic">
 <head>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2" defer></script>
+<script src="/config.js?v=20261121-pajang-visits1" defer></script>
 <script src="/shared/location/location.js?v=20261125-location-permission1" defer></script>
   <meta charset="utf-8">
   <base href="/features/pajang/">
@@ -12,7 +13,7 @@
   <link rel="manifest" href="/features/pajang/manifest.webmanifest?v=20261119-illustrated-icons-1">
   <meta name="apple-mobile-web-app-title" content="오쭈다 파장">
   <script src="/shared/pwa/app-identity.js?v=app-icons-a6a612391e00"></script>
-  <link rel="stylesheet" href="/shared/pwa/pwa-install.css?v=20261118-play-status2">
+  <link rel="stylesheet" href="/shared/pwa/pwa-install.css?v=20261118-play-status2" media="print" onload="this.media='all'">
   <script src="/shared/pwa/pwa-install.js?v=app-icons-a6a612391e00" defer></script>
   <title>오쭈다 파장 | 질문과 취향으로 만나는 소개팅</title>
   <meta name="description" content="오쭈다 파장은 질문에 대한 답변과 취향으로 서로를 알아가는 만 19세 이상 회원 소개팅입니다. 마음에 닿는 답변에 신호를 보내고 새로운 인연을 만나보세요.">
@@ -35,20 +36,22 @@
   <link rel="modulepreload" href="./member.mjs?v=20261127-service-fixes1">
   <link rel="modulepreload" href="./load-station.mjs?v=20261127-service-fixes1">
   <link rel="modulepreload" href="./entry-design.mjs?v=20261122-org-display-only1">
+  <link rel="modulepreload" href="./questions.mjs?v=20261120-question-copy1">
+  <link rel="modulepreload" href="/shared/content/text-length.mjs">
   <!-- Station CSS starts with member handoff, not on the public gate. -->
   <link id="entry-style" rel="stylesheet" href="./preview.css?v=compass8">
   <link rel="stylesheet" href="./shell.css?v=flight1">
   <link rel="stylesheet" href="/app/world/world-themes.css?v=20261119-auto-theme1">
   <link rel="stylesheet" href="./letterroom.css?v=20261126-compact-profile1" data-pajang-station-style="letterroom" media="print" onload="this.media='all'" onerror="this.dataset.pajangStyleError='true'">
-  <link rel="stylesheet" href="./radar-motion.css?v=20261122-readable-nearby1">
+  <link rel="stylesheet" href="./radar-motion.css?v=20261122-readable-nearby1" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="/features/account/settings-list.css?v=20261119-guest-account1">
 <link rel="stylesheet" href="/shared/brand/service-banners.css?v=20261125-settings-banners2">
 <script src="/shared/brand/service-banners.js?v=20261125-settings-banners2" defer></script>
   <link rel="stylesheet" href="/note/notifications.css?v=20261126-group-password1">
   <link rel="stylesheet" href="/features/wallet/ju-charge.css?v=20261106-source-folders1">
-  <link rel="stylesheet" href="/ju-coins/ju-coins.css?v=20261106-source-folders1">
+  <link rel="stylesheet" href="/ju-coins/ju-coins.css?v=20261106-source-folders1" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="./account-toolbar.css?v=20261126-service-navigation1">
-  <link rel="stylesheet" href="./signal-purchase.css?v=20261119-signal-purchase1">
+  <link rel="stylesheet" href="./signal-purchase.css?v=20261119-signal-purchase1" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="./entry-design.css?v=20261125-app-loading1">
   <link rel="stylesheet" href="/shared/share/page-share.css?v=20261119-main-invite1">
   <link rel="stylesheet" href="/shared/brand/service-header.css?v=20261119-main-invite1">
@@ -57,7 +60,7 @@
   <script src="/app/world/world-themes.js?v=20261119-auto-theme1"></script>
   <script src="/app/world/world-weather.js?v=20261119-kma-current1" defer></script>
   <script type="module" src="./shell.mjs?v=20261127-service-fixes1"></script>
-  <script type="module" src="./entry.mjs?v=20261127-service-fixes1"></script>
+  <script type="module" src="./entry.mjs?v=20261127-entry-speed1"></script>
   <script src="/shared/analytics/growth-attribution.js?v=20261121-campaign1" defer></script>
 </head>
 <body>
@@ -129,7 +132,6 @@
     </details>
   </main>
   <div id="station" hidden></div>
-  <script src="/config.js?v=20261121-pajang-visits1"></script>
 </body>
 </html>
 
