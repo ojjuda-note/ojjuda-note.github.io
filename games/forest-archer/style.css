@@ -704,3 +704,20 @@ body>.app-shell { flex:1;min-height:0;height:auto;background:linear-gradient(120
 }
 .game-menu .menu-action,.stage-card { border-color:#c1c9b7; }
 .game-menu .menu-action>svg { color:#587973; }
+
+/* The range journal shares the paintings and brass trim of the playing field. */
+.app-header {
+  background:linear-gradient(90deg,#122c2bf5 8%,#183a39ed 55%,#162d30f5),url('./seorak-dawn.webp') center 40%/cover;
+  border-color:#4e625b;box-shadow:inset 0 1px #c4b58a42,0 3px 12px #10252433;
+}
+.round-heading {
+  background:linear-gradient(102deg,#f8efdb 0%,#e9dfc9 55%,#d9d3bb 100%);
+  box-shadow:inset 0 1px #fffcf1,inset 0 -1px #a99a7559;
+}
+.brand-mark {
+  background:radial-gradient(ellipse at 32% 18%,#527267,#28463f 60%,#19352f);
+  border:1px solid #ad9767;box-shadow:inset 0 0 0 2px #29433c,0 1px 4px #152c2966;
+}
+.field { background:#345245 url('./seorak-dawn.webp') center/cover; }
+.help-balloon { margin:13px 0 0;font-size:13px;line-height:1.55;color:#47594e; }
+.help-balloon strong { color:#6d4626;margin-right:4px; }

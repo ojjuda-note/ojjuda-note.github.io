@@ -1,7 +1,7 @@
-// Procedural artwork for 바람의 궁수. All coordinates are CSS pixels.
+// Range paintings, world objects, and first-person equipment use CSS pixels.
 // Distant art and tree sprites are cached; world scenery follows the camera.
 import {drawAnimalModel} from './animal-zones.mjs?v=20261104-archery-eagle-dive1';
-import {rangePalette, paintPanorama, paintFir, paintRedPine} from './range-art.mjs?v=20261128-ridge1';
+import {rangePalette, paintPanorama, paintFir, paintRedPine} from './range-art.mjs?v=20261128-seorak1';
 const layers = new Map();
 const TAU = Math.PI * 2;
 
@@ -245,6 +245,9 @@ function paintTerrain(ctx,w,h,palette,camera,project,backdrop,baseFocal,distance
   const dy=camera.horizon-backdrop.horizon*zoom-(camera.y-1.65)*camera.focal/350;
   ctx.drawImage(backdrop.canvas,dx-backdrop.ox*zoom,dy-backdrop.oy*zoom,w*2*zoom,h*1.6*zoom);
   drawGround(ctx,w,h,camera,project,palette);drawWorldTrees(ctx,w,h,camera,project,palette);
+  drawDistancePosts(ctx,w,h,camera,project,distance);
+}
+function drawDistancePosts(ctx,w,h,camera,project,distance){
   const maxDistance=Math.max(20,distance);
   for(let z=80;z>=10;z-=10){
     if(z>maxDistance+5||z<=camera.z+.2)continue;
@@ -256,30 +259,63 @@ function paintTerrain(ctx,w,h,palette,camera,project,backdrop,baseFocal,distance
   }
 }
 
+const rangeImages=new Map();
+function paintedAsset(name){
+  if(typeof Image!=='function')return null;
+  if(!rangeImages.has(name)){
+    const image=new Image();image.decoding='async';
+    image.src=new URL(`./${name}.webp`,import.meta.url).href;
+    rangeImages.set(name,image);
+  }
+  const image=rangeImages.get(name);
+  return image.complete&&image.naturalWidth>0?image:null;
+}
+function rangePhotograph(distance){
+  return paintedAsset(distance>=90?'seorak-moon':distance>=40?'seorak-sunset':'seorak-dawn');
+}
+function paintRangePhoto(ctx,w,h,camera,baseFocal,image){
+  const horizon=.51,iw=image.naturalWidth,ih=image.naturalHeight;
+  const cover=Math.max(w/iw,h*.405/(ih*horizon),h*.595/(ih*(1-horizon)));
+  const zoom=Math.max(1,Math.min(4,camera.focal/baseFocal));
+  const scale=cover*1.045*zoom*(1+Math.min(.11,Math.max(0,camera.z)/750));
+  const width=iw*scale,height=ih*scale;
+  const cx=w*.5+(camera.cx-w*.5)*.65-camera.x*camera.focal/290;
+  const cy=h*.405+(camera.horizon-h*.405)*.72+(camera.y-1.65)*camera.focal/290;
+  const x=Math.min(0,Math.max(w-width,cx-width*.5));
+  const y=Math.min(0,Math.max(h-height,cy-height*horizon));
+  ctx.drawImage(image,x,y,width,height);
+}
+
 /** Draw the sunlit range. camera.horizon is always a CSS-pixel coordinate. */
 export function drawScenery(ctx,w,h,options={}) {
   if(!(w>0&&h>0))return;
   const baseFocal=Math.min(w*1.08,h*1.5),input=options.camera||{};
   const camera={x:0,y:1.65,z:0,cx:w/2,horizon:h*.405,focal:baseFocal,...input};
   const project=options.project||((p)=>{const depth=Math.max(.2,p.z-camera.z),scale=camera.focal/depth;return {x:camera.cx+(p.x-camera.x)*scale,y:camera.horizon-(p.y-camera.y)*scale,scale,visible:p.z>camera.z+.2};});
-  const palette=rangePalette(options.stage?.distance);
-  const key=[Math.round(w),Math.round(h),palette.sky[0]].join(':');let backdrop=layers.get(key);
-  if(!backdrop){backdrop=buildBackdrop(w,h,palette);layers.set(key,backdrop);if(layers.size>2)layers.delete(layers.keys().next().value);}
+  const distance=Number(options.stage?.distance)||10,palette=rangePalette(distance);
   ctx.save();
-  const distance=Number(options.stage?.distance)||40;
-  const signature=[key,camera.x,camera.y,camera.z,camera.cx,camera.horizon,camera.focal,distance].join('|');
-  if(stillScene?.signature===signature){
-    ctx.drawImage(stillScene.canvas,0,0,w,h);
-  }else if(previousView===signature){
-    const ratio=Math.min(1.5,typeof devicePixelRatio==='number'?devicePixelRatio:1,1536/Math.max(w,h));
-    const layer=makeLayer(w,h,ratio);
-    paintTerrain(layer.ctx,w,h,palette,camera,project,backdrop,baseFocal,distance);
-    stillScene={signature,canvas:layer.canvas};
-    ctx.drawImage(stillScene.canvas,0,0,w,h);
+  const photo=rangePhotograph(distance);
+  if(photo){
+    paintRangePhoto(ctx,w,h,camera,baseFocal,photo);
+    drawDistancePosts(ctx,w,h,camera,project,distance);
   }else{
-    paintTerrain(ctx,w,h,palette,camera,project,backdrop,baseFocal,distance);
+    const key=[Math.round(w),Math.round(h),palette.sky[0]].join(':');let backdrop=layers.get(key);
+    if(!backdrop){backdrop=buildBackdrop(w,h,palette);layers.set(key,backdrop);if(layers.size>2)layers.delete(layers.keys().next().value);}
+
+    const signature=[key,camera.x,camera.y,camera.z,camera.cx,camera.horizon,camera.focal,distance].join('|');
+    if(stillScene?.signature===signature){
+      ctx.drawImage(stillScene.canvas,0,0,w,h);
+    }else if(previousView===signature){
+      const ratio=Math.min(1.5,typeof devicePixelRatio==='number'?devicePixelRatio:1,1536/Math.max(w,h));
+      const layer=makeLayer(w,h,ratio);
+      paintTerrain(layer.ctx,w,h,palette,camera,project,backdrop,baseFocal,distance);
+      stillScene={signature,canvas:layer.canvas};
+      ctx.drawImage(stillScene.canvas,0,0,w,h);
+    }else{
+      paintTerrain(ctx,w,h,palette,camera,project,backdrop,baseFocal,distance);
+    }
+    previousView=signature;
   }
-  previousView=signature;
   const time=Number(options.time)||0,wind=Number(options.stage?.wind)||0;
   for(let i=0;i<windLeafCount(wind);i++){
     const leaf=windLeafAt(i,time,w,h,wind),r=leaf.radius;
@@ -1108,49 +1144,81 @@ export function drawEquipmentIcon(ctx,w,h,{kind='bow',tier=0,color,grip=30,elast
 }
 
 /** Foreground bow and drawing hand. The shooting corridor stays unobstructed. */
-export function drawFirstPersonBow(ctx,w,h,{tier=0,charge=0,swayX=0,swayY=0,color='#a9784e',drawing=false,grip=30,elasticity=40,tipMass=4,fletching,arrowColor='#a35f3f',weaponType='bow',scopeMounted=false,burstCount=1,grouping=0}={}) {
+export function drawFirstPersonBow(ctx,w,h,{aim,tier=0,charge=0,swayX=0,swayY=0,color='#a9784e',drawing=false,grip=30,elasticity=40,tipMass=4,fletching,arrowColor='#a35f3f',weaponType='bow',scopeMounted=false,burstCount=1,grouping=0}={}) {
   if(weaponType==='gun'){drawFirstPersonGun(ctx,w,h,{tier,swayX,swayY,color,grip,scopeMounted});return;}
   if(weaponType==='crossbow'){drawFirstPersonCrossbow(ctx,w,h,{charge,swayX,swayY,color,drawing,grip,elasticity,tipMass,fletching,arrowColor,scopeMounted,burstCount,grouping});return;}
   const pull=Math.max(0,Math.min(1,charge));
   const gripRatio=equipmentValue(grip,30,0,100)/100,elasticRatio=equipmentValue(elasticity,40,0,100)/100;
   const pointMass=equipmentValue(tipMass,4,2,14);
-  const size=Math.min(w*.66,h*.45);
-  const gripX=w*(w/h>1.5?.39:.32)+Math.max(-12,Math.min(12,swayX*100));
-  const gripY=h*.88+Math.max(-7,Math.min(7,swayY*65));
-  ctx.save();ctx.translate(gripX,gripY);ctx.scale(size,size);ctx.rotate(-.12);
+  const size=Math.min(w*.56,h*.52);
+  const aimX=aim?.x??w*.5,aimY=aim?.y??h*.405;
+  const gripX=w*.39+Math.max(-8,Math.min(8,swayX*65));
+  const gripY=h-Math.min(h*.23,size*.48)+Math.max(-6,Math.min(6,swayY*50));
+  ctx.save();ctx.translate(gripX,gripY);ctx.scale(size,size);
   ctx.lineJoin='round';ctx.lineCap='round';
 
-  // A soft rim shadow gives the carved limbs a tangible foreground weight.
-  const bend=pull*(.025+elasticRatio*.025),limbWidth=.034+elasticRatio*.03;
+  // The arrow always runs from the string through the same rest to the reticle.
+  const restX=.013,restY=-.13;
+  const dx=(aimX-gripX)/size-restX,dy=(aimY-gripY)/size-restY;
+  const length=Math.hypot(dx,dy)||1,fx=dx/length,fy=dy/length;
+  const draw=drawing?pull:0,brace=.15,travel=draw*.32;
+  const nockX=restX-fx*(brace+travel),nockY=restY-fy*(brace+travel);
+  const tipX=restX+fx*(.47-travel),tipY=restY+fy*(.47-travel);
+  const flex=draw*(.035+elasticRatio*.035);
+  const midX=restX-fx*(brace+flex),midY=restY-fy*(brace+flex);
+  const upper={x:midX-.25,y:midY-.66},lower={x:midX+.25,y:midY+.66};
+  const limbWidth=.027+elasticRatio*.026;
   const limb=()=>{
-    ctx.beginPath();ctx.moveTo(-.11,-.62);
-    ctx.bezierCurveTo(-.22,-.55,-.23,-.42,-.12-bend,-.23);
-    ctx.bezierCurveTo(-.055-bend,-.13,-.025,-.07,0,0);
-    ctx.bezierCurveTo(-.025,.08,-.055-bend,.14,-.12-bend,.25);
-    ctx.bezierCurveTo(-.23,.44,-.22,.56,-.11,.64);
+    ctx.beginPath();ctx.moveTo(upper.x,upper.y);
+    ctx.bezierCurveTo(upper.x+.06,upper.y+.012,-.20,-.46,-.092,-.24);
+    ctx.bezierCurveTo(-.039,-.15,-.012,-.08,0,0);
+    ctx.bezierCurveTo(.025,.16,.094,.30,.15,.41);
+    ctx.bezierCurveTo(.21,.54,lower.x-.055,lower.y-.01,lower.x,lower.y);
   };
-  limb();ctx.strokeStyle='rgba(38,48,31,.28)';ctx.lineWidth=limbWidth+.015;ctx.stroke();
-  const lacquer=ctx.createLinearGradient(-.23,-.54,.12,.21);
-  lacquer.addColorStop(0,'#643f2d');lacquer.addColorStop(.18,'#ddb77d');lacquer.addColorStop(.32,color);
-  lacquer.addColorStop(.60,'#5f3928');lacquer.addColorStop(.8,color);lacquer.addColorStop(1,'#bd8f59');
+  const lacquer=ctx.createLinearGradient(-.24,-.55,.24,.59);
+  lacquer.addColorStop(0,'#4a3026');lacquer.addColorStop(.17,'#d0a46a');
+  lacquer.addColorStop(.29,color);lacquer.addColorStop(.48,'#51372b');
+  lacquer.addColorStop(.76,color);lacquer.addColorStop(1,'#cba870');
+  limb();ctx.strokeStyle='#332a24';ctx.lineWidth=limbWidth+.012;ctx.stroke();
   limb();ctx.strokeStyle=lacquer;ctx.lineWidth=limbWidth;ctx.stroke();
-  // The lighter laminated edge follows the same recurve shape.
-  ctx.save();ctx.translate(.008,-.005);limb();ctx.strokeStyle='#dab482';ctx.lineWidth=.009;ctx.stroke();ctx.restore();
-  for(const y of[-.6,.62]) {
-    line(ctx,-.116,y-.025,-.095,y+.017,'#4c4935',.025);
-    line(ctx,-.118,y-.017,-.104,y+.006,'#c9bb91',.006);
+  ctx.save();ctx.translate(-.006,.002);limb();ctx.strokeStyle='#dfbd87';ctx.lineWidth=.005;ctx.stroke();ctx.restore();
+  const gripGlove=paintedAsset('range-glove-grip'),drawGlove=paintedAsset('range-glove-draw');
+  let sleeve='#203c3c';
+  if(gripGlove){
+    const span=.75;
+    ctx.drawImage(gripGlove,-.83*span,-.25*span,span,span);
+  }else{
+    // Leather grip, left hand and a small sleeve establish the first-person view.
+    line(ctx,-.003,-.074,.005,.085,'#4c4835',.068+gripRatio*.026);
+    const gripWraps=4+Math.round(gripRatio*6);
+    for(let i=0;i<gripWraps;i++){const y=-.06+i*.125/(gripWraps-1);line(ctx,-.038,y,.037,y+.005,'#a68b62',.006);}
+    ctx.beginPath();ctx.moveTo(-.075,.005);ctx.quadraticCurveTo(-.16,.03,-.20,.11);
+    ctx.lineTo(-.68,.57);ctx.lineTo(-.45,.70);ctx.lineTo(-.025,.21);
+    ctx.quadraticCurveTo(.048,.15,.045,.07);ctx.closePath();ctx.fillStyle='#ceab7d';ctx.fill();
+    ctx.beginPath();ctx.moveTo(-.14,.115);ctx.lineTo(-.90,.81);ctx.lineTo(-.65,.91);ctx.lineTo(-.02,.23);ctx.closePath();
+    sleeve=ctx.createLinearGradient(-.28,.21,-.11,.38);
+    sleeve.addColorStop(0,'#182f35');sleeve.addColorStop(.43,'#446166');sleeve.addColorStop(.60,'#30474c');sleeve.addColorStop(1,'#142e34');
+    ctx.fillStyle=sleeve;ctx.fill();
+    shape(ctx,[{x:-.19,y:.155},{x:-.138,y:.114},{x:-.022,y:.226},{x:-.085,y:.301},{x:-.154,y:.274}],'#714b34');
+    line(ctx,-.181,.157,-.088,.279,'#e2bb7b',.011);
+    line(ctx,-.15,.136,-.051,.248,'#bc9262',.006);
+    ellipse(ctx,-.126,.219,.012,.012,'#f2d291');
+    line(ctx,-.145,.11,-.02,.23,'#829069',.029);
+    ctx.beginPath();ctx.moveTo(-.09,.04);ctx.quadraticCurveTo(-.035,-.055,.014,-.015);
+    ctx.quadraticCurveTo(.067,.016,.033,.059);ctx.lineTo(-.023,.049);ctx.quadraticCurveTo(-.061,.13,-.1,.1);ctx.closePath();ctx.fillStyle='#d7b78c';ctx.fill();
+    for(let i=0;i<3;i++){
+      line(ctx,-.032,.067+i*.024,.035,.059+i*.024,'#c6a173',.023);
+      line(ctx,-.022,.062+i*.024,.026,.055+i*.024,'#e7c99f',.005);
+    }
+
   }
-
-  // Bowstring and nock move toward the shooting hand as the draw grows.
-  const nockX=drawing?.16+pull*.34:.08;
-  const nockY=drawing?.025+pull*.15:.015;
-  ctx.beginPath();ctx.moveTo(-.11,-.62);ctx.lineTo(nockX,nockY);ctx.lineTo(-.11,.64);
-  ctx.strokeStyle='rgba(43,48,31,.28)';ctx.lineWidth=.012;ctx.stroke();
-  ctx.beginPath();ctx.moveTo(-.109,-.62);ctx.lineTo(nockX,nockY);ctx.lineTo(-.109,.64);
-  ctx.strokeStyle='#f3e7c5';ctx.lineWidth=.0055;ctx.stroke();
-
-  // Arrow points up the range, with feathers close to the nocking hand.
-  const tipX=.34,tipY=-.58;
+  ctx.beginPath();ctx.moveTo(upper.x,upper.y);ctx.lineTo(nockX,nockY);ctx.lineTo(lower.x,lower.y);
+  ctx.strokeStyle='#3c3330a8';ctx.lineWidth=.010;ctx.stroke();
+  ctx.strokeStyle='#eee7cf';ctx.lineWidth=.004;ctx.stroke();
+  for(const end of [upper,lower]){
+    ellipse(ctx,end.x,end.y,.019,.014,'#493c31');
+    ellipse(ctx,end.x-.004,end.y-.003,.010,.006,'#e6ce98');
+  }
   line(ctx,nockX,nockY,tipX,tipY,'#514f39',.017);
   line(ctx,nockX-.002,nockY-.002,tipX-.002,tipY-.004,'#e2c795',.009);
   const angle=Math.atan2(tipY-nockY,tipX-nockX);
@@ -1164,35 +1232,16 @@ export function drawFirstPersonBow(ctx,w,h,{tier=0,charge=0,swayX=0,swayY=0,colo
 
   if(scopeMounted){line(ctx,0,-.16,.085,-.20,'#5d7258',.022);drawScopeTube(ctx,.09,-.25,.20,.032,angle);}
 
-  // Leather grip, left hand and a small sleeve establish the first-person view.
-  line(ctx,-.003,-.074,.005,.085,'#4c4835',.068+gripRatio*.026);
-  const gripWraps=4+Math.round(gripRatio*6);
-  for(let i=0;i<gripWraps;i++){const y=-.06+i*.125/(gripWraps-1);line(ctx,-.038,y,.037,y+.005,'#a68b62',.006);}
-  ctx.beginPath();ctx.moveTo(-.075,.005);ctx.quadraticCurveTo(-.16,.03,-.20,.11);
-  ctx.lineTo(-.4,.32);ctx.lineTo(-.22,.45);ctx.lineTo(-.025,.21);
-  ctx.quadraticCurveTo(.048,.15,.045,.07);ctx.closePath();ctx.fillStyle='#ceab7d';ctx.fill();
-  ctx.beginPath();ctx.moveTo(-.14,.115);ctx.lineTo(-.43,.35);ctx.lineTo(-.24,.49);ctx.lineTo(-.02,.23);ctx.closePath();
-  const sleeve=ctx.createLinearGradient(-.28,.21,-.11,.38);
-  sleeve.addColorStop(0,'#182f35');sleeve.addColorStop(.43,'#446166');sleeve.addColorStop(.60,'#30474c');sleeve.addColorStop(1,'#142e34');
-  ctx.fillStyle=sleeve;ctx.fill();
-  shape(ctx,[{x:-.19,y:.155},{x:-.138,y:.114},{x:-.022,y:.226},{x:-.085,y:.301},{x:-.154,y:.274}],'#714b34');
-  line(ctx,-.181,.157,-.088,.279,'#e2bb7b',.011);
-  line(ctx,-.15,.136,-.051,.248,'#bc9262',.006);
-  ellipse(ctx,-.126,.219,.012,.012,'#f2d291');
-  line(ctx,-.145,.11,-.02,.23,'#829069',.029);
-  ctx.beginPath();ctx.moveTo(-.09,.04);ctx.quadraticCurveTo(-.035,-.055,.014,-.015);
-  ctx.quadraticCurveTo(.067,.016,.033,.059);ctx.lineTo(-.023,.049);ctx.quadraticCurveTo(-.061,.13,-.1,.1);ctx.closePath();ctx.fillStyle='#d7b78c';ctx.fill();
-  for(let i=0;i<3;i++){
-    line(ctx,-.032,.067+i*.024,.035,.059+i*.024,'#c6a173',.023);
-    line(ctx,-.022,.062+i*.024,.026,.055+i*.024,'#e7c99f',.005);
-  }
-
-  if(drawing) {
+  if(drawGlove){
+    // The two fingertips meet the nock even as the string comes back.
+    const span=.73;
+    ctx.drawImage(drawGlove,nockX-.138*span,nockY-.218*span,span,span);
+  }else {
     // The string hand stays low, opening a clear sight line over the arrow.
     ctx.beginPath();ctx.moveTo(nockX+.03,nockY-.012);ctx.quadraticCurveTo(nockX+.12,nockY-.06,nockX+.15,nockY+.026);
     ctx.lineTo(nockX+.32,nockY+.24);ctx.lineTo(nockX+.15,nockY+.33);
     ctx.quadraticCurveTo(nockX+.045,nockY+.18,nockX-.012,nockY+.09);ctx.closePath();ctx.fillStyle='#c7a174';ctx.fill();
-    ctx.beginPath();ctx.moveTo(nockX+.13,nockY+.13);ctx.lineTo(nockX+.35,nockY+.25);ctx.lineTo(nockX+.18,nockY+.36);ctx.lineTo(nockX+.05,nockY+.2);ctx.closePath();ctx.fillStyle=sleeve;ctx.fill();
+    ctx.beginPath();ctx.moveTo(nockX+.13,nockY+.13);ctx.lineTo(nockX+.83,nockY+.76);ctx.lineTo(nockX+.63,nockY+.85);ctx.lineTo(nockX+.05,nockY+.2);ctx.closePath();ctx.fillStyle=sleeve;ctx.fill();
     for(let i=0;i<2;i++)line(ctx,nockX+.005,nockY+.018+i*.028,nockX+.09,nockY+.005+i*.028,'#ddba8f',.03);
     line(ctx,nockX+.13,nockY+.13,nockX+.06,nockY+.2,'#8b9872',.023);
   }
