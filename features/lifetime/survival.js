@@ -58,7 +58,8 @@ function factorForYears(schedule,years,baseline,nationalArea) {
 // adjusted for age, sex and insurance type, relative to insurance-premium decile 10.
 function incomeRisk(curve,age,quintile) {
   const logOdds=[.587,.472,.353,.354,.320,.244,.141,.104,-.005,0];
-  const baseline=1-survivorCount(curve,age+1)/survivorCount(curve,age);
+  const last=curve[curve.length-1];
+  const baseline=age>=last[0] ? -Math.expm1(-1/last[2]) : 1-survivorCount(curve,age+1)/survivorCount(curve,age);
   const risk=(intercept,coef)=>1/(1+Math.exp(-intercept-coef));
   let lo=Math.log(baseline/(1-baseline))-.587,hi=lo+.592;
   for(let i=0;i<36;i++){

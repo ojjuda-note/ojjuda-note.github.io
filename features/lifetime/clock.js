@@ -80,15 +80,19 @@ function put(id,value) {
 function timeText(seconds) {
   return [Math.floor(seconds/3600),Math.floor(seconds/60)%60,seconds%60].map(n=>String(n).padStart(2,"0")).join(":");
 }
-function calendarRemainder(now,target) {
-  if(now>=target) return {years:0,months:0,days:0,seconds:0};
-  const today=parts(now);
-  const timeOfDay=now-midnight(today.year,today.month,today.day);
-  const end=parts(target);
-  let months=(end.year-today.year)*12+end.month-today.month;
-  let edge=anniversary(today,months)+timeOfDay;
-  if(edge>target){months--;edge=anniversary(today,months)+timeOfDay;}
-  const rest=Math.floor((target-edge)/1000);
+function calendarRemainder(target,now) {
+  // Count months from the fixed finish line so shorter months cannot reverse the countdown.
+  const anchor=parts(target),current=parts(now);
+  anchor.offset=target-midnight(anchor.year,anchor.month,anchor.day);
+  if(anchor.day===parts(midnight(anchor.year,anchor.month+1,0)).day) anchor.day=31;
+  const direction=now<target?-1:1;
+  let months=Math.abs((current.year-anchor.year)*12+current.month-anchor.month);
+  let edge=anniversary(anchor,direction*months);
+  if(direction*(now-edge)<0){
+    months--;
+    edge=anniversary(anchor,direction*months);
+  }
+  const rest=Math.floor(Math.abs(now-edge)/1000);
   return {years:Math.floor(months/12),months:months%12,days:Math.floor(rest/DAY),seconds:rest%DAY};
 }
 const hourlyCheers=[
@@ -138,7 +142,7 @@ function tick() {
   const bonusDay=Math.floor((now+KST)/(DAY*1000))-Math.floor((clock.target+KST)/(DAY*1000));
   put("encouragement",inBonus?bonusLines[bonusDay%bonusLines.length]:hourlyCheers[Math.floor(lifeSeconds/3600)]);
   put("remaining-label",inBonus?(clock.play?"재미 시계의 연장전":"쌓인 보너스 시간"):(clock.play?"남은 시간":"남은 추정 수명"));
-  const left=inBonus?calendarRemainder(clock.target,now):calendarRemainder(now,clock.target);
+  const left=calendarRemainder(clock.target,now);
   drawFlipBoard(left,clock,now);
   put("remaining",left.years+"년 "+left.months+"개월 "+left.days+"일 "+timeText(left.seconds));
   timer=setTimeout(tick,1000-Date.now()%1000);
@@ -178,14 +182,20 @@ function addBMIField(container,field,select) {
   });
 }
 
+function measuredBmiBand(height,weight) {
+  if(!Number.isFinite(height) || !Number.isFinite(weight) || height<=0 || weight<=0) return "";
+  const bmi=(weight/height)*(10000/height);
+  // Decimal measurements at a cutoff can land a few floating-point units below it.
+  const corrected=bmi+4*Number.EPSILON*bmi;
+  return corrected<18.5?"0":corrected<23?"1":corrected<25?"2":"3";
+}
+
 function syncBodySize() {
   const height=byId("height").valueAsNumber,weight=byId("weight").valueAsNumber,select=byId("input-bmi");
-  select.value="";let message="";
-  if(height>0 && weight>0) {
-    const bmi=weight/((height/100)**2);
-    select.value=bmi<18.5?"0":bmi<23?"1":bmi<25?"2":"3";
-    message="키와 몸무게로 계산해요.";
-  } else if(height>0 || weight>0) message=height>0?"몸무게도 넣으면 계산에 반영돼요.":"키도 넣으면 계산에 반영돼요.";
+  select.value=measuredBmiBand(height,weight);
+  let message="";
+  if(select.value!=="") message="키와 몸무게로 계산해요.";
+  else if(height>0 || weight>0) message=height>0?"몸무게도 넣으면 계산에 반영돼요.":"키도 넣으면 계산에 반영돼요.";
   byId("size-feedback").textContent=message;
 }
 
@@ -292,7 +302,9 @@ function startup() {
     const current=JSON.parse(localStorage.getItem(storageKey)||"null");
     if(current && (current.birth==="" || birthParts(current.birth,now))){
       const day=birthParts(current.referenceDay,now) && current.referenceDay>=current.birth?current.referenceDay:today;
-      return {birth:current.birth,birthTime:birthMoment(current.birth,current.birthTime,now)?current.birthTime||"":"",referenceDay:day,fields:cleanConditions(current.fields),draft:current.draft?cleanConditions(current.draft):undefined,play:knownStories(current.play),measurements:current.measurements};
+      const fields=cleanConditions(current.fields),size=current.measurements;
+      if(size?.height || size?.weight) fields.bmi=measuredBmiBand(Number(size.height),Number(size.weight));
+      return {birth:current.birth,birthTime:birthMoment(current.birth,current.birthTime,now)?current.birthTime||"":"",referenceDay:day,fields,draft:current.draft?cleanConditions(current.draft):undefined,play:knownStories(current.play),measurements:size};
     }
     const old=JSON.parse(localStorage.getItem("life-clock-settings-v2")||localStorage.getItem("life-clock-settings-v1")||"null");
     if(old && birthParts(old.birth,now)){
@@ -368,7 +380,8 @@ function saveBirth(event) {
     birthTimeInput.reportValidity();return;
   }
   const wasFirst=!applied.birth;
-  applied={...applied,birth:birthInput.value,birthTime:birthTimeInput.value,referenceDay:isoDate(now)};
+  const referenceDay=applied.birth===birthInput.value?applied.referenceDay:isoDate(now);
+  applied={...applied,birth:birthInput.value,birthTime:birthTimeInput.value,referenceDay};
   showBirthSettings();
   saveSettings("생일을 저장했어요.");
   (wasFirst?byId("open-conditions"):byId("birth-settings").querySelector("summary")).focus();
@@ -380,7 +393,10 @@ function applyEditor(event) {
   const measurements={height:byId("height").value,weight:byId("weight").value};
   const play=Object.keys(clockStories).filter(key=>byId("story-"+key).checked);
   if(byId("keep-previous-stories").checked) play.push(...previousStoryKeys.filter(key=>applied.play?.includes(key)));
-  applied={birth:applied.birth,birthTime:applied.birthTime||"",referenceDay:isoDate(Date.now()),fields,measurements,play};
+  const modelChanged=Object.entries(conditionSections).some(([section,defs])=>
+    section!=="daily" && defs.some(([key])=>key!=="pet" && fields[key]!==applied.fields[key]));
+  const referenceDay=modelChanged?isoDate(Date.now()):applied.referenceDay;
+  applied={birth:applied.birth,birthTime:applied.birthTime||"",referenceDay,fields,measurements,play};
   dialog.close();
   saveSettings("조건을 저장했어요.");
 }
