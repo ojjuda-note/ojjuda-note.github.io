@@ -1,7 +1,7 @@
 // Range paintings, world objects, and first-person equipment use CSS pixels.
 // Distant art and tree sprites are cached; world scenery follows the camera.
 import {drawAnimalModel,getAnimalFallPose,getAnimalAimPoint} from './animal-zones.mjs?v=20261104-archery-eagle-dive1';
-import {rangePalette, paintPanorama, paintFir, paintRedPine} from './range-art.mjs?v=20261128-woodland2';
+import {rangePalette, paintPanorama, paintFir, paintRedPine} from './range-art.mjs?v=20261128-touch1';
 const layers = new Map();
 const TAU = Math.PI * 2;
 
