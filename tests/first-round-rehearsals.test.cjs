@@ -77,3 +77,19 @@ test('all opening rounds finish with their actual controls and leave game state 
   await p.locator('.round-pane[data-complete="true"]:visible').waitFor();
   assert.equal(f.calls.length,0);assert.deepEqual(errors,[]);
 });
+
+test('Escape closes practice without sending an exit from the embedded Mines game',async t=>{
+  const browser=await chromium.launch({headless:true,...(process.env.OJJUDA_CHROMIUM_PATH?{executablePath:process.env.OJJUDA_CHROMIUM_PATH}:{})});t.after(()=>browser.close());
+  const {page}=await browserSession(browser,{actor:'practice-member',rpc:()=>({})});
+  await page.route(origin+'/tests/mines-host',route=>route.fulfill({contentType:'text/html',body:
+    '<script>window.received=[];addEventListener("message",e=>received.push(e.data.type))</script><iframe src="/games/mines/index.html"></iframe>'}));
+  await page.goto(origin+'/tests/mines-host');
+  const game=page.frameLocator('iframe');
+  await game.locator('details').filter({has:game.locator('[data-practice-replay]')}).locator('summary').click();
+  await game.locator('[data-practice-replay]').click();
+  await game.locator('.round-pane:visible').waitFor();
+  await page.keyboard.press('Escape');
+  await game.locator('.arcade-practice').waitFor({state:'detached'});
+  assert.ok(await game.locator('[data-practice-replay]').evaluate(b=>b===document.activeElement));
+  assert.equal(await page.evaluate(()=>received.includes('ojjuda-game-exit')),false);
+});

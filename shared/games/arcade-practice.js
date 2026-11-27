@@ -147,7 +147,13 @@
       dialog.replaceChildren();
       view.board(dialog,info(which),{close:finish,finish,modeControl,closeLabel:replay?'닫기':'건너뛰기',finishLabel:onContinue?'게임으로':'연습 마치기'});
     }
-    render(origin);dialog.oncancel=e=>{e.preventDefault();finish();};
+    render(origin);
+    // Games underneath the modal also listen for Escape and board shortcuts.
+    dialog.onkeydown=event=>{
+      event.stopPropagation();
+      if(event.key==='Escape'){event.preventDefault();finish();}
+    };
+    dialog.oncancel=e=>{e.preventDefault();finish();};
     document.body.append(dialog);
     try{dialog.showModal();}catch{dialog.remove();return false;}
     current=dialog;dialog.querySelector('.ap-title').tabIndex=-1;dialog.querySelector('.ap-title').focus({preventScroll:true});return true;
