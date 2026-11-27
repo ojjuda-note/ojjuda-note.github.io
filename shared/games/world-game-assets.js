@@ -80,7 +80,7 @@
   ttang:['/games/ttang/ttang-bridge.js?v=20261127-arcade-practice1'],
   photo_ttang:['/shared/games/puzzle-record-queue.js?v=20261117-arcade-score-repair2','/games/photo-ttang/photo-ttang-access.js?v=20261113-game-popup-order1','/games/photo-ttang/photo-ttang-ranking.js?v=20261117-arcade-score-repair1','/games/photo-ttang/photo-ttang-bridge.js?v=20261127-arcade-practice1'],
   mole:[moleRanking,...controls,'/games/mole/mole-game.css?v=20261108-mole-grids1','/games/mole/mole-game.js?v=20261117-arcade-score-repair1'],
-  runner:[...controls,'/games/runner/runner-game.css?v=20261110-runner-seahorse-v3-1','/games/runner/runner-game.js?v=20261111-runner-inset1'],
+  runner:[...controls,'/games/runner/runner-game.css?v=20261110-runner-seahorse-v3-1','/games/runner/runner-game.js?v=20261127-arcade-practice1'],
   breakout:[...controls,'/games/breakout/breakout-game.css?v=20261106-source-folders1','/games/breakout/breakout-game.js?v=20261110-admin-game-preview1'],
   screw:[...controls,'/games/screw/screw-games.css?v=20261106-source-folders1','/games/screw/screw-loader.js?v=20261118-cozy100-1'],
   stacker:controls

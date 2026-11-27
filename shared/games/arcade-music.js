@@ -3,10 +3,12 @@
   if (window.OjjudaArcadeMusic) return;
   const script = document.currentScript;
   const preference = 'ojjuda.arcade.background-music.v1';
-  const games = new Set('sacheonseong solitaire mines spot screw saetbyeol chacha_rush runner mole stacker breakout janggi chess billiards onecard bang tank yut tour ttang photo_ttang matgo croc bottle bomb stopwatch liar king truth initial minority mission fingers imagevote updown secretcount partyroulette shapematch'.split(' '));
-  const read = () => {try {return localStorage.getItem(preference) !== 'off';} catch {return true;}};
+  const games = new Set('sacheonseong solitaire mines spot screw saetbyeol chacha_rush mole stacker breakout janggi chess billiards onecard bang tank yut tour ttang photo_ttang matgo croc bottle bomb stopwatch liar king truth initial minority mission fingers imagevote updown secretcount partyroulette shapematch'.split(' '));
+  let enabled=true;
+  const read = () => {try {return localStorage.getItem(preference) !== 'off';} catch {return enabled;}};
+  enabled=read();
   let activated=!!navigator.userActivation?.hasBeenActive;
-  let enabled=read(), context, source, preparing, game, root, playing=false, pageVisible=true;
+  let context, source, preparing, game, root, playing=false, pageVisible=true;
   const controls = '[data-arcade-music-toggle]';
   const life = new MutationObserver(()=>{
     if (root && !root.isConnected) {

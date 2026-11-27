@@ -25,3 +25,4 @@ dialog.arcade-practice {
 @keyframes ap-slide { to { left:70%; } }
 @media (prefers-reduced-motion:reduce) { .ap-moving { animation:none; left:35%; } }
 .arcade-practice .ap-game-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; margin:12px 0; }
+.ap-entry-link { min-height:32px; padding:4px 8px; color:inherit; background:transparent; border:1px solid currentColor; border-radius:8px; font:inherit; font-size:12px; cursor:pointer; }

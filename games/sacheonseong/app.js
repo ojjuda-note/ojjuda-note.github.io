@@ -466,7 +466,7 @@
   state={unlocked:Number.isInteger(saved?.unlocked)?Math.min(E.MAX_STAGE,Math.max(1,saved.unlocked)):1,sound:!!saved?.sound};
   newStage(lastStage,pending);
   $('practice').onclick=()=>window.OjjudaArcadePractice?.show('sacheonseong',{replay:true});
-  if (!pending) window.OjjudaArcadePractice?.show('sacheonseong');
+  if (!pending) window.OjjudaArcadePractice?.offer('sacheonseong',document.querySelector('.topbar-actions'));
   setInterval(()=>{
     if(state.finishedMs==null)$('timer').textContent=time(ms());
     else if(globalResult&&!currentGlobalResult(globalResult)){

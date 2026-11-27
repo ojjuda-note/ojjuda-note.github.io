@@ -120,12 +120,22 @@
     current=dialog;
     return true;
   }
-  window.OjjudaArcadePractice = {supports,show};
+  // A direct visit may restore an existing game or arrive from an invitation.
+  // Keep its entry controls available; opening a game from the arcade gives the full lesson.
+  function offer(id,host) {
+    if (!host || !supports(id) || seen(canonical(id))) return;
+    const button=element('button','ap-entry-link','조작 연습');
+    button.onclick=()=>{if(show(id))button.remove();};
+    host.append(button);
+  }
+  window.OjjudaArcadePractice = {supports,show,offer};
   const standalone=document.currentScript?.dataset.game;
   if (supports(standalone)) {
     const options=new URL(location.href).searchParams;
     const invited=['room','join','invite','code','create','party','resume','mode'].some(key=>options.has(key));
-    if (!invited && window===window.parent) show(standalone);
+    if (!invited && window===window.parent) {
+      offer(standalone,document.querySelector('.game-entry,.entry-actions,.mp-entry-bar,.wallet-menu-panel,#settings'));
+    }
     document.addEventListener('click',event=>{
       if(event.target.closest?.('[data-practice-replay]')) show(standalone,{replay:true});
     });
