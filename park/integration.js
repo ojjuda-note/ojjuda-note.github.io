@@ -202,7 +202,7 @@
         if (owner !== session?.user?.id || !(canOpenAdmin() || (!hosted && moderator === true)) || !canLeave()) event.preventDefault();
       });
     };
-    settings.append(serviceBanners);
+    settings.append(serviceBanners, apps.parentElement);
     managementBody.append(settings);
     syncAdminSettings();
     if (owner) send({type:'ojjuda:park-admin-refresh', userId:owner});

@@ -87,21 +87,6 @@ export function AccountSettings({profileId,onOpen}:{profileId:string;onOpen:(act
       </div>
       {supportError&&<p className="error" role="alert">{supportError}</p>}
     </section>
-    <section className="ojjuda-settings-group" aria-labelledby="account-app-download-title">
-      <h2 className="ojjuda-settings-heading" id="account-app-download-title">앱 다운로드</h2>
-      <div className="ojjuda-settings-list app-store-downloads">
-        <a className="ojjuda-settings-row" data-store-app="agit" href="https://play.google.com/store/apps/details?id=kr.ojjuda.agit&hl=ko" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 아지트 Google Play에서 보기 (새 창)">
-          <span className="ojjuda-settings-label">오쭈다 아지트</span><span className="ojjuda-settings-arrow" aria-hidden="true">↗</span>
-        </a>
-        <a className="ojjuda-settings-row" data-store-app="pajang" href="https://play.google.com/store/apps/details?id=kr.ojjuda.pajang" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 파장 Google Play에서 보기 (새 창)">
-          <span className="ojjuda-settings-label">오쭈다 파장</span><span className="ojjuda-settings-arrow" aria-hidden="true">↗</span>
-        </a>
-        <a className="ojjuda-settings-row" data-store-app="park" href="https://play.google.com/store/apps/details?id=kr.ojjuda.park" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 공원 Google Play에서 보기 (새 창)">
-          <span className="ojjuda-settings-label">오쭈다 공원</span><span className="ojjuda-settings-arrow" aria-hidden="true">↗</span>
-        </a>
-      </div>
-      <p className="app-store-note">앱 이름을 누르면 Google Play 페이지가 열립니다. 아지트 비공개 테스트 참여가 필요하면 <a href="https://play.google.com/apps/testing/kr.ojjuda.agit" target="_blank" rel="noopener noreferrer">먼저 참여</a>한 뒤 설치하세요.</p>
-    </section>
     <section className="ojjuda-settings-group" aria-labelledby="account-access-title">
       <h2 className="ojjuda-settings-heading" id="account-access-title">계정 관리</h2>
       <div className="ojjuda-settings-list">
@@ -118,6 +103,21 @@ export function AccountSettings({profileId,onOpen}:{profileId:string;onOpen:(act
       </div>
     </section>}
     {createElement("ojjuda-service-banners", {current:"pajang"})}
+    <section className="ojjuda-settings-group" aria-labelledby="account-app-download-title">
+      <h2 className="ojjuda-settings-heading" id="account-app-download-title">앱 다운로드</h2>
+      <div className="ojjuda-settings-list app-store-downloads">
+        <a className="ojjuda-settings-row" data-store-app="agit" href="https://play.google.com/store/apps/details?id=kr.ojjuda.agit&hl=ko" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 아지트 Google Play에서 보기 (새 창)">
+          <span className="ojjuda-settings-label">오쭈다 아지트</span><span className="ojjuda-settings-arrow" aria-hidden="true">↗</span>
+        </a>
+        <a className="ojjuda-settings-row" data-store-app="pajang" href="https://play.google.com/store/apps/details?id=kr.ojjuda.pajang" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 파장 Google Play에서 보기 (새 창)">
+          <span className="ojjuda-settings-label">오쭈다 파장</span><span className="ojjuda-settings-arrow" aria-hidden="true">↗</span>
+        </a>
+        <a className="ojjuda-settings-row" data-store-app="park" href="https://play.google.com/store/apps/details?id=kr.ojjuda.park" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 공원 Google Play에서 보기 (새 창)">
+          <span className="ojjuda-settings-label">오쭈다 공원</span><span className="ojjuda-settings-arrow" aria-hidden="true">↗</span>
+        </a>
+      </div>
+      <p className="app-store-note">앱 이름을 누르면 Google Play 페이지가 열립니다. 아지트 비공개 테스트 참여가 필요하면 <a href="https://play.google.com/apps/testing/kr.ojjuda.agit" target="_blank" rel="noopener noreferrer">먼저 참여</a>한 뒤 설치하세요.</p>
+    </section>
   </section>;
 }
 

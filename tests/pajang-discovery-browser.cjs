@@ -573,6 +573,7 @@ async function checkNavigation(page){
   await choose('마음함');await heading('마음함').waitFor();
   await choose('내 파장');await heading('내 파장').waitFor();
   const settings=page.getByRole('region',{name:'파장 설정',exact:true});
+  assert.deepEqual(await settings.locator(':scope > :last-child [data-store-app]').evaluateAll(links=>links.map(a=>a.dataset.storeApp)),['agit','pajang','park']);
   const helpMenu=settings.locator('details').filter({has:page.locator('summary').filter({hasText:'도움말'})});
   assert.equal(await helpMenu.evaluate(el=>el.open),false,'a fresh settings page starts with Help collapsed');
   await helpMenu.locator('summary').click();
@@ -1166,7 +1167,7 @@ async function checkNavigation(page){
     assert.equal(await accountHome.getAttribute('href'),'/world.html?tab=hub');
     assert.equal(await accountHome.getAttribute('target'),'_top');
     const settings=page.getByRole('region',{name:'파장 설정',exact:true});
-    assert.deepEqual(await settings.getByRole('heading',{level:2}).allTextContents(),['내 계정','내 활동','이용 안내','앱 다운로드','계정 관리']);
+    assert.deepEqual(await settings.getByRole('heading',{level:2}).allTextContents(),['내 계정','내 활동','이용 안내','계정 관리','앱 다운로드']);
     assert.equal(await settings.getByRole('link',{name:'파장 관리자모드',exact:true}).count(),0);
     await settings.getByRole('button',{name:'내가 남긴 답변',exact:true}).click();
     const ownAnswers=page.getByRole('dialog',{name:'내가 남긴 답변',exact:true});

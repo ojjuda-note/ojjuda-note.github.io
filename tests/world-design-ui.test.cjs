@@ -106,7 +106,7 @@ world=world.slice(0,boot)+`
  await page.locator('.bottomnav [data-tab=my]').click();
  const serviceBanners=page.locator('ojjuda-service-banners[current="agit"]');
  await serviceBanners.locator('.ojjuda-service-banner').first().waitFor();
- assert.equal(await serviceBanners.evaluate(node=>node.parentElement.lastElementChild===node),true,'service banners are last in Settings');
+ assert.equal(await serviceBanners.evaluate(node=>node.parentElement.lastElementChild===node.nextElementSibling && !!node.nextElementSibling?.querySelector('.app-store-downloads')),true,'downloads are last after the banners in Settings');
  assert.deepEqual(await serviceBanners.locator('.ojjuda-service-banner').evaluateAll(links=>links.map(link=>link.dataset.service)),['park','pajang']);
  for(const width of [320,390,750]){
   await page.setViewportSize({width,height:850});

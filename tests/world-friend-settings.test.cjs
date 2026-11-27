@@ -60,7 +60,7 @@ async function until(condition) { for (let i=0; i<50; i++) { if(condition())retu
   assert.equal(calls.length,0,'closed settings do not fetch friends');
   assert.equal(doc.querySelector('.world-settings-header h2').textContent,'아지트 설정');
   assert.deepEqual([...doc.querySelectorAll('.world-settings-page .ojjuda-settings-heading')].map(node=>node.textContent),
-   ['내 계정','이용 설정','이용 안내','앱 다운로드','계정 관리'],'settings retain the Park-style section order');
+   ['내 계정','이용 설정','이용 안내','계정 관리','앱 다운로드'],'settings retain the Park-style section order');
   const account=doc.querySelector('.ojjuda-settings-group[aria-label="내 계정"] > .ojjuda-settings-list');
   assert.equal(account.firstElementChild.dataset.act,'member-info-open','personal information opens directly from the first account row');
   assert.equal(account.querySelector('[data-my-group="profile"] [data-act="member-info-open"]'),null);
@@ -108,7 +108,7 @@ async function until(condition) { for (let i=0; i<50; i++) { if(condition())retu
   assert.equal(group().open,true);
   assert.ok(group().textContent.includes('친구 1명'));
   assert.equal(group().querySelector('[data-act="visit"]'),null);
-  assert.deepEqual([...doc.querySelectorAll('.bottomnav [data-tab]')].map(item=>item.textContent.trim()),['아지트','오락실','설정']);
+  assert.deepEqual([...doc.querySelectorAll('.bottomnav [data-tab]')].map(item=>item.textContent.trim()),['아지트','그룹','오락실','설정']);
 
   const search=doc.querySelector('#fr-q');search.value='새 친구';search.dispatchEvent(new w.Event('input',{bubbles:true}));
   doc.querySelector('#fr-search-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));

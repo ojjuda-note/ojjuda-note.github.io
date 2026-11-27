@@ -56,7 +56,7 @@ function fixture(url='https://ojjuda.kr/world.html'){
   assert.equal(w.document.querySelector('.agit-park-banner,.agit-pajang-banner,ojjuda-service-banners'),null,'large service banners no longer occupy the Agit home');
   t.actions.tab({tab:'my'});
   const bannerRow=w.document.querySelector('ojjuda-service-banners[current="agit"]');
-  assert.equal(bannerRow.parentElement.lastElementChild,bannerRow,'service banners occupy the bottom of Settings');
+  assert.equal(bannerRow.parentElement.lastElementChild.querySelector('.app-store-downloads')?.closest('section')?.previousElementSibling,bannerRow,'service banners precede the final download section');
   assert.deepEqual([...bannerRow.querySelectorAll('.ojjuda-service-banner')].map(link=>link.dataset.service),['park','pajang']);
   const parkBanner=bannerRow.querySelector('[data-service="park"]');
   assert.equal(new URL(parkBanner.href).pathname,'/park/');

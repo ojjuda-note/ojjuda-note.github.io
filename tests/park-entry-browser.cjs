@@ -110,7 +110,7 @@ if(parent!==window){
       await canonicalSettings.waitFor({state:'visible'});
       assert.equal(new URL(page.url()).search,'','the settings button opens the canonical dialog in place');
       assert.deepEqual(await canonicalSettings.locator('.ojjuda-settings-heading').allTextContents(),
-        ['내 정보','앱 다운로드','이용 설정','활동·도움']);
+        ['내 정보','이용 설정','활동·도움','앱 다운로드']);
       assert.equal(await canonicalSettings.getByText(/^(내 이벤트|이벤트 만들기|알림)$/).count(),0);
       assert.equal(await page.locator('#note-sidebar-menu-slot #event-start').count(),0);
       const agitLinks=canonicalSettings.locator('a[href*="world.html"]');
