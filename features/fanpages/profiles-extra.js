@@ -32,7 +32,7 @@ for (const artist of window.OJJUDA_FAN_ARTISTS.filter((item) => item.basicProfil
 const strayKidsProfile = window.OJJUDA_FAN_PROFILES.straykids;
 if (strayKidsProfile) {
   strayKidsProfile.expanded = true;
-  strayKidsProfile.checkedAt = '2026.11.14';
+  strayKidsProfile.checkedAt = '2026.11.19';
   const birthdays = {
     '방찬': '1997.10.03', '리노': '1998.10.25', '창빈': '1999.08.11',
     '현진': '2000.03.20', '한': '2000.09.14', '필릭스': '2000.09.15',
