@@ -1,7 +1,7 @@
 // Range paintings, world objects, and first-person equipment use CSS pixels.
 // Distant art and tree sprites are cached; world scenery follows the camera.
 import {drawAnimalModel,getAnimalFallPose,getAnimalAimPoint} from './animal-zones.mjs?v=20261104-archery-eagle-dive1';
-import {rangePalette, paintPanorama, paintFir, paintRedPine} from './range-art.mjs?v=20261128-touch1';
+import {rangePalette, paintPanorama, paintFir, paintRedPine} from './range-art.mjs?v=20261128-motion1';
 const layers = new Map();
 const TAU = Math.PI * 2;
 
@@ -655,7 +655,7 @@ export function drawAnimal(ctx,x,y,radius,kind,time=0,direction=1,pose=null) {
   ctx.restore();
 }
 
-export function drawRangeTarget(ctx,x,y,r,groundX,groundY){
+export function drawRangeTarget(ctx,x,y,r,groundX,groundY,rock=null,back=null){
   const board=paintedAsset('range-straw-boss'),stand=paintedAsset('range-oak-easel');
   if(!board||!stand)return false;
   const top=y-r*.65,feet=Math.max(top+r*.95,groundY);
@@ -663,7 +663,15 @@ export function drawRangeTarget(ctx,x,y,r,groundX,groundY){
   ctx.drawImage(stand,groundX-standWidth*.5,top,standWidth,feet-top);
   // The printed face is calibrated to the five scoring bands.
   const width=r/.388,height=width*board.naturalHeight/board.naturalWidth;
-  ctx.drawImage(board,x-width*.497,y-height*.505,width,height);
+  ctx.save();
+  if(rock){
+    ctx.translate(rock.x,rock.y);ctx.transform(1,rock.tilt,0,1-rock.squash,0,0);ctx.translate(-rock.x,-rock.y);
+  }
+  if(back?.visible&&Math.hypot(back.x-x,back.y-y)>1.5){
+    ellipse(ctx,back.x,back.y,r*1.17,r*1.15,'#765533');
+    ellipse(ctx,(back.x+x)*.5,(back.y+y)*.5,r*1.17,r*1.15,'#a37c49');
+  }
+  ctx.drawImage(board,x-width*.497,y-height*.505,width,height);ctx.restore();
   return true;
 }
 
@@ -1197,13 +1205,17 @@ function drawGalleryGear(ctx,w,h,options){
   }
   ctx.restore();return true;
 }
+const clampMotion=value=>Math.max(-.5,Math.min(.5,value));
 function drawHeldStock(ctx,w,h,options){
-  const {weaponType,color,scopeMounted,aim,charge=0,drawing,burstCount=1,fletching,arrowColor}=options;
+  const {weaponType,color,scopeMounted,aim,charge=0,drawing,burstCount=1,fletching,arrowColor,releaseAge,reducedMotion}=options;
   const isGun=weaponType==='gun',art=finishedGear(gearName(weaponType,'held'),color);
   if(!art)return false;
-  const size=Math.min(w*.68,h*.56),rearX=w*(isGun?.62:.53),rearY=h+size*.12;
+  const kick=releaseAge===null||reducedMotion?0:Math.sin(Math.min(1,releaseAge/.16)*Math.PI)*Math.exp(-releaseAge*10);
+  const size=Math.min(w*.68,h*.56)*(1+kick*(isGun?.15:.055));
+  const rearX=w*(isGun?.62:.53)+(reducedMotion?0:clampMotion((aim?.x??w*.5)/w-.5)*w*.12);
+  const rearY=h+size*(.12+kick*.14);
   const dx=(aim?.x??w*.5)-rearX,dy=(aim?.y??h*.405)-rearY;
-  const angle=Math.atan2(dy,dx)+Math.PI/2;
+  const angle=Math.atan2(dy,dx)+Math.PI/2-kick*(isGun?.095:.037);
   ctx.save();ctx.translate(rearX,rearY);ctx.rotate(angle);ctx.scale(size,size);
   const glove=paintedAsset('range-glove-grip');
   if(glove)ctx.drawImage(glove,-.40,-.34,.46,.46);
@@ -1215,7 +1227,7 @@ function drawHeldStock(ctx,w,h,options){
   const a=-front*uy/len,b=-front*ux/len;
   ctx.save();ctx.transform(a,b,-b,a,-a*fromX+b*fromY,-b*fromX-a*fromY);
   ctx.drawImage(art,0,0,iw,ih);ctx.restore();
-  if(!isGun){
+  if(!isGun&&releaseAge===null){
     const rear=-.37+(drawing?charge*.065:0);
     line(ctx,0,rear,0,-.83,'#573f2b',.013);
     line(ctx,-.002,rear,-.002,-.83,'#e7c993',.006);
@@ -1227,7 +1239,9 @@ function drawHeldStock(ctx,w,h,options){
     ellipse(ctx,0,-.44,.069,.055,'#a58b60');ellipse(ctx,0,-.444,.057,.045,'#263c40');
     ellipse(ctx,-.012,-.453,.032,.020,'#698d89',-.25);
   }
-  ctx.restore();return true;
+  ctx.restore();
+  const onRail=along=>({x:rearX+Math.sin(angle)*size*along,y:rearY-Math.cos(angle)*size*along});
+  return isGun?true:{tip:onRail(.83),tail:onRail(.37-(drawing?charge*.065:0))};
 }
 
 /** Draws a transparent shop item illustration, without clearing the canvas. */
@@ -1308,8 +1322,11 @@ export function drawEquipmentIcon(ctx,w,h,{kind='bow',tier=0,color,grip=30,elast
 }
 
 /** Foreground bow and drawing hand. The shooting corridor stays unobstructed. */
-export function drawFirstPersonBow(ctx,w,h,{aim,tier=0,charge=0,swayX=0,swayY=0,color='#a9784e',drawing=false,grip=30,elasticity=40,tipMass=4,fletching,arrowColor='#a35f3f',weaponType='bow',scopeMounted=false,burstCount=1,grouping=0}={}) {
-  if((weaponType==='gun'||weaponType==='crossbow')&&drawHeldStock(ctx,w,h,{weaponType,color,scopeMounted,aim,charge,drawing,burstCount,fletching,arrowColor}))return;
+export function drawFirstPersonBow(ctx,w,h,{aim,tier=0,charge=0,swayX=0,swayY=0,color='#a9784e',drawing=false,grip=30,elasticity=40,tipMass=4,fletching,arrowColor='#a35f3f',weaponType='bow',scopeMounted=false,burstCount=1,grouping=0,releaseAge=null,reducedMotion=false}={}) {
+  if(weaponType==='gun'||weaponType==='crossbow'){
+    const held=drawHeldStock(ctx,w,h,{weaponType,color,scopeMounted,aim,charge,drawing,burstCount,fletching,arrowColor,releaseAge,reducedMotion});
+    if(held)return held;
+  }
   if(weaponType==='gun'){drawFirstPersonGun(ctx,w,h,{tier,swayX,swayY,color,grip,scopeMounted});return;}
   if(weaponType==='crossbow'){drawFirstPersonCrossbow(ctx,w,h,{charge,swayX,swayY,color,drawing,grip,elasticity,tipMass,fletching,arrowColor,scopeMounted,burstCount,grouping});return;}
   const pull=Math.max(0,Math.min(1,charge));
@@ -1317,8 +1334,10 @@ export function drawFirstPersonBow(ctx,w,h,{aim,tier=0,charge=0,swayX=0,swayY=0,
   const pointMass=equipmentValue(tipMass,4,2,14);
   const size=Math.min(w*.56,h*.52);
   const aimX=aim?.x??w*.5,aimY=aim?.y??h*.405;
-  const gripX=w*.39+Math.max(-8,Math.min(8,swayX*65));
-  const gripY=h-Math.min(h*.23,size*.48)+Math.max(-6,Math.min(6,swayY*50));
+  const loose=releaseAge!==null,age=releaseAge??0;
+  const kick=loose&&!reducedMotion?Math.sin(Math.min(1,age/.17)*Math.PI)*Math.exp(-age*8):0;
+  const gripX=w*.39+Math.max(-8,Math.min(8,swayX*65))+(reducedMotion?0:clampMotion(aimX/w-.5)*w*.12)-kick*size*.045;
+  const gripY=h-Math.min(h*.23,size*.48)+Math.max(-6,Math.min(6,swayY*50))-kick*size*.075;
   ctx.save();ctx.translate(gripX,gripY);ctx.scale(size,size);
   ctx.lineJoin='round';ctx.lineCap='round';
 
@@ -1326,10 +1345,11 @@ export function drawFirstPersonBow(ctx,w,h,{aim,tier=0,charge=0,swayX=0,swayY=0,
   const restX=-.050,restY=-.13;
   const dx=(aimX-gripX)/size-restX,dy=(aimY-gripY)/size-restY;
   const length=Math.hypot(dx,dy)||1,fx=dx/length,fy=dy/length;
-  const draw=drawing?pull:0,brace=.15,travel=draw*.32;
+  const tension=loose?pull*Math.exp(-age*26)*Math.cos(age*57):drawing?pull:0;
+  const brace=.15,travel=tension*.32;
   const nockX=restX-fx*(brace+travel),nockY=restY-fy*(brace+travel);
   const tipX=restX+fx*(.47-travel),tipY=restY+fy*(.47-travel);
-  const flex=draw*(.035+elasticRatio*.035);
+  const flex=tension*(.035+elasticRatio*.035);
   const midX=restX-fx*(brace+flex),midY=restY-fy*(brace+flex);
   const upper={x:midX-.25,y:midY-.66},lower={x:midX+.25,y:midY+.66};
   const limbWidth=.027+elasticRatio*.026;
@@ -1388,22 +1408,27 @@ export function drawFirstPersonBow(ctx,w,h,{aim,tier=0,charge=0,swayX=0,swayY=0,
     ellipse(ctx,end.x,end.y,.019,.014,'#493c31');
     ellipse(ctx,end.x-.004,end.y-.003,.010,.006,'#e6ce98');
   }
-  line(ctx,nockX,nockY,tipX,tipY,'#514f39',.017);
-  line(ctx,nockX-.002,nockY-.002,tipX-.002,tipY-.004,'#e2c795',.009);
-  const angle=Math.atan2(tipY-nockY,tipX-nockX);
-  ctx.save();ctx.translate(tipX,tipY);ctx.rotate(angle);
-  const pointLength=.04+pointMass*.003,pointWidth=.012+pointMass*.001;
-  shape(ctx,[{x:pointLength,y:0},{x:-.015,y:-pointWidth},{x:-.007,y:0},{x:-.015,y:pointWidth}],'#617769');
-  line(ctx,pointLength*.77,-.002,-.01,-pointWidth*.68,'#b6c7aa',.003);ctx.restore();
-  ctx.save();ctx.translate(nockX,nockY);ctx.rotate(angle);
-  drawFletching(ctx,.012,0,fletching,arrowColor,0,.68);
-  ctx.restore();
+  const angle=Math.atan2(fy,fx);
+  if(!loose){
+    line(ctx,nockX,nockY,tipX,tipY,'#514f39',.017);
+    line(ctx,nockX-.002,nockY-.002,tipX-.002,tipY-.004,'#e2c795',.009);
+    ctx.save();ctx.translate(tipX,tipY);ctx.rotate(angle);
+    const pointLength=.04+pointMass*.003,pointWidth=.012+pointMass*.001;
+    shape(ctx,[{x:pointLength,y:0},{x:-.015,y:-pointWidth},{x:-.007,y:0},{x:-.015,y:pointWidth}],'#617769');
+    line(ctx,pointLength*.77,-.002,-.01,-pointWidth*.68,'#b6c7aa',.003);ctx.restore();
+    ctx.save();ctx.translate(nockX,nockY);ctx.rotate(angle);
+    drawFletching(ctx,.012,0,fletching,arrowColor,0,.68);
+    ctx.restore();
+  }
 
   if(scopeMounted){line(ctx,0,-.16,.085,-.20,'#5d7258',.022);drawScopeTube(ctx,.09,-.25,.20,.032,angle);}
 
+  // The string springs forward, but the released hand continues toward the player.
+  const handTravel=loose?pull*.32+.115*(1-Math.exp(-age*18)):travel;
+  const handX=restX-fx*(brace+handTravel),handY=restY-fy*(brace+handTravel);
+  ctx.save();ctx.translate(handX-nockX,handY-nockY);
   if(drawGlove){
-    // The two fingertips meet the nock even as the string comes back.
-    const span=.73;
+    const span=.73*(1+(reducedMotion?0:Math.max(0,handTravel)*.34));
     ctx.drawImage(drawGlove,nockX-.138*span,nockY-.218*span,span,span);
   }else {
     // The string hand stays low, opening a clear sight line over the arrow.
@@ -1415,4 +1440,6 @@ export function drawFirstPersonBow(ctx,w,h,{aim,tier=0,charge=0,swayX=0,swayY=0,
     line(ctx,nockX+.13,nockY+.13,nockX+.06,nockY+.2,'#8b9872',.023);
   }
   ctx.restore();
+  ctx.restore();
+  return {tip:{x:gripX+size*tipX,y:gripY+size*tipY},tail:{x:gripX+size*nockX,y:gripY+size*nockY}};
 }

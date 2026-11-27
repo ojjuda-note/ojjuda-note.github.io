@@ -1,6 +1,6 @@
 import {createCoinExchangeClient,COIN_PACKS,COINS_PER_ZU} from './coin-exchange.mjs?v=20261104-archery-reset5';
 import {PLAYER, BOWS, ARROWS, BULLETS, getBullet, SCOPES, getScopePrice, getScoreCoinReward, DISTANCE_STAGES as STAGES, DISTANCE_GROUPS, prepareStage, passersAt, retirePasser, clamp, targetAt, applyAnimalHit, getAnimalAttachmentPoint, getSpeed, getArrowMass, getArrowConsistency, getArrowVariance, getArrowDragRate, getWindResponse, sortEquipment, launchArrow, launchVolley, stepArrow, predictTrajectory, createSway, stepSway} from './engine.mjs?v=20261106-archery-distance1';
-import {drawScenery, drawRangeTarget, drawAnimal, drawClay, drawUfo, drawObstacle, drawPasser, drawEquipmentIcon, drawFirstPersonBow, drawBullseyeImpact, drawBullseyeVignette} from './scenery.mjs?v=20261128-touch1';
+import {drawScenery, drawRangeTarget, drawAnimal, drawClay, drawUfo, drawObstacle, drawPasser, drawEquipmentIcon, drawFirstPersonBow, drawBullseyeImpact, drawBullseyeVignette} from './scenery.mjs?v=20261128-motion1';
 import {FLIGHT_TIME_SCALE, IMPACT_HOLD, RETURN_DURATION, PREVIEW_RISE, PREVIEW_HOLD, PREVIEW_RETURN, NEAR_PLANE, projectPoint, depthFragments, desiredFollowCamera, desiredPreviewCamera, clearShotCamera, lerpCamera} from './view.mjs?v=20261104-archery-eagle-dive1';
 import {createBullseyeCinematic, sampleBullseyeCinematic, desiredBullseyeCamera} from './cinematic.mjs?v=20261104-archery-eagle-dive1';
 import {createBulletCinematic, sampleBulletCinematic, desiredBulletCamera} from './bullet-cinematic.mjs?v=20261104-archery-bullet-penetration1';
@@ -834,7 +834,7 @@ function resetRound(stage=state.stage){
   state.isEvent=false;
   state.resultSummary=null;
   state.roundEpoch=(state.roundEpoch||0)+1;state.runId=createRequestId();state.awaitingRoundSave=null;state.deferRegistration=false;state.registering=false;state.practiceOnly=adminPreview;state.ammoNotice='';state.ammoLoading=false;
-  cancelDraw();state.stage=prepareStage(stage,Math.floor(Math.random()*0x100000000));state.time=0;state.score=0;state.used=0;state.hits=0;state.arrowHits=0;state.earned=0;state.shotScores=[];state.shotLog=[];state.shotMaxScores=[];state.targetMarks=[];state.stuck=[];state.effects=[];state.mode='ready';state.shot=null;state.volley=null;state.cinematic=null;state.coachSaid=false;state.coachReady=false;state.coachLastCueAt=-Infinity;state.coachCueUntil=0;state.coachLastCheck=-Infinity;state.returnCamera=null;state.settle=0;state.charge=0;state.feedbackUntil=0;state.zoom=1;
+  cancelDraw();state.stage=prepareStage(stage,Math.floor(Math.random()*0x100000000));state.time=0;state.score=0;state.used=0;state.hits=0;state.arrowHits=0;state.earned=0;state.shotScores=[];state.shotLog=[];state.shotMaxScores=[];state.targetMarks=[];state.stuck=[];state.effects=[];state.mode='ready';state.shot=null;state.volley=null;state.cinematic=null;state.releasePose=null;state.heldShaft=null;state.coachSaid=false;state.coachReady=false;state.coachLastCueAt=-Infinity;state.coachCueUntil=0;state.coachLastCheck=-Infinity;state.returnCamera=null;state.settle=0;state.charge=0;state.feedbackUntil=0;state.zoom=1;
   state.stabilizerActive=false;state.stabilizerNotice='';
   state.roundShotLimit=usingGun()?10:state.stage.shots;prepareGunRound();
   state.balloon=planBalloon(state.stage,state.roundShotLimit);
@@ -905,7 +905,15 @@ function releaseShot(automatic=false,now=performance.now()){
   if(document.hidden||state.modal){cancelDraw();return;}
   syncDraw(now);clearDrawTimer();
   const shots=launchVolley(shotParams(now));
-  const launchedAt=performance.now();
+  const launchedAt=performance.now(),sight=screenAim();
+  const held=state.heldShaft;
+  if(held&&!usingGun()&&!motionPreference?.matches){
+    const fromScreen=(p,depth)=>({x:camera.x+(p.x-camera.cx)*depth/camera.focal,y:camera.y-(p.y-camera.horizon)*depth/camera.focal,z:camera.z+depth});
+    shots[0].heldOrigin={tip:fromScreen(held.tip,1.55),tail:fromScreen(held.tail,.70),
+      reach:Math.min(6,state.stage.distance*.55,...state.stage.obstacles.map(ob=>(ob.z-ob.depth/2)*.7),
+        ...passersAt(state.stage,state.time).map(person=>(person.z-person.depth/2)*.7))};
+  }
+  state.releasePose={at:launchedAt,x:sight.x/w,y:sight.y/h,charge:state.charge};
   for(const shot of shots){shot.startedAt=launchedAt;shot.automatic=!laserEnabled()&&(automatic||drawElapsed(now)>=DRAW_LIMIT);shot.handled=false;shot.launched=!(shot.launchDelay>0);if(shot.launched)rememberFlight(shot,state.time);}
   if(usingGun()){
     if(state.reloadRemaining>0||state.magazine<=0){cancelDraw();return;}
@@ -1013,7 +1021,7 @@ function impactReport(shot){
     const x=(result.point.x-target.x)/target.rx,y=(result.point.y-target.y)/target.ry;
     if(Number.isFinite(x)&&Number.isFinite(y))point={x,y};
   }
-  return {point,hit:result.type==='hit'};
+  return {point,hit:result.type==='hit',flightTime:result.flightTime};
 }
 function impactDirection({x,y}){
   if(Math.hypot(x,y)<.20)return '중앙';
@@ -1035,7 +1043,15 @@ function roundReportMarkup(){
     const mean=points.reduce((sum,p)=>({x:sum.x+p.x,y:sum.y+p.y}),{x:0,y:0});
     grouping=`<span>평균 착탄 · ${impactDirection({x:mean.x/points.length,y:mean.y/points.length})}</span>`;
   }
-  const scores=state.shotScores.map((score,i)=>`<li><small>${i+1}회</small><b>${score}점</b></li>`).join('');
+  const scores=state.shotScores.map((score,i)=>{
+    const durations=state.shotLog[i].map(shot=>shot.flightTime).filter(Number.isFinite);
+    let timing='';
+    if(durations.length){
+      const first=Math.min(...durations).toFixed(2),last=Math.max(...durations).toFixed(2);
+      timing=`<small>비행 ${first===last?first:first+'–'+last}초</small>`;
+    }
+    return `<li><small>${i+1}회</small><b>${score}점</b>${timing}</li>`;
+  }).join('');
   return `<details class="round-report"><summary>이번 판 사격 기록 <b>${hits}/${impacts.length}발 명중</b></summary><div class="report-body">${impactPlot(points)}<div>${grouping}<ol>${scores}</ol></div></div></details>`;
 }
 
@@ -1043,9 +1059,9 @@ function recordImpact(shot,born=state.time){
   if(!shot.result||shot.marked)return;shot.marked=true;
   const r=shot.result,hit=r.type==='hit';
   if(hit&&ANIMAL_NAMES[r.targetCenter?.kind])shot.animalHit={...applyAnimalHit(state.stage,r.targetCenter,r.score,born),kind:r.targetCenter.kind};
-  if(hit){const target=r.targetCenter;if(target.kind==='clay'||target.kind==='ufo'){state.stage.brokenPasses??=[];if(!state.stage.brokenPasses.includes(target.passId))state.stage.brokenPasses.push(target.passId);}else{shot.attachment={x:r.point.x-target.x,y:r.point.y-target.y,passId:target.passId,...(r.animalAttachment?{animal:r.animalAttachment}:{})};shot.targetMark={...shot.attachment,z:target.z,velocity:{...shot.velocity},projectileType:shot.projectileType,born};state.targetMarks.push(shot.targetMark);}}
-  else if(r.type!=='person'&&!(shot.projectileType==='bullet'&&r.type==='miss'))state.stuck.push({...r.point,velocity:{...shot.velocity},projectileType:shot.projectileType,born});
-  shot.impactEffect={x:r.point.x,y:r.point.y,z:r.point.z,born,hit,kind:r.targetCenter?.kind};state.effects.push(shot.impactEffect);
+  if(hit){const target=r.targetCenter;if(target.kind==='clay'||target.kind==='ufo'){state.stage.brokenPasses??=[];if(!state.stage.brokenPasses.includes(target.passId))state.stage.brokenPasses.push(target.passId);}else{shot.attachment={x:r.point.x-target.x,y:r.point.y-target.y,passId:target.passId,...(r.animalAttachment?{animal:r.animalAttachment}:{})};shot.targetMark={...shot.attachment,z:target.z,velocity:{...shot.velocity},projectileType:shot.projectileType,born,roll:shot.elapsed*12};state.targetMarks.push(shot.targetMark);}}
+  else if(r.type!=='person'&&!(shot.projectileType==='bullet'&&r.type==='miss'))state.stuck.push({...r.point,velocity:{...shot.velocity},projectileType:shot.projectileType,born,roll:shot.elapsed*12});
+  shot.impactEffect={x:r.point.x,y:r.point.y,z:r.point.z,born,hit,kind:r.targetCenter?.kind,surface:r.type==='ground'?'earth':hit&&r.targetCenter?.kind==='target'?'straw':null};state.effects.push(shot.impactEffect);
 }
 function moveAttachedArrows(){
   for(const shot of state.volley?.shots||[state.shot])if(shot?.attachment){const target=targetAt(state.stage,state.time,shot.attachment.passId);shot.position=(shot.attachment.animal&&getAnimalAttachmentPoint(target,shot.attachment.animal))||{x:target.x+shot.attachment.x,y:target.y+shot.attachment.y,z:target.z};}
@@ -1082,7 +1098,7 @@ function onImpact(){
   const animalHit=animalHits.find(result=>result.justKilled)||animalHits.at(-1);
   const animalStatus=animalHit?`${ANIMAL_NAMES[animalHit.kind]} ${animalHit.killed?'쓰러짐':`체력 ${animalHit.health}/${animalHit.maxHealth}`} · `:'';
   $('feedbackTitle').textContent=hit?`${state.volley?'3연발 합계'+(animalZone?` · ${animalZone}`:''):animalZone||(r.score===10?'정중앙!':'명중!')} +${score}점`:r.zone;
-  $('feedbackDetail').textContent=hit?`${animalStatus}${state.volley?`${state.volley.shots.filter(arrow=>arrow.result.type==='hit').length}/3발 명중`:r.flightTime.toFixed(2)+'초 비행'} · +${reward} 코인`:`${r.type==='person'?'이번 발사 0점 · 맞은 사람은 다음 발사부터 빠져요':r.type==='obstacle'?'벽 위나 기둥 사이의 틈을 노려보세요':r.type==='ground'?'조준을 높이거나 더 길게 당겨보세요':'거리와 바람을 다시 읽어보세요'} · +1 코인`;
+  $('feedbackDetail').textContent=hit?`${animalStatus}${state.volley?`${state.volley.shots.filter(arrow=>arrow.result.type==='hit').length}/3발 명중`:r.flightTime.toFixed(2)+'초 비행'} · +${reward} 코인`:`${r.type==='person'?'이번 발사 0점 · 맞은 사람은 다음 발사부터 빠져요':r.type==='obstacle'?'벽 위나 기둥 사이의 틈을 노려보세요':r.type==='ground'?`목표 ${Math.abs(state.stage.distance-r.point.z).toFixed(1)}m ${r.point.z<state.stage.distance?'앞':'뒤'}에 착지`:'거리와 바람을 다시 읽어보세요'} · +1 코인`;
   if(plotted.length===1)$('feedbackDetail').textContent=impactDirection(plotted[0])+' · '+$('feedbackDetail').textContent;
   if(shot.penetrations?.length){
     $('feedbackDetail').textContent+=` · ${penetrationSummary(shot,true)}`;
@@ -1635,6 +1651,19 @@ function drawTargetWeave(x,y,r){
   const extent=r*256/238;
   ctx.drawImage(targetWeave,x-extent,y-extent,extent*2,extent*2);
 }
+function targetRock(target){
+  if(motionPreference?.matches)return null;
+  const time=renderTime();
+  for(let i=state.targetMarks.length-1;i>=0;i--){
+    const mark=state.targetMarks[i],age=time-mark.born;
+    if(age<0)continue;
+    if(age>.36)break;
+    const pivot=project({x:target.x+mark.x,y:target.y+mark.y,z:target.z});
+    const strength=Math.sin(age*49)*Math.exp(-age*12)*(1-age/.36);
+    return {x:pivot.x,y:pivot.y,tilt:strength*(.022+.025*clamp(mark.x/target.radius,-1,1)),squash:strength*.034};
+  }
+  return null;
+}
 function drawTarget(target){
   if(target.active===false)return;
   const p=project(target);if(!p.visible)return;
@@ -1647,7 +1676,7 @@ function drawTarget(target){
   else if(target.kind!=='target'){
     if(['bird','pigeon','eagle'].includes(target.kind))ellipse(ground.x,ground.y,r*.7,Math.max(1,r*.05),'#334b2413');
     drawAnimal(ctx,p.x,p.y,r,target.kind,target.poseTime??renderTime(),target.direction,target);
-  }else if(!drawRangeTarget(ctx,p.x,p.y,r,ground.x,ground.y)){
+  }else if(!drawRangeTarget(ctx,p.x,p.y,r,ground.x,ground.y,targetRock(target),project({...target,z:target.z+.30*target.radius}))){
     const footL=project({x:target.x-target.radius*.72,y:0,z:target.z-.1});
     const footR=project({x:target.x+target.radius*.72,y:0,z:target.z-.1});
     line(p.x-r*.36,p.y+r*.25,footL.x,footL.y,'#796744',Math.max(3,r*.10));
@@ -1721,6 +1750,23 @@ function drawLaser(){
 }
 // Every shaft and trail is split at occluder planes before painter sorting.
 // The actual target silhouette hides only the parts that are behind it.
+// Short-lived straw fibres and soil fragments use the shot's contact clock.
+// Each travels in world space and is sorted with walls and arrows.
+function addContactFragments(items,effect,age){
+  if(!effect.surface||motionPreference?.matches||age<0||age>=.38)return;
+  const straw=effect.surface==='straw',count=straw?11:7;
+  for(let i=0;i<count;i++){
+    const a=i*2.39996+effect.x*1.7+effect.z*.32;
+    const speed=.35+((i*7)%11)*.074;
+    const x=effect.x+Math.cos(a)*speed*age,y=effect.y+(.5+(i%4)*.38)*age-3.5*age*age;
+    if(y<0)continue;
+    const z=effect.z-.012-(.32+.17*(i%5))*age;
+    const length=(straw?.033:.014)*(1+(i%3)*.33),angle=a+age*(i%2?8:-6);
+    const end={x:x+Math.cos(angle)*length,y:y+Math.sin(angle)*length,z:z-.4*length};
+    items.push({kind:'contact-fragment',z,order:3,a:{x,y,z},b:end,surface:effect.surface,index:i,alpha:(1-age/.38)*.92});
+  }
+}
+
 function sceneItems(target){
   const replay=cinematicFrame(),time=renderTime(),people=passersAt(state.stage,time);
   const planes=[target.z,...[...state.stage.obstacles,...people].flatMap(ob=>[ob.z-ob.depth/2,ob.z+ob.depth/2])];
@@ -1746,16 +1792,27 @@ function sceneItems(target){
   const addLine=(a,b,kind,alpha=1)=>{
     for(const part of depthFragments(a,b,planes,camera.z))items.push({...part,z:surfaceDepth(part.a,part.b),kind,alpha,order:kind==='trail'?1:2});
   };
+  const launchPoint=(point,origin,from,progress)=>{
+    const weight=1-progress*progress*(3-2*progress);
+    return {x:point.x+(origin.x-from.x)*weight,y:point.y+(origin.y-from.y)*weight,z:point.z+(origin.z-from.z)*weight};
+  };
   const addArrow=(tip,velocity,alpha=1,flying=false,projectileType='arrow',presentation={})=>{
-    if(tip.z-camera.z<.6)return;
+    const origin=presentation.origin;
+    if(tip.z-camera.z<.6&&!origin)return;
     if(projectileType==='bullet'){items.push({kind:'bullet',z:surfaceDepth(tip),order:4,point:tip,velocity,alpha,flying,...presentation});return;}
     const length=Math.hypot(velocity.x,velocity.y,velocity.z)||1;
-    const tail={x:tip.x-velocity.x/length*.85,y:tip.y-velocity.y/length*.85,z:tip.z-velocity.z/length*.85};
+    let tail={x:tip.x-velocity.x/length*.85,y:tip.y-velocity.y/length*.85,z:tip.z-velocity.z/length*.85};
+    if(origin&&tip.z<origin.reach){
+      const progress=clamp(tip.z/origin.reach,0,1);
+      tail=launchPoint(tail,origin.tail,{x:PLAYER.x+tail.x-tip.x,y:PLAYER.y+tail.y-tip.y,z:PLAYER.z+tail.z-tip.z},progress);
+      tip=launchPoint(tip,origin.tip,PLAYER,progress);
+      velocity={x:tip.x-tail.x,y:tip.y-tail.y,z:tip.z-tail.z};
+    }
     addLine(tail,tip,'shaft',alpha);
-    if(tail.z>camera.z+NEAR_PLANE)items.push({kind:'feather',z:surfaceDepth(tail),order:3,point:tail,tip,alpha,visualVelocity:velocity});
+    if(tail.z>camera.z+NEAR_PLANE)items.push({kind:'feather',z:surfaceDepth(tail),order:3,point:tail,tip,alpha,visualVelocity:velocity,roll:presentation.roll??0});
     items.push({kind:'tip',z:surfaceDepth(tip),order:4,point:tip,tail,alpha,flying,visualVelocity:velocity});
   };
-  for(const stuck of state.stuck)if((stuck.born??0)<=time+1e-9)addArrow(stuck,stuck.velocity||{x:0,y:-.5,z:1},.75,false,stuck.projectileType);
+  for(const stuck of state.stuck)if((stuck.born??0)<=time+1e-9)addArrow(stuck,stuck.velocity||{x:0,y:-.5,z:1},.75,false,stuck.projectileType,{roll:stuck.roll});
   // Keep every hit in target-local coordinates, including each animal pass.
   // Only the celebrated shaft flexes around its fixed tip for 0.60 seconds.
   // The saved entry velocity and all physical attachments remain untouched.
@@ -1771,38 +1828,78 @@ function sceneItems(target){
     const subject=targets.get(mark.passId)||target;
     const attached=(mark.animal&&getAnimalAttachmentPoint(subject,mark.animal))||{x:subject.x+mark.x,y:subject.y+mark.y,z:subject.z};
     const focus=replay?.kind==='bullet'&&mark===state.cinematic.shot.targetMark;
-    addArrow({...attached,z:attached.z-.002},visualVelocity,1,false,mark.projectileType,{focus,age:focus?replay.impactAge:Math.max(0,time-mark.born),reducedMotion:!!replay?.reducedMotion});
+    addArrow({...attached,z:attached.z-.002},visualVelocity,1,false,mark.projectileType,{roll:mark.roll,focus,age:focus?replay.impactAge:Math.max(0,time-mark.born),reducedMotion:!!replay?.reducedMotion});
   }
   if(replay?.phase==='flight'){
     const points=state.cinematic.frames.filter(frame=>frame.time<=replay.time).slice(-36).map(frame=>frame.point);
     points.push(replay.point);
     for(let i=1;i<points.length;i++)addLine(points[i-1],points[i],'trail',.9);
-    addArrow(replay.point,replay.velocity,1,true,state.cinematic.shot.projectileType,{cinematic:replay.kind==='bullet',spin:replay.spin,progress:replay.progress,shaftLength:replay.shaftLength});
+    addArrow(replay.point,replay.velocity,1,true,state.cinematic.shot.projectileType,{roll:Math.max(0,replay.time-state.cinematic.frames[0].time)*12,cinematic:replay.kind==='bullet',spin:replay.spin,progress:replay.progress,shaftLength:replay.shaftLength});
   }
   for(const shot of !replay?(state.volley?.shots||[state.shot]):[])if(shot&&shot.launched!==false&&(state.mode==='flight'||state.mode==='settling')){
     const alpha=state.mode==='settling'?Math.max(0,1-state.settle/(IMPACT_HOLD+RETURN_DURATION)):1;
-    const points=[...shot.trail,shot.position];
+    const origin=shot.heldOrigin;
+    const points=[...shot.trail,shot.position].map(p=>origin&&p.z<origin.reach?
+      launchPoint(p,origin.tip,PLAYER,clamp(p.z/origin.reach,0,1)):p);
     for(let i=1;i<points.length;i++)addLine(points[i-1],points[i],'trail',alpha*(.10+.74*i/points.length));
     if(state.mode==='flight'&&shot.active){
-      if(shot.projectileType!=='bullet')items.push({kind:'flight-shadow',z:shot.position.z+.005,order:0,point:shot.position});
-      addArrow(shot.position,shot.velocity,1,true,shot.projectileType);
+      if(shot.projectileType!=='bullet')items.push({kind:'flight-shadow',z:shot.position.z+.005,order:0,point:shot.position,velocity:shot.velocity});
+      addArrow(shot.position,shot.velocity,1,true,shot.projectileType,{roll:shot.elapsed*12,origin});
     }
   }
-  for(const effect of state.effects)if(effect.born<=time+1e-9)items.push({kind:'effect',z:effect.z-.002,order:5,effect});
+  for(const effect of state.effects)if(effect.born<=time+1e-9){
+    items.push({kind:'effect',z:effect.z-.002,order:5,effect});
+    const featured=replay&&effect===state.cinematic.shot.impactEffect;
+    if(!featured||replay.phase==='impact')addContactFragments(items,effect,featured?replay.impactAge:time-effect.born);
+  }
   return items.sort((a,b)=>b.z-a.z||a.order-b.order);
 }
+// Build three vanes around the shaft in world coordinates. A rear view shows
+// all three; the same mesh turns edge-on when the follow camera moves aside.
+function drawFlightVanes(item){
+  const tail=item.point,v=item.visualVelocity,run=Math.hypot(v.x,v.z)||1,speed=Math.hypot(run,v.y)||1;
+  const axis={x:v.x/speed,y:v.y/speed,z:v.z/speed};
+  const right={x:v.z/run,z:-v.x/run};
+  const up={x:axis.y*right.z,y:run/speed,z:-axis.y*right.x};
+  const surfaces=[];
+  for(let i=0;i<3;i++){
+    const angle=item.roll+i*Math.PI*2/3,c=Math.cos(angle),s=Math.sin(angle);
+    const nx=c*right.x+s*up.x,ny=s*up.y,nz=c*right.z+s*up.z;
+    const face=[[.012,.006],[.048,.041],[.14,.038],[.235,.006]].map(([along,out])=>
+      project({x:tail.x+axis.x*along+nx*out,y:tail.y+axis.y*along+ny*out,z:tail.z+axis.z*along+nz*out}));
+    if(face.every(p=>p.visible))surfaces.push({face,depth:face.reduce((n,p)=>n+p.depth,0),light:ny+.35*nx,index:i});
+  }
+  for(const {face,light,index} of surfaces.sort((a,b)=>b.depth-a.depth)){
+    const [back,crest,front]=face;
+    poly(face,index===0?(light>0?'#e7d9aa':'#b2a48c'):light>0?'#cf8850':'#8f503a');
+    line(crest.x,crest.y,front.x,front.y,'#f0d4a0',clamp(crest.scale*.005,.35,1.3));
+    if(crest.scale>85)line(back.x,back.y,front.x,front.y,'#6e4e3db0',clamp(crest.scale*.003,.35,.95));
+  }
+}
+
 function drawSceneItem(item){
   if(item.kind==='balloon'){drawBalloon(item);return;}
   if(item.kind==='target'){drawTarget(item.target);return;}
   if(item.kind==='wall'){drawWall(item.ob);return;}
   if(item.kind==='person'){drawPasser(ctx,item.person,{project,camera,nearPlane:NEAR_PLANE,time:renderTime()});return;}
   ctx.save();ctx.globalAlpha=item.alpha??1;ctx.lineCap='butt';
-  if(item.kind==='flight-shadow'){
-    const p=project({...item.point,y:.006});
+  if(item.kind==='contact-fragment'){
+    const a=project(item.a),b=project(item.b);
+    if(a.visible&&b.visible){
+      const straw=item.surface==='straw';
+      const shade=straw?(item.index%3?'#d0ac65':'#f5da99'):(item.index%3?'#79603e':'#ae885b');
+      ctx.lineCap='round';line(a.x,a.y,b.x,b.y,shade,clamp(a.scale*(straw?.007:.019),.7,4.5));
+    }
+  }else if(item.kind==='flight-shadow'){
+    const p=project({x:item.point.x+item.point.y*.30,y:.006,z:item.point.z+item.point.y*.14});
     if(p.visible&&p.y>=0&&p.y<h&&p.x>=0&&p.x<w){
       const fade=1/(1+Math.max(0,item.point.y)*.44);
-      ctx.globalAlpha=fade*.46;
-      ellipse(p.x,p.y,clamp(p.scale*.12,.7,14),clamp(p.scale*.025,.35,3),'#332d23');
+      const v=item.velocity,speed=Math.hypot(v.x,v.y,v.z)||1;
+      const y=item.point.y-.85*v.y/speed;
+      const end=project({x:item.point.x-.85*v.x/speed+y*.30,y:.006,z:item.point.z-.85*v.z/speed+y*.14});
+      ctx.globalAlpha=fade*.43;ctx.lineCap='round';
+      if(end.visible)line(p.x,p.y,end.x,end.y,'#423a29',clamp(p.scale*.034,.8,4));
+      ellipse(p.x,p.y,clamp(p.scale*.041,.55,5),clamp(p.scale*.012,.35,1.8),'#423a29');
     }
   }else if(item.kind==='bullet'){
     const p=project(item.point);
@@ -1817,26 +1914,26 @@ function drawSceneItem(item){
   }else if(item.kind==='trail'||item.kind==='shaft'){
     const a=project(item.a),b=project(item.b);
     const scale=(a.scale+b.scale)*.5;
-    if(item.kind==='trail')line(a.x,a.y,b.x,b.y,'#fff4d6ab',clamp(scale*.014,.42,3.4));
+    if(item.kind==='trail'){
+      line(a.x,a.y,b.x,b.y,'#675b4590',clamp(scale*.025,1.15,4.2));
+      line(a.x,a.y,b.x,b.y,'#fff1c8e0',clamp(scale*.012,.67,2.8));
+    }
     else{
-      line(a.x,a.y,b.x,b.y,'#443422',clamp(scale*.022,.65,5));
+      line(a.x,a.y,b.x,b.y,'#443422',clamp(scale*.022,1.05,5));
       line(a.x,a.y,b.x,b.y,'#d5ae70',clamp(scale*.010,.35,2.3));
     }
-  }else if(item.kind==='tip'||item.kind==='feather'){
+  }else if(item.kind==='feather'){
+    drawFlightVanes(item);
+    const nock=project(item.point);
+    if(nock.visible)circle(nock.x,nock.y,clamp(nock.scale*.010,.65,2.1),'#ebd6a3','#594837',.55);
+  }else if(item.kind==='tip'){
     const p=project(item.point);
     if(p.visible){
-      const q=project(item.kind==='tip'?item.tail:item.tip),angle=Math.atan2(p.y-q.y,p.x-q.x);
+      const q=project(item.tail),angle=Math.atan2(p.y-q.y,p.x-q.x);
       const size=clamp(p.scale*.043,.45,8.2);
       ctx.save();ctx.translate(p.x,p.y);ctx.rotate(angle);ctx.scale(size,size);
-      if(item.kind==='tip'){
-        poly([{x:1.15,y:0},{x:-1.35,y:.70},{x:-.87,y:0},{x:-1.35,y:-.70}],'#394c50');
-        poly([{x:1.15,y:0},{x:-1.35,y:-.70},{x:-.87,y:0}],'#c4c8b9');
-      }else{
-        for(const side of [-1,1]){
-          poly([{x:.10,y:0},{x:-.45,y:side*1.05},{x:-1.75,y:side*.48},{x:-2.25,y:0}],side>0?'#b76640':'#f3cd84');
-          line(-.30,side*.28,-1.75,side*.28,'#f0d7af',.12);
-        }
-      }
+      poly([{x:1.15,y:0},{x:-1.35,y:.70},{x:-.87,y:0},{x:-1.35,y:-.70}],'#394c50');
+      poly([{x:1.15,y:0},{x:-1.35,y:-.70},{x:-.87,y:0}],'#c4c8b9');
       ctx.restore();
     }
   }else if(item.kind==='effect'){
@@ -1867,6 +1964,32 @@ function drawSceneItem(item){
   }
   ctx.restore();
 }
+// Keep the foreground in the player's original view while the flight camera leaves it.
+function drawRangeEquipment(){
+  const quiet=!!motionPreference?.matches;
+  const aiming=state.mode==='ready'||state.mode==='drawing',release=state.releasePose;
+  let age=null,lower=0,aim,charge=state.charge;
+  if(aiming){
+    aim=screenAim();
+  }else{
+    if(quiet||!release||(state.mode!=='flight'&&state.mode!=='settling'))return;
+    const elapsed=Math.max(0,(performance.now()-release.at)/1000);
+    const left=state.mode==='settling'?impactHold()+impactReturn()-state.settle:Infinity;
+    if(elapsed<.24){
+      age=elapsed;charge=release.charge;
+      const t=clamp((elapsed-.065)/.175,0,1);lower=t*t*(3-2*t);
+      aim={x:w*release.x,y:h*release.y};
+    }else if(left<=.22&&state.used<shotLimit()){
+      const t=clamp(left/.22,0,1);lower=t*t*(3-2*t);charge=0;aim=screenAim();
+    }else return;
+  }
+  const bow=activeBow(),arrow=activeArrow(),sway=effectiveSway();
+  ctx.save();ctx.translate(0,h*.65*lower);
+  const shaft=drawFirstPersonBow(ctx,w,h,{aim,charge,swayX:sway.x,swayY:sway.y,color:bow.color,weaponType:bow.weaponType,scopeMounted:hasScope(),tier:bow.visualTier??bow.id,burstCount:bow.burstCount,grouping:bow.grouping,grip:bow.grip,elasticity:bow.elasticity,tipMass:arrow.tipMass,fletching:arrow.fletching,arrowColor:arrow.color,drawing:state.mode==='drawing',releaseAge:age,reducedMotion:quiet});
+  if(aiming)state.heldShaft=shaft?.tip?shaft:null;
+  ctx.restore();
+}
+
 function render(){
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
   const replay=cinematicFrame(),time=renderTime();
@@ -1874,7 +1997,7 @@ function render(){
   const target=targetAt(state.stage,time);
   for(const item of sceneItems(target))drawSceneItem(item);
   drawGuide();
-  if(state.mode==='ready'||state.mode==='drawing'){const sway=effectiveSway();drawFirstPersonBow(ctx,w,h,{aim:screenAim(),charge:state.charge,swayX:sway.x,swayY:sway.y,color:activeBow().color,weaponType:activeBow().weaponType,scopeMounted:hasScope(),tier:activeBow().visualTier??activeBow().id,burstCount:activeBow().burstCount,grouping:activeBow().grouping,grip:activeBow().grip,elasticity:activeBow().elasticity,tipMass:activeArrow().tipMass,fletching:activeArrow().fletching,arrowColor:activeArrow().color,drawing:state.mode==='drawing'});}
+  drawRangeEquipment();
   drawReticle();drawLaser();
   if(replay)(replay.kind==='bullet'?drawBulletVignette:drawBullseyeVignette)(ctx,w,h,{age:state.settle,duration:impactHold()+impactReturn(),impactAge:replay.phase==='flight'?-1:replay.impactAge,entryMask:replay.entryMask,reducedMotion:state.cinematic.reducedMotion});
   canvas.dataset.scope=hasScope()?((state.mode==='ready'||state.mode==='drawing')&&state.zoom===equippedScope()?'active':'mounted'):'none';
