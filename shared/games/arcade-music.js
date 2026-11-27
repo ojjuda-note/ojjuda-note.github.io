@@ -3,12 +3,12 @@
   if (window.OjjudaArcadeMusic) return;
   const script = document.currentScript;
   const preference = 'ojjuda.arcade.background-music.v1';
-  const games = new Set('sacheonseong solitaire mines spot screw saetbyeol chacha_rush mole stacker breakout janggi chess billiards onecard bang tank yut tour ttang photo_ttang matgo croc bottle bomb stopwatch liar king truth initial minority mission fingers imagevote updown secretcount partyroulette shapematch'.split(' '));
+  const games = new Set('runner sacheonseong solitaire mines spot screw saetbyeol chacha_rush mole stacker breakout janggi chess billiards onecard bang tank yut tour ttang photo_ttang matgo croc bottle bomb stopwatch liar king truth initial minority mission fingers imagevote updown secretcount partyroulette shapematch'.split(' '));
   let enabled=true;
   const read = () => {try {return localStorage.getItem(preference) !== 'off';} catch {return enabled;}};
   enabled=read();
   let activated=!!navigator.userActivation?.hasBeenActive;
-  let context, source, preparing, game, root, playing=false, pageVisible=true;
+  let context, source, preparing, request, game, root, playing=false, pageVisible=true;
   const controls = '[data-arcade-music-toggle]';
   const life = new MutationObserver(()=>{
     if (root && !root.isConnected) {
@@ -23,7 +23,7 @@
     button.textContent=button.hasAttribute('data-compact')?(enabled?'♫':'♫ 끔'):label;
   }
   function refresh() { document.querySelectorAll(controls).forEach(paint); }
-  const audible = () => activated && game && enabled && playing && pageVisible && !document.hidden;
+  const audible = () => activated && game && (enabled || game === 'runner') && playing && pageVisible && !document.hidden;
   function sync() {
     if (!audible()) {
       if (context && context.state!=='closed') context.suspend().catch(()=>{});
@@ -37,15 +37,19 @@
     if (context.state!=='running') context.resume().catch(()=>{});
     if (source || preparing) return;
     const target=context, id=game;
-    preparing=import('./arcade-compositions.mjs?v=20261127-arcade-practice1').then(module=>module.renderLoop(id)).then(({buffer,loopEnd})=>{
+    const pending = new AbortController();
+    request = pending;
+    preparing=import('./arcade-compositions.mjs?v=20261127-ensemble1').then(module=>module.renderLoop(id, pending.signal)).then(({buffer,loopEnd})=>{
       if (context!==target || game!==id) return;
       const gain=target.createGain();
       gain.gain.value=.42;gain.connect(target.destination);
       source=target.createBufferSource();source.buffer=buffer;source.loop=true;
       source.loopEnd=loopEnd;source.connect(gain);source.start();
-    }).catch(()=>{}).finally(()=>{if(context===target)preparing=null;});
+    }).catch(()=>{}).finally(()=>{if(context===target){preparing=null;request=null;}});
   }
-  function stop() {
+  function stop(owner) {
+    if (owner && owner !== game) return;
+    request?.abort(); request=null;
     life.disconnect();root=null;game=null;playing=false;preparing=null;
     if(source){source.stop();source.disconnect();source=null;}
     if(context){context.close().catch(()=>{});context=null;}
@@ -84,7 +88,7 @@
   window.addEventListener('storage',event=>{if(event.key===preference || event.key===null){enabled=read();refresh();sync();}});
   window.addEventListener('pagehide',()=>{pageVisible=false;sync();});
   window.addEventListener('pageshow',()=>{pageVisible=true;enabled=read();refresh();sync();});
-  window.OjjudaArcadeMusic={mount,stop,refresh,setPlaying(value){playing=value;sync();}};
+  window.OjjudaArcadeMusic={mount,stop,refresh,setPlaying(value,owner){if(owner && owner!==game)return;playing=value;sync();}};
   if (script?.dataset.game) mount(script.dataset.game,null,script.dataset.game!=='sacheonseong');
   else refresh();
 })();
