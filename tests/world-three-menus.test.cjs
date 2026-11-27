@@ -57,6 +57,9 @@ function fixture(url='https://ojjuda.kr/world.html'){
   t.actions.tab({tab:'my'});
   const bannerRow=w.document.querySelector('ojjuda-service-banners[current="agit"]');
   assert.equal(bannerRow.parentElement.lastElementChild.querySelector('.app-store-downloads')?.closest('section')?.previousElementSibling,bannerRow,'service banners precede the final download section');
+  const downloads=bannerRow.parentElement.lastElementChild;
+  assert.equal(downloads.querySelector('[data-store-app="focus"]').href,'https://play.google.com/store/apps/details?id=kr.framenote.camera.studio&hl=ko');
+  assert.equal(downloads.querySelector('.app-store-note a:last-child').href,'https://play.google.com/apps/testing/kr.framenote.camera.studio?hl=ko');
   assert.deepEqual([...bannerRow.querySelectorAll('.ojjuda-service-banner')].map(link=>link.dataset.service),['park','pajang']);
   const parkBanner=bannerRow.querySelector('[data-service="park"]');
   assert.equal(new URL(parkBanner.href).pathname,'/park/');

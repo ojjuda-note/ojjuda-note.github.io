@@ -120,7 +120,9 @@ test('standalone mobile and desktop settings buttons open the canonical settings
           assert.equal(f.setting(id).hasAttribute('href'),false);
         }
         assert.ok(f.setting('charge'));
-        assert.deepEqual([...f.root().querySelectorAll('[data-store-app]')].map(el=>el.dataset.storeApp),['agit','pajang','park']);
+        assert.deepEqual([...f.root().querySelectorAll('[data-store-app]')].map(el=>el.dataset.storeApp),['agit','pajang','park','focus']);
+        assert.equal(f.setting('app-focus').href,'https://play.google.com/store/apps/details?id=kr.framenote.camera.studio&hl=ko');
+        assert.equal(f.setting('test-focus').href,'https://play.google.com/apps/testing/kr.framenote.camera.studio?hl=ko');
         await f.back();
         assert.equal(f.management().hidden,true);
       }

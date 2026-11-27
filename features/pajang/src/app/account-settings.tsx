@@ -115,8 +115,11 @@ export function AccountSettings({profileId,onOpen}:{profileId:string;onOpen:(act
         <a className="ojjuda-settings-row" data-store-app="park" href="https://play.google.com/store/apps/details?id=kr.ojjuda.park" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 공원 Google Play에서 보기 (새 창)">
           <span className="ojjuda-settings-label">오쭈다 공원</span><span className="ojjuda-settings-arrow" aria-hidden="true">↗</span>
         </a>
+        <a className="ojjuda-settings-row" data-store-app="focus" href="https://play.google.com/store/apps/details?id=kr.framenote.camera.studio&hl=ko" target="_blank" rel="noopener noreferrer" aria-label="오쭈다포커스 Google Play에서 설치 (새 창)">
+          <span className="ojjuda-settings-label">오쭈다포커스 설치</span><span className="ojjuda-settings-arrow" aria-hidden="true">↗</span>
+        </a>
       </div>
-      <p className="app-store-note">앱 이름을 누르면 Google Play 페이지가 열립니다. 아지트 비공개 테스트 참여가 필요하면 <a href="https://play.google.com/apps/testing/kr.ojjuda.agit" target="_blank" rel="noopener noreferrer">먼저 참여</a>한 뒤 설치하세요.</p>
+      <p className="app-store-note">처음 설치할 때는 등록된 Google 계정으로 먼저 참여하세요. <a href="https://play.google.com/apps/testing/kr.ojjuda.agit?hl=ko" target="_blank" rel="noopener noreferrer">아지트 참여</a> · <a href="https://play.google.com/apps/testing/kr.ojjuda.pajang?hl=ko" target="_blank" rel="noopener noreferrer">파장 참여</a> · <a href="https://play.google.com/apps/testing/kr.ojjuda.park?hl=ko" target="_blank" rel="noopener noreferrer">공원 참여</a> · <a href="https://play.google.com/apps/testing/kr.framenote.camera.studio?hl=ko" target="_blank" rel="noopener noreferrer">포커스 참여</a></p>
     </section>
   </section>;
 }
