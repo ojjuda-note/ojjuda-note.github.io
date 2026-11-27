@@ -1,6 +1,6 @@
 import {createCoinExchangeClient,COIN_PACKS,COINS_PER_ZU} from './coin-exchange.mjs?v=20261104-archery-reset5';
 import {PLAYER, BOWS, ARROWS, BULLETS, getBullet, SCOPES, getScopePrice, getScoreCoinReward, DISTANCE_STAGES as STAGES, DISTANCE_GROUPS, prepareStage, passersAt, retirePasser, clamp, targetAt, applyAnimalHit, getAnimalAttachmentPoint, getSpeed, getArrowMass, getArrowConsistency, getArrowVariance, getArrowDragRate, getWindResponse, sortEquipment, launchArrow, launchVolley, stepArrow, predictTrajectory, createSway, stepSway} from './engine.mjs?v=20261106-archery-distance1';
-import {drawScenery, drawAnimal, drawClay, drawUfo, drawObstacle, drawPasser, drawEquipmentIcon, drawFirstPersonBow, drawBullseyeImpact, drawBullseyeVignette} from './scenery.mjs?v=20261104-archery-bullet-penetration1';
+import {drawScenery, drawAnimal, drawClay, drawUfo, drawObstacle, drawPasser, drawEquipmentIcon, drawFirstPersonBow, drawBullseyeImpact, drawBullseyeVignette} from './scenery.mjs?v=20261128-ridge1';
 import {FLIGHT_TIME_SCALE, IMPACT_HOLD, RETURN_DURATION, PREVIEW_RISE, PREVIEW_HOLD, PREVIEW_RETURN, NEAR_PLANE, projectPoint, depthFragments, desiredFollowCamera, desiredPreviewCamera, clearShotCamera, lerpCamera} from './view.mjs?v=20261104-archery-eagle-dive1';
 import {createBullseyeCinematic, sampleBullseyeCinematic, desiredBullseyeCamera} from './cinematic.mjs?v=20261104-archery-eagle-dive1';
 import {createBulletCinematic, sampleBulletCinematic, desiredBulletCamera} from './bullet-cinematic.mjs?v=20261104-archery-bullet-penetration1';
@@ -11,6 +11,7 @@ import {LASER_PRICE, LASER_CLICK_DEGREES, LASER_MAX_CLICKS, canEquipLaser, norma
 
 const $ = id => document.getElementById(id);
 const icon = name => `<svg aria-hidden="true"><use href="#i-${name}"/></svg>`;
+const motionPreference=window.matchMedia?.('(prefers-reduced-motion: reduce)');
 const canvas = $('gameCanvas'), ctx = canvas.getContext('2d', {alpha:false}), touchpad = $('aimTouchpad');
 const adminPreview = window.parent!==window&&window.parent.OjjudaAdminPreview?.isEnabled?.()===true;
 // Import only released epoch-5 saves. A separate key keeps an older open tab
@@ -199,7 +200,7 @@ function save(){
   $('saveFooter').classList.toggle('save-error',!persistence);
   return persistence;
 }
-const state={stage:STAGES[progress.lastStage-1],time:0,score:0,used:0,hits:0,arrowHits:0,earned:0,shotScores:[],shotMaxScores:[],targetMarks:[],stuck:[],effects:[],mode:'ready',held:0,drawStarted:0,steadyStart:1,steadyDuration:.5,steadyActive:false,stabilizerActive:false,stabilizerNotice:'',charge:0,velocityBias:0,burstSeed:0,aim:{yaw:0,pitch:0},sway:createSway(),shot:null,settle:0,zoom:1,panX:0,panY:0,modal:null,lastFocus:null,feedbackUntil:0,guide:null,guideAt:0};
+const state={stage:STAGES[progress.lastStage-1],time:0,score:0,used:0,hits:0,arrowHits:0,earned:0,shotScores:[],shotLog:[],shotMaxScores:[],targetMarks:[],stuck:[],effects:[],mode:'ready',held:0,drawStarted:0,steadyStart:1,steadyDuration:.5,steadyActive:false,stabilizerActive:false,stabilizerNotice:'',charge:0,velocityBias:0,burstSeed:0,aim:{yaw:0,pitch:0},sway:createSway(),shot:null,settle:0,zoom:1,panX:0,panY:0,modal:null,lastFocus:null,feedbackUntil:0,guide:null,guideAt:0};
 state.cinematic=null;
 state.isEvent=false;
 state.magazine=0;state.reloadRemaining=0;state.roundShotLimit=5;
@@ -753,7 +754,7 @@ function resetRound(stage=state.stage){
   state.isEvent=false;
   state.resultSummary=null;
   state.roundEpoch=(state.roundEpoch||0)+1;state.runId=createRequestId();state.awaitingRoundSave=null;state.deferRegistration=false;state.registering=false;state.practiceOnly=adminPreview;state.ammoNotice='';state.ammoLoading=false;
-  cancelDraw();state.stage=prepareStage(stage,Math.floor(Math.random()*0x100000000));state.time=0;state.score=0;state.used=0;state.hits=0;state.arrowHits=0;state.earned=0;state.shotScores=[];state.shotMaxScores=[];state.targetMarks=[];state.stuck=[];state.effects=[];state.mode='ready';state.shot=null;state.volley=null;state.cinematic=null;state.coachSaid=false;state.coachReady=false;state.coachLastCueAt=-Infinity;state.coachCueUntil=0;state.coachLastCheck=-Infinity;state.returnCamera=null;state.settle=0;state.charge=0;state.feedbackUntil=0;state.zoom=1;
+  cancelDraw();state.stage=prepareStage(stage,Math.floor(Math.random()*0x100000000));state.time=0;state.score=0;state.used=0;state.hits=0;state.arrowHits=0;state.earned=0;state.shotScores=[];state.shotLog=[];state.shotMaxScores=[];state.targetMarks=[];state.stuck=[];state.effects=[];state.mode='ready';state.shot=null;state.volley=null;state.cinematic=null;state.coachSaid=false;state.coachReady=false;state.coachLastCueAt=-Infinity;state.coachCueUntil=0;state.coachLastCheck=-Infinity;state.returnCamera=null;state.settle=0;state.charge=0;state.feedbackUntil=0;state.zoom=1;
   state.stabilizerActive=false;state.stabilizerNotice='';
   state.roundShotLimit=usingGun()?10:state.stage.shots;prepareGunRound();
   $('shotFeedback').classList.add('hidden');$('flightBadge').classList.add('hidden');recenter();resize();setAimZoom(equippedScope());updateRound();updateHeader();
@@ -919,6 +920,39 @@ function bindLaserGear(element,axis){
   element.addEventListener('keyup',event=>{keys.delete(event.code);event.stopPropagation();});
 }
 bindLaserGear($('laserHorizontalGear'),'horizontalClicks');bindLaserGear($('laserVerticalGear'),'verticalClicks');
+function impactReport(shot){
+  const result=shot.result, target=result.targetCenter;
+  let point=null;
+  if(result.type==='hit' && target?.kind==='target' && target.rx>0 && target.ry>0){
+    const x=(result.point.x-target.x)/target.rx,y=(result.point.y-target.y)/target.ry;
+    if(Number.isFinite(x)&&Number.isFinite(y))point={x,y};
+  }
+  return {point,hit:result.type==='hit'};
+}
+function impactDirection({x,y}){
+  if(Math.hypot(x,y)<.20)return '중앙';
+  const sectors=['오른쪽','오른쪽 위','위쪽','왼쪽 위','왼쪽','왼쪽 아래','아래쪽','오른쪽 아래'];
+  return sectors[(Math.round(Math.atan2(y,x)/(Math.PI/4))+8)%8];
+}
+function impactPlot(points){
+  if(!points.length)return '';
+  const rings=[38,30.4,22.8,15.2,7.6].map(r=>`<circle cx="44" cy="44" r="${r}" class="plot-ring"/>`).join('');
+  const dots=points.map(({x,y},i)=>`<circle cx="${(44+38*x).toFixed(2)}" cy="${(44-38*y).toFixed(2)}" r="${i===points.length-1?3.3:2.5}" class="plot-hit"/>`).join('');
+  return `<svg aria-hidden="true" viewBox="0 0 88 88" class="impact-plot">${rings}<path d="M6 44h76M44 6v76" class="plot-cross"/>${dots}</svg>`;
+}
+function roundReportMarkup(){
+  if(!state.shotLog.length)return '';
+  const impacts=state.shotLog.flat(),points=impacts.map(s=>s.point).filter(Boolean);
+  const hits=impacts.filter(s=>s.hit).length;
+  let grouping='';
+  if(points.length){
+    const mean=points.reduce((sum,p)=>({x:sum.x+p.x,y:sum.y+p.y}),{x:0,y:0});
+    grouping=`<span>평균 착탄 · ${impactDirection({x:mean.x/points.length,y:mean.y/points.length})}</span>`;
+  }
+  const scores=state.shotScores.map((score,i)=>`<li><small>${i+1}회</small><b>${score}점</b></li>`).join('');
+  return `<details class="round-report"><summary>이번 판 사격 기록 <b>${hits}/${impacts.length}발 명중</b></summary><div class="report-body">${impactPlot(points)}<div>${grouping}<ol>${scores}</ol></div></div></details>`;
+}
+
 function recordImpact(shot,born=state.time){
   if(!shot.result||shot.marked)return;shot.marked=true;
   const r=shot.result,hit=r.type==='hit';
@@ -946,6 +980,10 @@ function onImpact(){
   moveAttachedArrows();
   $('flightBadge').textContent=state.cinematic?(state.cinematic.kind==='bullet'?'명중 순간 · 탄환을 따라':'명중 순간 · 화살을 따라'):'착지 확인 · 조준 화면으로 돌아가요';
   const scoredShots=state.volley?.shots||[shot];
+  const impacts=scoredShots.map(impactReport);
+  state.shotLog.push(impacts);
+  const plotted=impacts.map(entry=>entry.point).filter(Boolean);
+  $('shotPlot').innerHTML=impactPlot(plotted);
   const score=r.type==='person'?0:scoredShots.reduce((sum,arrow)=>sum+arrow.result.score,0);
   const hit=r.type==='hit';state.score+=score;state.shotScores.push(score);
   state.arrowHits+=scoredShots.filter(arrow=>arrow.result.type==='hit').length;
@@ -959,6 +997,7 @@ function onImpact(){
   const animalStatus=animalHit?`${ANIMAL_NAMES[animalHit.kind]} ${animalHit.killed?'쓰러짐':`체력 ${animalHit.health}/${animalHit.maxHealth}`} · `:'';
   $('feedbackTitle').textContent=hit?`${state.volley?'3연발 합계'+(animalZone?` · ${animalZone}`:''):animalZone||(r.score===10?'정중앙!':'명중!')} +${score}점`:r.zone;
   $('feedbackDetail').textContent=hit?`${animalStatus}${state.volley?`${state.volley.shots.filter(arrow=>arrow.result.type==='hit').length}/3발 명중`:r.flightTime.toFixed(2)+'초 비행'} · +${reward} 코인`:`${r.type==='person'?'이번 발사 0점 · 맞은 사람은 다음 발사부터 빠져요':r.type==='obstacle'?'벽 위나 기둥 사이의 틈을 노려보세요':r.type==='ground'?'조준을 높이거나 더 길게 당겨보세요':'거리와 바람을 다시 읽어보세요'} · +1 코인`;
+  if(plotted.length===1)$('feedbackDetail').textContent=impactDirection(plotted[0])+' · '+$('feedbackDetail').textContent;
   if(shot.penetrations?.length){
     $('feedbackDetail').textContent+=` · ${penetrationSummary(shot,true)}`;
   }
@@ -1362,10 +1401,10 @@ function showResult(passed,bonus){
   const description=(cleared?'목표를 달성했어요. 이어 할 단계를 골라주세요.':`목표 ${state.stage.goal}점에 도달하지 못했어요. 지금 단계에 다시 도전해 보세요.`);
   const metrics=`<div><small>이번 점수</small><strong>${state.score}</strong><em>/ ${roundMaxScore()}</em></div><div><small>명중 발수</small><strong>${state.arrowHits}</strong><em>/ ${roundMaxScore()/10}발</em></div>`;
   const note=(bonus?`목표 달성 보너스 ${bonus}코인이 포함되어 있어요.`:'이번에 얻은 코인은 그대로 남아 있어요.');
-  openModal('result',`<div class="result-content"><div class="result-emblem">${icon(passed?'target':'wind')}</div><p class="eyebrow">YOUR NEXT SHOT</p><h2 id="modalTitle">${title}</h2><p>${description}</p><div class="result-stars" aria-label="별 ${stars}개">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div><div class="result-metrics">${metrics}<div><small>${('획득 코인')}</small><strong>+${state.earned}</strong></div></div>${stageChoiceMarkup('result-actions stage-result-actions')}<button type="button" class="button primary-button result-shop-button" data-action="result-shop">${icon('bag')}<span><strong>장비 구매</strong><small>활 · 화살 · 조준경 · 코인</small></span>${icon('arrow')}</button><div class="game-result-navigation"><button type="button" class="button soft-button" data-action="exit">나가기</button><button type="button" class="button primary-button" data-action="continue-result" data-game-result-play ${ammoLocked()?'disabled':''}>계속하기</button></div><p class="result-note">${note}</p>${ammo?.pending?'<button class="button soft-button" data-action="retry-ammo">이전 처리 다시 확인</button>':''}<button class="text-button" data-action="menu">메뉴</button></div>`,true);
+  openModal('result',`<div class="result-content"><div class="result-emblem">${icon(passed?'target':'wind')}</div><p class="eyebrow">YOUR NEXT SHOT</p><h2 id="modalTitle">${title}</h2><p>${description}</p><div class="result-stars" aria-label="별 ${stars}개">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div><div class="result-metrics">${metrics}<div><small>${('획득 코인')}</small><strong>+${state.earned}</strong></div></div>${roundReportMarkup()}${stageChoiceMarkup('result-actions stage-result-actions')}<button type="button" class="button primary-button result-shop-button" data-action="result-shop">${icon('bag')}<span><strong>장비 구매</strong><small>활 · 화살 · 조준경 · 코인</small></span>${icon('arrow')}</button><div class="game-result-navigation"><button type="button" class="button soft-button" data-action="exit">나가기</button><button type="button" class="button primary-button" data-action="continue-result" data-game-result-play ${ammoLocked()?'disabled':''}>계속하기</button></div><p class="result-note">${note}</p>${ammo?.pending?'<button class="button soft-button" data-action="retry-ammo">이전 처리 다시 확인</button>':''}<button class="text-button" data-action="menu">메뉴</button></div>`,true);
   const content=window.OjjudaGameResults&&$('modalContent').querySelector?.('.result-content');
   if((window.OjjudaGameResults)&&content){
-    const extra=[...content.querySelectorAll('[data-action="retry-ammo"]')];
+    const extra=[...content.querySelectorAll('.round-report, [data-action="retry-ammo"]')];
     window.OjjudaGameResults.decorate(content,{game:'archery',outcome:cleared?'success':'failure',metric:`${level}단계 · ${state.score} / ${state.stage.goal}점`,score:state.score,key:state.runId,actions:[content.querySelector('.stage-result-actions'),content.querySelector('[data-action="result-shop"]'),content.querySelector('.game-result-navigation')],extra});
     const heading=content.querySelector('h2');if(heading)$('modal').setAttribute('aria-labelledby',heading.id);
     content.querySelector('[data-action="retry"]')?.focus();
@@ -1379,7 +1418,7 @@ function showMenu(){
   const route=action('stages','grid','전체 단계',(`${progress.unlocked}단계까지 열림 · 클리어한 판 다시 하기`));
   const subtitle=(`지금 ${level}단계 · ${usingGun()?'총 10발':'활·석궁 5회'} 사격`);
   const coachSetting=`<button class="menu-action" data-action="toggle-coach" aria-pressed="${progress.coachEnabled}">${icon('target')}<span><strong>코치 ${progress.coachEnabled?'켜짐':'꺼짐'}</strong><small>무료 기본 기능 · 눌러서 ${progress.coachEnabled?'끄기':'켜기'}</small></span></button>`;
-  openModal('menu',`<div class="game-menu"><p class="eyebrow">TAKE YOUR NEXT SHOT</p><h2 id="modalTitle">게임 메뉴</h2><p class="modal-subtitle">${subtitle}</p>${choices}<div class="menu-actions">${route}${action('weapons','bag','무기 상점',('활 10종 · 석궁 10종 · 총 3종 · 총알 4종'))}${action('stabilizers','tonic','안정제',(`${progress.stabilizers}개 보유 · 이번 판 떨림 50%`))}<button class="menu-action" data-action="toggle-sound" aria-pressed="${progress.sound}">${icon(progress.sound?'sound':'mute')}<span><strong>소리 ${progress.sound?'켜짐':'꺼짐'}</strong><small>눌러서 ${progress.sound?'끄기':'켜기'}</small></span></button>${coachSetting}${action('help','help','게임 방법','조준·장비·발사각 안내')}</div><div class="game-result-navigation"><button type="button" class="button soft-button" data-action="exit">나가기</button><button class="button primary-button" data-action="close">${finished?'결과로 돌아가기':'계속하기'}</button></div></div>`,true);
+  openModal('menu',`<div class="game-menu"><p class="eyebrow">TAKE YOUR NEXT SHOT</p><h2 id="modalTitle">게임 메뉴</h2><p class="modal-subtitle">${subtitle}</p>${roundReportMarkup()}${choices}<div class="menu-actions">${route}${action('weapons','bag','무기 상점',('활 10종 · 석궁 10종 · 총 3종 · 총알 4종'))}${action('stabilizers','tonic','안정제',(`${progress.stabilizers}개 보유 · 이번 판 떨림 50%`))}<button class="menu-action" data-action="toggle-sound" aria-pressed="${progress.sound}">${icon(progress.sound?'sound':'mute')}<span><strong>소리 ${progress.sound?'켜짐':'꺼짐'}</strong><small>눌러서 ${progress.sound?'끄기':'켜기'}</small></span></button>${coachSetting}${action('help','help','게임 방법','조준·장비·발사각 안내')}</div><div class="game-result-navigation"><button type="button" class="button soft-button" data-action="exit">나가기</button><button class="button primary-button" data-action="close">${finished?'결과로 돌아가기':'계속하기'}</button></div></div>`,true);
 }
 function showStages(){
   if(guardAmmoAction())return;
@@ -1490,12 +1529,25 @@ function drawTarget(target){
     line(p.x-r*.36,p.y+r*.25,footL.x,footL.y,'#796744',Math.max(3,r*.10));
     line(p.x+r*.36,p.y+r*.25,footR.x,footR.y,'#8c784e',Math.max(3,r*.10));
     line(p.x,p.y+r*.4,ground.x+r*.4,ground.y,'#72613e',Math.max(2,r*.075));
-    circle(p.x+2,p.y+2,r*1.08,'#2d3d2525');
-    circle(p.x,p.y,r*1.055,'#b49a67','#796b49',Math.max(.6,r*.035));
-    const rings=['#f3f0d7','#394b43','#7397a2','#c76e55','#e4bd58'];
-    for(let i=0;i<5;i++){circle(p.x,p.y,r*(1-i*.2),rings[i]);circle(p.x,p.y,r*(1-i*.2),null,'#243e3124',Math.max(.3,r*.01));}
-    circle(p.x,p.y,r*.10,null,'#a37e3060',.7);circle(p.x,p.y,Math.max(.7,r*.018),'#94723c');
-    ctx.globalAlpha=.07;line(p.x-r*.85,p.y-r*.3,p.x+r*.85,p.y-r*.3,'#fefbe8',Math.max(1,r*.015));ctx.globalAlpha=1;
+    const rim=ctx.createLinearGradient(p.x-r,p.y-r,p.x+r,p.y+r);
+    rim.addColorStop(0,'#ffdc98');rim.addColorStop(.30,'#a2764f');rim.addColorStop(.62,'#59443c');rim.addColorStop(1,'#342e30');
+    circle(p.x+r*.035,p.y+r*.062,r*1.065,'#514539');
+    circle(p.x,p.y,r*1.055,rim,'#393d33',Math.max(.5,r*.018));
+    const rings=['#f6efda','#283c47','#4289a1','#b94c43','#edbc57'];
+    for(let i=0;i<5;i++){
+      const radius=r*(1-i*.2);circle(p.x,p.y,radius,rings[i]);
+      circle(p.x,p.y,radius,null,'#24323965',Math.max(.35,r*.009));
+      if(r>24)circle(p.x,p.y,radius-r*.1,null,i===1?'#d9e2c976':'#383a344f',Math.max(.45,r*.006));
+    }
+    const glaze=ctx.createLinearGradient(p.x-r,p.y-r,p.x+r,p.y+r);
+    glaze.addColorStop(0,'#fff4d333');glaze.addColorStop(.53,'#fff4d300');glaze.addColorStop(1,'#232d3430');
+    circle(p.x,p.y,r,glaze);
+    if(r>=16){
+      for(const [x,y] of [[-.71,-.71],[.71,-.71],[-.71,.71],[.71,.71]]){
+        circle(p.x+x*r,p.y+y*r,Math.max(.65,r*.018),'#514e42','#e4d7ad',.5);
+      }
+    }
+    circle(p.x,p.y,Math.max(.6,r*.018),'#5e492e');
   }
   ctx.restore();
 }
@@ -1644,7 +1696,20 @@ function drawSceneItem(item){
     }else if(q.visible&&age>=0&&age<1.5){
       ctx.globalAlpha=Math.max(0,1-age/1.5);
       if(effect.kind==='clay'||effect.kind==='ufo'){for(let i=0;i<10;i++){const angle=i/10*Math.PI*2,dist=5+age*(25+i*4),x=q.x+Math.cos(angle)*dist,y=q.y+Math.sin(angle)*dist+age*age*28,r=Math.max(1,4-age*2);poly([{x:x-r,y},{x:x+r,y:y-r},{x:x+r*.4,y:y+r}],effect.kind==='ufo'?(i%2?'#96c4c8':'#c9f6e3'):i%2?'#dd743e':'#f4b565');}}
-      else if(effect.hit){for(let i=0;i<12;i++){const angle=i/12*Math.PI*2,dist=8+age*42;circle(q.x+Math.cos(angle)*dist,q.y+Math.sin(angle)*dist+age*age*12,Math.max(.5,2-age),i%3?'#f5e3a2':'#fff8da');}circle(q.x,q.y,6+age*32,null,'#fff3b7',1.2);}
+      else if(effect.hit){
+        const quiet=motionPreference?.matches;
+        const growth=quiet?0:1-Math.exp(-age*4.2),radius=8+growth*24;
+        ctx.lineCap='round';
+        circle(q.x,q.y,radius,null,'#34453c99',2.7);
+        circle(q.x,q.y,radius,null,'#ffe8aa',1.15);
+        if(!quiet&&age<.65){
+          for(let i=0;i<8;i++){
+            const angle=i*Math.PI/4+.16,dx=Math.cos(angle),dy=Math.sin(angle);
+            const start=radius+3,end=start+(1-age/.65)*(i%2?4:9);
+            line(q.x+dx*start,q.y+dy*start,q.x+dx*end,q.y+dy*end,'#f7d998',1.7);
+          }
+        }
+      }
       else ellipse(q.x,q.y,6+age*14,2+age*4,'#dad0a85e');
     }
   }
