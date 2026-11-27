@@ -116,20 +116,18 @@
   }
   const canonical=id=>aliases[id]||id;
   const supports=id=>Object.hasOwn(lessons,canonical(id));
-  const memory=new Set();
-  const key=id=>'ojjuda.arcade.practice.v1.'+id;
-  function seen(id){try{return memory.has(id)||localStorage.getItem(key(id))==='1';}catch{return memory.has(id);}}
-  function remember(id){memory.add(id);try{localStorage.setItem(key(id),'1');}catch{}}
+  const visits=window.OjjudaTutorialVisits;
   let current;
   function show(id,{replay=false,onContinue}={}){
     const origin=canonical(id);
-    if(!supports(origin)||(!replay&&seen(origin))||typeof HTMLDialogElement==='undefined')return false;
+    if(!supports(origin)||typeof HTMLDialogElement==='undefined')return false;
     if(current)return true;
+    if(!replay&&(!visits||visits.has(origin)))return false;
     const previous=document.activeElement,dialog=el('dialog','arcade-practice ap-dialog');
     dialog.setAttribute('aria-labelledby','lesson-title');
     const finish=()=>{
       if(current!==dialog)return;
-      remember(origin);remember(id);current=null;
+      current=null;
       dialog.close();dialog.remove();
       if(previous?.isConnected)previous.focus({preventScroll:true});
       onContinue?.();
@@ -156,10 +154,11 @@
     dialog.oncancel=e=>{e.preventDefault();finish();};
     document.body.append(dialog);
     try{dialog.showModal();}catch{dialog.remove();return false;}
+    visits?.record(origin);
     current=dialog;dialog.querySelector('.ap-title').tabIndex=-1;dialog.querySelector('.ap-title').focus({preventScroll:true});return true;
   }
   function offer(id,host){
-    if(!host||!supports(id)||seen(canonical(id)))return;
+    if(!host||!supports(id)||host.querySelector('.ap-entry-link,[data-practice-replay]'))return;
     const b=el('button','ap-entry-link','조작 연습');b.onclick=()=>show(id,{replay:true});host.append(b);
   }
   window.OjjudaArcadePractice={supports,show,offer,info:id=>info(canonical(id))};

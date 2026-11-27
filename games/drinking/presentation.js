@@ -5,11 +5,7 @@
 
   const kinds = new Set(['croc', 'bottle', 'bomb', 'stopwatch', 'liar', 'king', 'truth', 'initial', 'minority', 'mission', 'fingers', 'imagevote', 'updown','secretcount','partyroulette','shapematch']);
   const seenResults = new Set();
-  const seenGuides = new Set();
-  const guideKey = (id,local) => 'ojjuda.drinks.practice.v1.'+(local?'local.':'room.')+id;
-  function seen(key) {
-    try {return seenGuides.has(key)||localStorage.getItem(key)==='1';} catch {return seenGuides.has(key);}
-  }
+  const visits = window.OjjudaTutorialVisits;
   const focusable = 'button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
   const glassAsset = '/games/drinking/assets/result-glass-v2.webp?v=20261114-result-glass2';
   let active = null;
@@ -244,11 +240,6 @@
   function close(restore = true) {
     if (!dialog && !inertNodes.length) return;
     const dismissed = dialog;
-    if (restore && dismissed?.type==='guide') {
-      const key=guideKey(dismissed.kind,dismissed.local);
-      seenGuides.add(key);
-      try {localStorage.setItem(key,'1');} catch {}
-    }
     document.removeEventListener('keydown', onKey, true);
     document.removeEventListener('focusin', onFocus, true);
     for (const [element, value] of inertNodes) {
@@ -330,8 +321,13 @@
     const guide = window.DrinkingGameGuides?.[active?.kind];
     const data = active?.local ? guide : guide?.multi || guide;
     if (!data || !accessible()) return false;
+    if (!manual && (!visits || visits.has(active.kind,true))) {
+      active.guidePending = false;
+      return false;
+    }
     const panel = open('guide', `${data.title} 하는 법`, manual);
     if (!panel) return false;
+    visits?.record(active.kind,true);
     active.guidePending = false;
     const ui=window.OjjudaLessonPanel;
     if (!ui || !window.DrinkingPracticeSteps) {
@@ -464,7 +460,7 @@
     const local = options.local === true;
     if (!active || active.kind !== kind || active.local !== local) {
       leave();
-      active = { kind, local, phase: 'entry', roundKey: null, urgent: false, guidePending: !seen(guideKey(kind,local)), pendingResult: null };
+      active = { kind, local, phase: 'entry', roundKey: null, urgent: false, guidePending: !!visits && !visits.has(kind,true), pendingResult: null };
     }
     if (mount()) {
       if (accessible() && active.musicKind!==kind) {window.OjjudaArcadeMusic?.mount(kind);active.musicKind=kind;}
