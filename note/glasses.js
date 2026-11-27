@@ -46,7 +46,7 @@ import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
         prev:t.at>0 || !!t.parent, next:t.at<t.items.length || (!t.busy && (!!t.next || t.error))};
     }
     const time = clock.format(now);
-    return {time, clockText:time+' · '+calendar.format(now), battery, charging, speed:tracking?.meter.read(now) ?? null,
+    return {time, clockText:calendar.format(now)+' · '+time, battery, charging, speed:tracking?.meter.read(now) ?? null,
       weather:[tracking?.city, weather && weather.expiresAt>now ? weather.text : weatherHint].filter(Boolean).join(' · '),
       cards, card:cards[0] || null, expanded:!!reader, reader, sample, paused};
   }

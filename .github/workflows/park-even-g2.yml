@@ -2,7 +2,7 @@ name: Package Park for Even G2
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [build/park-g2-date-first-142]
     paths:
       - 'note/even-app/**'
       - 'note/glasses*'
@@ -14,7 +14,7 @@ on:
       - 'scripts/build-park-even-app.mjs'
       - '.github/workflows/park-even-g2.yml'
 permissions:
-  contents: read
+  contents: write
 jobs:
   package:
     runs-on: ubuntu-latest
@@ -22,7 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          persist-credentials: false
+          persist-credentials: true
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
@@ -51,3 +51,16 @@ jobs:
           path: ${{ runner.temp }}/ojjuda-park.ehpk
           compression-level: 0
           if-no-files-found: error
+
+      - name: Stage verified date-first installer
+        run: |
+          set -euo pipefail
+          node scripts/sync-section-versions.mjs
+          mkdir -p park-even-install
+          cp "$RUNNER_TEMP/ojjuda-park.ehpk" park-even-install/
+          (cd park-even-install && sha256sum ojjuda-park.ehpk > SHA256SUMS)
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add -- world.html park-even-install
+          git commit -m "Stage tested G2 1.4.2 installer"
+          git push origin HEAD:build/park-g2-date-first-142

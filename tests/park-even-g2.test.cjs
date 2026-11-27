@@ -148,16 +148,16 @@ test('visible replies use their own bands, paginate, retry and discard stale res
 });
 test('local midnight updates the clock, date and weekday together',async()=>{
   const {get,hud,advance}=await setup({now:new Date(2026,10,27,23,59,59,900).getTime()});
-  assert.equal(get('glass-clock').textContent,'23:59 · 11월 27일 (금)');
+  assert.equal(get('glass-clock').textContent,'11월 27일 (금) · 23:59');
   advance(200);
   assert.equal(hud.getView().time,'00:00');
-  assert.equal(get('glass-clock').textContent,'00:00 · 11월 28일 (토)');
+  assert.equal(get('glass-clock').textContent,'11월 28일 (토) · 00:00');
 });
 
 test('the G2 renders distance inside the lower right of each message, within the container limit',async()=>{
   const file=readFileSync(path.join(root,'note/glasses-even-g2.mjs'),'utf8').replace(/^import [^;]+;/,'');
   const {g2Page}=await import('data:text/javascript;base64,'+Buffer.from(file).toString('base64'));
-  const v={time:'18:00',clockText:'18:00 · 12월 31일 (목)',battery:83,charging:true,speed:0,weather:'2°C',cards:[
+  const v={time:'18:00',clockText:'12월 31일 (목) · 18:00',battery:83,charging:true,speed:0,weather:'2°C',cards:[
     {oneLine:'첫째',distance:'1km 이내'},{oneLine:'둘째',distance:'2km 이내'}]};
   const inside=(frame,label)=>{
     assert.ok(label.xPosition>frame.xPosition+frame.width/3);
