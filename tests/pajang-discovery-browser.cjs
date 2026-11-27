@@ -1601,8 +1601,13 @@ async function checkNavigation(page){
         assert.equal(await page.locator('dialog').count(),0);
         continue;
       }
-      await page.waitForURL('**/station.html',{timeout:5000});
-      await answers.waitFor({timeout:5000});await page.waitForFunction(()=>!!window.finishEntryLocation);
+      // The route and answer controls must be usable while GPS is unresolved.
+      // Optional illustrations can continue loading in the same document.
+      await Promise.all([
+        page.waitForURL('**/station.html',{waitUntil:'commit',timeout:5000}),
+        answers.waitFor({timeout:5000})
+      ]);
+      await page.waitForFunction(()=>!!window.finishEntryLocation);
       assert.equal(await page.evaluate(()=>window.geoWrites.length),0);
       await page.getByRole('button',{name:'내 주변',exact:true}).click();
       await page.getByRole('status').filter({hasText:'위치를 확인하고 있어요.'}).waitFor();
