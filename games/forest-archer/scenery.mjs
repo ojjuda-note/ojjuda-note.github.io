@@ -1,7 +1,7 @@
 // Range paintings, world objects, and first-person equipment use CSS pixels.
 // Distant art and tree sprites are cached; world scenery follows the camera.
-import {drawAnimalModel} from './animal-zones.mjs?v=20261104-archery-eagle-dive1';
-import {rangePalette, paintPanorama, paintFir, paintRedPine} from './range-art.mjs?v=20261128-seorak1';
+import {drawAnimalModel,getAnimalFallPose,getAnimalAimPoint} from './animal-zones.mjs?v=20261104-archery-eagle-dive1';
+import {rangePalette, paintPanorama, paintFir, paintRedPine} from './range-art.mjs?v=20261128-woodland2';
 const layers = new Map();
 const TAU = Math.PI * 2;
 
@@ -259,16 +259,18 @@ function drawDistancePosts(ctx,w,h,camera,project,distance){
   }
 }
 
-const rangeImages=new Map();
+const rangeImages=new Map(),decodedArt=new WeakSet();
 function paintedAsset(name){
   if(typeof Image!=='function')return null;
   if(!rangeImages.has(name)){
     const image=new Image();image.decoding='async';
+    image.onload=()=>{decodedArt.add(image);};
     image.src=new URL(`./${name}.webp`,import.meta.url).href;
     rangeImages.set(name,image);
+    image.decode?.().then(()=>decodedArt.add(image),()=>{});
   }
   const image=rangeImages.get(name);
-  return image.complete&&image.naturalWidth>0?image:null;
+  return decodedArt.has(image)&&image.naturalWidth>0?image:null;
 }
 function rangePhotograph(distance){
   return paintedAsset(distance>=90?'seorak-moon':distance>=40?'seorak-sunset':'seorak-dawn');
@@ -284,8 +286,36 @@ function paintRangePhoto(ctx,w,h,camera,baseFocal,image){
   const x=Math.min(0,Math.max(w-width,cx-width*.5));
   const y=Math.min(0,Math.max(h-height,cy-height*horizon));
   ctx.drawImage(image,x,y,width,height);
+  // Reproject the near meadow towards the viewer while the distant ridge holds its position.
+  const travel=1-Math.exp(-Math.max(0,camera.z)/24);
+  if(travel<.003)return;
+  const seam=y+height*horizon,visible=Math.max(1,h-seam);
+  const first=Math.max(0,Math.floor(seam)),step=Math.max(6,Math.ceil(h/44));
+  function sourceY(screenY){
+    const down=screenY-seam,weight=Math.max(0,down/visible);
+    return ((seam+down/(1+.43*travel*weight))-y)*ih/height;
+  }
+  for(let top=first;top<h;top+=step){
+    const bottom=Math.min(h,top+step+1),sy=sourceY(top),sb=sourceY(bottom);
+    const weight=Math.max(0,((top+bottom)*.5-seam)/visible),stretch=1+.24*travel*weight;
+    ctx.drawImage(image,0,sy,iw,Math.max(.1,sb-sy),cx+(x-cx)*stretch,top,width*stretch,bottom-top);
+  }
 }
 
+const meadowDetails=Array.from({length:54},(_,i)=>{
+  const random=rng(72419+i*7151),side=i%2?1:-1;
+  return {y:0,z:3+i*2.85+random()*1.5,x:side*(1.3+random()*2.8),width:.36+random()*.46,variant:i%3};
+}).reverse();
+function drawMeadowDetails(ctx,w,h,camera,project,distance){
+  const image=paintedAsset('range-meadow-details');if(!image)return;
+  const cell=image.naturalWidth/3,height=image.naturalHeight;
+  for(const tuft of meadowDetails){
+    if(tuft.z<camera.z+.4||tuft.z>Math.min(distance+16,camera.z+36))continue;
+    const foot=project(tuft),width=tuft.width*foot.scale,heightPx=width*height/cell;
+    if(width<3||foot.x+width*.5<0||foot.x-width*.5>w||foot.y-heightPx>h||foot.y<0)continue;
+    ctx.drawImage(image,tuft.variant*cell,0,cell,height,foot.x-width*.5,foot.y-heightPx,width,heightPx);
+  }
+}
 /** Draw the sunlit range. camera.horizon is always a CSS-pixel coordinate. */
 export function drawScenery(ctx,w,h,options={}) {
   if(!(w>0&&h>0))return;
@@ -297,6 +327,7 @@ export function drawScenery(ctx,w,h,options={}) {
   const photo=rangePhotograph(distance);
   if(photo){
     paintRangePhoto(ctx,w,h,camera,baseFocal,photo);
+    drawMeadowDetails(ctx,w,h,camera,project,distance);
     drawDistancePosts(ctx,w,h,camera,project,distance);
   }else{
     const key=[Math.round(w),Math.round(h),palette.sky[0]].join(':');let backdrop=layers.get(key);
@@ -589,13 +620,51 @@ export function drawUfo(ctx,x,y,radius,time=0,direction=1) {
   ctx.restore();
 }
 
-/** Friendly woodland targets share their painted anatomy with the hit test. */
+// Each 4 × 4 sheet was registered against one full cycle of the game's moving silhouette.
+const wildlifeSheets={
+  rabbit:[-0.85119,-0.73214,302,208,7.2],
+  wildcat:[-1.04762,-0.625,350,205,6.1],
+  deer:[-0.97024,-0.7619,352,249,5.4],
+  cheetah:[-1.34524,-0.48214,402,179,10],
+  bird:[-1.17262,-0.75,368,216,8.5],
+  pigeon:[-1.04762,-0.70833,337,200,10.2],
+  eagle:[-1.47024,-0.88095,494,244,2.2],
+};
 export function drawAnimal(ctx,x,y,radius,kind,time=0,direction=1,pose=null) {
   if(!Number.isFinite(x)||!Number.isFinite(y))return;
-  const r=Math.max(.1,Number.isFinite(radius)?radius:1);
-  ctx.save();ctx.translate(x,y);ctx.scale(direction<0?-r:r,r);
-  drawAnimalModel(ctx,kind,Number.isFinite(pose?.poseTime)?pose.poseTime:time,pose);
+  const r=Math.max(.1,Number.isFinite(radius)?radius:1),side=direction<0?-1:1;
+  const clock=Number.isFinite(pose?.poseTime)?pose.poseTime:time;
+  const sheet=wildlifeSheets[kind],art=sheet&&paintedAsset('wildlife-'+kind);
+  ctx.save();ctx.translate(x,y);ctx.scale(side*r,r);
+  if(!art)drawAnimalModel(ctx,kind,clock,pose);
+  else{
+    const [left,top,width,height,speed]=sheet;
+    const frame=(Math.round(clock*speed*16/TAU)%16+16)%16;
+    const fall=getAnimalFallPose(pose);
+    ctx.save();ctx.rotate(fall.rotation);ctx.scale(1,fall.scaleY);
+    ctx.drawImage(art,frame%4*width,Math.floor(frame/4)*height,width,height,left,top,width/168,height/168);
+    ctx.restore();
+    const mark=pose&&getAnimalAimPoint(pose);
+    if(mark){
+      const mx=(mark.x-pose.x)*side/pose.radius,my=(pose.y-mark.y)/pose.radius;
+      ctx.beginPath();ctx.arc(mx,my,.100,0,TAU);ctx.lineWidth=.019;
+      ctx.strokeStyle='#463722bd';ctx.stroke();ctx.lineWidth=.011;ctx.strokeStyle='#ffdf96';ctx.stroke();
+      ellipse(ctx,mx,my,.019,.019,'#fff1c5');
+    }
+  }
   ctx.restore();
+}
+
+export function drawRangeTarget(ctx,x,y,r,groundX,groundY){
+  const board=paintedAsset('range-straw-boss'),stand=paintedAsset('range-oak-easel');
+  if(!board||!stand)return false;
+  const top=y-r*.65,feet=Math.max(top+r*.95,groundY);
+  const standWidth=r*1.94;
+  ctx.drawImage(stand,groundX-standWidth*.5,top,standWidth,feet-top);
+  // The printed face is calibrated to the five scoring bands.
+  const width=r/.388,height=width*board.naturalHeight/board.naturalWidth;
+  ctx.drawImage(board,x-width*.497,y-height*.505,width,height);
+  return true;
 }
 
 /** Gold impact at a projected hit point. Age is seconds after impact, not replay time. */
@@ -1067,8 +1136,103 @@ function drawAbilityArrowTip(ctx,ability,pointStart,pointWidth,accent) {
   }
 }
 
+const gearFinishes=new Map(),pendingIconPaint=new WeakMap();
+function gearName(type,view){
+  return type==='bow'?'gear-recurve':'gear-'+(type==='gun'?'rifle':'crossbow')+'-'+view;
+}
+function finishedGear(name,accent){
+  const image=paintedAsset(name);
+  if(!image||!accent||!/^#[a-f0-9]{6}$/i.test(accent))return image;
+  const key=name+accent;
+  if(gearFinishes.has(key))return gearFinishes.get(key);
+  const layer=makeLayer(image.naturalWidth,image.naturalHeight);
+  layer.ctx.drawImage(image,0,0);layer.ctx.globalCompositeOperation='source-atop';
+  layer.ctx.fillStyle=accent;layer.ctx.globalAlpha=.18;layer.ctx.fillRect(0,0,image.naturalWidth,image.naturalHeight);
+  gearFinishes.set(key,layer.canvas);
+  if(gearFinishes.size>8)gearFinishes.delete(gearFinishes.keys().next().value);
+  return layer.canvas;
+}
+function drawBowLimbs(ctx,art,upper,lower){
+  const iw=art.width||art.naturalWidth,ih=art.height||art.naturalHeight;
+  const gx=.82*iw,gy=.5*ih;
+  for(const [end,sy,start,height] of [[upper,.013*ih,0,Math.ceil(gy)],[lower,.988*ih,Math.floor(gy),ih-Math.floor(gy)]]){
+    const ux=.048*iw-gx,uy=sy-gy,len=ux*ux+uy*uy;
+    const a=(ux*end.x+uy*end.y)/len,b=(ux*end.y-uy*end.x)/len;
+    ctx.save();ctx.transform(a,b,-b,a,-a*gx+b*gy,-b*gx-a*gy);
+    ctx.drawImage(art,0,start,iw,height,0,start,iw,height);ctx.restore();
+  }
+}
+function drawGalleryGear(ctx,w,h,options){
+  const {weaponType='bow',color,scopeMounted=false,burstCount=1}=options;
+  const name=gearName(weaponType,'catalog'),art=finishedGear(name,color);
+  if(!art){
+    const img=rangeImages.get(name),canvas=ctx.canvas;
+    if(canvas&&img&&!decodedArt.has(img)&&typeof img.addEventListener==='function'){
+      const previous=pendingIconPaint.get(canvas);
+      if(previous?.image===img){previous.options=options;return false;}
+      const pending={image:img,options};pendingIconPaint.set(canvas,pending);
+      img.addEventListener('load',()=>{
+        if(pendingIconPaint.get(canvas)!==pending||canvas.isConnected===false)return;
+        ctx.clearRect(0,0,w,h);drawEquipmentIcon(ctx,w,h,pending.options);
+      },{once:true});
+    }
+    return false;
+  }
+  if(ctx.canvas)pendingIconPaint.delete(ctx.canvas);
+  const iw=art.width||art.naturalWidth,ih=art.height||art.naturalHeight;
+  ctx.save();ctx.translate(w*.5,h*.50);
+  if(weaponType==='bow'){
+    const size=Math.min(w,h)*.94;ctx.rotate(.55);
+    const scale=size/ih,ox=-iw*.50*scale,oy=-size*.5;
+    ctx.drawImage(art,ox,oy,iw*scale,size);
+    const tipX=ox+iw*.048*scale;
+    line(ctx,tipX,oy+size*.013,tipX,oy+size*.988,'#79746b',Math.max(.62,size*.006));
+    if(scopeMounted)drawScopeTube(ctx,ox+iw*.78*scale,0,size*.19,size*.024,0);
+  }else{
+    const a=weaponType==='gun'?-.21:-.12;
+    const scale=Math.min(w*.89/(iw*Math.cos(a)+ih*Math.abs(Math.sin(a))),h*.88/(ih*Math.cos(a)+iw*Math.abs(Math.sin(a))));
+    ctx.rotate(a);ctx.scale(scale,scale);ctx.drawImage(art,-iw*.5,-ih*.5,iw,ih);
+    if(scopeMounted)drawScopeTube(ctx,-iw*.09,-ih*.33,iw*.20,iw*.026,0);
+    if(burstCount>1)for(let n=0;n<3;n++)line(ctx,-iw*(.24+n*.028),ih*.025,-iw*(.24+n*.028)+iw*.01,ih*.16,'#d6ac61',iw*.010);
+  }
+  ctx.restore();return true;
+}
+function drawHeldStock(ctx,w,h,options){
+  const {weaponType,color,scopeMounted,aim,charge=0,drawing,burstCount=1,fletching,arrowColor}=options;
+  const isGun=weaponType==='gun',art=finishedGear(gearName(weaponType,'held'),color);
+  if(!art)return false;
+  const size=Math.min(w*.68,h*.56),rearX=w*(isGun?.62:.53),rearY=h+size*.12;
+  const dx=(aim?.x??w*.5)-rearX,dy=(aim?.y??h*.405)-rearY;
+  const angle=Math.atan2(dy,dx)+Math.PI/2;
+  ctx.save();ctx.translate(rearX,rearY);ctx.rotate(angle);ctx.scale(size,size);
+  const glove=paintedAsset('range-glove-grip');
+  if(glove)ctx.drawImage(glove,-.40,-.34,.46,.46);
+  const iw=art.width||art.naturalWidth,ih=art.height||art.naturalHeight;
+  // Map both ends of the painted prop onto the same on-screen line as the reticle.
+  const fromX=(isGun?.717:.50)*iw,fromY=ih*.975;
+  const ux=(isGun?.026:.50)*iw-fromX,uy=.023*ih-fromY;
+  const len=ux*ux+uy*uy,front=isGun?.98:.88;
+  const a=-front*uy/len,b=-front*ux/len;
+  ctx.save();ctx.transform(a,b,-b,a,-a*fromX+b*fromY,-b*fromX-a*fromY);
+  ctx.drawImage(art,0,0,iw,ih);ctx.restore();
+  if(!isGun){
+    const rear=-.37+(drawing?charge*.065:0);
+    line(ctx,0,rear,0,-.83,'#573f2b',.013);
+    line(ctx,-.002,rear,-.002,-.83,'#e7c993',.006);
+    ctx.save();ctx.translate(0,rear);ctx.rotate(-Math.PI/2);drawFletching(ctx,0,0,fletching,arrowColor,0,.37);ctx.restore();
+    if(burstCount>1)for(const off of [-.038,.038])line(ctx,off,-.48,off,-.62,'#b89354',.007);
+  }
+  if(scopeMounted){
+    ctx.fillStyle='#273739';ctx.beginPath();ctx.roundRect(-.056,-.62,.112,.19,.03);ctx.fill();
+    ellipse(ctx,0,-.44,.069,.055,'#a58b60');ellipse(ctx,0,-.444,.057,.045,'#263c40');
+    ellipse(ctx,-.012,-.453,.032,.020,'#698d89',-.25);
+  }
+  ctx.restore();return true;
+}
+
 /** Draws a transparent shop item illustration, without clearing the canvas. */
 export function drawEquipmentIcon(ctx,w,h,{kind='bow',tier=0,color,grip=30,elasticity=40,tipMass=4,fletching,weaponType='bow',scopeMounted=false,burstCount=1,grouping=0}={}) {
+  if(kind==='bow'&&drawGalleryGear(ctx,w,h,{kind,tier,color,grip,elasticity,tipMass,fletching,weaponType,scopeMounted,burstCount,grouping}))return;
   const variant=equipmentVariant(tier);
   const colors=['#a67548','#b88c4c','#487967','#b69a54','#8d6850','#887447','#788b60','#668b80','#526e78','#a2a568','#b39467','#7c889e','#709e95','#a79679','#bcafcf','#718ea2','#598f83','#a79679','#b1a471','#bcafcf','#7c9a83','#9a8467','#7b949b','#9c8e73','#a8b1bf'];
   const accent=color||colors[variant];
@@ -1145,6 +1309,7 @@ export function drawEquipmentIcon(ctx,w,h,{kind='bow',tier=0,color,grip=30,elast
 
 /** Foreground bow and drawing hand. The shooting corridor stays unobstructed. */
 export function drawFirstPersonBow(ctx,w,h,{aim,tier=0,charge=0,swayX=0,swayY=0,color='#a9784e',drawing=false,grip=30,elasticity=40,tipMass=4,fletching,arrowColor='#a35f3f',weaponType='bow',scopeMounted=false,burstCount=1,grouping=0}={}) {
+  if((weaponType==='gun'||weaponType==='crossbow')&&drawHeldStock(ctx,w,h,{weaponType,color,scopeMounted,aim,charge,drawing,burstCount,fletching,arrowColor}))return;
   if(weaponType==='gun'){drawFirstPersonGun(ctx,w,h,{tier,swayX,swayY,color,grip,scopeMounted});return;}
   if(weaponType==='crossbow'){drawFirstPersonCrossbow(ctx,w,h,{charge,swayX,swayY,color,drawing,grip,elasticity,tipMass,fletching,arrowColor,scopeMounted,burstCount,grouping});return;}
   const pull=Math.max(0,Math.min(1,charge));
@@ -1158,7 +1323,7 @@ export function drawFirstPersonBow(ctx,w,h,{aim,tier=0,charge=0,swayX=0,swayY=0,
   ctx.lineJoin='round';ctx.lineCap='round';
 
   // The arrow always runs from the string through the same rest to the reticle.
-  const restX=.013,restY=-.13;
+  const restX=-.050,restY=-.13;
   const dx=(aimX-gripX)/size-restX,dy=(aimY-gripY)/size-restY;
   const length=Math.hypot(dx,dy)||1,fx=dx/length,fy=dy/length;
   const draw=drawing?pull:0,brace=.15,travel=draw*.32;
@@ -1175,13 +1340,17 @@ export function drawFirstPersonBow(ctx,w,h,{aim,tier=0,charge=0,swayX=0,swayY=0,
     ctx.bezierCurveTo(.025,.16,.094,.30,.15,.41);
     ctx.bezierCurveTo(.21,.54,lower.x-.055,lower.y-.01,lower.x,lower.y);
   };
-  const lacquer=ctx.createLinearGradient(-.24,-.55,.24,.59);
-  lacquer.addColorStop(0,'#4a3026');lacquer.addColorStop(.17,'#d0a46a');
-  lacquer.addColorStop(.29,color);lacquer.addColorStop(.48,'#51372b');
-  lacquer.addColorStop(.76,color);lacquer.addColorStop(1,'#cba870');
-  limb();ctx.strokeStyle='#332a24';ctx.lineWidth=limbWidth+.012;ctx.stroke();
-  limb();ctx.strokeStyle=lacquer;ctx.lineWidth=limbWidth;ctx.stroke();
-  ctx.save();ctx.translate(-.006,.002);limb();ctx.strokeStyle='#dfbd87';ctx.lineWidth=.005;ctx.stroke();ctx.restore();
+  const bowBody=finishedGear('gear-recurve',color);
+  if(bowBody)drawBowLimbs(ctx,bowBody,upper,lower);
+  else{
+    const lacquer=ctx.createLinearGradient(-.24,-.55,.24,.59);
+    lacquer.addColorStop(0,'#4a3026');lacquer.addColorStop(.17,'#d0a46a');
+    lacquer.addColorStop(.29,color);lacquer.addColorStop(.48,'#51372b');
+    lacquer.addColorStop(.76,color);lacquer.addColorStop(1,'#cba870');
+    limb();ctx.strokeStyle='#332a24';ctx.lineWidth=limbWidth+.012;ctx.stroke();
+    limb();ctx.strokeStyle=lacquer;ctx.lineWidth=limbWidth;ctx.stroke();
+    ctx.save();ctx.translate(-.006,.002);limb();ctx.strokeStyle='#dfbd87';ctx.lineWidth=.005;ctx.stroke();ctx.restore();
+  }
   const gripGlove=paintedAsset('range-glove-grip'),drawGlove=paintedAsset('range-glove-draw');
   let sleeve='#203c3c';
   if(gripGlove){
