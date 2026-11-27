@@ -136,16 +136,39 @@ function habitAnswers(f) {
   ];
 }
 function lifestyleRisk(curve,age,sex,flags) {
-  const compatible=habitPatterns.filter(([bits])=>flags.every((flag,i)=>flag===null || (bits[i]==="1")===flag));
   const {counts,ratios}=lifestyleStudy[sex];
   const estimate=modeledGroups(curve,age,6,counts,ratios);
-  let weight=0,selected=0;
-  for(const [,score,prob] of compatible) {
-    const n=counts[score]*prob;
-    weight+=n;
-    selected+=n*estimate.groups[score].risk;
+  const baseline=estimate.baselineRisk;
+  const cache=new Map();
+
+  // The published score groups are observational and not strictly ordered.
+  // Keep the joint estimate inside the bounds implied by dropping each answer.
+  // A blank has population risk; a beneficial/adverse answer can only lower/raise it.
+  function boundedRisk(answers) {
+    const key=answers.map(flag=>flag===null?"-":Number(flag)).join("");
+    if(cache.has(key)) return cache.get(key);
+    if(answers.every(flag=>flag===null)) return baseline;
+    let weight=0,weightedRisk=0;
+    for(const [bits,score,prob] of habitPatterns) {
+      if(!answers.every((flag,i)=>flag===null || flag===(bits[i]==="1"))) continue;
+      const n=counts[score]*prob;
+      weight+=n;
+      weightedRisk+=n*estimate.groups[score].risk;
+    }
+    let low=0,high=1;
+    answers.forEach((flag,i)=>{
+      if(flag===null) return;
+      const parent=answers.slice();
+      parent[i]=null;
+      const risk=boundedRisk(parent);
+      if(flag) low=Math.max(low,risk);
+      else high=Math.min(high,risk);
+    });
+    const risk=Math.min(high,Math.max(low,weightedRisk/weight));
+    cache.set(key,risk);
+    return risk;
   }
-  return {base:estimate.baselineRisk,selected:selected/weight,horizon:6};
+  return {base:baseline,selected:boundedRisk(flags),horizon:6};
 }
 function conditionEvidence(age,sex,f) {
   const curve=population.national[sex];
@@ -176,29 +199,25 @@ function conditionEvidence(age,sex,f) {
   }
   const flags=habitAnswers(f);
   if(metabolic) flags[3]=null; // The metabolic study already uses BMI.
-  const known=flags.filter(v=>v!==null).length;
   const lifestyleOK=age>=19 && age<100 && !hasIllness;
+  // Assign each exposure to one source. An unrelated answer must not replace
+  // a specific study already in use or count the same exposure twice.
   const directSmoke=["0","1","2"].includes(f.smoke)?f.smoke:"";
+  if(use("smokingOnly",directSmoke)) flags[0]=null;
+  const amountKnown=["2","3","5","6"].includes(f.drink);
   const directDrink={"0":"0","1":"1","2":"2","3":"2","4":"2"}[f.drink]??"";
-  let useJoint=known>=2 && lifestyleOK;
-  if(known===1 && lifestyleOK){
-    // Prefer the precise single-factor study if the reported category and age match it.
-    const directAllowed=(flags[0]!==null && directSmoke!=="" && sex!=="all" && age>=40 && age<70)
-      ||(flags[1]!==null && directDrink!=="" && age>=20 && !["2","3"].includes(f.drink))
-      ||(flags[2]!==null && f.activity!=="" && age>=45)
-      ||(flags[4]!==null && f.sleepBand!=="4" && age>=20);
-    useJoint=!directAllowed;
+  if((!amountKnown || !lifestyleOK) && use("alcoholOnly",directDrink)) flags[1]=null;
+  if(use("activity",f.activity)) flags[2]=null;
+  if(!hasIllness && f.sleepBand!=="4" && use("sleep",f.sleepBand)) flags[4]=null;
+  if(flags.some(flag=>flag!==null)){
+    if(lifestyleOK) {
+      const risk=lifestyleRisk(curve,age,sex,flags);
+      const labels=["흡연","음주","운동","체중","수면"].filter((_,i)=>flags[i]!==null);
+      rows.push({key:"lifestyle",label:"생활습관 ("+labels.join("·")+")",result:{risk},url:"https://doi.org/10.1038/s41598-020-66742-y"});
+    } else {
+      skipped.push(["생활습관 조합",hasIllness?"입력한 병력이 연구의 제외 조건에 해당해요.":"연구의 적용 나이는 만 19~99세예요."]);
+    }
   }
-  if(useJoint){
-    const risk=lifestyleRisk(curve,age,sex,flags);
-    rows.push({key:"lifestyle",label:"생활습관 ("+["흡연","음주","운동","체중","수면"].filter((_,i)=>flags[i]!==null).join("·")+")",result:{risk},url:"https://doi.org/10.1038/s41598-020-66742-y"});
-  }
-  if(useJoint && flags[2]!==null && f.activity!=="") covered.push("주간 총 운동 시간은 생활습관의 운동 항목과 함께 처리해요.");
-  if(!useJoint || flags[0]===null) use("smokingOnly",directSmoke);
-  if(!useJoint || flags[1]===null) use("alcoholOnly",directDrink);
-  if(!useJoint || flags[2]===null) use("activity",f.activity);
-  if(!useJoint && f.sleepBand!=="" && f.sleepBand!=="4" && !hasIllness) use("sleep",f.sleepBand);
-  if(known && !lifestyleOK) skipped.push(["생활습관 조합",hasIllness?"입력한 병력이 연구의 제외 조건에 해당해요.":"연구의 적용 나이는 만 19~99세예요."]);
   if(f.diet!=="" && hasIllness) skipped.push(["식생활평가지수","연구에서 해당 병력자를 제외했어요."]); else use("diet",f.diet);
   for(const k of ["household","marriage","education","hearing","grip","income","disability"]) use(k,f[k]);
   if(f.kidney!=="" && f.urine!=="") use("kidneyJoint",String(Number(f.kidney)+(f.urine==="0"?0:4)));
