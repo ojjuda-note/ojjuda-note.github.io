@@ -137,7 +137,7 @@ function tick() {
   const inBonus=now>=clock.target;
   const bonusDay=Math.floor((now+KST)/(DAY*1000))-Math.floor((clock.target+KST)/(DAY*1000));
   put("encouragement",inBonus?bonusLines[bonusDay%bonusLines.length]:hourlyCheers[Math.floor(lifeSeconds/3600)]);
-  put("remaining-label",inBonus?(clock.play?"재미 시계의 연장전":"쌓인 보너스 시간"):(clock.play?"남은 시간 · 놀이 규칙 적용":"남은 추정 수명"));
+  put("remaining-label",inBonus?(clock.play?"재미 시계의 연장전":"쌓인 보너스 시간"):(clock.play?"남은 시간":"남은 추정 수명"));
   const left=inBonus?calendarRemainder(clock.target,now):calendarRemainder(now,clock.target);
   drawFlipBoard(left,clock,now);
   put("remaining",left.years+"년 "+left.months+"개월 "+left.days+"일 "+timeText(left.seconds));
