@@ -5575,3 +5575,21 @@ test('retired item-trial URLs cannot create equipment, open every stage or avoid
   app.api.showShop('bow');for(const id of [20,21,22])app.api.equipItem(id);assert.equal(app.api.activeBow().id,0);
   assert.doesNotMatch(gameSource,/startAdminTrial|createTrialAmmoClient|모든 장비 무료 체험/);
 });
+
+test('round report plots only measured hits and clears when replaying a stage', async () => {
+  const app=await appHarness({version:1,stageCatalog:STAGE_CATALOG,coins:100,sound:false});
+  const draw=preciseMainDraw(app);
+  draw.pad.emit('pointerup',draw.coords);await app.flush();
+  app.until(()=>app.api.state.mode==='settling');
+  const {state}=app.api;
+  assert.equal(state.shotLog.length,1);
+  const point=state.shotLog[0][0].point;
+  assert.ok(Math.hypot(point.x,point.y)<.2);
+  assert.match(app.getElement('shotPlot').innerHTML,/plot-hit/);
+  app.api.onImpact();assert.equal(state.shotLog.length,1);
+  app.until(()=>state.mode==='ready');
+  app.getElement('menuBtn').emit('click');
+  assert.match(app.getElement('modalContent').innerHTML,/1회.*10점/);
+  assert.match(app.getElement('modalContent').innerHTML,/평균 착탄 · 중앙/);
+  app.api.closeModal();app.api.resetRound();assert.equal(state.shotLog.length,0);
+});
