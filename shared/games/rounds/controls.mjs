@@ -8,7 +8,7 @@ export function element(tag,cls,text){
   if(tag==='button')node.type='button';
   return node;
 }
-export function mount(host,spec,{local=false,onComplete}={}){
+export function mount(host,spec,{local=false,onComplete=()=>{},onDraw,initial=spec.initial,demo=false}={}){
   let state,active=true,message='',alarms=[],pausedAt=0,pausedTime=0;
   const now=()=>(active?performance.now():pausedAt)-pausedTime;
   const title=element('h3','round-title',spec.title);
@@ -19,7 +19,7 @@ export function mount(host,spec,{local=false,onComplete}={}){
   const head=element('div','rehearsal-head');head.append(title,restart);
   host.append(head,prompt,board,status);
   function cancel(){alarms.forEach(clearTimeout);alarms=[];}
-  function reset(){state=structuredClone(spec.initial);message='';render();onComplete(false);}
+  function reset(){state=structuredClone(initial);message='';render();onComplete(false);}
   function change(patch={},note=''){Object.assign(state,patch);message=note;render();}
   function finish(note,patch={}){change({...patch,done:note},note);onComplete(true);}
   function say(note){message=note;status.textContent=note;}
@@ -73,13 +73,14 @@ export function mount(host,spec,{local=false,onComplete}={}){
   function range(label,value,min,max,update){
     const wrap=element('label','round-range');const out=element('span','',label+' '+value);
     const input=element('input','');input.type='range';input.min=min;input.max=max;input.value=value;input.setAttribute('aria-label',label);input.disabled=!!state.done;
-    input.oninput=()=>{out.textContent=label+' '+input.value;update(Number(input.value));};
+    input.oninput=()=>{out.textContent=label+' '+input.value;update(Number(input.value));notify();};
     wrap.append(out,input);board.append(wrap);return input;
   }
   function display(value,kind=''){const n=element('div','round-readout '+kind,value);board.append(n);return n;}
   function meter(label,value,max){const wrap=element('div','round-meter');const name=element('span','',label+' '+value+' / '+max);
     const bar=element('progress','');bar.max=max;bar.value=value;bar.setAttribute('aria-label',label);wrap.append(name,bar);board.append(wrap);}
-  const ui={board,local,now,grid,buttons,field,range,display,meter,later,say,change,finish,
+  function notify(){onDraw?.(state,board,prompt,now());}
+  const ui={board,local,demo,now,notify,grid,buttons,field,range,display,meter,later,say,change,finish,
     cue:text=>{prompt.textContent=text;},
     reduced:()=>window.matchMedia?.('(prefers-reduced-motion: reduce)').matches||false};
   function render(){
@@ -87,13 +88,18 @@ export function mount(host,spec,{local=false,onComplete}={}){
     const label=board.contains(prev)?prev.getAttribute('aria-label')||prev.textContent:null;
     board.replaceChildren();spec.draw(ui,state);status.textContent=state.done||message;
     host.dataset.complete=String(!!state.done);
-    if(prev&&!prev.isConnected){
+    notify();
+    if(!demo&&prev&&!prev.isConnected){
       const controls=[...board.querySelectorAll('button:not(:disabled),input:not(:disabled)')];
       const target=controls.find(n=>key!==undefined?n.dataset.cell===key:(n.getAttribute('aria-label')||n.textContent)===label);
       (target||controls[0]||restart).focus({preventScroll:true});
     }
   }
   reset();
-  return {pause(){if(!active)return;pausedAt=performance.now();active=false;cancel();},
-    resume(){if(!active){pausedTime+=performance.now()-pausedAt;active=true;}render();},complete:()=>!!state.done};
+  return {refresh:notify,pause(){if(!active)return;pausedAt=performance.now();active=false;cancel();},
+    resume(){if(!active){
+      const field=board.querySelector('.round-input input'),draft=field?.value;
+      pausedTime+=performance.now()-pausedAt;active=true;render();
+      if(draft){const next=board.querySelector('.round-input input');if(next)next.value=draft;}
+    }},complete:()=>!!state.done};
 }

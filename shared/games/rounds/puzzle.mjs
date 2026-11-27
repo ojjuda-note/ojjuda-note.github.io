@@ -1,4 +1,4 @@
-import {round,tile,gap,element} from './controls.mjs?v=20261127-firsthands1';
+import {round,tile,gap,element} from './controls.mjs?v=20261127-coach1';
 
 function linkPath(values,a,b,cols){
   const rows=values.length/cols, dirs=[[0,-1],[1,0],[0,1],[-1,0]], seen=new Set();
@@ -75,9 +75,9 @@ const solitaire=round('하트 A를 올리고 작업줄 잇기',{ace:false,six:fa
 function boardMove(id){
   const chess=id==='chess',first=chess?'♙':'卒',opponent=chess?'♟':'兵';
   return round(chess?'폰으로 전진하고 잡기':'졸로 전진하고 옆 말 잡기',{pos:9,selected:null,taken:false},(u,s)=>{
-    const dest=s.pos===9?5:chess?2:6,enemy=chess?2:6;
+    const enemy=s.enemy??(chess?2:6),dest=s.pos===9?5:enemy;
     const coords=i=>chess?'defg'[i%4]+(4-Math.floor(i/4)):(Math.floor(i/4)+1)+'행 '+(i%4+1)+'열';
-    u.cue(s.pos===9?(chess?'e2 백 폰을 잡고 e3로 한 칸 전진하세요.':'아래쪽 초의 졸을 잡고 바로 위로 한 칸 움직이세요.'):(chess?'e3에서 대각선 f4의 검은 폰을 잡으세요.':'이번에는 오른쪽에 있는 상대 병을 잡으세요.'));
+    u.cue(s.pos===9?(chess?'e2 백 폰을 잡고 e3로 한 칸 전진하세요.':'아래쪽 초의 졸을 잡고 바로 위로 한 칸 움직이세요.'):(chess?'e3에서 대각선 '+coords(enemy)+'의 검은 폰을 잡으세요.':'이번에는 옆에 있는 상대 병을 잡으세요.'));
     const tiles=Array.from({length:12},(_,i)=>tile(s.pos===i?first:!s.taken&&i===enemy?opponent:'·',coords(i)+(s.pos===i?' 내 말':!s.taken&&i===enemy?' 상대 말':' 빈칸'),s.pos===i?'own':!s.taken&&i===enemy?'enemy':'free'));
     moves(u,s,tiles,4,(a,b)=>{
       if(a!==s.pos)return u.change({selected:null},'먼저 내 말을 고르세요.');

@@ -14,13 +14,13 @@ const paths={
   runner:['점프','점프','점프'],chacha_rush:['오른쪽 →','점프','부스터'],mole:[4,2],
   stacker:['블록 놓기','블록 놓기','블록 놓기'],breakout:[['range',76],'공 보내기',['wait',1880],['range',26],'공 보내기',['wait',1880]],
   saetbyeol:[6,2,2,5,'성장 · 첫 강화'],spot:['A 쭈다의 후드','B 왼쪽 뒤 자전거'],
-  billiards:['샷'],carom3:['샷'],pool8:['샷'],onecard:[0,'원카드!',1,2],
+  billiards:[['aim',-15],'샷'],carom3:[['aim',43],'샷'],pool8:[['aim',-43],'샷'],onecard:[0,'원카드!',1,2],
   matgo:['내 1월 송학','1월 소나무 바닥패','스톱'],yut:['윷 던지기',0,2],tour:['주사위 굴리기','도시 매입 · 100만','다음 차례'],
   tank:['이동 →','이동 →'],bang:['빗나감!','맥주'],
   croc:[1,2],bottle:['위쪽 자리','술병 돌리기','멈추기',['bottle']],bomb:[0,['text','사과'],['text','포도']],
   stopwatch:['시작',['wait',120],'멈추기'],liar:['내 카드 보기','카드 가리기',['text','넓고 짭짤해요'],1],
   king:['역할 확인',0,2,'명령 내리기','패스'],truth:[0,2,'패스'],initial:['5초 시작',['text','수건']],
-  minority:[1],mission:['제시어 보기','가리기','몸짓을 했어요',1],fingers:[1,'그대로 두기'],imagevote:[0,1],
+  minority:[1,'바다 1표'],mission:['제시어 보기','가리기','몸짓을 했어요',1],fingers:[1,'그대로 두기'],imagevote:[0,1],
   updown:[['text','50'],['text','65'],['text','59']],secretcount:['설정 닫기','누르기','턴 넘기기','누르기','누르기','누르기'],
   partyroulette:['결과 열기','다음 사람에게','결과 확인'],shapematch:['연습 시작','초록 동그라미']
 };
@@ -29,6 +29,7 @@ async function act(pane,step){
   if(typeof step==='string')return pane.getByRole('button',{name:step,exact:true}).click();
   const [op,val]=step;
   if(op==='wait')return pane.page().waitForTimeout(val);
+  if(op==='aim')return pane.getByRole('slider',{name:'조준 각도'}).fill(String(val));
   if(op==='range')return pane.getByRole('slider').fill(String(val));
   if(op==='text'){const input=pane.locator('.round-input input');await input.fill(val);return input.press('Enter');}
   if(op==='bottle'){
@@ -61,12 +62,51 @@ test('all opening rounds finish with their actual controls and leave game state 
           assert.equal(await panel.locator('[data-cell="0"]').getAttribute('aria-pressed'),'true');
           await panel.getByRole('button',{name:'처음부터'}).click();
         }
-        for(const step of walk)await act(panel,step);
+        const label=panel.locator('.coach-label');
+        assert.match(await label.innerText(),/따라 하기 1\//);
+        await panel.getByRole('button',{name:'원리 보기'}).click();
+        assert.ok((await panel.locator('.coach-why:visible').innerText()).length>8);
+        if(id==='sacheonseong')await act(panel,0);
+        await panel.getByRole('button',{name:'시범 보기'}).click();
+        const demo=panel.locator('.coach-board:visible');
+        assert.ok(await demo.locator('.round-surface').evaluate(n=>n.inert));
+        if(id==='sacheonseong'){
+          await panel.getByRole('button',{name:'일시정지'}).click();
+          await p.waitForTimeout(1250);
+          assert.equal(await demo.locator('[aria-pressed=true]').count(),0);
+          await panel.getByRole('button',{name:'다음 동작'}).click();
+          assert.ok(await demo.locator('[data-cell="0"]').getAttribute('aria-pressed'));
+          await panel.getByRole('button',{name:'계속 보기'}).click();
+        }
+        for(let i=0;i<25&&!await demo.evaluate(n=>n.dataset.complete==='true');i++){
+          const next=panel.getByRole('button',{name:'다음 동작'});
+          if(await next.isEnabled())await next.click();
+          else await p.waitForFunction(()=>document.querySelector('.coach-board:not([hidden])[data-complete=true]')||!document.querySelector('.round-pane:not([hidden]) .coach-tools button:nth-child(3)').disabled);
+        }
+        assert.equal(await demo.getAttribute('data-complete'),'true',id+' 시범');
+        assert.equal(await panel.getAttribute('data-complete'),'false');
+        await panel.getByRole('button',{name:'직접 해보기'}).click();
+        if(id==='sacheonseong')assert.equal(await panel.locator('[data-cell="0"]').getAttribute('aria-pressed'),'true');
+        if(id==='billiards'){
+          await act(panel,['aim',-14]);await act(panel,'각도 1도 낮추기');
+          assert.equal(await panel.locator('[data-coach-target]').innerText(),'샷');
+        }
+        for(const step of (id==='sacheonseong'?walk.slice(1):walk))await act(panel,step);
         await p.locator('.round-pane[data-complete="true"]:visible').waitFor();
         assert.ok((await panel.locator('.rehearsal-feedback').innerText()).length>=10);
         assert.ok(await panel.evaluate(n=>n.scrollWidth<=n.clientWidth+1));
         const broken=await panel.locator('img').evaluateAll(async imgs=>{await Promise.all(imgs.map(i=>i.decode().catch(()=>{})));return imgs.filter(i=>!i.naturalWidth).map(i=>i.src);});
         assert.deepEqual(broken,[]);
+        if(['chess','janggi','mole','billiards','carom3','pool8','sacheonseong','updown'].includes(id)){
+          await panel.getByRole('button',{name:'혼자 해보기'}).click();
+          assert.equal(await panel.locator('[data-coach-target]').count(),0);
+          await panel.getByRole('button',{name:'힌트 보기'}).click();
+          assert.ok(await panel.locator('[data-coach-target]').count()>0);
+          await panel.getByRole('button',{name:'힌트 접기'}).click();
+          const independent={chess:[9,5,5,0],janggi:[9,5,5,4],mole:[5,1],billiards:[['aim',15],'샷'],carom3:[['aim',-43],'샷'],pool8:[['aim',43],'샷'],sacheonseong:[0,2,3,6,5,8],updown:[['text','37']]};
+          for(const move of independent[id])await act(panel,move);
+          await p.locator('.round-pane[data-complete="true"]:visible').waitFor();
+        }
         await p.locator('.lesson-actions .ap-done:visible').click();
         if(id==='sacheonseong')assert.equal(await p.locator('#timer').innerText(),'00:00.00');
       }finally{if(await panel.count())await p.locator('.lesson-actions .ap-skip:visible').click();}

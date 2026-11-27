@@ -1,4 +1,4 @@
-import {round,tile,element} from './controls.mjs?v=20261127-firsthands1';
+import {round,tile,element} from './controls.mjs?v=20261127-coach1';
 
 function stage(u,kind,label){
   const field=element('div','round-stage '+kind);field.setAttribute('aria-label',label);u.board.append(field);return field;
@@ -30,7 +30,7 @@ const chacha_rush=round('차선 변경과 점프 잇기',{lane:1,leg:0,gauge:100
 });
 const mole=round('구멍을 살피고 두 번 잡기',{hit:0},(u,s)=>{
   u.cue(s.hit===0?'올라온 두더지를 눌러요. 검은 폭탄은 피하세요.':'이번에는 금색 두더지예요. 다른 구멍을 살펴보세요.');
-  const target=s.hit===0?4:2;const bomb=s.hit===0?0:3;
+  const target=s.hit===0?(s.firstAt??4):(s.goldAt??2);const bomb=s.hit===0?0:3;
   u.grid(3,Array.from({length:6},(_,i)=>tile(!s.done&&i===target?'🐹':i===bomb?'●':'◒',!s.done&&i===target?(s.hit?'금색 두더지':'두더지'):i===bomb?'폭탄':'빈 구멍',i===target&&s.hit===1?'hole gold':'hole')),i=>{
     if(i!==target)return u.say(i===bomb?'검은 폭탄이에요. 올라온 두더지만 누르세요.':'빈 구멍이에요. 두더지가 올라온 위치를 보세요.');
     if(!s.hit)return u.change({hit:1},'한 마리 잡았어요. 1점!');
@@ -61,7 +61,7 @@ const breakout=round('받침대로 공 두 번 되받기',{paddle:50,hit:0,fligh
   if(s.flight){ball.classList.add('falling');ball.style.animationDuration=travel+'ms';}
   function move(value){s.paddle=Math.max(10,Math.min(90,value));bat.style.left=s.paddle+'%';input.value=s.paddle;input.previousSibling.textContent='받침대 위치 '+s.paddle;}
   const input=u.range('받침대 위치',s.paddle,10,90,move);
-  const aim=e=>{const r=f.getBoundingClientRect();move(Math.round((e.clientX-r.left)/r.width*100));};
+  const aim=e=>{const r=f.getBoundingClientRect();move(Math.round((e.clientX-r.left)/r.width*100));u.notify();};
   if(!s.done){f.onpointerdown=e=>{f.setPointerCapture(e.pointerId);aim(e);};f.onpointermove=e=>{if(f.hasPointerCapture(e.pointerId))aim(e);};}
   if(s.flight)u.later(s.until-u.now(),()=>{
     if(Math.abs(s.paddle-goal)>12)return u.change({flight:false},'공이 받침대 옆으로 빠졌어요. 공과 같은 가로 위치에 받침대를 두세요.');

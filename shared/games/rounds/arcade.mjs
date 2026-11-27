@@ -1,7 +1,7 @@
-import {round,tile,gap} from './controls.mjs?v=20261127-firsthands1';
-import {puzzles} from './puzzle.mjs?v=20261127-firsthands1';
-import {actionGames} from './action.mjs?v=20261127-firsthands1';
-import {billiardGames} from './billiards.mjs?v=20261127-firsthands1';
+import {round,tile,gap} from './controls.mjs?v=20261127-coach1';
+import {puzzles} from './puzzle.mjs?v=20261127-coach1';
+import {actionGames} from './action.mjs?v=20261127-coach1';
+import {billiardGames} from './billiards.mjs?v=20261127-coach1';
 
 const deck=[['파랑',5,'blue'],['파랑',3,'blue'],['노랑',3,'gold']];
 const onecard=round('세 장을 이어 내고 원카드 외치기',{hand:[0,1,2],top:['빨강',5],called:false},(u,s)=>{
@@ -68,3 +68,4 @@ const bang=round('내 카드로 한 번 방어하기',{phase:0,hp:3},(u,s)=>{
   },'hand');
 });
 export const rounds={...puzzles,...actionGames,...billiardGames,onecard,matgo,yut,tour,tank,bang};
+export {coaches} from './arcade-coaches.mjs?v=20261127-coach1';

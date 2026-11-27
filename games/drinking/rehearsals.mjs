@@ -1,4 +1,4 @@
-import {round,tile,gap,element} from '../../shared/games/rounds/controls.mjs?v=20261127-firsthands1';
+import {round,tile,gap,element} from '../../shared/games/rounds/controls.mjs?v=20261127-coach1';
 const names=['나','민지','준호'];
 function players(u,items,pick,selected=-1){
   u.grid(items.length,items.map((v,i)=>tile(v,v,'seat',i===selected)),pick,'seats');
@@ -81,12 +81,16 @@ const initial=round('ㅅㄱ로 새 단어 이어 가기',{phase:0},(u,s)=>{
     if(v==='사과')return u.say('사과는 이미 나왔어요. 다른 단어를 떠올리세요.');
     if([...v].map(initialOf).join('')!=='ㅅㄱ'||[...v].length!==2)return u.say('첫 글자는 ㅅ, 두 번째 글자는 ㄱ이어야 해요.');
     u.finish(v+' · 초성이 맞고 앞사람의 답과 달라요. 실전에서는 말한 뒤 “말했어요”를 눌러요.');
-  });if(s.phase===1&&!s.done)f.focus({preventScroll:true});
+  });if(!u.demo&&s.phase===1&&!s.done)f.focus({preventScroll:true});
 });
 const minority=round('내 한 표로 달라지는 결과',{vote:null},(u,s)=>{
   u.cue(s.vote===null?'나머지 두 사람은 각자 다른 쪽에 투표했어요. 내가 좋아하는 쪽에 비밀 투표하세요.':'내 표까지 합친 뒤 더 적게 선택된 쪽이 소수파예요.');
-  if(s.vote===null){players(u,['바다','산'],i=>u.finish((i?'바다':'산')+'가 한 표로 소수파예요. 내 선택까지 포함한 결과예요.',{vote:i}));return;}
+  if(s.vote===null){players(u,['바다','산'],i=>u.change({vote:i},'내 표도 집계됐어요.'));return;}
   u.meter('바다',1+Number(s.vote===0),3);u.meter('산',1+Number(s.vote===1),3);
+  u.buttons(['바다','산'].map((name,i)=>{
+    const count=1+Number(s.vote===i);
+    return [name+' '+count+'표',()=>count===1?u.finish(name+' 쪽이 한 표로 소수파예요. 내 표까지 합친 결과예요.'):u.say('두 표는 다수예요. 한 표를 받은 쪽을 찾아요.')];
+  }));
 });
 const mission=round('서로 다른 몸짓 찾아내기',{phase:0},(u,s)=>{
   u.cue(['내 제시어를 혼자 확인하세요.','단어를 기억하고 가리세요.','말과 소품 없이 고양이 수염을 손으로 표현해 보세요.','민지와 준호의 몸짓을 보고 다른 단어를 받은 사람을 고르세요.'][s.phase]);
@@ -114,7 +118,7 @@ const updown=round('범위 안에서 숨은 수 찾기',{lo:1,hi:100,answer:59,h
   u.display(s.lo+' — '+s.hi,'digital');if(s.history.length)u.display(s.history.join('  ·  '),'legend');
   if(!s.done)u.field('다음 수',v=>{const n=Number(v);
     if(!Number.isInteger(n)||n<s.lo||n>s.hi)return u.say('표시된 범위 안의 정수를 입력하세요.');
-    if(n===s.answer)return u.finish('59를 찾았어요. '+(s.history.length+1)+'번 만에 맞혔어요.',{lo:n,hi:n});
+    if(n===s.answer)return u.finish('숨은 수는 '+n+'! '+(s.history.length+1)+'번 만에 맞혔어요.',{lo:n,hi:n});
     const up=n<s.answer,t=up?'UP':'DOWN';u.change({lo:up?n+1:s.lo,hi:up?s.hi:n-1,history:[...s.history,n+' '+t]},t+'! 다음 수는 '+(up?'더 커야':'더 작아야')+' 해요.');
   },{type:'number',min:s.lo,max:s.hi});
 });
@@ -139,3 +143,4 @@ const shapematch=round('녹색 동그라미에만 반응하기',{phase:0},(u,s)=
   signal.onclick=()=>{if(s.phase===1){u.say('삼각형이에요. 손을 떼고 동그라미를 기다리세요.');return;}const ms=(u.now()-s.since)/1000;u.finish('녹색 동그라미가 나타난 뒤 '+ms.toFixed(2)+'초 만에 눌렀어요.');};
 });
 export const rounds={croc,bottle,bomb,stopwatch,liar,king,truth,initial,minority,mission,fingers,imagevote,updown,secretcount,partyroulette,shapematch};
+export {coaches} from './practice-coaches.mjs?v=20261127-coach1';
