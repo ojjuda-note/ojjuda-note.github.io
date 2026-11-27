@@ -5694,3 +5694,40 @@ test('touch duration follows the press and lift timestamps when event delivery i
   assert.equal(app.api.state.charge, .4);
   assert.equal(app.api.state.shot.startedAt, app.now);
 });
+
+test('release carries the held arrow into flight, then yields to the simulated path and stays single-scored', async () => {
+  const app=await appHarness(), {state}=app.api;
+  app.resize(390,540);
+  const {pad,coords}=preciseMainDraw(app,{x:.2,y:0});
+  const held={tip:{x:168,y:304},tail:{x:128,y:425}};
+  state.heldShaft=held;
+  pad.emit('pointerup',coords);await app.flush();
+  const items=()=>app.api.sceneItems(app.engine.targetAt(state.stage,state.time));
+  const start=items().find(i=>i.kind==='tip'&&i.flying);
+  for(const [key,p] of [['point',held.tip],['tail',held.tail]]){
+    const projected=app.api.project(start[key]);
+    assert.ok(Math.abs(projected.x-p.x)<1e-6&&Math.abs(projected.y-p.y)<1e-6);
+  }
+  app.frames(2);
+  assert.ok(app.firstPersonFrame.releaseAge>0&&app.firstPersonFrame.releaseAge<.24);
+  app.until(()=>state.shot.position.z>=state.shot.heldOrigin.reach);
+  const later=items().find(i=>i.kind==='tip'&&i.flying);
+  assert.deepEqual({...later.point},{...state.shot.position});
+  app.until(()=>state.mode==='settling');app.frames(2);
+  assert.ok(items().some(i=>i.kind==='contact-fragment'));
+  assert.ok(state.shotLog[0][0].flightTime>0);
+  app.until(()=>state.mode==='ready');
+  assert.equal(state.used,1);assert.equal(state.shotLog.length,1);
+  assert.equal(app.firstPersonFrame.releaseAge,null);
+});
+
+test('reduced motion retains the normal arrow path and skips release and impact movement', async () => {
+  const app=await appHarness(null,{reducedMotion:true}), {state}=app.api;
+  const {pad,coords}=preciseMainDraw(app,{x:.2,y:0});
+  state.heldShaft={tip:{x:500,y:320},tail:{x:380,y:510}};
+  pad.emit('pointerup',coords);await app.flush();app.frames(2);
+  assert.equal(state.shot.heldOrigin,undefined);assert.equal(app.firstPersonFrame.releaseAge,null);
+  app.until(()=>state.mode==='settling');
+  assert.ok(!app.api.sceneItems(app.engine.targetAt(state.stage,state.time)).some(i=>i.kind==='contact-fragment'));
+  assert.equal(state.used,1);
+});
