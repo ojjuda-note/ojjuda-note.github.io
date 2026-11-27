@@ -5,6 +5,29 @@
 
   const kinds = new Set(['croc', 'bottle', 'bomb', 'stopwatch', 'liar', 'king', 'truth', 'initial', 'minority', 'mission', 'fingers', 'imagevote', 'updown','secretcount','partyroulette','shapematch']);
   const seenResults = new Set();
+  const seenGuides = new Set();
+  const guideKey = (id,local) => 'ojjuda.drinks.practice.v1.'+(local?'local.':'room.')+id;
+  function seen(key) {
+    try {return seenGuides.has(key)||localStorage.getItem(key)==='1';} catch {return seenGuides.has(key);}
+  }
+  const practice = {
+    croc:['이빨 하나를 골라 눌러요.','이빨 🦷','다음 사람 차례예요.'],
+    bottle:['돌아가는 병을 멈춰 보세요.','병 멈추기','병 끝이 가리킨 자리를 확인해요.'],
+    bomb:['주제가 과일이에요. 아직 나오지 않은 ‘사과’를 말하고 차례를 넘겨요.','다음 사람','같은 답은 다시 말할 수 없어요.'],
+    stopwatch:['목표 시간을 마음속으로 센 뒤 눌러요.','멈추기','실전에서는 목표에 가까운 사람이 이겨요.'],
+    liar:['내 제시어를 혼자 확인해요.','내 카드 보기','바다 🌊 · 다른 사람에게는 힌트만 말해요.'],
+    king:['내 번호를 나만 확인해요.','번호 보기','내 번호는 2번이에요.'],
+    truth:['질문에 답하기 어려우면 넘길 수 있어요.','패스','다음 차례로 넘어갔어요.'],
+    initial:['초성 ㅅㄱ에 맞는 두 글자 단어를 말해 보세요.','말했어요','사과, 수건처럼 초성이 맞으면 돼요.'],
+    minority:['둘 중 더 적은 사람이 고를 것 같은 쪽을 선택하세요.','바다 / 산','한 표를 골랐어요.'],
+    mission:['내 제시어를 확인하고 몸짓으로 표현해요.','제시어 보기','고양이 🐈'],
+    fingers:['“오늘 아침을 먹었다”에 해당하면 하나 접으세요.','하나 접기','손가락 네 개가 남았어요.'],
+    imagevote:['질문에 가장 잘 어울리는 친구에게 투표해요.','친구에게 한 표','선택을 비밀로 남겼어요.'],
+    updown:['50에 대한 힌트는 업이에요. 더 큰 수를 불러요.','65','50보다 큰 수를 골랐어요.'],
+    secretcount:['내 차례에 버튼을 한 번 눌러 보세요.','누르기','한 번 눌렀어요. 최대 세 번까지 눌러요.'],
+    partyroulette:['이번 판의 가상 결과를 확인해 보세요.','결과 보기','팡! 화면이 가리킨 사람이 당첨이에요.'],
+    shapematch:['녹색 동그라미가 보일 때 눌러요.','🟢','녹색 동그라미를 눌렀어요.']
+  };
   const focusable = 'button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
   const glassAsset = '/games/drinking/assets/result-glass-v2.webp?v=20261114-result-glass2';
   let active = null;
@@ -239,6 +262,11 @@
   function close(restore = true) {
     if (!dialog && !inertNodes.length) return;
     const dismissed = dialog;
+    if (restore && dismissed?.type==='guide') {
+      const key=guideKey(dismissed.kind,dismissed.local);
+      seenGuides.add(key);
+      try {localStorage.setItem(key,'1');} catch {}
+    }
     document.removeEventListener('keydown', onKey, true);
     document.removeEventListener('focusin', onFocus, true);
     for (const [element, value] of inertNodes) {
@@ -340,8 +368,23 @@
       label.append(checkbox, ' 게임 효과음');
       body.append(label);
     }
+    const [task,action,result]=practice[active.kind];
+    const sample=node('div','dp-guide-example');
+    const instruction=node('p','',task);
+    instruction.setAttribute('role','status');
+    sample.append(instruction);
+    for(const label of action.split(' / ')) {
+      const tryIt=node('button','dp-primary',label);
+      tryIt.type='button';
+      tryIt.onclick=()=>{instruction.textContent=result; sample.querySelectorAll('button').forEach(b=>b.disabled=true);};
+      sample.append(tryIt);
+    }
+    const music=node('button','dp-primary','배경음악');
+    music.type='button'; music.dataset.arcadeMusicToggle='';
+    body.append(sample,music);
     panel.append(body);
-    footer(panel, '알겠어요');
+    window.OjjudaArcadeMusic?.refresh();
+    footer(panel, manual ? '닫기' : '건너뛰기');
     return true;
   }
 
@@ -439,9 +482,12 @@
     const local = options.local === true;
     if (!active || active.kind !== kind || active.local !== local) {
       leave();
-      active = { kind, local, phase: 'entry', roundKey: null, urgent: false, guidePending: true, pendingResult: null };
+      active = { kind, local, phase: 'entry', roundKey: null, urgent: false, guidePending: !seen(guideKey(kind,local)), pendingResult: null };
     }
-    if (mount()) flush();
+    if (mount()) {
+      if (accessible() && active.musicKind!==kind) {window.OjjudaArcadeMusic?.mount(kind);active.musicKind=kind;}
+      flush();
+    }
   }
 
   function update(value = {}) {
@@ -483,6 +529,7 @@
   }
 
   function leave() {
+    window.OjjudaArcadeMusic?.stop();
     close(false);
     clearFit();
     host?.removeEventListener('load', requestFit, true);
@@ -506,8 +553,8 @@
 
   document.addEventListener('ojjuda:drinking-access', event => {
     accessAllowed = event.detail?.allowed === true;
-    if (!accessAllowed) suspend();
-    else if (active && mount()) flush();
+    if (!accessAllowed) {window.OjjudaArcadeMusic?.stop(); if(active)active.musicKind=null; suspend();}
+    else if (active && mount()) {window.OjjudaArcadeMusic?.mount(active.kind);active.musicKind=active.kind;flush();}
   });
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) suspend();

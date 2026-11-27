@@ -58,7 +58,7 @@ function sfx(kind='tap'){
  }catch{}
 }
 function mutate(fn){const before=game.s.serial;const ok=fn();if(ok===false){toast('지금은 사용할 수 없어요.');return;}if(game.s.serial!==before)sfx(game.s.visual?.kind==='damage'?'shot':'tap');save();render();}
-function header(){return `<header class="topbar ${page==='game'?'in-game':''}"><button class="brand" data-action="${tutorial?'tutorial-exit':'home'}" aria-label="뱅 살롱 홈"><img src="assets/logo.png" alt="BANG!"><span>SALOON</span></button><nav class="nav" aria-label="게임 메뉴">${tutorial?'<span class="practice-label">연습 테이블</span><button class="textbtn" data-action="catalog">카드 안내</button><button class="textbtn" data-action="characterCatalog">캐릭터 안내</button>':'<span class="small-meta">THE WILD WEST CARD GAME</span>'}<button class="iconbtn" data-action="sound" aria-label="${sound?'소리 끄기':'소리 켜기'}" title="${sound?'소리 끄기':'소리 켜기'}">${sound?'♪':'♩'}</button>${tutorial?'<button class="textbtn" data-action="tutorial-restart">처음부터</button><button class="textbtn" data-action="tutorial-exit">나가기</button>':`${page==='game'&&!online.playing?`<button class="textbtn" data-action="speed" aria-label="진행 속도 변경">${fast?'빠르게':'보통 속도'}</button><span class="practice-label">연습 · 순위 제외</span>`:(online.playing?`<span class="practice-label">${online.room.mode==='solo'?'컴퓨터 대전 · 순위 반영':'방 '+online.room.code}</span>`:'<button class="textbtn tutorial-nav" data-action="tutorial-start">따라 배우기</button>')}<button class="textbtn" data-action="rules">게임 방법</button>${page==='game'?`<button class="textbtn" data-action="new">${online.playing?'대전 나가기':'새 게임'}</button>`:''}`}</nav></header>`;}
+function header(){return `<header class="topbar ${page==='game'?'in-game':''}"><button class="brand" data-action="${tutorial?'tutorial-exit':'home'}" aria-label="뱅 살롱 홈"><img src="assets/logo.png" alt="BANG!"><span>SALOON</span></button><nav class="nav" aria-label="게임 메뉴"><button type="button" data-arcade-music-toggle data-compact class="iconbtn" aria-label="배경음악 켜기·끄기">♫</button>${tutorial?'<span class="practice-label">연습 테이블</span><button class="textbtn" data-action="catalog">카드 안내</button><button class="textbtn" data-action="characterCatalog">캐릭터 안내</button>':'<span class="small-meta">THE WILD WEST CARD GAME</span>'}<button class="iconbtn" data-action="sound" aria-label="${sound?'소리 끄기':'소리 켜기'}" title="${sound?'소리 끄기':'소리 켜기'}">${sound?'♪':'♩'}</button>${tutorial?'<button class="textbtn" data-action="tutorial-restart">처음부터</button><button class="textbtn" data-action="tutorial-exit">나가기</button>':`${page==='game'&&!online.playing?`<button class="textbtn" data-action="speed" aria-label="진행 속도 변경">${fast?'빠르게':'보통 속도'}</button><span class="practice-label">연습 · 순위 제외</span>`:(online.playing?`<span class="practice-label">${online.room.mode==='solo'?'컴퓨터 대전 · 순위 반영':'방 '+online.room.code}</span>`:'<button class="textbtn tutorial-nav" data-action="tutorial-start">따라 배우기</button>')}<button class="textbtn" data-action="rules">게임 방법</button>${page==='game'?`<button class="textbtn" data-action="new">${online.playing?'대전 나가기':'새 게임'}</button>`:''}`}</nav></header>`;}
 function credits(){return `<footer class="credits">비공식 팬 게임 · BANG!® &amp; 카드 그림 © daVinci Editrice S.r.l.<br><a href="https://bang.dvgiochi.com/cardslist.php?id=1&lang=en" target="_blank" rel="noopener">공식 카드 자료</a> · 그림 Alessandro Pierangelini · 게임 Emiliano Sciarra</footer>`;}
 function lobby(){
  if(online.room?.status==='waiting')return `${header()}${online.waiting()}`;
@@ -184,7 +184,7 @@ function paintTutorial(){
  if(!tutorial||tutorial.done){coach.hidden=true;coach.innerHTML='';document.documentElement.style.setProperty('--coach-space','0px');return;}
  if(guideOpen()){coach.hidden=true;document.documentElement.style.setProperty('--coach-space','0px');return;}
  const l=tutorial.lesson,expected=tutorial.expected();
- coach.hidden=false;coach.innerHTML=`<div class="coach-top"><span>직접 따라 배우기 <b>${l.chapter+1} / 6</b></span><button data-action="tutorial-exit">나중에 하기 ×</button></div><div class="coach-progress" aria-label="${CHAPTERS[l.chapter]} 단계">${CHAPTERS.map((name,i)=>`<span class="${i<l.chapter?'complete':i===l.chapter?'current':''}" title="${name}"></span>`).join('')}</div><div class="coach-copy" aria-live="polite"><h2>${l.title}</h2><p>${l.body}</p></div><div class="coach-bottom"><span>${l.tip}</span>${expected.action==='tutorial-next'?`<button class="primary" data-action="tutorial-next">${l.button||'다음'} →</button>`:'<b class="coach-tap">빛나는 곳을 눌러보세요</b>'}</div>`;
+ coach.hidden=false;coach.innerHTML=`<div class="coach-top"><span>직접 따라 배우기 <b>${l.chapter+1} / 6</b></span><button data-action="tutorial-exit">건너뛰기</button></div><div class="coach-progress" aria-label="${CHAPTERS[l.chapter]} 단계">${CHAPTERS.map((name,i)=>`<span class="${i<l.chapter?'complete':i===l.chapter?'current':''}" title="${name}"></span>`).join('')}</div><div class="coach-copy" aria-live="polite"><h2>${l.title}</h2><p>${l.body}</p></div><div class="coach-bottom"><span>${l.tip}</span>${expected.action==='tutorial-next'?`<button class="primary" data-action="tutorial-next">${l.button||'다음'} →</button>`:'<b class="coach-tap">빛나는 곳을 눌러보세요</b>'}</div>`;
  // Only the current exercise action is enabled. Exit and restart remain available.
  document.querySelectorAll('#app button, #overlay button').forEach(button=>{
   const action=button.dataset.action;
@@ -307,7 +307,13 @@ document.addEventListener('click',e=>{
  if(action==='online-leave'){modal=null;void online.run('leave');return;}
  if(action==='online-copy'){navigator.clipboard?.writeText(online.room.code).then(()=>toast('방 코드를 복사했어요.')).catch(()=>toast('방 코드를 직접 복사해 주세요.'));return;}
  if(action==='online-surrender'){modal=null;void online.run('surrender').then(r=>{if(r?.ok){online.accept(null);page='lobby';soloLobby=false;render();}});return;}
- if(action==='solo-lobby'){soloLobby=true;render();return;}
+ if(action==='solo-lobby'){
+   soloLobby=true;
+   let first=!tutorialDone && !saved;
+   try {first=first && localStorage.getItem('bang-tutorial-offered')!=='1';localStorage.setItem('bang-tutorial-offered','1');} catch {}
+   if(first)beginTutorial();else render();
+   return;
+ }
  if(action==='card'&&!tutorial){
   if(page!=='game'||online.busy||hintBusy)return;
   const card=game.p(me()).hand.find(c=>c.id===n);if(!card)return;

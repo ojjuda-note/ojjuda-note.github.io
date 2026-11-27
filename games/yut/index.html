@@ -13,7 +13,10 @@
 <script defer src="/features/arcade/arcade-rooms.js?v=20261120-service-actions1"></script>
 <script defer src="/shared/games/guest-game-scores.js?v=20261117-arcade-score-repair1"></script>
 <script defer src="/shared/games/game-results.js?v=20261120-service-actions1"></script>
-<script type="module" src="./play.mjs?v=20261122-yut-solo-first1"></script></head>
+<script type="module" src="./play.mjs?v=20261122-yut-solo-first1"></script><script defer src="/shared/games/arcade-music.js?v=20261127-arcade-practice1" data-game="yut"></script>
+<link rel="stylesheet" href="/shared/games/arcade-practice.css?v=20261127-arcade-practice1">
+<script defer src="/shared/games/arcade-practice.js?v=20261127-arcade-practice1" data-game="yut"></script>
+</head>
 <body data-mp-entry="true">
 <header class="mp-entry-bar"><a class="mp-entry-back arcade-return" href="/world.html?tab=arcade">← 오쭈다 오락실</a><span>오쭈다 오락실</span></header>
 <main id="setup">
@@ -34,7 +37,7 @@
   <header class="rail">
     <a class="rail-btn back" href="/world.html?tab=arcade" aria-label="오락실로 돌아가기"><i aria-hidden="true"></i><span>오락실</span></a>
     <h1><i class="moon-mark" aria-hidden="true"></i>윷놀이</h1>
-    <button id="settings" class="rail-btn" aria-haspopup="dialog"><i class="menu-mark" aria-hidden="true"></i><span>메뉴</span></button>
+    <button type="button" data-arcade-music-toggle data-compact class="rail-btn" aria-label="배경음악 켜기·끄기">♫</button><button id="settings" class="rail-btn" aria-haspopup="dialog"><i class="menu-mark" aria-hidden="true"></i><span>메뉴</span></button>
   </header>
   <section class="scene" aria-label="윷판">
     <canvas id="board" role="img" aria-describedby="note" aria-label="팀 이름과 번호가 붙은 십이지 동물 말"></canvas>

@@ -43,11 +43,12 @@
 <script src="/shared/games/game-results.js?v=20261120-service-actions1"></script>
 <style>.dialog>.card:has(> .game-result-card){padding:0;background:transparent;border:0;box-shadow:none;width:min(430px,100%);max-width:430px}</style>
 <link rel="stylesheet" href="/shared/games/arcade-return.css?v=20261112-arcade-entry-return1">
+<script defer src="/shared/games/arcade-music.js?v=20261127-arcade-practice1" data-game="matgo"></script>
 </head>
 <body data-mp-entry="true">
 <div id="gate" class="gate" hidden><h1>오쭈다 맞고</h1><p id="gate-message">입장 정보를 확인하고 있어요.</p><button id="retry" class="btn" hidden>다시 확인</button></div>
 <div id="app">
-  <header class="top"><h1><em>맞고</em></h1><button id="money" class="pill money" aria-label="골드 잔액과 충전"></button><details class="game-menu"><summary id="menu" class="pill" aria-label="게임 메뉴">⋯</summary><div class="menu-options"><p class="pending" id="goldPending"></p><button id="sound" class="pill" type="button" aria-label="효과음 끄기" aria-pressed="true">🔊</button><button id="rules" class="pill">규칙</button><button id="gukjin" class="pill" hidden></button></div></details><button id="exit" class="pill">나가기</button></header>
+  <header class="top"><h1><em>맞고</em></h1><button id="money" class="pill money" aria-label="골드 잔액과 충전"></button><details class="game-menu"><summary id="menu" class="pill" aria-label="게임 메뉴">⋯</summary><div class="menu-options"><p class="pending" id="goldPending"></p><button type="button" data-arcade-music-toggle class="pill" aria-label="배경음악 켜기·끄기">배경음악</button><button id="sound" class="pill" type="button" aria-label="효과음 끄기" aria-pressed="true">🔊</button><button id="rules" class="pill">규칙</button><button id="gukjin" class="pill" hidden></button></div></details><button id="exit" class="pill">나가기</button></header>
   <p id="room-label" class="room-label" hidden></p>
   <button id="sound-start" class="pill sound-start" type="button" hidden>🔊 소리 켜기</button>
   <p id="entry-loading" role="status" style="text-align:center;color:#797487;font-size:12px">입장 정보를 확인하고 있어요.</p>
@@ -56,6 +57,6 @@
 </div>
 <div id="toast" role="status" hidden></div>
 <div id="event" class="event" aria-live="polite" hidden></div>
-<script type="module" src="/games/matgo/matgo-online.mjs?v=20261123-matgo-lobby-retain1"></script>
+<script type="module" src="/games/matgo/matgo-online.mjs?v=20261127-arcade-practice1"></script>
 </body>
 </html>

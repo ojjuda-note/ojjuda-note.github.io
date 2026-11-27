@@ -1,0 +1,28 @@
+dialog.arcade-practice {
+  box-sizing:border-box; position:fixed; inset:0; margin:auto; padding:24px; width:min(350px,calc(100vw - 32px));
+  max-height:calc(100dvh - 32px); overflow:auto; border:1px solid #c3d8cb; border-radius:20px;
+  background:#fbfdf8; color:#183a32; font:500 16px/1.5 system-ui,sans-serif; text-align:start;
+  box-shadow:0 16px 60px #10241e40; z-index:10000;
+}
+.arcade-practice::backdrop { background:#12261ec2; }
+.arcade-practice .ap-eyebrow { color:#48665c; font-size:12px; }
+.arcade-practice .ap-title { margin:3px 0 6px; font-size:24px; line-height:1.25; }
+.arcade-practice .ap-prompt { margin:0 0 16px; }
+.arcade-practice .ap-choices { display:flex; gap:6px; }
+.arcade-practice button { font:inherit; cursor:pointer; border-radius:10px; min-height:44px; }
+.arcade-practice .ap-tile { flex:1; min-width:0; padding:6px; background:#fff; color:#213a30; border:1px solid #aebfb6; }
+.arcade-practice .ap-tile[aria-pressed=true] { background:#d9eedb; border-color:#438567; }
+.arcade-practice .ap-feedback { min-height:1.5em; margin:8px 0; color:#335b49; font-size:14px; }
+.arcade-practice .ap-skip,.arcade-practice .ap-done { width:100%; padding:6px 14px; }
+.arcade-practice .ap-skip { background:transparent; color:#345b4b; border:1px solid #b6c7bd; }
+.arcade-practice .ap-done { background:#285f48; color:white; border:0; }
+.arcade-practice button[hidden] { display:none; }
+.arcade-practice button:focus-visible { outline:3px solid #a24511; outline-offset:2px; }
+.ap-track { height:40px; position:relative; margin-bottom:10px; }
+.ap-track i { position:absolute; height:16px; width:30%; border-radius:4px; }
+.ap-base { bottom:2px; left:35%; background:#406654; }
+.ap-moving { top:4px; left:0; background:#cb783c; animation:ap-slide 1.5s ease-in-out infinite alternate; }
+@keyframes ap-slide { to { left:70%; } }
+@media (prefers-reduced-motion:reduce) { .ap-moving { animation:none; left:35%; } }
+.arcade-practice .ap-game-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; margin:12px 0; }
+.ap-entry-link { min-height:32px; padding:4px 8px; color:inherit; background:transparent; border:1px solid currentColor; border-radius:8px; font:inherit; font-size:12px; cursor:pointer; }

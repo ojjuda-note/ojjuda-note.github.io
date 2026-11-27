@@ -825,14 +825,14 @@
       1 + Math.floor(Math.max(0, peakSpeed - SPEED_GATE) / 300);
     const globalSoundOn = () => typeof api.soundEnabled !== 'function' || !!api.soundEnabled();
     function ensureAudio() {
-      if (!musicOn || !globalSoundOn() || audio) { if (audio?.state === 'suspended' && globalSoundOn()) void audio.resume().catch(() => {}); return; }
+      if ((!musicOn && !globalSoundOn()) || audio) { if (audio?.state === 'suspended' && (musicOn || globalSoundOn())) void audio.resume().catch(() => {}); return; }
       try {
         audio = new (window.AudioContext || window.webkitAudioContext)();
         if (audio.state === 'suspended') void audio.resume().catch(() => {});
       } catch { audio = null; }
     }
-    function tone(frequency, duration, volume, wave = 'sine') {
-      if (!musicOn || !globalSoundOn() || !audio || audio.state !== 'running') return;
+    function tone(frequency, duration, volume, wave = 'sine', background = false) {
+      if ((background ? !musicOn : !globalSoundOn()) || !audio || audio.state !== 'running' || document.hidden) return;
       try {
         const now = audio.currentTime, oscillator = audio.createOscillator(), gain = audio.createGain();
         oscillator.type = wave; oscillator.frequency.setValueAtTime(frequency, now);
@@ -845,8 +845,8 @@
     }
     function music() {
       const frequency = MELODY[note++ % MELODY.length];
-      tone(frequency / 2, .19, .011, 'triangle');
-      if (note % 4 === 0) tone(frequency, .17, .008);
+      tone(frequency / 2, .19, .011, 'triangle', true);
+      if (note % 4 === 0) tone(frequency, .17, .008, 'sine', true);
     }
     function sound(kind) {
       if (kind === 'jump' || kind === 'slide') api.sound?.tap?.();
