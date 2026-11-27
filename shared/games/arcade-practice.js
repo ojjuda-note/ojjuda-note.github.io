@@ -134,7 +134,7 @@
     const options=new URL(location.href).searchParams;
     const invited=['room','join','invite','code','create','party','resume','mode'].some(key=>options.has(key));
     if (!invited && window===window.parent) {
-      offer(standalone,document.querySelector('.game-entry,.entry-actions,.mp-entry-bar,.wallet-menu-panel,#settings'));
+      offer(standalone,document.querySelector('.game-entry') || document.querySelector('.entry-actions,.wallet-menu-panel,div#settings'));
     }
     document.addEventListener('click',event=>{
       if(event.target.closest?.('[data-practice-replay]')) show(standalone,{replay:true});

@@ -17,7 +17,7 @@
     <button id="settings" aria-label="난이도 설정"><span id="mode-label">보통 · 3장</span><span aria-hidden="true">⌄</span></button>
     <span id="time" aria-label="게임 시간">00:00</span>
     <button id="pause" aria-label="일시 정지" title="일시 정지">Ⅱ</button>
-    <button type="button" data-arcade-music-toggle data-compact aria-label="배경음악 켜기·끄기">♫</button><button id="help" aria-label="게임 방법" title="게임 방법">?</button>
+    <button id="help" aria-label="게임 방법" title="게임 방법">?</button>
     <a class="monthly-shortcut" href="/features/arcade/monthly-ranking.html?game=solitaire" target="_blank" rel="noopener noreferrer" aria-label="솔리테어 이번 달 순위" title="이번 달 순위">🏆</a>
   </header>
   <div id="board-viewport" class="board-viewport" aria-label="두 손가락으로 확대·축소 및 화면 이동">
@@ -53,7 +53,7 @@
     <button type="button" id="entry-continue" class="ge-primary" hidden>이어서 하기</button>
     <button type="button" id="entry-start" class="ge-primary"><span class="entry-start-label">게임 시작</span></button>
     <p id="entry-note" class="ge-hint" role="status">난이도를 고른 뒤 시작하세요.</p>
-    <div class="entry-actions">
+    <div class="entry-actions"><button type="button" class="ge-secondary" data-arcade-music-toggle>배경음악</button>
       <button type="button" id="entry-help" class="ge-secondary">게임 방법</button>
     </div>
     <details class="ge-more">
@@ -68,5 +68,5 @@
 <dialog id="dialog"><div id="dialog-content"></div></dialog>
 <div id="confetti" aria-hidden="true"></div>
 <script src="/shared/games/puzzle-record-queue.js?v=20261117-arcade-score-repair1"></script>
-<script type="module" src="./app.js?v=20261122-solo-normal1"></script>
+<script type="module" src="./app.js?v=20261127-arcade-practice1"></script>
 </body></html>
