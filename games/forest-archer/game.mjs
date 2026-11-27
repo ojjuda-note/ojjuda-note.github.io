@@ -649,7 +649,7 @@ function updateCamera(dt=0,immediate=false){
     return;
   }
   const follow=desiredFollowCamera(state.shot.position,base,{w,h});
-  if(state.shot.projectileType!=='bullet'){
+  if(state.shot.projectileType!=='bullet'&&!motionPreference?.matches){
     const z=state.shot.position.z;
     // Let the arrow gain distance from the viewer, even while the camera follows.
     const lag=Math.max(0,z-5)*.24;
