@@ -132,21 +132,20 @@
     }
     const apps = group('앱 다운로드');
     apps.classList.add('app-store-downloads');
-    const agitLink = link(apps, 'app-agit', '오쭈다 아지트 설치', 'https://play.google.com/store/apps/details?id=kr.ojjuda.agit&hl=ko', true);
-    agitLink.dataset.storeApp = 'agit';
-    agitLink.rel = 'noopener noreferrer';
-    agitLink.setAttribute('aria-label', '오쭈다 아지트 Google Play에서 설치 (새 창)');
-
-    for (const [app, name] of [['pajang', '오쭈다 파장'], ['park', '오쭈다 공원']]) {
-      const storeLink = link(apps, `app-${app}`, `${name} 설치`, `https://play.google.com/store/apps/details?id=kr.ojjuda.${app}&hl=ko`, true);
+    const appStoreNote = node('p', 'app-store-note');
+    appStoreNote.append(document.createTextNode('처음 설치할 때는 등록된 Google 계정으로 먼저 참여하세요. '));
+    const downloads = [
+      ['agit', '오쭈다 아지트', '아지트', 'kr.ojjuda.agit'],
+      ['pajang', '오쭈다 파장', '파장', 'kr.ojjuda.pajang'],
+      ['park', '오쭈다 공원', '공원', 'kr.ojjuda.park'],
+      ['focus', '오쭈다포커스', '포커스', 'kr.framenote.camera.studio']
+    ];
+    for (const [app, name, shortName, packageId] of downloads) {
+      const storeLink = link(apps, `app-${app}`, `${name} 설치`, `https://play.google.com/store/apps/details?id=${packageId}&hl=ko`, true);
       storeLink.dataset.storeApp = app;
       storeLink.rel = 'noopener noreferrer';
       storeLink.setAttribute('aria-label', `${name} Google Play에서 설치 (새 창)`);
-    }
-    const appStoreNote = node('p', 'app-store-note');
-    appStoreNote.append(document.createTextNode('테스트 참여를 마친 계정은 Google Play에서 설치할 수 있어요. 처음이면 먼저 참여: '));
-    for (const [app, name] of [['agit', '아지트'], ['pajang', '파장'], ['park', '공원']]) {
-      const testLink = link(appStoreNote, `test-${app}`, `${name} 참여`, `https://play.google.com/apps/testing/kr.ojjuda.${app}?hl=ko`, true);
+      const testLink = link(appStoreNote, `test-${app}`, `${shortName} 참여`, `https://play.google.com/apps/testing/${packageId}?hl=ko`, true);
       testLink.rel = 'noopener noreferrer';
       testLink.setAttribute('aria-label', `${name} 비공개 테스트 참여 (새 창)`);
     }

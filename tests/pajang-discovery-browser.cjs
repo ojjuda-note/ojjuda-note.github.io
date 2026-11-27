@@ -573,7 +573,9 @@ async function checkNavigation(page){
   await choose('마음함');await heading('마음함').waitFor();
   await choose('내 파장');await heading('내 파장').waitFor();
   const settings=page.getByRole('region',{name:'파장 설정',exact:true});
-  assert.deepEqual(await settings.locator(':scope > :last-child [data-store-app]').evaluateAll(links=>links.map(a=>a.dataset.storeApp)),['agit','pajang','park']);
+  assert.deepEqual(await settings.locator(':scope > :last-child [data-store-app]').evaluateAll(links=>links.map(a=>a.dataset.storeApp)),['agit','pajang','park','focus']);
+  assert.equal(await settings.locator('[data-store-app="focus"]').getAttribute('href'),'https://play.google.com/store/apps/details?id=kr.framenote.camera.studio&hl=ko');
+  assert.equal(await settings.getByText('포커스 참여',{exact:true}).getAttribute('href'),'https://play.google.com/apps/testing/kr.framenote.camera.studio?hl=ko');
   const helpMenu=settings.locator('details').filter({has:page.locator('summary').filter({hasText:'도움말'})});
   assert.equal(await helpMenu.evaluate(el=>el.open),false,'a fresh settings page starts with Help collapsed');
   await helpMenu.locator('summary').click();
