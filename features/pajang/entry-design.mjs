@@ -60,7 +60,28 @@ export function enhanceGuestGate(){
   organization.append(make('span','ojjuda-settings-label','조직도'),arrow);
   const serviceBanners=make('ojjuda-service-banners','');
   serviceBanners.setAttribute('current','pajang');
-  helpMenu.body.append(organization);settingsMenu.body.append(helpMenu.menu,serviceBanners);
+  const downloads=detail('앱 다운로드');
+  const note=make('p','app-store-note','처음 설치할 때는 등록된 Google 계정으로 먼저 참여하세요. ');
+  const apps=[
+    ['agit','아지트','kr.ojjuda.agit'],['pajang','파장','kr.ojjuda.pajang'],
+    ['park','공원','kr.ojjuda.park'],['focus','포커스','kr.framenote.camera.studio']
+  ];
+  for(const [id,name,packageId] of apps){
+    const install=make('a','ojjuda-settings-row');
+    install.dataset.storeApp=id;
+    install.href='https://play.google.com/store/apps/details?id='+packageId+'&hl=ko';
+    install.target='_blank';install.rel='noopener noreferrer';
+    const label=id==='focus'?'오쭈다포커스':'오쭈다 '+name;
+    install.append(make('span','ojjuda-settings-label',label+' 설치'),arrow.cloneNode(true));
+    downloads.body.append(install);
+    const join=make('a','',name+' 참여');
+    join.href='https://play.google.com/apps/testing/'+packageId+'?hl=ko';
+    join.target='_blank';join.rel='noopener noreferrer';
+    if(note.childElementCount)note.append(' · ');
+    note.append(join);
+  }
+  downloads.body.append(note);
+  helpMenu.body.append(organization);settingsMenu.body.append(helpMenu.menu,serviceBanners,downloads.menu);
   if(new URLSearchParams(location.search).get('tab')==='profile')settingsMenu.menu.open=true;
   list.append(settingsMenu.menu);settings.append(list);
   footer.append(account,message,settings);invitation.append(opening,footer);
