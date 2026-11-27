@@ -10,6 +10,7 @@ function fixture() {
   const w=dom.window;
   w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
   w.HTMLDialogElement.prototype.close=function(){this.open=false;};
+  w.eval(source('shared/games/tutorial-visits.js'));
   w.eval(source('shared/games/lesson-panel.js'));
   w.eval(source('shared/games/arcade-practice.js'));
   return {dom,w,practice:w.OjjudaArcadePractice,doc:w.document};
@@ -89,4 +90,34 @@ test('each game and rule variant has three reachable exercises with private retr
   }
   assert.equal(practice.info('carom4').id,'billiards');assert.equal(practice.info('screw_box').id,'screw');
  }finally{dom.window.close();}
+});
+
+test('the standalone practice link stays available after the first display',()=>{
+  const {dom,doc,practice}=fixture();
+  try{
+    const host=doc.createElement('section');doc.body.append(host);
+    assert.ok(practice.show('solitaire'));doc.querySelector('.ap-skip').click();
+    practice.offer('solitaire',host);practice.offer('solitaire',host);
+    assert.equal(host.querySelectorAll('.ap-entry-link').length,1);
+    host.querySelector('.ap-entry-link').click();assert.ok(doc.querySelector('dialog[open]'));
+  }finally{dom.window.close();}
+});
+
+test('failed mounts stay eligible and previous variant and BANG visits suppress the game-wide offer',()=>{
+  const {dom,w,doc,practice}=fixture();
+  try{
+    const proto=w.HTMLDialogElement.prototype,open=proto.showModal;
+    proto.showModal=()=>{throw Error('unavailable');};
+    assert.equal(practice.show('chess'),false);
+    proto.showModal=open;
+    assert.ok(practice.show('chess'));doc.querySelector('.ap-skip').click();
+    w.localStorage.setItem('ojjuda.arcade.practice.v1.pool8','1');
+    assert.equal(practice.show('carom3'),false);
+    assert.equal(practice.show('carom4'),false);
+    assert.ok(practice.show('screw_flat',{replay:true}));doc.querySelector('.ap-skip').click();
+    assert.equal(practice.show('screw_box'),false);
+    w.localStorage.setItem('bang-tutorial-complete','1');
+    assert.equal(practice.show('bang'),false);
+    assert.ok(practice.show('bang',{replay:true}));
+  }finally{dom.window.close();}
 });

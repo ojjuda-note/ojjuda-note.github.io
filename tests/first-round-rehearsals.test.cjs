@@ -133,3 +133,39 @@ test('Escape closes practice without sending an exit from the embedded Mines gam
   assert.ok(await game.locator('[data-practice-replay]').evaluate(b=>b===document.activeElement));
   assert.equal(await page.evaluate(()=>received.includes('ojjuda-game-exit')),false);
 });
+
+test('an arcade card launches directly on its second visit even after refreshing the open lesson',async t=>{
+  const browser=await chromium.launch({headless:true,...(process.env.OJJUDA_CHROMIUM_PATH?{executablePath:process.env.OJJUDA_CHROMIUM_PATH}:{})});
+  t.after(()=>browser.close());
+  const {page,errors}=await browserSession(browser,{actor:'arcade-visitor',rpc:()=>({})});
+  const entry=origin+'/tests/arcade-guide-entry';
+  await page.route(entry,route=>route.fulfill({contentType:'text/html; charset=utf-8',body:`
+    <section class="arcade-card"><div data-arcade-games><button class="gbtn" data-v="chess" onclick="plays++">체스</button></div></section>
+    <script>window.plays=0</script>
+    <script src="/shared/games/tutorial-visits.js"></script><script src="/shared/games/lesson-panel.js"></script>
+    <script src="/shared/games/arcade-practice.js"></script><script src="/features/arcade/game-practice-menu.js"></script>`}));
+  await page.goto(entry);
+  await page.getByRole('button',{name:'체스',exact:true}).click();await page.locator('.round-pane:visible').waitFor();
+  assert.equal(await page.evaluate(()=>plays),0);
+  await page.reload();await page.getByRole('button',{name:'체스',exact:true}).click();
+  assert.equal(await page.locator('dialog[open]').count(),0);
+  assert.equal(await page.evaluate(()=>plays),1);
+  assert.deepEqual(errors,[]);
+});
+
+test('party guides preserve interrupted and previous visits across room and single-phone modes',async t=>{
+  const browser=await chromium.launch({headless:true,...(process.env.OJJUDA_CHROMIUM_PATH?{executablePath:process.env.OJJUDA_CHROMIUM_PATH}:{})});
+  t.after(()=>browser.close());
+  const {page,errors}=await browserSession(browser,{actor:'guide-visitor',rpc:()=>({})});
+  await page.goto(origin+'/tests/drinking-presentation-frame.html');
+  const enter=(kind,local)=>page.evaluate(([kind,local])=>DrinkingPresentation.enter(kind,{local}),[kind,local]);
+  const guide=page.locator('[data-drinking-dialog="guide"]:visible');
+  await enter('bottle',true);await guide.waitFor();
+  await page.reload();await enter('bottle',false);assert.equal(await guide.count(),0);
+  await page.locator('[data-drinking-help]').click();await guide.waitFor();
+  await page.evaluate(()=>DrinkingPresentation.leave());
+  await page.evaluate(()=>localStorage.setItem('ojjuda.drinks.practice.v1.room.bomb','1'));
+  await enter('bomb',true);assert.equal(await guide.count(),0);
+  await enter('liar',false);await guide.waitFor();
+  assert.deepEqual(errors,[]);
+});

@@ -8,6 +8,7 @@ async function fixture(available,storage={}){
  for(const [key,value] of Object.entries(storage))w.localStorage.setItem(key,typeof value==='string'?value:JSON.stringify(value));
  const online={embedded:false,available,busy:false,room:null,get playing(){return !!this.room?.state;},run:async(...args)=>{calls.push(args);return null;},move:async move=>{calls.push(['move',move]);online.busy=true;online.onChange();return null;}};
  Object.assign(w,{Game,...data,...tutorial,recommend,createHintPurchase,CARD_GUIDES,CHARACTER_GUIDES,online});
+ w.eval(fs.readFileSync(path.join(__dirname,'../shared/games/tutorial-visits.js'),'utf8'));
  let source=fs.readFileSync(path.join(__dirname,'../games/bang/app.js'),'utf8').replace(/^import .*;\n/gm,'');
  source+='\nwindow.qa={expected(){return {...tutorial.expected(),step:tutorial.step,done:tutorial.done};},table(s,remote=false){clearTimeout(botTimer);tutorial=null;practicePreview=null;game=new Game(structuredClone(s));page="game";selected=null;targeting=false;modal=null;resultSeen=false;eliminationSeen=false;online.busy=false;online.room=remote?{id:"test",version:1,seat:0,mode:"solo",status:"active",state:game.s}:null;render();},result(record){clearTimeout(botTimer);const g=new Game(null,()=>.42);g.create({count:4,role:"sheriff",character:"bart"});g.s.winner="sheriff";game=g;page="game";resultSeen=false;online.room=record===false?null:{id:"qa",mode:"solo",seat:0,code:"TEST",status:"finished",state:g.s,record};render();},tutorial(){online.room=null;beginTutorial();},snapshot(){return JSON.stringify({state:game.s,step:tutorial?.step,selected,targeting,settings});},stepTo(step){while(tutorial.step<step&&!tutorial.done){const e=tutorial.expected();tutorialAction(e.action,e.value);}}}';w.eval(source);
  return {dom,w,calls};
@@ -306,4 +307,13 @@ test('saved waiting rooms require resume while explicit invitations still join d
    assert.equal(!!w.document.querySelector('[data-action=online-resume]'),!joinCode);
   }finally{dom.window.close();}
  }
+});
+
+test('BANG shares its first visit with the arcade and keeps manual practice available',async()=>{
+ const {dom,w}=await fixture(false,{'ojjuda.arcade.practice.v1.bang':'1'});try{
+  w.document.querySelector('[data-action=solo-lobby]').click();
+  assert.equal(w.document.querySelector('#tutorial-coach').hidden,true);
+  w.document.querySelector('[data-action=tutorial-start]').click();
+  assert.equal(w.document.querySelector('#tutorial-coach').hidden,false);
+ }finally{dom.window.close();}
 });

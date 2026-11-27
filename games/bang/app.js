@@ -163,6 +163,7 @@ function beginTutorial(){
  clearTimeout(botTimer);
  if(!tutorial){if(page==='game')save();tutorialOrigin={game,page,selected,targeting,eliminationSeen,resultSeen};}
  practicePreview=null;tutorial=new Tutorial();game=tutorial.game;page='game';selected=null;targeting=false;modal=null;sidSelected=[];eliminationSeen=false;resultSeen=false;tutorialFocusStep=-1;render();
+ window.OjjudaTutorialVisits?.record('bang');
 }
 function leaveTutorial(){
  const origin=tutorialOrigin;practicePreview=null;tutorial=null;tutorialOrigin=null;modal=null;
@@ -318,9 +319,7 @@ document.addEventListener('click',e=>{
  if(action==='online-surrender'){modal=null;void online.run('surrender').then(r=>{if(r?.ok){online.accept(null);page='lobby';soloLobby=false;render();}});return;}
  if(action==='solo-lobby'){
    soloLobby=true;
-   let first=!tutorialDone && !saved;
-   try {first=first && localStorage.getItem('bang-tutorial-offered')!=='1';localStorage.setItem('bang-tutorial-offered','1');} catch {}
-   if(first)beginTutorial();else render();
+   if(!tutorialDone&&!saved&&window.OjjudaTutorialVisits?.has('bang')===false)beginTutorial();else render();
    return;
  }
  if(action==='card'&&!tutorial){
