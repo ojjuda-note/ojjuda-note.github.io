@@ -2,7 +2,8 @@
 // decoded memory on phones while Web Audio keeps the two ends sample-aligned.
 export async function renderLoop(game, signal) {
   if (!/^[a-z_]+$/.test(game)) throw new Error('Unknown soundtrack');
-  const response = await fetch('/shared/games/soundtracks/' + game + '.mp3?v=20261127-ensemble1', {signal});
+  const revision = game === 'sacheonseong' ? '20261127-tearoom1' : '20261127-ensemble1';
+  const response = await fetch('/shared/games/soundtracks/' + game + '.mp3?v=' + revision, {signal});
   if (!response.ok) throw new Error('Soundtrack unavailable');
   const encoded = await response.arrayBuffer();
   const Offline = window.OfflineAudioContext || window.webkitOfflineAudioContext;

@@ -39,7 +39,7 @@
     const target=context, id=game;
     const pending = new AbortController();
     request = pending;
-    preparing=import('./arcade-compositions.mjs?v=20261127-ensemble1').then(module=>module.renderLoop(id, pending.signal)).then(({buffer,loopEnd})=>{
+    preparing=import('./arcade-compositions.mjs?v=20261127-tearoom1').then(module=>module.renderLoop(id, pending.signal)).then(({buffer,loopEnd})=>{
       if (context!==target || game!==id) return;
       const gain=target.createGain();
       gain.gain.value=.42;gain.connect(target.destination);

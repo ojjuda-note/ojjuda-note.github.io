@@ -71,7 +71,7 @@
   dialog.querySelector('.ge-primary').addEventListener('click',()=>{
    if(frame)return;
    frame=document.createElement('iframe');frame.title='사천성 게임판';frame.allow='web-share';
-   frame.src='/games/sacheonseong/index.html?v=20261127-tutorial-once1';
+   frame.src='/games/sacheonseong/index.html?v=20261127-tearoom1';
    frame.addEventListener('load',initialize);
    dialog.querySelector('.sacheonseong-entry-wrap').remove();dialog.append(frame);
    dialog.classList.add('sacheonseong-playing');frame.focus();

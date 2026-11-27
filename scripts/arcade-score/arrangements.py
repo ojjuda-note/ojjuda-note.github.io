@@ -21,10 +21,10 @@ class Score:
 
 
 SCORES = {
-    'sacheonseong': Score('연못가에 돌 하나', 'D', 'pentatonic', 72, 4, 'garden',
-        'flute harp koto acousticbass strings', 'ABACBA',
-        '1add9 4maj7 6m7 5sus / 2m7 1maj7 4maj7 5sus / 6m 3m7 2m7 5sus',
-        '..3-5--- 6--5..2- 3---2-1- 2-----.. / 5---6-8- 9--8..6- 5---3-2- 3-----.. / ..6-8-a- 9---6-5- 3-5---2- 1-------'),
+    'sacheonseong': Score('햇살 든 찻마루', 'F', 'major', 78, 4, 'garden',
+        'nylon celesta piano fretless clarinet', 'ABACBA',
+        '1add9 4maj7 2m7 5sus / 6m7 3m7 4add9 1maj7 / 2m9 5sus 1maj9 5sus',
+        '3-5.6-5- 6--5..3- 4-6-5.2- 2---..3. / 6-8-a-8- 7--5..3- 6-4..2-4 3-----.. / .46-8-6- 5--2..5- 3-5.9-8- 5---2-..'),
     'solitaire': Score('창가에 마지막 한 장', 'F', 'major', 75, 3, 'waltz',
         'piano clarinet nylon upright softstrings', 'ABACBA',
         '1maj7 6m7 2m7 57 / 4maj7 3m7 6m7 57 / 2m9 4m 1maj7 5sus',
