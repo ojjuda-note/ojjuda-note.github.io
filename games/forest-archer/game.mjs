@@ -1,6 +1,6 @@
 import {createCoinExchangeClient,COIN_PACKS,COINS_PER_ZU} from './coin-exchange.mjs?v=20261104-archery-reset5';
 import {PLAYER, BOWS, ARROWS, BULLETS, getBullet, SCOPES, getScopePrice, getScoreCoinReward, DISTANCE_STAGES as STAGES, DISTANCE_GROUPS, prepareStage, passersAt, retirePasser, clamp, targetAt, applyAnimalHit, getAnimalAttachmentPoint, getSpeed, getArrowMass, getArrowConsistency, getArrowVariance, getArrowDragRate, getWindResponse, sortEquipment, launchArrow, launchVolley, stepArrow, predictTrajectory, createSway, stepSway} from './engine.mjs?v=20261106-archery-distance1';
-import {drawScenery, drawAnimal, drawClay, drawUfo, drawObstacle, drawPasser, drawEquipmentIcon, drawFirstPersonBow, drawBullseyeImpact, drawBullseyeVignette} from './scenery.mjs?v=20261128-seorak1';
+import {drawScenery, drawRangeTarget, drawAnimal, drawClay, drawUfo, drawObstacle, drawPasser, drawEquipmentIcon, drawFirstPersonBow, drawBullseyeImpact, drawBullseyeVignette} from './scenery.mjs?v=20261128-woodland2';
 import {FLIGHT_TIME_SCALE, IMPACT_HOLD, RETURN_DURATION, PREVIEW_RISE, PREVIEW_HOLD, PREVIEW_RETURN, NEAR_PLANE, projectPoint, depthFragments, desiredFollowCamera, desiredPreviewCamera, clearShotCamera, lerpCamera} from './view.mjs?v=20261104-archery-eagle-dive1';
 import {createBullseyeCinematic, sampleBullseyeCinematic, desiredBullseyeCamera} from './cinematic.mjs?v=20261104-archery-eagle-dive1';
 import {createBulletCinematic, sampleBulletCinematic, desiredBulletCamera} from './bullet-cinematic.mjs?v=20261104-archery-bullet-penetration1';
@@ -649,6 +649,13 @@ function updateCamera(dt=0,immediate=false){
     return;
   }
   const follow=desiredFollowCamera(state.shot.position,base,{w,h});
+  if(state.shot.projectileType!=='bullet'){
+    const z=state.shot.position.z;
+    // Let the arrow gain distance from the viewer, even while the camera follows.
+    const lag=Math.max(0,z-5)*.24;
+    follow.z=Math.max(0,follow.z-lag);
+    follow.x-=Math.min(1.8,lag*.11);
+  }
   if(state.mode==='settling'&&state.settle>impactHold()){
     if(immediate||!state.returnCamera)state.returnCamera=immediate?(state.shot.result?.type==='hit'?clearShotCamera(follow,state.stage,state.shot,{w,h}):follow):{...camera};
     const t=clamp((state.settle-impactHold())/impactReturn(),0,1);
@@ -1629,7 +1636,7 @@ function drawTarget(target){
   else if(target.kind!=='target'){
     if(['bird','pigeon','eagle'].includes(target.kind))ellipse(ground.x,ground.y,r*.7,Math.max(1,r*.05),'#334b2413');
     drawAnimal(ctx,p.x,p.y,r,target.kind,target.poseTime??renderTime(),target.direction,target);
-  }else{
+  }else if(!drawRangeTarget(ctx,p.x,p.y,r,ground.x,ground.y)){
     const footL=project({x:target.x-target.radius*.72,y:0,z:target.z-.1});
     const footR=project({x:target.x+target.radius*.72,y:0,z:target.z-.1});
     line(p.x-r*.36,p.y+r*.25,footL.x,footL.y,'#796744',Math.max(3,r*.10));
@@ -1764,8 +1771,11 @@ function sceneItems(target){
   for(const shot of !replay?(state.volley?.shots||[state.shot]):[])if(shot&&shot.launched!==false&&(state.mode==='flight'||state.mode==='settling')){
     const alpha=state.mode==='settling'?Math.max(0,1-state.settle/(IMPACT_HOLD+RETURN_DURATION)):1;
     const points=[...shot.trail,shot.position];
-    for(let i=1;i<points.length;i++)addLine(points[i-1],points[i],'trail',alpha);
-    if(state.mode==='flight'&&shot.active)addArrow(shot.position,shot.velocity,1,true,shot.projectileType);
+    for(let i=1;i<points.length;i++)addLine(points[i-1],points[i],'trail',alpha*(.10+.74*i/points.length));
+    if(state.mode==='flight'&&shot.active){
+      if(shot.projectileType!=='bullet')items.push({kind:'flight-shadow',z:shot.position.z+.005,order:0,point:shot.position});
+      addArrow(shot.position,shot.velocity,1,true,shot.projectileType);
+    }
   }
   for(const effect of state.effects)if(effect.born<=time+1e-9)items.push({kind:'effect',z:effect.z-.002,order:5,effect});
   return items.sort((a,b)=>b.z-a.z||a.order-b.order);
@@ -1776,7 +1786,14 @@ function drawSceneItem(item){
   if(item.kind==='wall'){drawWall(item.ob);return;}
   if(item.kind==='person'){drawPasser(ctx,item.person,{project,camera,nearPlane:NEAR_PLANE,time:renderTime()});return;}
   ctx.save();ctx.globalAlpha=item.alpha??1;ctx.lineCap='butt';
-  if(item.kind==='bullet'){
+  if(item.kind==='flight-shadow'){
+    const p=project({...item.point,y:.006});
+    if(p.visible&&p.y>=0&&p.y<h&&p.x>=0&&p.x<w){
+      const fade=1/(1+Math.max(0,item.point.y)*.44);
+      ctx.globalAlpha=fade*.46;
+      ellipse(p.x,p.y,clamp(p.scale*.12,.7,14),clamp(p.scale*.025,.35,3),'#332d23');
+    }
+  }else if(item.kind==='bullet'){
     const p=project(item.point);
     if(p.visible){
       if(item.cinematic){
@@ -1788,22 +1805,28 @@ function drawSceneItem(item){
     }
   }else if(item.kind==='trail'||item.kind==='shaft'){
     const a=project(item.a),b=project(item.b);
-    if(item.kind==='trail')line(a.x,a.y,b.x,b.y,'#fff9d7a6',1.7);
+    const scale=(a.scale+b.scale)*.5;
+    if(item.kind==='trail')line(a.x,a.y,b.x,b.y,'#fff4d6ab',clamp(scale*.014,.42,3.4));
     else{
-      line(a.x,a.y,b.x,b.y,'#51462f',clamp((a.scale+b.scale)*.012,1.4,3.2));
-      line(a.x,a.y,b.x,b.y,'#e5c984',.8);
+      line(a.x,a.y,b.x,b.y,'#443422',clamp(scale*.022,.65,5));
+      line(a.x,a.y,b.x,b.y,'#d5ae70',clamp(scale*.010,.35,2.3));
     }
   }else if(item.kind==='tip'||item.kind==='feather'){
     const p=project(item.point);
     if(p.visible){
-      const q=project(item.kind==='tip'?item.tail:item.tip),dx=p.x-q.x,dy=p.y-q.y,l=Math.hypot(dx,dy)||1;
+      const q=project(item.kind==='tip'?item.tail:item.tip),angle=Math.atan2(p.y-q.y,p.x-q.x);
+      const size=clamp(p.scale*.043,.45,8.2);
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(angle);ctx.scale(size,size);
       if(item.kind==='tip'){
-        poly([{x:p.x+dx/l*2,y:p.y+dy/l*2},{x:p.x-dx/l*3-dy/l*2.2,y:p.y-dy/l*3+dx/l*2.2},{x:p.x-dx/l*3+dy/l*2.2,y:p.y-dy/l*3-dx/l*2.2}],'#344b3b');
-        if(item.flying)circle(p.x,p.y,6,null,'#fff9d95c',1);
+        poly([{x:1.15,y:0},{x:-1.35,y:.70},{x:-.87,y:0},{x:-1.35,y:-.70}],'#394c50');
+        poly([{x:1.15,y:0},{x:-1.35,y:-.70},{x:-.87,y:0}],'#c4c8b9');
       }else{
-        line(p.x-dy/l*3,p.y+dx/l*3,p.x-dx/l*4,p.y-dy/l*4,'#e4bd70',1.8);
-        line(p.x+dy/l*3,p.y-dx/l*3,p.x-dx/l*4,p.y-dy/l*4,'#f6e7ba',1.6);
+        for(const side of [-1,1]){
+          poly([{x:.10,y:0},{x:-.45,y:side*1.05},{x:-1.75,y:side*.48},{x:-2.25,y:0}],side>0?'#b76640':'#f3cd84');
+          line(-.30,side*.28,-1.75,side*.28,'#f0d7af',.12);
+        }
       }
+      ctx.restore();
     }
   }else if(item.kind==='effect'){
     const effect=item.effect,replay=cinematicFrame(),age=renderTime()-effect.born,q=project(effect);
