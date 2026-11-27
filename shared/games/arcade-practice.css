@@ -105,3 +105,84 @@ dialog.arcade-practice::backdrop {background:rgb(11 23 23 / 70%);}
   .lesson-actions {grid-column:1 / -1;grid-row:5;padding:6px 15px;}
   .dp-lesson-panel > .dp-dismiss {left:calc(35% - 39px);right:auto;}
 }
+:where(.lesson-view) .practice-views{display:flex;gap:3px;margin:0 20px 12px;padding:3px;border-radius:10px;background:#e9ece3;}
+.lesson-view .practice-views button{flex:1;padding:5px 8px;min-height:36px;font:650 13px/1.3 system-ui,sans-serif;color:#516054;background:transparent;box-shadow:none;border:0;border-radius:8px;}
+.lesson-view .practice-views button[aria-pressed=true]{background:#fff;color:var(--ink);box-shadow:0 1px 5px #20382a22;}
+:where(.lesson-view) .round-pane{min-width:0;padding:0 20px 12px;}
+:where(.lesson-view) .rehearsal-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+:where(.lesson-view) .round-pane .round-title{margin:0;letter-spacing:-.03em;color:#19352d;font:750 18px/1.4 system-ui,sans-serif;}
+.lesson-view .round-restart{flex:none;background:none;color:var(--ink);border:0;box-shadow:none;font-size:12px;text-decoration:underline;text-underline-offset:3px;}
+:where(.lesson-view) .round-pane .round-cue,:where(.lesson-view) .round-pane .rehearsal-feedback{font:500 13px/1.53 system-ui,sans-serif;text-align:start;color:#394e42;margin:4px 0 9px;}
+:where(.lesson-view) .round-pane .rehearsal-feedback{margin:6px 0 0;color:var(--ink);min-height:1.45em;font-weight:650;}
+:where(.lesson-view) .round-pane[data-complete=true] .rehearsal-feedback::before{content:'✓ ';color:#267153;}
+:where(.lesson-view) .round-surface{background:radial-gradient(ellipse at top left,var(--mid),var(--table) 85%);color:#fffdf5;border-radius:15px;border:1px solid var(--ink);padding:13px;box-shadow:inset 0 0 0 3px #ffffff0c;}
+:where(.lesson-view) .round-grid{display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));gap:5px;margin:3px auto;}
+:where(.lesson-view) .round-pane .round-cell,:where(.lesson-view) .round-pane .round-key,:where(.lesson-view) .round-pane .bottle-seat{appearance:none;min-width:0;min-height:44px;padding:4px 3px;display:grid;place-items:center;border:1px solid #eadfca;border-radius:9px;background:#f9f2e2;color:#28362d;font:700 15px/1.2 system-ui,sans-serif;text-align:center;box-shadow:0 2px 0 #0b191f55;white-space:pre-line;}
+:where(.lesson-view) .round-cell img{width:auto;max-width:100%;height:68px;object-fit:contain;border-radius:4px;}
+:where(.lesson-view) .round-pane .round-cell[aria-pressed=true]{outline:3px solid #ffd66c;outline-offset:-3px;background:#fff1af;}
+:where(.lesson-view) .round-pane .round-cell:disabled{opacity:.87;}
+:where(.lesson-view) .round-pane .round-cell.empty{background:#ffffff09;border:1px dashed #ffffff32;box-shadow:none;}
+:where(.lesson-view) .round-pane .round-cell.gold{color:#6c3c0b;background:#ffda7c;}
+:where(.lesson-view) .round-pane .round-cell.rose,:where(.lesson-view) .round-pane .round-cell.enemy{color:#921e40;background:#ffe7e3;}
+:where(.lesson-view) .round-pane .round-cell.green,:where(.lesson-view) .round-pane .round-cell.home{color:#195647;background:#b2e6d0;}
+:where(.lesson-view) .round-pane .round-cell.blue{color:#173c73;background:#b9d9ff;}
+:where(.lesson-view) .round-controls{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:7px 0 0;}
+:where(.lesson-view) .round-pane .round-key{flex:1 1 auto;padding-inline:8px;background:#fcf9eb;color:#193a32;font:700 13px/1.25 system-ui,sans-serif;}
+:where(.lesson-view) .round-pane .round-key:disabled{opacity:.48;}
+:where(.lesson-view) .round-readout{font:700 17px/1.45 system-ui,sans-serif;color:white;white-space:pre-line;text-align:center;margin:3px 0 8px;}
+:where(.lesson-view) .round-readout.legend{font-size:12px;text-align:start;color:#fff6da;}
+:where(.lesson-view) .round-readout.digital{font:700 30px/1.3 ui-monospace,monospace;font-variant-numeric:tabular-nums;padding:8px;}
+:where(.lesson-view) .round-readout.secret-card,:where(.lesson-view) .round-readout.mission-card,:where(.lesson-view) .round-readout.question-card,:where(.lesson-view) .round-readout.result-card,:where(.lesson-view) .round-readout.card-face{border:1px solid #f3e5bf;border-radius:10px;background:#fff4da;color:#4c3a2e;padding:15px 9px;box-shadow:1px 3px 0 #16252460;}
+:where(.lesson-view) .round-readout.voices{font:550 14px/1.8 system-ui,sans-serif;text-align:start;padding:5px;}
+:where(.lesson-view) .round-input,:where(.lesson-view) .round-range,:where(.lesson-view) .round-meter{display:flex;align-items:center;gap:9px;color:white;margin-block:8px;font:600 13px/1.35 system-ui,sans-serif;}
+:where(.lesson-view) .round-input input{min-width:0;flex:1;width:0;font-size:16px;border:1px solid #b9cfbf;border-radius:8px;padding:8px 10px;min-height:44px;color:#172a23;background:white;}
+:where(.lesson-view) .round-input .round-key{flex:0 0 auto;}
+:where(.lesson-view) .round-range input,:where(.lesson-view) .round-meter progress{flex:1;min-width:0;width:40%;accent-color:#e9bc63;}
+:where(.lesson-view) .round-range input{height:40px;}:where(.lesson-view) .round-meter progress{height:10px;}
+:where(.lesson-view) .round-draggable,:where(.lesson-view) .round-stage{touch-action:none;user-select:none;-webkit-user-select:none;}
+:where(.lesson-view) .round-grid.mahjong{max-width:275px;gap:8px;}:where(.lesson-view) .mahjong .round-cell{font-size:32px;box-shadow:inset 0 -4px 0 #0002,0 2px 1px #131b1955;}
+:where(.lesson-view) .round-grid.minefield,:where(.lesson-view) .round-grid.hardware,:where(.lesson-view) .round-grid.sky{max-width:265px;}:where(.lesson-view) .minefield .opened{background:#c8d3cb;color:#344b60;box-shadow:inset 0 0 0 1px #99a9a0;}
+:where(.lesson-view) .round-grid.chessboard,:where(.lesson-view) .round-grid.janggi,:where(.lesson-view) .round-grid.territory{max-width:286px;gap:1px;border:3px solid #a98659;border-radius:5px;overflow:hidden;}
+:where(.lesson-view) .chessboard .round-cell,:where(.lesson-view) .janggi .round-cell,:where(.lesson-view) .territory .round-cell{border:0;border-radius:0;font-size:25px;box-shadow:none;}
+:where(.lesson-view) .chessboard .free,:where(.lesson-view) .janggi .free{background:#e6d5ae;color:#826e56;}
+:where(.lesson-view) .chessboard .round-cell:nth-child(8n+2),:where(.lesson-view) .chessboard .round-cell:nth-child(8n+4),:where(.lesson-view) .chessboard .round-cell:nth-child(8n+5),:where(.lesson-view) .chessboard .round-cell:nth-child(8n+7){background:#c1a17f;}
+:where(.lesson-view) .janggi .own,:where(.lesson-view) .janggi .enemy{border-radius:40%;}:where(.lesson-view) .round-cell.own{color:#152b3c;}
+:where(.lesson-view) .territory .free,:where(.lesson-view) .sky .space{background:#263f50;color:#c1d5d4;}:where(.lesson-view) .territory .trail{background:#79baac;}:where(.lesson-view) .territory.photo{background:center/cover url('/games/spot-difference/assets/01-original.webp');}:where(.lesson-view) .territory.photo .home{background:#b5ddd48c;}:where(.lesson-view) .territory.photo.reveal .trail,:where(.lesson-view) .territory.photo.reveal .home{background:#e5f0cc3c;}
+:where(.lesson-view) .round-cell.ember{font-size:31px;background:#453950;color:#ffd37a;}:where(.lesson-view) .round-cell.metal{background:#c3ccd4;}:where(.lesson-view) .round-cell.wood{background:#d4b481;}:where(.lesson-view) .released .metal{opacity:.3;}:where(.lesson-view) .screw{font-size:28px!important;}
+:where(.lesson-view) .round-grid.hand .round-cell{min-height:66px;}:where(.lesson-view) .round-grid.single-card{max-width:90px;}:where(.lesson-view) .round-cell.back{font-size:30px;background:repeating-linear-gradient(40deg,#6d536c 0 3px,#594955 4px 6px);color:#ffe7b5;}
+:where(.lesson-view) .round-grid.holes{gap:9px;padding:7px;}:where(.lesson-view) .round-pane .hole{border-radius:50%;background:#412e25;color:#f7bf79;border:4px solid #9c7857;font-size:24px;}:where(.lesson-view) .round-pane .hole.gold{border-color:#ffcf55;}
+:where(.lesson-view) .round-grid.jaw{border-radius:32px;background:#a56875;border:8px solid #629874;padding:5px 10px;row-gap:10px;}:where(.lesson-view) .round-pane .tooth{border-radius:7px 7px 50% 50%;color:#b8a997;}:where(.lesson-view) .jaw.closed{opacity:.65;}
+:where(.lesson-view) .round-stage{position:relative;height:116px;overflow:hidden;border-radius:9px;background:#172d37;}
+:where(.lesson-view) .round-object{position:absolute;transform:translate(-50%,-50%);color:white;text-align:center;line-height:1;}
+:where(.lesson-view) .sea{background:linear-gradient(#4b9ba3,#306a88);}:where(.lesson-view) .ledge{width:26%;height:9px;background:#dfc390;border-radius:4px;}:where(.lesson-view) .pearl{color:#fff4c9;}:where(.lesson-view) .jumper{font-size:27px;color:#ffe1ac;}
+:where(.lesson-view) .road{background:#313d48;}:where(.lesson-view) .divider{height:100%;border-left:2px dashed #c8c9b3;}:where(.lesson-view) .traffic,:where(.lesson-view) .car,:where(.lesson-view) .hurdle{background:#a1504c;border-radius:6px;font-size:22px;line-height:27px;width:17%;color:#f7cbb5;}:where(.lesson-view) .car{background:#5387a9;color:#caefff;}:where(.lesson-view) .hurdle{background:#bb914e;color:#403527;}
+:where(.lesson-view) .tower{background:linear-gradient(#273647,#43566a);}:where(.lesson-view) .round-object.block{height:12%;transform:translateY(-50%);border-radius:3px;background:#96c7b3;border-top:2px solid #c6eedc;}:where(.lesson-view) .round-object.travelling{background:#e3ab66;animation:round-travel 1.35s linear infinite alternate;}
+@keyframes round-travel{from{left:0}to{left:var(--distance)}}
+:where(.lesson-view) .bricks{background:#30334e;}:where(.lesson-view) .brick{width:22%;border-radius:3px;background:#d49786;}:where(.lesson-view) .ball{width:10px;height:10px;background:#fff1b6;border-radius:50%;}:where(.lesson-view) .paddle{width:24%;height:7px;background:#b0d8dd;border-radius:3px;}:where(.lesson-view) .ball.falling{animation:round-fall linear forwards;}@keyframes round-fall{from{top:25%}to{top:84%}}
+:where(.lesson-view) .round-photos{display:grid;grid-template-columns:1fr 1fr;gap:5px;}:where(.lesson-view) .round-photo{position:relative;overflow:hidden;border-radius:5px;}:where(.lesson-view) .round-photo img{width:100%;height:auto;display:block;}:where(.lesson-view) .photo-name{position:absolute;top:1px;left:2px;background:#243830dd;color:white;padding:0 4px;font-size:11px;}
+:where(.lesson-view) .round-photo .photo-edit{position:absolute;inset:0;pointer-events:none;}:where(.lesson-view) .round-pane .photo-mark{position:absolute;transform:translate(-50%,-50%);width:16%;min-width:24px;min-height:40px;height:32%;border:0;background:transparent;color:#ffdd48;box-shadow:none;text-shadow:0 1px 3px #211902;font-size:23px;padding:0;}
+:where(.lesson-view) .round-pool{position:relative;aspect-ratio:2;background:#2a7462;border:6px solid #9c7755;border-radius:10px;overflow:hidden;}
+:where(.lesson-view) .pool-ball,:where(.lesson-view) .pocket,:where(.lesson-view) .cue-ray{position:absolute;transform:translate(-50%,-50%);}:where(.lesson-view) .pool-ball{width:4%;aspect-ratio:1;border-radius:50%;box-shadow:inset -1px -2px 2px #0004,0 1px 2px #173b2a;}
+:where(.lesson-view) .ball-white{background:#fff7dd;}:where(.lesson-view) .ball-red{background:#ea594f;}:where(.lesson-view) .ball-yellow{background:#ffd964;}:where(.lesson-view) .ball-black{background:#222;}:where(.lesson-view) .ball-stripe{background:linear-gradient(#fff 15%,#7152a5 16% 80%,#fff 81%);}
+:where(.lesson-view) .pocket{width:7%;aspect-ratio:1;border-radius:50%;background:#1d312c;}:where(.lesson-view) .cue-ray{width:25%;height:0;border-top:2px dotted #fff9;transform-origin:left center;}
+:where(.lesson-view) .round-compass{position:relative;height:165px;margin:auto;max-width:260px;border:2px solid #d2b786;border-radius:50%;background:#37675e;}:where(.lesson-view) .bottle-needle{position:absolute;inset:25% auto auto 46%;width:8%;height:50%;transform-origin:center center;background:linear-gradient(#efa953 0 10%,#b1d0ac 10% 50%,#8bb791 50%);clip-path:polygon(33% 0,67% 0,67% 25%,100% 38%,100% 100%,0 100%,0 38%,33% 25%);}
+:where(.lesson-view) .bottle-needle.spin{animation:round-spin .96s linear infinite;}@keyframes round-spin{to{transform:rotate(360deg)}}
+:where(.lesson-view) .round-pane .bottle-seat{position:absolute;transform:translate(-50%,-50%);border-radius:50%;width:44px;}
+:where(.lesson-view) .round-pane .round-signal{width:100%;min-height:94px;background:#111c20;border:0;color:#48cf77;font-size:49px;box-shadow:none;}
+@media(max-width:360px){:where(.lesson-view) .round-pane{padding-inline:13px;}:where(.lesson-view) .practice-views{margin-inline:13px;}:where(.lesson-view) .round-surface{padding:10px;}}
+@media(orientation:landscape) and (min-width:600px) and (max-height:480px){
+  :where(.lesson-view) .practice-views{grid-column:1;grid-row:3;margin:0 12px 6px;align-self:start;flex-wrap:wrap;}
+  .lesson-view[data-practice-view=reference] .lesson-steps{grid-row:4;}
+  .lesson-view[data-practice-view] .lesson-settings{grid-column:1;grid-row:5;}
+  .lesson-view[data-practice-view] .lesson-actions{grid-row:6;}
+  :where(.lesson-view) .round-pane{grid-column:2;grid-row:1 / 6;border-left:1px solid #d8dbd2;padding:3px 11px 6px;}
+  :where(.lesson-view) .round-grid .round-cell{min-height:40px;}:where(.lesson-view) .rehearsal-feedback:empty{display:none;}:where(.lesson-view) .round-stage{height:88px;}
+}
+@media(prefers-reduced-motion:reduce){:where(.lesson-view) .bottle-needle.spin,:where(.lesson-view) .ball.falling{animation:none;}}
+
+:where(.lesson-view) .round-pane .photo-mark:disabled{border:2px solid #ffdc57;border-radius:50%;color:#fff4a2;}
+:where(.lesson-view) .round-grid.mahjong{position:relative;}:where(.lesson-view) .mahjong svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;}
+:where(.lesson-view) .mahjong polyline{fill:none;stroke:#ffe391;stroke-width:3px;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round;}
+:where(.lesson-view) .jumper{width:34px;height:34px;border:2px solid #ecdfb4;border-radius:50%;background:center/cover url('/assets/design/games/runner.webp');box-shadow:0 2px 5px #13374766;}
+:where(.lesson-view) .round-photos.enlarged{grid-template-columns:1fr;}:where(.lesson-view) .enlarged .round-photo{max-width:390px;width:100%;margin:auto;}
+:where(.lesson-view) .territory .claimed{background:#a2d8b9;color:#286d50;}:where(.lesson-view) .territory.photo.reveal .claimed{background:transparent;color:#f0ffe0;}

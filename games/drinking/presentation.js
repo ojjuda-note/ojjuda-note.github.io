@@ -362,7 +362,7 @@
       ['bottle','updown','stopwatch','initial'].includes(id)?'ocean':['king','bomb','fingers'].includes(id)?'amber':'rose';
     const caution=id==='shapematch'?'주의 · 실제 게임에 갑작스러운 귀신 그림과 비명이 나와요.':'';
     ui.board(panel,{id,name:data.title,goal:data.goal,steps,art,theme,layout:'cards',caution},{
-      close:()=>close(),finish:()=>close(),settings,party:true,
+      close:()=>close(),finish:()=>close(),settings,party:true,local:active.local,
       closeLabel:manual?'닫기':'건너뛰기',finishLabel:'연습 마치기'
     });
     window.OjjudaArcadeMusic?.refresh();
