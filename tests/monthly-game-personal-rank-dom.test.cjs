@@ -64,6 +64,27 @@ test('rank viewer paints only top ten, highlights me and separates a personal 12
  }
 });
 
+test('monthly shortcut follows the selection and respects archived games and Play store mode', t=>{
+ for(const mode of ['web','play-query','play-session']){
+  const url='https://ojjuda.kr/features/arcade/monthly-ranking.html?game=pool8'+(mode==='play-query'?'&play_store=1':'');
+  const dom=new JSDOM(page,{url,runScripts:'outside-only'});
+  t.after(()=>dom.window.close());
+  const w=dom.window;
+  if(mode==='play-session')w.sessionStorage.setItem('ojjuda:play-store:agit:v1','1');
+  w.eval(viewer);
+  const link=w.document.querySelector('#ranking-play'),select=w.document.querySelector('#ranking-game');
+  assert.equal(link.getAttribute('href'),mode==='web'?'/world.html?game=pool8':null);
+  for(const choice of select.options){
+   select.value=choice.value;
+   select.dispatchEvent(new w.Event('change'));
+   const playable=mode==='web'&&!['poker','roulette'].includes(choice.value);
+   assert.equal(link.hidden,!playable);
+   assert.equal(link.getAttribute('href'),playable?'/world.html?game='+choice.value:null);
+   if(playable)assert.equal(link.getAttribute('aria-label'),choice.textContent+' 게임 바로가기');
+  }
+ }
+});
+
 test('an unknown game opens the default ranking',async t=>{
  const dom=new JSDOM(page,{url:'https://fixture.test/ranking?game=constructor',runScripts:'outside-only'});
  t.after(()=>dom.window.close());
