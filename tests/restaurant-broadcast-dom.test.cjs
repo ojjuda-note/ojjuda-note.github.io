@@ -28,6 +28,8 @@ for (const id of ['broadcast-chungnam-c2s52-cheonan-gc-bread', 'broadcast-chungn
   assert.equal(rows[0].lat, null);
   assert.equal(rows[0].lng, null);
   assert.equal(rows[0].guides.length, 0);
+  assert.equal(rows[0].broadcasts.filter(row => row.episode === 8128 && row.airedAt === '2024-09-27' && row.sourceUrl === 'https://iaudience.kbs.co.kr/broadcast/10657').length, 1, 'retain the separately verified 2024 KBS appearance');
+  assert.ok(rows[0].broadcasts.some(row => row.episode === 2625 && row.airedAt === '2026-10-16'), 'keep the previously verified 2026 KBS appearance');
 }
 assert.ok(broadcastAudit && typeof broadcastAudit.id === 'string' && broadcastAudit.id.length > 0, 'the latest broadcast audit has a stable identity');
 assert.ok(Number.isInteger(broadcastAudit.newRestaurantCount) && broadcastAudit.newRestaurantCount >= 0 && Number.isInteger(broadcastAudit.broadcastEnrichmentCount) && broadcastAudit.broadcastEnrichmentCount >= 0, 'broadcast audits record nonnegative addition and enrichment counts regardless of their trigger');

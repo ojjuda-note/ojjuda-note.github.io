@@ -94,5 +94,30 @@
     }
   ],
   "deploymentVerified": false,
-  "note": "원본 대용량 데이터와 감사·archive 그대로 보존. 이 보완 기록은 CI 및 Pages/실화면 검증 완료 전 활성 회차를 진행시키지 않는다. 방송 좌표 과거 집계와 직접 데이터의 1건 차이는 별도 보완좌표 확인 필요. 이번 변화는 기존 좌표 있는 먹거리순대 1곳 방송 분류 추가. 다른 게임·회원 자료 불변."
+  "note": "원본 대용량 데이터와 감사·archive 그대로 보존. 이 보완 기록은 CI 및 Pages/실화면 검증 완료 전 활성 회차를 진행시키지 않는다. 방송 좌표 과거 집계와 직접 데이터의 1건 차이는 별도 보완좌표 확인 필요. 이번 변화는 기존 좌표 있는 먹거리순대 1곳 방송 분류 추가. 다른 게임·회원 자료 불변.",
+  "followUpChecks": [
+    {
+      "checkedAtKST": "2026-11-28",
+      "sourceUrls": [
+        "https://iaudience.kbs.co.kr/broadcast/10657",
+        "https://www.hakhwa1934.com/cs.html",
+        "https://iaudience.kbs.co.kr/broadcast/11409"
+      ],
+      "broadcastRecordsAdded": 2,
+      "restaurantCountChange": 0,
+      "ids": [
+        "broadcast-chungnam-c2s52-cheonan-gc-bread",
+        "broadcast-chungnam-c2s52-cheonan-hakhwa-hodugwaja"
+      ],
+      "scope": "KBS 2024-09-27 6시 내고향 8128회 두 업소 동일 주소·전화 재확인, 학화 공식 매장 안내의 동일 본점 주소 및 1층 확인. 운영시간 안내는 PC/모바일 차이가 있어 미기재. 현재 영업 및 좌표 추정 없음.",
+      "mainAtCheck": "35152b978cb320d0de1b8fe8350e13f3d4d7f4c4",
+      "lastMergedCycle": 2,
+      "lastMergedSlot": 51,
+      "actualDeployedAdditions": 0,
+      "actualDeployedModifications": 0,
+      "deploymentVerified": false,
+      "nextSlot": 53,
+      "blockingRegressionUrl": "https://github.com/ojjuda-note/ojjuda-note.github.io/actions/runs/46055315614"
+    }
+  ]
 }
