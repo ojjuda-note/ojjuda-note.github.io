@@ -262,3 +262,13 @@ test('embedded event details keep the arcade as the previous history entry', asy
     assert.equal(f.window.history.length, before + (embedded ? 0 : 1));
   }
 });
+
+
+test('daily source checks and the data modification date are described separately', () => {
+  const document = new JSDOM(html).window.document;
+  assert.match(document.querySelector('.data-note').textContent, /매일 공식 일정을 점검합니다/);
+  assert.match(document.querySelector('.data-note').textContent, /자료 업데이트/);
+  assert.equal(document.querySelector('#checked-at').textContent, '확인 중');
+  assert.match(document.querySelector('#about-dialog').textContent, /자료가 마지막으로 바뀐 날/);
+  assert.doesNotMatch(document.querySelector('#about-dialog').textContent, /오전 6시/);
+});

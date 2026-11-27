@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261128-motion1'
+ const revision='20261128-festival-copy1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -28,7 +28,7 @@
   group:'1.2.2',
   chacha_rush:'1.5.1',
   byeolcheonji:'1.0.5',
-  festival:'1.6.2',
+  festival:'1.6.3',
   restaurants:'1.13.9',
   recommendations:'1.7.2',
   archery:'3.7.0',
@@ -65,7 +65,7 @@
  const groups={
   group:[],
   byeolcheonji:[],
-  festival:['/games/festival-schedule/world-festival-schedule.css?v=20261107-festival-location2','/games/festival-schedule/world-festival-schedule.js?v=20261110-navigation-return1'],
+  festival:['/games/festival-schedule/world-festival-schedule.css?v=20261128-festival-copy1','/games/festival-schedule/world-festival-schedule.js?v=20261128-festival-copy1'],
   restaurants:[...restaurantRatings,...restaurantComments,...restaurantLocation,'/games/certified-restaurants/world-restaurant-guide.css?v=20261106-source-folders1','/games/certified-restaurants/world-restaurant-guide.js?v=20261111-restaurants-broadcast1','/games/certified-restaurants/recommended-restaurants.css?v=20261106-source-folders1',recommendedRestaurantScript],
   recommendations:[...restaurantRatings,...restaurantComments,...restaurantLocation,'/games/certified-restaurants/recommended-restaurants.css?v=20261106-source-folders1',recommendedRestaurantScript],
   archery:['/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/forest-archer/world-archery-game.css?v=20261128-motion1','/games/forest-archer/world-archery-game.js?v=20261128-motion1'],
