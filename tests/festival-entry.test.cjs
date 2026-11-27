@@ -117,12 +117,12 @@ function routeFixture(){
  }
  const revision=JSON.parse(read('game-release.json')).revision;
  assert.equal(boot.window.OjjudaGameAssets.revision,revision);assert.ok(world.includes('/shared/games/world-game-assets.js?v='+revision));
- assert.equal(boot.window.OjjudaGameAssets.version('festival'),'1.6.2');
+ assert.equal(boot.window.OjjudaGameAssets.version('festival'),'1.6.3');
  assert.equal(boot.window.OjjudaGameAssets.version('archery'),archeryVersion,'loading festival preserves the independent archery release');
  const festivalRevision=new URL(urls.find(url=>url.includes('.js?')),'https://ojjuda.kr').searchParams.get('v');
  assert.ok(festivalRevision,'the updated festival wrapper has its own cache revision');
  const festivalContentRevision=new URL(urls.find(url=>url.includes('.css?')),'https://ojjuda.kr').searchParams.get('v');
- assert.equal(bridge.match(/src="\/games\/festival-schedule\/index\.html\?v=([^&"]+)/)?.[1],festivalContentRevision,'the unchanged festival content and stylesheet keep their shared cache revision');
+ assert.equal(bridge.match(/src="\/games\/festival-schedule\/index\.html\?v=([^&"]+)/)?.[1],festivalContentRevision,'the festival content and stylesheet share the updated cache revision');
  assert.equal(read('games/festival-schedule/index.html').match(/app\.js\?v=([^"]+)/)?.[1],festivalContentRevision,'the festival iframe loads its matching app revision');
  assert.equal(world.match(/var Go="([^"]+)"/)?.[1],JSON.parse(read('version.json')).version,'the separate Agit version remains internally consistent');
  assert.ok(world.includes("gameDialog.dispatchEvent(new Event('cancel'")&&bridge.includes("addEventListener('cancel'"),'app Back runs the festival exit handler');
