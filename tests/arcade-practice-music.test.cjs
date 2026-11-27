@@ -40,9 +40,11 @@ test('skip persists per game even before the first practice action',()=>{
 test('all music identifiers have scores, including every single-phone party game',()=>{
   const player=source('shared/games/arcade-music.js');
   const ids=player.match(/const games = new Set\('([^']+)'/)[1].split(' ');
-  const scoreSource=source('shared/games/arcade-compositions.mjs');
-  for(const id of ids.filter(id=>id!=='sacheonseong'))assert.match(scoreSource,new RegExp('^  '+id+':','m'));
-  assert.match(scoreSource,/game==='sacheonseong'/);
+  const scoreSource=source('scripts/arcade-score/arrangements.py');
+  const scores=[...scoreSource.matchAll(/^    '([a-z_]+)': Score\(/gm)].map(match=>match[1]);
+  assert.deepEqual([...ids].sort(),scores.sort());
+  assert.ok(ids.includes('runner'));
+  assert.match(source('shared/games/arcade-compositions.mjs'),/decodeAudioData/);
   const {dom,w}=fixture();
   try {
     w.eval(source('games/drinking/table-view.js'));

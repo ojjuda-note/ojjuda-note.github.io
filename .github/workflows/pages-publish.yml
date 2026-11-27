@@ -17,6 +17,7 @@ on:
       - 'scripts/build-fanpage-hub.mjs'
       - 'scripts/build-park-backgrounds.py'
       - 'scripts/build-park-ink-washes.py'
+      - 'scripts/arcade-score/**'
       - 'scripts/build-short-links.mjs'
       - 'ops/build-seasonal-app-icons.mjs'
   pull_request:
@@ -25,6 +26,7 @@ on:
       - 'note/vendor/**'
       - 'scripts/build-fanpage-hub.mjs'
       - 'tests/fanpage-hub-transfer.cjs'
+      - 'scripts/arcade-score/**'
       - 'scripts/build-short-links.mjs'
       - 'shared/navigation/short-link.js'
       - 'shared/navigation/short-links.json'
@@ -138,6 +140,35 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.12'
+      - name: Restore mastered arcade soundtracks
+        id: arcade-masters
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/ojjuda-public/shared/games/soundtracks
+          key: arcade-fluidr3-stereo-v1-${{ hashFiles('scripts/arcade-score/*.py') }}
+      - name: Render original arcade scores with the sampled instruments
+        if: steps.arcade-masters.outputs.cache-hit != 'true'
+        env:
+          OMP_NUM_THREADS: '1'
+          OPENBLAS_NUM_THREADS: '1'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libfluidsynth3 fluid-soundfont-gm ffmpeg
+          python -m pip install --quiet --disable-pip-version-check 'numpy==2.2.6'
+          python scripts/arcade-score/render.py "$RUNNER_TEMP/ojjuda-public/shared/games/soundtracks"
+          cp /usr/share/doc/fluid-soundfont-gm/copyright "$RUNNER_TEMP/ojjuda-public/shared/games/soundtracks/INSTRUMENT-CREDITS.txt"
+      - name: Verify every published soundtrack
+        run: |
+          python - "$RUNNER_TEMP/ojjuda-public/shared/games/soundtracks" <<'PYTHON'
+          from pathlib import Path
+          import sys
+          sys.path.insert(0, 'scripts/arcade-score')
+          from arrangements import SCORES
+          output = Path(sys.argv[1])
+          assert {p.stem for p in output.glob('*.mp3')} == set(SCORES)
+          assert all((output / (game + '.mp3')).stat().st_size > 100000 for game in SCORES)
+          assert (output / 'INSTRUMENT-CREDITS.txt').is_file()
+          PYTHON
       - name: Stage authorized Wikimedia photos as local WebP
         shell: bash
         run: |
