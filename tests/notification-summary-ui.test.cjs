@@ -14,7 +14,7 @@ const missing=(code='PGRST202',name='public.app_notification_summary')=>({error:
 function fixture({user='member-a',handle,refreshClosedBadge,options={}}={}){
   const dom=new JSDOM('<main><div data-notifications-slot></div><span data-notification-badge hidden></span><i data-notification-dot hidden></i><button data-note-my></button></main>',
     {url:'https://ojjuda.kr/world.html',runScripts:'outside-only',pretendToBeVisual:true});
-  const w=dom.window,calls=[],timers=[],intervals=[],broadcasts=[],channels=[],openedGroups=[];
+  const w=dom.window,calls=[],timers=[],intervals=new Map(),broadcasts=[],channels=[],openedGroups=[];
   let identity=user,visibility='visible',clock=1000000,authCallback;
   let responder=handle||((name)=>name==='app_notification_summary'?{data:{notifications:3,retention:2}}:
     name==='app_notification_unread_count'?{data:3}:name==='list_retention_alerts'?{data:[retention(1),retention(2)]}:
@@ -23,7 +23,8 @@ function fixture({user='member-a',handle,refreshClosedBadge,options={}}={}){
   Object.defineProperty(w.document,'visibilityState',{configurable:true,get:()=>visibility});
   w.Date.now=()=>clock;
   w.setTimeout=callback=>{timers.push(callback);return timers.length;};
-  w.setInterval=callback=>{intervals.push(callback);return intervals.length;};
+  let intervalId=0;w.setInterval=callback=>{intervals.set(++intervalId,callback);return intervalId;};
+  w.clearInterval=id=>intervals.delete(id);
   w.BroadcastChannel=class {constructor(){channels.push(this);}postMessage(value){broadcasts.push(value);}close(){}};
   const invoke=async(schema,name,args)=>{calls.push({schema,name,user:identity,args});return responder(name,args,identity,schema);};
   const client={rpc:(name,args)=>invoke('public',name,args),schema:schema=>({rpc:(name,args)=>invoke(schema,name,args)}),
@@ -33,7 +34,8 @@ function fixture({user='member-a',handle,refreshClosedBadge,options={}}={}){
     badge:()=>({hidden:w.document.querySelector('#note-notification-badge').hidden,text:w.document.querySelector('#note-notification-badge').textContent}),
     respond:callback=>{responder=callback;},advance:ms=>{clock+=ms;},
     async boot(){for(const callback of timers.splice(0))callback();await settle();},
-    async poll(){for(const callback of intervals)callback();await settle();},
+    intervalCount:()=>intervals.size,
+    async poll(){for(const callback of intervals.values())callback();await settle();},
     async user(next){identity=next;authCallback(next?'SIGNED_IN':'SIGNED_OUT',next?{user:{id:next}}:null);for(const callback of timers.splice(0))callback();await settle();},
     visibility(value){visibility=value;w.document.dispatchEvent(new w.Event('visibilitychange'));},
     close:()=>w.close()
@@ -529,4 +531,16 @@ test('Park settings keeps its accessible name when notifications change', async 
     await f.api.refresh();
     assert.equal(button.getAttribute('aria-label'), '설정');
   } finally { f.close(); }
+});
+
+test('polling is disarmed for guests, hidden tabs and logout, and rearms once on return',async()=>{
+  const f=fixture({user:null});
+  try{
+    await f.boot();assert.equal(f.intervalCount(),0);
+    await f.user('member-a');assert.equal(f.intervalCount(),1);
+    f.visibility('hidden');assert.equal(f.intervalCount(),0);
+    const before=f.calls.length;f.advance(30000);await f.poll();assert.equal(f.calls.length,before);
+    f.visibility('visible');f.visibility('visible');await settle();assert.equal(f.intervalCount(),1);
+    await f.user(null);assert.equal(f.intervalCount(),0);
+  }finally{f.close();}
 });

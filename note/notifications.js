@@ -174,9 +174,17 @@
       const focus = priorFocus; priorFocus = null;
       if (focus?.isConnected && !focus.closest('[inert]') && focus.getClientRects().length) focus.focus({ preventScroll: true });
     }
+    let pollTimer=null, pageAway=false;
+    function syncPolling(){
+      const visible=identity&&!pageAway&&document.visibilityState==='visible';
+      if(!visible){clearInterval(pollTimer);pollTimer=null;}
+      else if(pollTimer===null)pollTimer=setInterval(()=>{
+        if(!pageAway&&document.visibilityState==='visible'&&!loading&&!saving)void refresh({force:false});
+      },15000);
+    }
     function changeIdentity(next) {
       if (next === identity) return false;
-      identityRun++; countRun++; readRefreshPending = false; countRequest = null; lastRefresh = 0; close(); identity = next; setUnread(0, 0);
+      identityRun++; countRun++; readRefreshPending = false; countRequest = null; lastRefresh = 0; close(); identity = next; setUnread(0, 0); syncPolling();
       return true;
     }
     function showEmpty(text) { const row = el('li', text, 'nn-empty'); rows.replaceChildren(row); }
@@ -514,21 +522,24 @@
       else if (!event.shiftKey && (document.activeElement === last || !panel.contains(document.activeElement))) { event.preventDefault(); first.focus(); }
     });
     window.addEventListener('ojjuda:messages-read', () => announceRead(identityRun, userNow()));
-    window.addEventListener('focus', () => void refresh({ force: false }));
-    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') void refresh({ force: false }); });
+    const resume=()=>{if(!pageAway&&document.visibilityState==='visible')void refresh({force:false});};
+    window.addEventListener('focus',resume);
+    document.addEventListener('visibilitychange',()=>{syncPolling();resume();});
+    window.addEventListener('pagehide',()=>{pageAway=true;syncPolling();});
+    window.addEventListener('pageshow',event=>{pageAway=false;syncPolling();if(event.persisted)resume();});
     client.auth.onAuthStateChange((_event, session) => {
       const next = session?.user?.id || null;
       const changed = changeIdentity(next);
       if (changed || !lastRefresh) {
         const run = identityRun;
         // Supabase auth callbacks must return before issuing another client request.
-        setTimeout(() => { if (run === identityRun && next === userNow()) void refresh(); }, 0);
+        setTimeout(() => { if (run === identityRun && next === userNow() && !pageAway && document.visibilityState==='visible') void refresh(); }, 0);
       }
     });
     setUnread(0); trigger.setAttribute('aria-expanded', 'false');
     instance = Object.freeze({ open, close, refresh, attach, isOpen:()=>!layer.hidden });
-    setInterval(()=>{if(identity&&document.visibilityState==='visible'&&!loading&&!saving)void refresh({force:false});},15000);
-    setTimeout(() => void refresh(), 0);
+    syncPolling();
+    setTimeout(resume,0);
     return instance;
   }
   window.OjjudaNotifications = window.OjjudaNoteNotifications = Object.freeze({ install });

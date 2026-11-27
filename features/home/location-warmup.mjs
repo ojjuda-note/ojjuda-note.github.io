@@ -1,4 +1,4 @@
-import '../../shared/location/location.js?v=20261125-location-permission1';
+import '../../shared/location/location.js?v=20261127-battery1';
 
 // Prepare a short-lived position on Agit. Member features decide when to save it.
 export function warmLocationOnAgit(db,{surface=window,service=globalThis.OjjudaLocation}={}){

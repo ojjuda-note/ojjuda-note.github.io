@@ -583,6 +583,8 @@
     if (!hosted || event.origin !== location.origin || event.source !== parent) return;
     if (event.data?.type === 'ojjuda:park-visibility') {
       hostVisible = event.data.visible === true;
+      parkHostVisible=hostVisible;syncParkActivity();
+      document.dispatchEvent(new Event('ojjuda:park-view'));
       if (hostVisible) { previousOverlay = previousComposer = previousDetail = previousNavigation = previousBalance = null; scheduleReport(); }
       return;
     }

@@ -208,17 +208,33 @@ function subscribe(accountId,callback){
   if(preferences.has(accountId))callback(preferences.get(accountId));
   return()=>{listeners.get(accountId)?.delete(callback);};
 }
-function observe(db,accountId,callback){
+function observe(db,accountId,callback,{legacyDisabled=false,isVisible=()=>true}={}){
   const unsubscribe=subscribe(accountId,callback);
-  let closed=false,checking=false;
+  let closed=false,checking=false,away=false,timer=null;
+  const visible=()=>!closed&&!away&&!root.document?.hidden&&isVisible();
   const refresh=async()=>{
-    if(closed||checking||root.document?.hidden)return;
+    if(checking||!visible())return;
     checking=true;
-    try{await preference(db,accountId,{refresh:true});}catch{}finally{checking=false;}
+    try{
+      await preference(db,accountId,{refresh:true,legacyDisabled});
+      legacyDisabled=false;
+    }catch{}finally{checking=false;}
   };
-  const timer=setInterval(refresh,12000);
-  root.document?.addEventListener('visibilitychange',refresh);void refresh();
-  return()=>{closed=true;clearInterval(timer);unsubscribe();root.document?.removeEventListener('visibilitychange',refresh);};
+  function sync(){
+    if(!visible()){clearInterval(timer);timer=null;return;}
+    if(timer===null){timer=setInterval(refresh,12000);void refresh();}
+  }
+  const hide=()=>{away=true;sync();},show=()=>{away=false;sync();};
+  root.document?.addEventListener('visibilitychange',sync);
+  root.document?.addEventListener('ojjuda:park-view',sync);
+  root.addEventListener?.('pagehide',hide);root.addEventListener?.('pageshow',show);
+  sync();
+  return()=>{
+    closed=true;sync();unsubscribe();
+    root.document?.removeEventListener('visibilitychange',sync);
+    root.document?.removeEventListener('ojjuda:park-view',sync);
+    root.removeEventListener?.('pagehide',hide);root.removeEventListener?.('pageshow',show);
+  };
 }
 function freshPosition(value,maxAccuracy=2000){
   return value&&Number.isFinite(value.capturedAt)&&Date.now()>=value.capturedAt&&Date.now()-value.capturedAt<120000&&

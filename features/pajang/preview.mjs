@@ -16,6 +16,8 @@ names.forEach((name,index)=>{
 });
 const embedded = window.parent !== window && new URLSearchParams(location.search).get('embed') === '1';
 document.documentElement.classList.toggle('embedded',embedded);
+const radarPanel=$('.sample-radar');
+let attempt=0;
 let active = false, permissionPending = false, timer = 0, last = null, frame = 0;
 
 export function select(index) {
@@ -62,7 +64,7 @@ function receive(event){
   last=event;redraw();
 }
 function stop(message=''){
-  active=false;last=null;clearTimeout(timer);cancelAnimationFrame(frame);frame=0;
+  attempt++;active=false;last=null;clearTimeout(timer);cancelAnimationFrame(frame);frame=0;
   window.removeEventListener('deviceorientation',receive);window.removeEventListener('deviceorientationabsolute',receive);
   window.removeEventListener('orientationchange',redraw);window.screen.orientation?.removeEventListener?.('change',redraw);
   compass.textContent='휴대폰 방향 켜기';direction.textContent='북쪽 고정';note.textContent=message;draw(0);
@@ -73,17 +75,20 @@ compass.addEventListener('click',async()=>{
   const api=window.DeviceOrientationEvent;
   if(!api){stop('방향 센서를 사용할 수 없어 북쪽을 위로 표시해요.');return;}
   permissionPending=true;
+  const current=++attempt;
   try{
-    if(api.requestPermission && await api.requestPermission(true)!=='granted'){stop('방향 권한이 꺼져 있어 북쪽을 위로 표시해요.');return;}
-    if(document.hidden || document.getElementById('welcome').hidden)return;
+    const granted=!api.requestPermission || await api.requestPermission(true)==='granted';
+    if(current!==attempt||document.hidden||!radarPanel.open||document.getElementById('welcome').hidden)return;
+    if(!granted){stop('방향 권한이 꺼져 있어 북쪽을 위로 표시해요.');return;}
     active=true;compass.textContent='북쪽 고정하기';note.textContent='휴대폰을 수평에 가깝게 들고 살짝 돌려주세요.';
     window.addEventListener('deviceorientation',receive);window.addEventListener('deviceorientationabsolute',receive);
     window.addEventListener('orientationchange',redraw);window.screen.orientation?.addEventListener?.('change',redraw);
     timer=setTimeout(()=>stop('센서 값을 받지 못했어요. 북쪽 고정으로 계속 체험할 수 있어요.'),9000);
-  }catch{stop('방향 권한을 사용할 수 없어 북쪽을 위로 표시해요.');}
+  }catch{if(current===attempt)stop('방향 권한을 사용할 수 없어 북쪽을 위로 표시해요.');}
   finally{permissionPending=false;}
 });
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&active)stop();});
+radarPanel.addEventListener('toggle',()=>{if(!radarPanel.open&&(active||permissionPending))stop();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&(active||permissionPending))stop();});
 window.addEventListener('pagehide',()=>stop());
 window.addEventListener('pajang-entry-exit',()=>stop(),{once:true});
 draw(0);select(0);

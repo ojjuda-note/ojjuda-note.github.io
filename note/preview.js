@@ -35,7 +35,7 @@ function locationIsEnabled() {
 }
 function watchLocationPreference(userId) {
   stopLocationPreference(); stopLocationPreference = () => {};
-  if (!userId || !window.OjjudaLocation) return;
+  if (!userId || session?.user?.is_anonymous || !window.OjjudaLocation) return;
   const epoch = identityEpoch;
   let previous;
   const apply = choice => {
@@ -54,10 +54,9 @@ function watchLocationPreference(userId) {
       });
     }
   };
-  stopLocationPreference = window.OjjudaLocation.observe(client, userId, apply);
-  void window.OjjudaLocation.preference(client, userId, {
-    refresh: true, legacyDisabled: readComposerSettings(userId).locationEnabled === false
-  }).catch(() => {});
+  stopLocationPreference = window.OjjudaLocation.observe(client,userId,apply,{
+    legacyDisabled:readComposerSettings(userId).locationEnabled===false,isVisible:parkViewVisible
+  });
 }
 let nearbySnapshot = null;
 let publishRequestId = null, locationRun = 0;
@@ -71,7 +70,7 @@ let eventMap = null;
 let composerMapFetchRun = 0, composerMapTimer = null;
 let feedPages = 0, backgroundLocating = false, feedDeferred = false;
 function quietLocatedReload(tries = 0) {   // 허용된 위치가 늦게 도착해도 현재 첫 페이지를 갱신해요(근처 포함)
-  if (!nearbyPosition || feedMode !== 'all' || feedTerm || feedPages > 1 || !detail.hidden) return;
+  if (!parkViewVisible() || !nearbyPosition || feedMode !== 'all' || feedTerm || feedPages > 1 || !detail.hidden) return;
   if (feedLoading) { if (tries < 20) setTimeout(() => quietLocatedReload(tries + 1), 300); return; }
   loadFeed(false, true);
 }
@@ -586,6 +585,12 @@ let cardPhotoEditPath = null;
 const cardPhotoCache = new Map(), cardPhotoWanted = new Set();
 let cardPhotoTimer = null, cardPhotoRefreshTimer = null, photoLightbox = null, photoLightboxFocus = null;
 let photoLightboxRun = 0;
+let parkHostVisible=true, parkPageAway=false, passiveFix=null, resumeFixEpoch=null;
+function parkViewVisible(){return parkHostVisible&&!parkPageAway&&!document.hidden;}
+function schedulePhotoBatch(){
+  clearTimeout(cardPhotoTimer);cardPhotoTimer=null;
+  if(cardPhotoWanted.size&&parkViewVisible())cardPhotoTimer=setTimeout(fetchCardPhotos,80);
+}
 function wantCardPhoto(id) {
   if (!validCardId(id) || !client || !session?.user) return;
   const hit = cardPhotoCache.get(id);
@@ -593,10 +598,11 @@ function wantCardPhoto(id) {
     paintCardPhoto(id); return;
   }
   cardPhotoWanted.add(id);
-  clearTimeout(cardPhotoTimer); cardPhotoTimer = setTimeout(fetchCardPhotos, 80);
+  schedulePhotoBatch();
 }
 async function fetchCardPhotos() {
   cardPhotoTimer = null;
+  if(!parkViewVisible())return;
   const ids = [...cardPhotoWanted].slice(0, 100);
   for (const id of ids) cardPhotoWanted.delete(id);
   if (!ids.length || !session?.user) return;
@@ -605,6 +611,9 @@ async function fetchCardPhotos() {
     const rows = await noteRpc('card_media_paths', { p_ids: ids });
     if (epoch !== identityEpoch || session?.user?.id !== userId) return;
     let byPath = new Map();
+    if(!parkViewVisible()){
+      ids.forEach(id=>cardPhotoWanted.add(id));return;
+    }
     const paths = (rows || []).map(row => row.photo_path).filter(Boolean);
     if (paths.length) {
       let data, error;
@@ -629,7 +638,7 @@ async function fetchCardPhotos() {
       ids.filter(id => cardPhotoCache.get(id)?.failed).forEach(paintCardPhoto);
   }
   if (cardPhotoWanted.size && epoch === identityEpoch && session?.user?.id === userId)
-    cardPhotoTimer = setTimeout(fetchCardPhotos, 80);
+    schedulePhotoBatch();
 }
 function applyCardPhoto(thumb, url, failed = false, media = null) {
   const isVideo = !!media?.videoPath;
@@ -679,11 +688,12 @@ function activateCardPhoto(thumb) {
 }
 function scheduleCardPhotoRefresh() {
   clearTimeout(cardPhotoRefreshTimer); cardPhotoRefreshTimer = null;
-  if (!session?.user) return;
+  if (!session?.user || !parkViewVisible()) return;
   const next = [...cardPhotoCache.values()].filter(hit => hit.url)
     .reduce((minimum, hit) => Math.min(minimum, hit.at + 8 * 60 * 1000), Infinity);
   if (!Number.isFinite(next)) return;
   cardPhotoRefreshTimer = setTimeout(() => {
+    if(!parkViewVisible())return;
     for (const [id, hit] of cardPhotoCache) {
       if (!hit.url || Date.now() - hit.at < 8 * 60 * 1000) continue;
       cardPhotoCache.delete(id);
@@ -1565,12 +1575,12 @@ async function loadFeed(more = false, quiet = false) {
   if (!stack.length) resumeGuestWriting(null);
   // Location is optional; fetch it after cards have had time to paint.
   if (!more && !quiet && feedMode === 'all' && !feedTerm && feedSort !== 'nearby'
-      && !nearbyPosition && !backgroundLocating && !document.hidden) {
+      && !nearbyPosition && !backgroundLocating && parkViewVisible()) {
     backgroundLocating = true;
     const locationEpoch = identityEpoch;
     const locateAfterPaint = () => {
       if (locationEpoch !== identityEpoch || version !== feedRun
-          || !locationIsEnabled() || nearbyPosition || document.hidden || !detail.hidden) {
+          || !locationIsEnabled() || nearbyPosition || !parkViewVisible() || !detail.hidden) {
         backgroundLocating = false;
         return;
       }
@@ -1622,12 +1632,23 @@ function positionIsFresh(position) {
   return Number.isFinite(position?.capturedAt) && Date.now() - position.capturedAt < 120000;
 }
 async function positionIfAlreadyGranted() {
-  if (!locationIsEnabled() || !navigator.geolocation || !navigator.permissions?.query) return null;
-  try {
-    const permission = await navigator.permissions.query({ name: 'geolocation' });
-    if (permission.state === 'granted') return await currentPosition(false,false,undefined,true);
-  } catch { /* No implicit request when browser permissions cannot be inspected. */ }
-  return null;
+  if (!parkViewVisible() || !locationIsEnabled() || !navigator.geolocation || !navigator.permissions?.query) return null;
+  if(passiveFix?.epoch===identityEpoch)return passiveFix.promise;
+  passiveFix?.controller.abort();
+  const controller=new AbortController(), epoch=identityEpoch;
+  const current=()=>!controller.signal.aborted&&epoch===identityEpoch&&parkViewVisible()&&locationIsEnabled();
+  const fix={epoch,controller};
+  passiveFix=fix;
+  fix.promise=(async()=>{
+    try{
+      const permission=await navigator.permissions.query({name:'geolocation'});
+      if(permission.state!=='granted'||!current())return null;
+      const position=await currentPosition(false,false,controller.signal,true);
+      return current()?position:null;
+    }catch{return null;}
+  })();
+  try{return await fix.promise;}finally{if(passiveFix===fix)passiveFix=null;}
+
 }
 function consumeInitialCard() {
   if (initialParkCompose && authKnown && ready) { initialParkCompose = false; openComposer('memo'); }
@@ -4184,11 +4205,26 @@ $('#card-photo-attach')?.addEventListener('keydown', event => {
 $('#card-photo-remove')?.addEventListener('click', event => {
   event.preventDefault(); clearCardPhoto(); updateComposer();
 });
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') scheduleCardPhotoRefresh();
-  else closePhotoLightbox();
-});
-window.addEventListener('pagehide', closePhotoLightbox);
+function syncParkActivity(){
+  schedulePhotoBatch();scheduleCardPhotoRefresh();
+  if(!parkViewVisible()){
+    closePhotoLightbox();
+    if(passiveFix){
+      resumeFixEpoch=passiveFix.epoch;
+      passiveFix.controller.abort();passiveFix=null;
+    }
+  }else if(resumeFixEpoch!==null){
+    const epoch=resumeFixEpoch;resumeFixEpoch=null;
+    if(epoch===identityEpoch&&!nearbyPosition&&feedMode==='all'&&!feedTerm&&detail.hidden&&backdrop.hidden){
+      void positionIfAlreadyGranted().then(position=>{
+        if(position&&epoch===identityEpoch&&parkViewVisible()){nearbyPosition=position;quietLocatedReload();}
+      });
+    }
+  }
+}
+document.addEventListener('visibilitychange',syncParkActivity);
+window.addEventListener('pagehide',()=>{parkPageAway=true;syncParkActivity();});
+window.addEventListener('pageshow',()=>{parkPageAway=false;syncParkActivity();});
 $('#quick-gender')?.addEventListener('change', event => pickQuickChoice('gender', event.target.value));
 
 

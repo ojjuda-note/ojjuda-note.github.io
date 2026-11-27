@@ -1,3 +1,4 @@
+import {pollWhileVisible} from "../lib/visible-poll";
 import {useEffect, useMemo, useRef, useState, type PointerEvent} from "react";
 import {signalsWith, type Slot, type Station} from "../lib/station";
 import {relationshipIntents,type RelationshipIntentKey} from "../lib/profile-preferences.mjs";
@@ -141,8 +142,8 @@ function useAnswers(filter:string, gender:Gender, order:Order, scope:string, ope
     };
     document.addEventListener("visibilitychange",onVisible);
     // Refresh the first page in place; scrolling back through earlier pages keeps its cursor.
-    const poll=window.setInterval(()=>{if(!document.hidden)void read("check");},60000);
-    return ()=>{active=false;controller?.abort();load.current=()=>{};window.clearInterval(poll);document.removeEventListener("visibilitychange",onVisible);};
+    const stopPoll=pollWhileVisible(()=>void read("check"),60000);
+    return ()=>{active=false;controller?.abort();load.current=()=>{};stopPoll();document.removeEventListener("visibilitychange",onVisible);};
   },[key,filter,gender,order,cache,openingScope,likes,selectedQuestion]);
   const previous=useRef({visible,activity,key});
   useEffect(()=>{

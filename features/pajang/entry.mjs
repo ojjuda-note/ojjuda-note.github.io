@@ -124,7 +124,7 @@ async function start(firstEntry) {
   async function openRadar(){
     if(!radarPanel.open)return;
     try{
-      radar=await import('./preview.mjs?v=compass8');
+      radar=await import('./preview.mjs?v=20261127-battery1');
       radar.setQuestion(entry.question??themeFor(entry.day,entry.slot));
     }catch{document.getElementById('sensor-note').textContent='레이더를 불러오지 못했어요. 접었다가 다시 열어 주세요.';}
   }
@@ -195,7 +195,7 @@ async function start(firstEntry) {
   void client().then(async db=>{
     const {data:{session}}=await db.auth.getSession();
     if(!session?.user||locationRead.signal.aborted||!await sameMember(db))return;
-    const {prepareLocation}=await import('./location.mjs?v=20261125-location-permission1');
+    const {prepareLocation}=await import('./location.mjs?v=20261127-battery1');
     if(!locationRead.signal.aborted)await prepareLocation(entry,db,session.user.id,{signal:locationRead.signal});
   }).catch(()=>{});
   if(entry.locationNotice)status.textContent=entry.locationNotice;

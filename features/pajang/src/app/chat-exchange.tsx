@@ -1,3 +1,4 @@
+import {pollWhileVisible} from "../lib/visible-poll";
 import {useCallback,useEffect,useRef,useState,type ReactNode} from "react";
 import {exchange,PeerProfile,type ExchangeKind,type SharedProfile} from "./exchange-profile";
 import {SharedExchangePhotos} from "./exchange-photos";
@@ -47,11 +48,11 @@ export function ChatExchange({peer,name,owner,region,avatarId,lastMessage,childr
       if(document.hidden){reading.current=null;revision.current++;setState(null);setLooking(null);}
       else void reload();
     };
-    const timer=window.setInterval(reload,8000);
+    const stopPoll=pollWhileVisible(reload,8000);
     document.addEventListener("visibilitychange",visible);
     return ()=>{
       mounted.current=false;revision.current++;
-      window.clearInterval(timer);
+      stopPoll();
       document.removeEventListener("visibilitychange",visible);
     };
   },[reload]);

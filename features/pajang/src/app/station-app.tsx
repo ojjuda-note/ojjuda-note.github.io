@@ -1,4 +1,5 @@
 "use client";
+import {pollWhileVisible} from "../lib/visible-poll";
 import {useEffect,useLayoutEffect,useRef,useState} from "react";
 import {themeFor,introDetails,signalsWith,type Person,type Message,type Station,type NearbyAnswer} from "../lib/station";
 
@@ -178,10 +179,10 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   useEffect(()=>{setReady(true);},[]);
   useEffect(()=>{
     const tick=()=>{if(!document.hidden&&!lock.current)void refresh();};
-    const poll=setInterval(tick,12000);
+    const stopPoll=pollWhileVisible(tick,12000);
     const boundary=setTimeout(tick,Math.max(0,Date.parse(s.nextAt)-Date.now())+100);
     document.addEventListener("visibilitychange",tick);
-    return()=>{clearInterval(poll);clearTimeout(boundary);document.removeEventListener("visibilitychange",tick);};
+    return()=>{stopPoll();clearTimeout(boundary);document.removeEventListener("visibilitychange",tick);};
   },[s.nextAt]);
   useEffect(()=>{if(pendingModal&&!modal){historyEditDirty.current=false;dismiss();}},[pendingModal,modal]);
   useEffect(()=>{if(!toast)return;const t=setTimeout(()=>setToast(""),3500);return()=>clearTimeout(t);},[toast]);
@@ -204,10 +205,10 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     if(!validThread||tab!=="chat")return;
     void readThread(thread);
     const tick=()=>{if(!document.hidden&&!lock.current)void readThread(thread);};
-    const timer=window.setInterval(tick,4000);
+    const stopPoll=pollWhileVisible(tick,4000);
     document.addEventListener("visibilitychange",tick);
     return ()=>{
-      window.clearInterval(timer);document.removeEventListener("visibilitychange",tick);
+      stopPoll();document.removeEventListener("visibilitychange",tick);
       threadRead.current?.abort();threadRead.current=null;
     };
   },[thread,tab,validThread]);
