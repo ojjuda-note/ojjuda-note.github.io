@@ -1,6 +1,6 @@
 import {createCoinExchangeClient,COIN_PACKS,COINS_PER_ZU} from './coin-exchange.mjs?v=20261104-archery-reset5';
 import {PLAYER, BOWS, ARROWS, BULLETS, getBullet, SCOPES, getScopePrice, getScoreCoinReward, DISTANCE_STAGES as STAGES, DISTANCE_GROUPS, prepareStage, passersAt, retirePasser, clamp, targetAt, applyAnimalHit, getAnimalAttachmentPoint, getSpeed, getArrowMass, getArrowConsistency, getArrowVariance, getArrowDragRate, getWindResponse, sortEquipment, launchArrow, launchVolley, stepArrow, predictTrajectory, createSway, stepSway} from './engine.mjs?v=20261106-archery-distance1';
-import {drawScenery, drawRangeTarget, drawAnimal, drawClay, drawUfo, drawObstacle, drawPasser, drawEquipmentIcon, drawFirstPersonBow, drawBullseyeImpact, drawBullseyeVignette} from './scenery.mjs?v=20261128-woodland2';
+import {drawScenery, drawRangeTarget, drawAnimal, drawClay, drawUfo, drawObstacle, drawPasser, drawEquipmentIcon, drawFirstPersonBow, drawBullseyeImpact, drawBullseyeVignette} from './scenery.mjs?v=20261128-touch1';
 import {FLIGHT_TIME_SCALE, IMPACT_HOLD, RETURN_DURATION, PREVIEW_RISE, PREVIEW_HOLD, PREVIEW_RETURN, NEAR_PLANE, projectPoint, depthFragments, desiredFollowCamera, desiredPreviewCamera, clearShotCamera, lerpCamera} from './view.mjs?v=20261104-archery-eagle-dive1';
 import {createBullseyeCinematic, sampleBullseyeCinematic, desiredBullseyeCamera} from './cinematic.mjs?v=20261104-archery-eagle-dive1';
 import {createBulletCinematic, sampleBulletCinematic, desiredBulletCamera} from './bullet-cinematic.mjs?v=20261104-archery-bullet-penetration1';
@@ -667,7 +667,8 @@ function updateCamera(dt=0,immediate=false){
 }
 function resize(){
   const r=canvas.getBoundingClientRect(),width=Math.max(1,r.width),height=Math.max(1,r.height);
-  if(pointer&&(width!==w||height!==h))cancelDraw();
+  // Browser toolbars can resize the height while a finger remains on the range.
+  if(pointer&&(Math.abs(width-w)>=1||(height!==h&&pointer.type!=='touch')))cancelDraw();
   w=width;h=height;dpr=Math.min(2,devicePixelRatio||1);
   canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);
   updateCamera(0,true);
@@ -729,6 +730,7 @@ function updateHeader(){
   }
   updateZoomControl();
 }
+let lastJourneyKey='';
 function updateRound(){
   const s=state.stage;
   $('gunReload').classList.toggle('hidden',!usingGun());
@@ -749,8 +751,12 @@ function updateRound(){
   $('shotCountLabel').textContent=`${Math.max(0,shotLimit()-state.used)}${shotUnit()} 남음${activeBow().burstCount>1?' · 3연발':''}`;
   $('journeyCount').textContent=`${s.id} / ${STAGES.length}`;
   $('journeyCaption').textContent=(`${progress.unlocked}단계까지 열림`);
-  $('journeySteps').innerHTML=STAGES.map(s=>{const locked=!stageAvailable(s.id);return `<button class="journey-step ${s.id===state.stage.id?'active':''} ${stageCleared(s.id)?'done':''}" data-stage="${s.id}" ${locked?'disabled':''} aria-label="${s.id}단계 ${s.name}${locked?' 잠김':''}"><strong>${String(s.id).padStart(2,'0')}</strong><small>${locked?'잠김':`${s.distance}m`}</small></button>`}).join('');
   const journey=$('journeySteps');journey.classList.remove('hidden');
+  const journeyKey=JSON.stringify([s.id,progress.unlocked,progress.best]);
+  if(lastJourneyKey!==journeyKey){
+    journey.innerHTML=STAGES.map(s=>{const locked=!stageAvailable(s.id);return `<button class="journey-step ${s.id===state.stage.id?'active':''} ${stageCleared(s.id)?'done':''}" data-stage="${s.id}" ${locked?'disabled':''} aria-label="${s.id}단계 ${s.name}${locked?' 잠김':''}"><strong>${String(s.id).padStart(2,'0')}</strong><small>${locked?'잠김':`${s.distance}m`}</small></button>`}).join('');
+    lastJourneyKey=journeyKey;
+  }
   if(journey.dataset.current!==String(s.id)){const active=journey.querySelector?.('.active');journey.scrollTop=Math.max(0,(active?.offsetTop||0)-(journey.offsetTop||0)-12);journey.dataset.current=String(s.id);}
   $('gameCanvas').dataset.stage=s.id;$('gameCanvas').dataset.score=state.score;$('gameCanvas').dataset.shots=state.used;
   $('previewBtn').classList.toggle('hidden',!s.obstacles.length);updateAmmoPanel();
@@ -873,14 +879,14 @@ function centerLaserForDraw(){
   state.sway=createSway();state.guide=null;
   return true;
 }
-function beginDraw(){
+function beginDraw(startedAt=performance.now()){
 
   if(state.modal||state.mode!=='ready'||document.hidden||state.used>=shotLimit())return false;
   if(preparingMainRound())return false;
   if(usingGun()&&(state.reloadRemaining>0||state.magazine<=0))return false;
   if(!centerLaserForDraw())return false;
   closeLaserAdjustments();stopCoachVoice();state.coachSaid=false;state.coachReady=false;state.coachLastCueAt=-Infinity;state.coachCueUntil=0;state.coachLastCheck=-Infinity;
-  state.mode='drawing';state.held=0;state.drawStarted=performance.now();state.charge=0;state.velocityBias=Math.random()*2-1;
+  state.mode='drawing';state.held=0;state.drawStarted=startedAt;state.charge=0;state.velocityBias=Math.random()*2-1;
   const motionFree=activeBow().handSwayFactor===0;
   state.steadyDuration=motionFree?DRAW_LIMIT:weaponSteadyDuration();
   state.steadyStart=motionFree?0:1+Math.random()*(DRAW_LIMIT-state.steadyDuration-1);state.steadyActive=motionFree;state.guide=null;
@@ -899,13 +905,14 @@ function releaseShot(automatic=false,now=performance.now()){
   if(document.hidden||state.modal){cancelDraw();return;}
   syncDraw(now);clearDrawTimer();
   const shots=launchVolley(shotParams(now));
-  for(const shot of shots){shot.startedAt=now;shot.automatic=!laserEnabled()&&(automatic||drawElapsed(now)>=DRAW_LIMIT);shot.handled=false;shot.launched=!(shot.launchDelay>0);if(shot.launched)rememberFlight(shot,state.time);}
+  const launchedAt=performance.now();
+  for(const shot of shots){shot.startedAt=launchedAt;shot.automatic=!laserEnabled()&&(automatic||drawElapsed(now)>=DRAW_LIMIT);shot.handled=false;shot.launched=!(shot.launchDelay>0);if(shot.launched)rememberFlight(shot,state.time);}
   if(usingGun()){
     if(state.reloadRemaining>0||state.magazine<=0){cancelDraw();return;}
     state.magazine--;
 
   }
-  state.shot=shots[0];state.volley=shots.length>1?{shots,elapsed:0,startedAt:now,handled:false}:null;
+  state.shot=shots[0];state.volley=shots.length>1?{shots,elapsed:0,startedAt:launchedAt,handled:false}:null;
   state.shotMaxScores.push(shots.length*10);
   state.mode='flight';state.used++;state.guide=null;state.steadyActive=false;state.returnCamera=null;state.cinematic=null;
   clearPointer();keys.clear();
@@ -929,24 +936,28 @@ function moveTouchAim(e){
   state.aim.pitch+=pitch-sight.pitch;
   clampAim();state.guide=null;
 }
+function pointerTime(e){
+  const now=performance.now();
+  return Number.isFinite(e.timeStamp)&&e.timeStamp>=0&&e.timeStamp<=now?e.timeStamp:now;
+}
 function onPointerDown(e){
   if(e.button!==0||e.isPrimary===false||pointer||!Number.isFinite(e.clientX)||!Number.isFinite(e.clientY))return;
   const rect=canvas.getBoundingClientRect(),x=e.clientX-rect.left,y=e.clientY-rect.top;
   if(x<0||x>=rect.width||y<(laserEnabled()?0:rect.height*2/3)||y>=rect.height)return;
-  if(!beginDraw())return;e.preventDefault();e.currentTarget.focus({preventScroll:true});
-  pointer={id:e.pointerId,el:e.currentTarget,x:e.clientX,y:e.clientY};
+  if(!beginDraw(pointerTime(e)))return;e.preventDefault();e.currentTarget.focus({preventScroll:true});
+  pointer={id:e.pointerId,type:e.pointerType,el:e.currentTarget,x:e.clientX,y:e.clientY};
   touchpad.dataset.active='true';
   e.currentTarget.setPointerCapture(e.pointerId);
 }
 function onPointerMove(e){
   if(!pointer||pointer.id!==e.pointerId||state.mode!=='drawing')return;
-  e.preventDefault();const now=performance.now();
+  e.preventDefault();const now=pointerTime(e);
   if(!laserEnabled()&&drawElapsed(now)>=DRAW_LIMIT){releaseShot(true,now);return;}
   moveTouchAim(e);
 }
 function onPointerUp(e){
   if(!pointer||pointer.id!==e.pointerId||e.button!==0)return;
-  e.preventDefault();const now=performance.now(),automatic=!laserEnabled()&&drawElapsed(now)>=DRAW_LIMIT;
+  e.preventDefault();const now=pointerTime(e),automatic=!laserEnabled()&&drawElapsed(now)>=DRAW_LIMIT;
   if(!automatic)moveTouchAim(e);
   releaseShot(automatic,now);
 }
@@ -1947,7 +1958,7 @@ function updatePower(){
   }else if(state.mode==='settling'){
     $('powerLabel').textContent='다음 한 발을 준비해요';$('controlTitle').textContent='호흡을 가다듬고, 다시 한 발';$('controlHint').textContent=usingGun()?'곧 다음 탄환을 쏠 수 있어요':'곧 다음 화살을 쏠 수 있어요';
   }else{
-    $('powerLabel').textContent=usingGun()?'움직이는 표적의 앞을 겨눠요':'활을 당겨보세요';$('controlTitle').textContent=laser?'사격장을 누르고 끌어 조준':'화면 아래 1/3을 끌어 조준';$('controlHint').textContent=usingGun()?'한 판에 10발 · 모두 쏘면 결과 확인':laser?'누르면 빨간 점이 가운데에서 시작 · 끌어 조준하고 손을 놓으면 발사':state.practiceOnly?'저장 없이 연습 중':activeBow().burstCount>1?`레어 석궁 · 3연발 · ${steadySeconds}초 안정`:`${steadySeconds}초 안정 기회 · 10초 후 자동발사`;
+    $('powerLabel').textContent=laser?'사격장을 눌러 조준':'아래 ⅓을 끌어 조준';$('controlTitle').textContent=laser?'사격장을 누르고 끌어 조준':'화면 아래 1/3을 끌어 조준';$('controlHint').textContent=usingGun()?'한 판에 10발 · 모두 쏘면 결과 확인':laser?'누르면 빨간 점이 가운데에서 시작 · 끌어 조준하고 손을 놓으면 발사':state.practiceOnly?'저장 없이 연습 중':activeBow().burstCount>1?`레어 석궁 · 3연발 · ${steadySeconds}초 안정`:`${steadySeconds}초 안정 기회 · 10초 후 자동발사`;
   }
 }
 function tick(now){
