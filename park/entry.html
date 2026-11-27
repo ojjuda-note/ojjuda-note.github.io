@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,follow">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#f1f5ed">
+  <title>오쭈다 공원</title>
+  <style>html { background: #f1f5ed; }</style>
+  <script>
+    // The launcher sends no callback parameters. Keep pasted parameters away from the auth SDK.
+    if (location.search || location.hash) history.replaceState(null, '', location.pathname);
+  </script>
+  <script src="/config.js?v=20261111-shared-member-auth1" defer></script>
+</head>
+<body>
+  <a id="enter" href="/park/" hidden>공원 들어가기</a>
+  <noscript><a href="/park/">공원 들어가기</a></noscript>
+  <script>
+    // Check the existing session on its own top-level origin, including in an installed app.
+    const guestWelcome = 'https://ojjuda.com/#park-guest';
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        if (localStorage.length === 0) {
+          location.replace(guestWelcome);
+          return;
+        }
+        const client = await window.OjjudaGetClient();
+        const { data, error } = await client.auth.getSession();
+        if (error) throw error;
+        const user = data.session?.user;
+        location.replace(user?.id && !user.is_anonymous ? '/park/' : guestWelcome);
+      } catch {
+        location.replace(guestWelcome);
+      }
+    });
+    // Keep a manual entrance available during a slow connection.
+    setTimeout(() => { document.getElementById('enter').hidden = false; }, 2200);
+  </script>
+</body>
+</html>
