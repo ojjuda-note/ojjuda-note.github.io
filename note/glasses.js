@@ -10,6 +10,7 @@ import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
   const buttons = [byId('glass-first'), byId('glass-second')];
   const service = window.OjjudaLocation;
   const config = window.OJJUDA_CONFIG;
+  const calendar = new Intl.DateTimeFormat('ko-KR', {month:'long', day:'numeric', weekday:'short'});
   const clock = new Intl.DateTimeFormat('ko-KR', {hour:'2-digit', minute:'2-digit', hourCycle:'h23'});
   const samples = ['오늘은 조금 천천히 걸어도 괜찮아.', '길모퉁이에서 반가운 바람을 만났어요.', '이 길을 지나는 사람에게 작은 응원을 보내요.'];
   let db, owner, hardware, tracking, stopPreference = () => {};
@@ -44,7 +45,8 @@ import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
         body:current.body, distance:current.distance, hasReplies:!!reply?.hasReplies,
         prev:t.at>0 || !!t.parent, next:t.at<t.items.length || (!t.busy && (!!t.next || t.error))};
     }
-    return {time:clock.format(now), battery, charging, speed:tracking?.meter.read(now) ?? null,
+    const time = clock.format(now);
+    return {time, clockText:time+' · '+calendar.format(now), battery, charging, speed:tracking?.meter.read(now) ?? null,
       weather:[tracking?.city, weather && weather.expiresAt>now ? weather.text : weatherHint].filter(Boolean).join(' · '),
       cards, card:cards[0] || null, expanded:!!reader, reader, sample, paused};
   }
@@ -57,7 +59,7 @@ import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
     byId('glass-sample').textContent = sample ? '예시 닫기' : '예시 보기';
     byId('glass-signin').hidden = owner !== null || !!document.documentElement?.dataset?.evenApp;
     locate.hidden = sample;
-    byId('glass-clock').textContent = view.time;
+    byId('glass-clock').textContent = view.clockText;
     byId('glass-battery').textContent = (battery == null ? '—' : battery) + '%' + (charging ? ' ⚡' : '');
     byId('glass-weather').textContent = view.weather;
     byId('glass-speed').textContent = (view.speed ?? '—') + ' km/h';
@@ -409,7 +411,7 @@ import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
   let lastTick = '';
   const timer = setInterval(() => {
     const v = model();
-    const next = [v.time,v.speed,v.weather].join('|');
+    const next = [v.clockText,v.speed,v.weather].join('|');
     if (next !== lastTick) { lastTick = next; render(); }
   }, 1000);
   let subscription;
@@ -444,7 +446,7 @@ import {createSpeedMeter} from './rokid-agent/lib/speed.js?v=20261126-hud1';
     message.textContent = 'G2 연결을 기다리는 중…';
     let stage = 'SDK';
     try {
-      const sdk = await import('/park/even-g2.bundle.mjs?v=20261126-city1');
+      const sdk = await import('/park/even-g2.bundle.mjs?v=20261127-date1');
       if (typeof sdk?.attachEvenG2 !== 'function') throw Error('SDK');
       stage = 'BRIDGE';
       hardware = await sdk.attachEvenG2(window.OJJUDA_GLASS_PREVIEW);

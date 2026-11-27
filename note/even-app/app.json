@@ -2,7 +2,7 @@
   "package_id": "kr.ojjuda.park",
   "edition": "202601",
   "name": "오쭈다 공원",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "min_sdk_version": "0.0.16",
   "entrypoint": "index.html",
   "supported_languages": ["ko"],
