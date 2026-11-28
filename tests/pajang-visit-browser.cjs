@@ -30,8 +30,10 @@ async function entryHtml(filename) {
   assert.ok(shell && config, 'the real published page supplies the current script URLs');
   // Keep the production script order and module graph; unrelated member content
   // is omitted so every database request comes from the measurement under test.
-  return `<!doctype html><html><head><meta charset="utf-8">${shell}</head>
-    <body><main>파장 방문 연결 검사</main>${clientFixture}${config}</body></html>`;
+  // Match the production boot order: the shared client/config are available
+  // before the optional shell measurement starts loading.
+  return `<!doctype html><html><head><meta charset="utf-8">${clientFixture}${config}${shell}</head>
+    <body><main>파장 방문 연결 검사</main></body></html>`;
 }
 
 function adminHtml() {
@@ -100,7 +102,19 @@ function adminHtml() {
     const page = await context.newPage();
     page.on('pageerror', error => failures.push(error.message));
     await page.goto(origin + '/features/pajang/', { waitUntil: 'networkidle' });
-    await page.waitForFunction(() => window.__calls?.length === 2);
+    try {
+      await page.waitForFunction(() => window.__calls?.length === 2, null, { timeout: 12000 });
+    } catch (error) {
+      const state = await page.evaluate(() => ({
+        calls: window.__calls, clientReads: window.__clientReads,
+        tracker: typeof window.OjjudaSiteUsage, client: typeof window.OjjudaGetClient,
+        ready: document.readyState, hidden: document.hidden,
+        doNotTrack: navigator.doNotTrack, privacy: navigator.globalPrivacyControl,
+        source: location.pathname
+      }));
+      throw new Error('Pajang usage tracking did not record exactly visit and feature: ' +
+        JSON.stringify({state, failures, requests: [...requested]}), {cause:error});
+    }
     const calls = await page.evaluate(() => window.__calls);
     assert.deepEqual(calls.map(call => call.args.p_event), ['visit', 'feature']);
     assert.equal(calls[1].args.p_feature, 'pajang');
