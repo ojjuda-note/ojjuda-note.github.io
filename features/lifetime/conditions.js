@@ -135,40 +135,28 @@ function habitAnswers(f) {
     flags(f.sleepBand,["0","1","3","4"])
   ];
 }
-function lifestyleRisk(curve,age,sex,flags) {
+// Estimate each remaining habit separately from the study’s population counts.
+function lifestyleRows(curve,age,sex,flags) {
   const {counts,ratios}=lifestyleStudy[sex];
   const estimate=modeledGroups(curve,age,6,counts,ratios);
-  const baseline=estimate.baselineRisk;
-  const cache=new Map();
-
-  // The published score groups are observational and not strictly ordered.
-  // Keep the joint estimate inside the bounds implied by dropping each answer.
-  // A blank has population risk; a beneficial/adverse answer can only lower/raise it.
-  function boundedRisk(answers) {
-    const key=answers.map(flag=>flag===null?"-":Number(flag)).join("");
-    if(cache.has(key)) return cache.get(key);
-    if(answers.every(flag=>flag===null)) return baseline;
+  const keys=["smoke","drink","exercise","bmi","sleepBand"];
+  const labels=["흡연","음주","운동","체중","수면"];
+  const rows=[];
+  for(const [i,adverse] of flags.entries()) {
+    if(adverse===null) continue;
     let weight=0,weightedRisk=0;
-    for(const [bits,score,prob] of habitPatterns) {
-      if(!answers.every((flag,i)=>flag===null || flag===(bits[i]==="1"))) continue;
-      const n=counts[score]*prob;
+    for(const [bits,score,share] of habitPatterns) {
+      if((bits[i]==="1")!==adverse) continue;
+      const n=counts[score]*share;
       weight+=n;
       weightedRisk+=n*estimate.groups[score].risk;
     }
-    let low=0,high=1;
-    answers.forEach((flag,i)=>{
-      if(flag===null) return;
-      const parent=answers.slice();
-      parent[i]=null;
-      const risk=boundedRisk(parent);
-      if(flag) low=Math.max(low,risk);
-      else high=Math.min(high,risk);
-    });
-    const risk=Math.min(high,Math.max(low,weightedRisk/weight));
-    cache.set(key,risk);
-    return risk;
+    const base=estimate.baselineRisk,raw=weightedRisk/weight;
+    const selected=adverse?Math.max(base,raw):Math.min(base,raw);
+    rows.push({key:"lifestyle-"+keys[i],label:labels[i],result:{risk:{base,selected,horizon:6}},
+      url:"https://doi.org/10.1038/s41598-020-66742-y"});
   }
-  return {base:baseline,selected:boundedRisk(flags),horizon:6};
+  return rows;
 }
 function conditionEvidence(age,sex,f) {
   const curve=population.national[sex];
@@ -211,9 +199,7 @@ function conditionEvidence(age,sex,f) {
   if(!hasIllness && f.sleepBand!=="4" && use("sleep",f.sleepBand)) flags[4]=null;
   if(flags.some(flag=>flag!==null)){
     if(lifestyleOK) {
-      const risk=lifestyleRisk(curve,age,sex,flags);
-      const labels=["흡연","음주","운동","체중","수면"].filter((_,i)=>flags[i]!==null);
-      rows.push({key:"lifestyle",label:"생활습관 ("+labels.join("·")+")",result:{risk},url:"https://doi.org/10.1038/s41598-020-66742-y"});
+      rows.push(...lifestyleRows(curve,age,sex,flags));
     } else {
       skipped.push(["생활습관 조합",hasIllness?"입력한 병력이 연구의 제외 조건에 해당해요.":"연구의 적용 나이는 만 19~99세예요."]);
     }

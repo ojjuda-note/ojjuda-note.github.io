@@ -9,8 +9,8 @@ const env = vm.createContext({});
 for (const file of ['population', 'research', 'estimate', 'conditions', 'survival']) {
   vm.runInContext(fs.readFileSync(path.join(root, file + '.js'), 'utf8'), env);
 }
-const { combinedEstimate, lifestyleRisk, population } =
-  vm.runInContext('({ combinedEstimate, lifestyleRisk, population })', env);
+const { combinedEstimate, lifestyleRows, population } =
+  vm.runInContext('({ combinedEstimate, lifestyleRows, population })', env);
 
 function* partialAnswers(prefix = []) {
   if (prefix.length === 5) yield prefix;
@@ -27,27 +27,25 @@ test('smoking stays in its study when an exercise answer is added', () => {
   assert.ok(smoker.years < baseline.years);
   assert.ok(combined.years < smoker.years);
   assert.deepEqual(smokingRow(combined), smokingRow(smoker));
-  assert.equal(combined.rows.find(row => row.key === 'lifestyle').label, '생활습관 (운동)');
+  assert.equal(combined.rows.find(row => row.key === 'lifestyle-exercise').label, '운동');
 });
 
-test('every partial joint score is bounded by adding the next answer', () => {
+test('each fallback habit keeps its own risk and sign across all partial answers', () => {
   for (const sex of ['men', 'women']) {
     const curve = population.national[sex];
     for (const age of [19, 43.61, 79, 99]) {
-      const risk = flags => lifestyleRisk(curve, age, sex, flags);
-      const empty = risk(Array(5).fill(null));
-      assert.equal(empty.selected, empty.base);
-      const scores = new Map();
-      for (const flags of partialAnswers()) scores.set(JSON.stringify(flags), risk(flags).selected);
+      const rows = flags => lifestyleRows(curve, age, sex, flags);
       for (const flags of partialAnswers()) {
-        const before = scores.get(JSON.stringify(flags));
+        const combined = rows(flags);
+        assert.equal(combined.length, flags.filter(flag => flag !== null).length);
         for (const [i, flag] of flags.entries()) {
-          if (flag !== null) continue;
-          const next = flags.slice();
-          next[i] = false;
-          assert.ok(scores.get(JSON.stringify(next)) <= before + 1e-12);
-          next[i] = true;
-          assert.ok(scores.get(JSON.stringify(next)) >= before - 1e-12);
+          if (flag === null) continue;
+          const single = Array(5).fill(null);
+          single[i] = flag;
+          const [row] = rows(single);
+          assert.deepEqual(combined.find(r => r.key === row.key), row);
+          const { base, selected } = row.result.risk;
+          assert.ok(flag ? selected >= base : selected <= base);
         }
       }
     }
@@ -86,7 +84,6 @@ test('detailed and legacy inputs do not duplicate a lifestyle factor', () => {
   const keys = Array.from(detailed.rows, row => row.key).sort();
   assert.deepEqual(keys, ['activity', 'alcoholOnly', 'metabolic', 'sleep', 'smokingOnly']);
   const legacy = combinedEstimate(43, { basis: 'women', smoke: '3', drink: '6', sleepBand: '4' });
-  assert.equal(legacy.rows.length, 1);
-  assert.equal(legacy.rows[0].key, 'lifestyle');
+  assert.deepEqual(Array.from(legacy.rows, row => row.key), ['lifestyle-smoke', 'lifestyle-drink', 'lifestyle-sleepBand']);
   assert.ok(Number.isFinite(legacy.years));
 });

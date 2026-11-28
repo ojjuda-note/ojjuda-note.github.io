@@ -148,3 +148,27 @@ test('the open-ended table gives stable one-year income risk', t => {
     }
   }
 });
+
+test('the finish date adds each independent time difference exactly once', t => {
+  for (const basis of ['men', 'women', '']) {
+    const settings = { birth: '1983-04-17', birthTime: '12:30', referenceDay: '2026-11-28', fields: { basis } };
+    const { id, elapsed, submit } = page(t, settings);
+    const base = elapsed();
+    const entries = [['region', '서울'], ['smoke', '2'], ['drink', '3'], ['exercise', '1'], ['stressLevel', '4']];
+    function setFields(selected) {
+      id('open-conditions').click();
+      for (const [key] of entries) id('input-' + key).value = '';
+      id('drink-amount').value = '';
+      for (const [key, value] of selected) {
+        id('input-' + key).value = key === 'drink' ? '4' : value;
+        if (key === 'drink') id('drink-amount').value = value;
+      }
+      submit('condition-form');
+      return elapsed();
+    }
+    const sum = entries.reduce((total, entry) => total + setFields([entry]) - base, base);
+    assert.equal(setFields(entries), sum);
+    assert.equal(setFields(entries.slice().reverse()), sum);
+    assert.equal(setFields([]), base);
+  }
+});

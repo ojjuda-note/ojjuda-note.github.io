@@ -54,10 +54,9 @@ function calendarMonths(birth, time) {
   const end = anniversary(birth, months + 1);
   return months + (time - start) / (end - start);
 }
-function trendTarget(birth,model) {
-  const group=groups[model.sex];
+function trendTarget(birth,sex,shift=0) {
+  const group=groups[sex];
   const gain=(group.end-group.start)/(2024-2015);
-  const shift=model.years-model.national;
   const meeting=(group.end+shift+gain*(birth.year-2024))/(1-gain);
   // Keep the earliest observed level for crossings before the observation window.
   const years=Math.max(group.start+shift,meeting);
@@ -416,9 +415,13 @@ function calculate() {
   const f=applied.fields;
   const age=calendarMonths(birth,ref)/12;
   const model=combinedEstimate(age,f);
-  let target=trendTarget(birth,model);
+  const base=trendTarget(birth,model.sex);
+  let target=base;
+  for(const shift of Object.values(model.effects)){
+    target+=trendTarget(birth,model.sex,shift)-base;
+  }
   if(f.bonus==="current" && target<=ref){
-    target=Math.round((ref+model.years*YEAR_MS)/1000)*1000;
+    target=Math.round((ref+Math.max(0,model.years)*YEAR_MS)/1000)*1000;
   }
   const adjustment=playAdjustment(knownStories(applied.play),f);
   const hasPlay=adjustment.terms.length>0;
