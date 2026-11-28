@@ -321,6 +321,11 @@ details p{margin:8px 0;font-size:15.5px;line-height:1.5;color:#3d2b5c}
 #marbleWaiting .marble-room-actions>button{min-width:0;width:100%;margin:0;overflow-wrap:anywhere}
 </style>
 <link rel="stylesheet" href="/shared/games/arcade-return.css?v=20261112-arcade-entry-return1">
+<script defer src="/shared/games/arcade-music.js?v=20261127-ensemble1" data-game="tour"></script>
+<link rel="stylesheet" href="/shared/games/arcade-practice.css?v=20261127-coach1">
+<script defer src="/shared/games/lesson-panel.js?v=20261127-coach1"></script>
+<script defer src="/shared/games/tutorial-visits.js?v=20261127-tutorial-once1"></script>
+<script defer src="/shared/games/arcade-practice.js?v=20261127-tutorial-once1" data-game="tour"></script>
 </head>
 <body>
 
@@ -395,7 +400,7 @@ details p{margin:8px 0;font-size:15.5px;line-height:1.5;color:#3d2b5c}
 <div id="game" class="wrap hidden">
   <div class="top">
     <h1 class="logo">마블</h1>
-    <button class="chip" id="muteBtn" aria-label="효과음">🔊</button>
+    <button type="button" data-arcade-music-toggle data-compact class="chip" aria-label="배경음악 켜기·끄기">♫</button><button class="chip" id="muteBtn" aria-label="효과음">🔊</button>
     <button class="chip" id="quitBtn">끝내기</button>
     <button class="chip hidden" id="exitBtn" aria-label="오쭈다 오락실로 나가기">🏠</button>
   </div>

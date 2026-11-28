@@ -61,16 +61,7 @@
         link.append(copy, art);
         nav.append(link);
       }
-      const footer = document.createElement('div');
-      footer.className = 'ojjuda-test-service-footer';
-      const testLink = document.createElement('a');
-      testLink.className = 'ojjuda-test-service-link';
-      testLink.href = '/avatar-test/';
-      testLink.target = '_top';
-      testLink.textContent = 'Test service';
-      testLink.setAttribute('aria-label', 'Test service · 아바타 테스트');
-      footer.append(testLink);
-      this.replaceChildren(nav, footer);
+      this.replaceChildren(nav);
     }
   }
   customElements.define('ojjuda-service-banners', ServiceBanners);

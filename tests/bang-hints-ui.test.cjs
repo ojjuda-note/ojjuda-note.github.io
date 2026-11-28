@@ -10,6 +10,7 @@ async function fixture(seat=0){
  w.scrollTo=()=>{};w.structuredClone=structuredClone;
  const online={embedded:false,room:null,busy:false,owner:"11111111-1111-4111-8111-111111111111",request:async b=>{purchases.push(b);return {ok:true,kind:"bang_hint",price:1,request_id:b.request_id,room_id:b.room_id,version:b.version};},get playing(){return !!this.room?.state;},move:m=>moves.push(m)};
  Object.assign(w,{Game,...data,Tutorial,CHAPTERS,STEPS,recommend,createHintPurchase,CARD_GUIDES,CHARACTER_GUIDES,online});
+ w.eval(fs.readFileSync(path.join(root,'shared/games/tutorial-visits.js'),'utf8'));
  let source=fs.readFileSync(path.join(root,'games/bang/app.js'),'utf8').replace(/^import .*;\n/gm,'');
  source+='\nwindow.qa={set(s){clearTimeout(botTimer);online.room={id:"22222222-2222-4222-8222-222222222222",version:(online.room?.version||0)+1,seat:'+seat+',state:s,code:"A1B2C3D4",status:"active"};online.onChange();},snapshot(){return JSON.stringify(game.s)},get selected(){return selected},startTutorial(){online.room=null;page="lobby";beginTutorial();}};';
  w.eval(source);

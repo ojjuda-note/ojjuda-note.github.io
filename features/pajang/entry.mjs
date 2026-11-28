@@ -1,17 +1,16 @@
-import {call, client, sameMember, requireMember, showGate, answeredRound} from './member.mjs?v=20261126-adult-service1';
-import {mountStation, prepareProgram} from './load-station.mjs?v=20261126-adult-service1';
-import {enhanceGuestGate} from './entry-design.mjs?v=20261122-org-display-only1';
-import {prepareLocation} from './location.mjs?v=20261119-kma-current1';
+import {call, client, sameMember, requireMember, showGate, answeredRound} from './member.mjs?v=20261127-service-fixes1';
+import {mountStation, prepareProgram} from './load-station.mjs?v=20261127-service-fixes1';
+import {enhanceGuestGate} from './entry-design.mjs?v=20261127-focus-download';
 import {themeFor, interests} from './questions.mjs?v=20261120-question-copy1';
-import {textInputMaxLength} from '../../shared/content/text-length.mjs';
+import {maskedTextLength,textInputMaxLength} from '../../shared/content/text-length.mjs';
 
 const $ = id => document.getElementById(id);
 const form = $('answer-form');
 const mine = $('mine');
 const status = $('my-answer');
 const submit = form.querySelector('[type=submit]');
-const main = new URL('./station.html', location.href);
-const feed = new URL('./station.html#answers', location.href);
+const main = new URL('./station.html', document.baseURI);
+const feed = new URL('./station.html#answers', document.baseURI);
 const params = new URL(location.href).searchParams;
 const view = params.get('view');
 const next = params.get('next');
@@ -44,7 +43,7 @@ function enterMain(destination = main, savedStation) {
     style.rel='stylesheet';
     style.dataset.pajangStationStyle='main';
     style.media='print';
-    style.href='./station.css?v=20261122-light-controls1';
+    style.href='./station.css?v=20261125-taste-limit1';
     const styled=new Promise((resolve,reject)=>{style.onload=resolve;style.onerror=reject;});
     document.querySelector('link[href*="shell.css"]').before(style);
     await Promise.all([styled,mountStation(async()=>{
@@ -88,11 +87,44 @@ async function start(firstEntry) {
   if (firstEntry.body) return enterMain();
   let entry = firstEntry;
   let radar;
+  const choiceList = $('choice-list');
+  let choiceKey;
+  let saving = false;
+  function selectedChoice() { return choiceList.querySelector('input:checked'); }
+  function updateAnswer() {
+    const picked = selectedChoice();
+    const length = maskedTextLength(mine.value);
+    mine.required = !picked;
+    $('entry-count').textContent = length+' / 220';
+    mine.maxLength = textInputMaxLength(mine.value,220);
+    mine.setCustomValidity('');
+    submit.textContent = mode === 'feed' ? '참여하고 '+nextName+' 보기' : '답변하기';
+    submit.disabled = saving || (mode === 'answer' && !picked && (!mine.value.trim() || length>220));
+  }
+  function paintChoices(theme) {
+    const samples = [...new Set((theme.answers||[]).filter(x=>typeof x==='string'&&x.trim()&&maskedTextLength(x)<=220))];
+    const key = JSON.stringify([entry.day,entry.slot,theme.id,theme.q,samples]);
+    if (key===choiceKey) return;
+    if (choiceKey!==undefined) mine.value='';
+    choiceKey=key;
+    choiceList.replaceChildren(...samples.map(value=>{
+      const label=document.createElement('label');
+      label.className='pajang-option';
+      const radio=document.createElement('input');
+      radio.type='radio';radio.name='sample-answer';radio.value=value;
+      label.append(radio,document.createTextNode(value));
+      return label;
+    }));
+    $('sample-choices').hidden=!samples.length;
+    updateAnswer();
+  }
+  choiceList.onchange=()=>{mine.value='';updateAnswer();};
+  mine.oninput=()=>{const picked=selectedChoice();if(picked)picked.checked=false;updateAnswer();};
   const radarPanel=document.querySelector('.sample-radar');
   async function openRadar(){
     if(!radarPanel.open)return;
     try{
-      radar=await import('./preview.mjs?v=compass8');
+      radar=await import('./preview.mjs?v=20261127-battery1');
       radar.setQuestion(entry.question??themeFor(entry.day,entry.slot));
     }catch{document.getElementById('sensor-note').textContent='레이더를 불러오지 못했어요. 접었다가 다시 열어 주세요.';}
   }
@@ -109,6 +141,11 @@ async function start(firstEntry) {
     const theme=entry.question??themeFor(entry.day,entry.slot);
     $('entry-question').textContent=theme.q.join(' ');
     radar?.setQuestion(theme);
+    const gender=['male','female'].includes(entry.accountGender)?entry.accountGender:'';
+    $('join-fields').dataset.genderTone=gender;
+    $('entry-profile-legend').setAttribute('aria-label', gender ? '파장 첫 참여, 가입 성별 '+(gender==='male'?'남성':'여성') : '파장 첫 참여');
+    paintChoices(theme);
+    updateAnswer();
     clearTimeout(timer);
     const until = Date.parse(entry.nextAt) - Date.now();
     timer = setTimeout(refresh, Math.min(12 * 3600000, Math.max(3000, until + 1000)));
@@ -158,7 +195,8 @@ async function start(firstEntry) {
   void client().then(async db=>{
     const {data:{session}}=await db.auth.getSession();
     if(!session?.user||locationRead.signal.aborted||!await sameMember(db))return;
-    await prepareLocation(entry,db,session.user.id,{signal:locationRead.signal});
+    const {prepareLocation}=await import('./location.mjs?v=20261127-battery1');
+    if(!locationRead.signal.aborted)await prepareLocation(entry,db,session.user.id,{signal:locationRead.signal});
   }).catch(()=>{});
   if(entry.locationNotice)status.textContent=entry.locationNotice;
   const write = $('write');
@@ -173,14 +211,14 @@ async function start(firstEntry) {
     form.hidden = false;
     answerFields.hidden = joiningOnly;
     answerFields.disabled = joiningOnly;
-    submit.textContent = joiningOnly ? '참여하고 '+nextName+' 보기' : '답변하기';
+    updateAnswer();
     write.setAttribute('aria-expanded', String(!joiningOnly));
     if (focus) (!entry.joined ? form.elements.consent : mine).focus();
   }
   write.onclick = () => openForm('answer');
   browse.onclick = () => openForm('feed');
   $('cancel-form').onclick = () => {
-    if (submit.disabled) return;
+    if (saving) return;
     const trigger = mode === 'feed' ? browse : write;
     mode = 'answer';
     write.hidden = false;
@@ -198,17 +236,18 @@ async function start(firstEntry) {
   // The member has passed Auth and Pajang membership checks. Installed-app
   // launches show the answer directly, not the decorated public entry scene.
   $('welcome').dataset.memberEntry = 'direct';
-  mine.oninput = () => { mine.setCustomValidity(''); mine.maxLength = textInputMaxLength(mine.value,220); };
   form.onsubmit = async event => {
     event.preventDefault();
-    if (submit.disabled) return;
-    const body = mine.value.trim();
+    if (saving) return;
+    updateAnswer();
+    const body = selectedChoice()?.value ?? mine.value.trim();
     if (mode === 'answer' && !body) {
       mine.setCustomValidity('답변을 한 글자 이상 적어 주세요.');
       mine.reportValidity();
       return;
     }
-    submit.disabled = true;
+    saving = true;
+    updateAnswer();
     const joiningOnly = mode === 'feed';
     status.textContent = joiningOnly ? '참여 정보를 확인하고 있어요.' : '답변을 저장하고 있어요.';
     try {
@@ -228,7 +267,8 @@ async function start(firstEntry) {
     } catch (error) {
       status.textContent = error.message || '저장하지 못했어요. 다시 시도해 주세요.';
       if (error.code === 'PT409') await refresh();
-      submit.disabled = false;
+      saving = false;
+      updateAnswer();
     }
   };
 }

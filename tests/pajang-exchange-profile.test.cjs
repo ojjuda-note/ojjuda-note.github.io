@@ -56,7 +56,7 @@ async function editorBundle() {
 
 // The actual editor runs against an in-memory RPC boundary. These tests never
 // access a member account, live Supabase data, or browser authentication state.
-async function fixture(t, {fields = {}, save, read, ready = true} = {}) {
+async function fixture(t, {fields = {}, profile = {}, save, read, ready = true} = {}) {
   const dom = new JSDOM('<!doctype html><div id="root"></div>', {
     url: 'https://ojjuda.kr/features/pajang/station.html?tab=profile',
     runScripts: 'outside-only',
@@ -66,8 +66,8 @@ async function fixture(t, {fields = {}, save, read, ready = true} = {}) {
   const state = {
     calls: [],
     successes: 0,
-    profile: {fields: copy(fields), age: 35, gender: '남성', showAge: false, showGender: false,
-      person: profileId, name:'보리', region:'서울특별시', interest: 'book', preferences: emptyPreferences(), preferencesVersion: 3},
+    profile: {ownedCharacters:[2,3,102,103,205,207],characterCoins:20,fields: copy(fields), age: 35, gender: '남성', showAge: false, showGender: false,
+      person: profileId, name:'보리', region:'서울특별시', interest: 'book', preferences: emptyPreferences(), preferencesVersion: 3, ...profile},
   };
   window.profileId = profileId;
   window.pajangArt = {};
@@ -87,8 +87,8 @@ async function fixture(t, {fields = {}, save, read, ready = true} = {}) {
       assert.ok(Object.hasOwn(args.p_data.preferences, 'relationship_intents'));
       const nextFields = copy(args.p_data.fields);
       if (Object.hasOwn(nextFields, 'height')) nextFields.height = Number(nextFields.height);
-      const next = {...state.profile, fields:nextFields, name:args.p_data.name.trim(), region:args.p_data.region,
-        showAge:args.p_data.showAge, showGender:args.p_data.showGender,
+      const next = {...state.profile, ...(args.p_data.avatar ? {avatar:copy(args.p_data.avatar)} : {}), fields:nextFields, name:args.p_data.name.trim(), region:args.p_data.region,
+        showAge:args.p_data.showAge??state.profile.showAge, showGender:args.p_data.showGender??state.profile.showGender,
         interest:args.p_data.interest, preferencesVersion:state.profile.preferencesVersion + 1,
         preferences:{...state.profile.preferences,...copy(args.p_data.preferences)}};
       const override = await save?.(copy(args.p_data), attempt, copy(next));
@@ -98,6 +98,8 @@ async function fixture(t, {fields = {}, save, read, ready = true} = {}) {
     },
   });
   window.HTMLElement.prototype.scrollIntoView = function () {};
+  window.HTMLDialogElement.prototype.showModal = function () { this.open = true; };
+  window.HTMLDialogElement.prototype.close = function () { this.open = false; };
   window.eval(await editorBundle());
   t.after(() => {
     window.unmountEditor?.();
@@ -150,6 +152,7 @@ async function fixture(t, {fields = {}, save, read, ready = true} = {}) {
 
 test('one profile editor saves public name, region, intentions, tastes and private details together', async t => {
   const f = await fixture(t, {fields:{drinking:'가끔 마셔요', smoking:'피우지 않아요', bio:'기존 소개'}});
+  assert.equal([...f.form().querySelectorAll('summary')].some(el=>el.textContent.trim()==='공개 설정'),false);
   const headings = [...f.form().querySelectorAll('h3')];
   const tastes = headings.find(node => node.textContent === '나를 표현하는 취향');
   const artwork = f.form().querySelector('.profile-art-choice');
@@ -166,8 +169,8 @@ test('one profile editor saves public name, region, intentions, tastes and priva
   assert.ok(follows(f.control('음주 여부'), f.control('자기소개')));
   assert.ok([...f.form().querySelectorAll('legend')].some(node => node.textContent === '원하는 인연'),
     'relationship intentions are in the same editor');
-  assert.match(tastes.parentElement.parentElement.textContent, /파장 회원|공개 프로필/,
-    'the relocated choices still explain that they are public');
+  assert.equal(tastes.closest('.unified-public-profile').querySelector('legend').textContent, '공개 프로필',
+    'public choices remain grouped under the public profile heading');
   assert.equal(f.button('독서').getAttribute('aria-pressed'), 'true', 'saved artwork is hydrated before saving is enabled');
   await f.set('닉네임','새 보리');
   await f.set('공개할 활동 지역 시·도','경기도');
@@ -386,4 +389,189 @@ test('two submits while saving send one RPC and report success once', async t =>
   release();
   await waitFor(() => f.state.successes === 1, 'the pending save should finish once');
   assert.equal(f.saves().length, 1);
+});
+
+test('the female catalog has 103 outfits with the short variant on the left and a separate backdrop', async t => {
+  const f = await fixture(t,{profile:{gender:'여성',showGender:true,avatarCollection:'female'}});
+  const avatar = () => f.form().querySelector('[aria-label="내 캐릭터"]');
+  const stage = () => avatar().querySelector('[role="img"]');
+  assert.equal(stage().getAttribute('aria-label'), '흰 티와 청바지 전신형 · 배경 없음');
+  assert.equal(avatar().querySelectorAll('.pj-character-figure').length, 1);
+  assert.equal(f.button('배경 선택').getAttribute('aria-expanded'), 'false');
+  f.button('캐릭터 선택').click();
+  await turn();
+  assert.ok(!f.button('남자'));
+  const picker = avatar().querySelector(".pj-avatar-picker");
+  assert.equal(picker.querySelector("option:checked").textContent, "전체 (103종)");
+  assert.equal(picker.querySelector(".pj-avatar-pages + .pj-avatar-grid"), picker.querySelector(".pj-avatar-grid"));
+  const names = new Set();
+  for (let page = 1; page <= 13; page++) {
+    assert.equal(picker.querySelector(".pj-avatar-pages span").textContent, page+" / 13");
+    for (const pair of avatar().querySelectorAll('.pj-avatar-pair')) {
+      const buttons = [...pair.querySelectorAll('button')];
+      assert.deepEqual(buttons.map(b => b.textContent), ['대두형','전신형']);
+      for(const button of buttons)assert.match(button.querySelector('.pj-character-figure').style.backgroundImage,/\/avatars-(?:20261125-\d{2}|20261126-26|city-walk-20261127)\.webp/);
+      names.add(pair.parentElement.querySelector('strong').textContent);
+    }
+    if (page < 13) { f.button('다음').click(); await turn(); }
+  }
+  f.button('다음').click(); await turn();
+  assert.equal(picker.querySelector(".pj-avatar-pages span").textContent, "1 / 13");
+  f.button('이전').click(); await turn();
+  assert.equal(picker.querySelector(".pj-avatar-pages span").textContent, "13 / 13");
+  assert.equal(names.size, 103);
+  for(const name of ['정류장의 오후','갤러리 산책','도시의 산책'])assert.ok(names.has(name));
+  await f.set('캐릭터 검색', '책방 가는 날');
+  assert.equal(avatar().querySelectorAll('.pj-avatar-pair').length,0,'search cannot reach the other catalog');
+  await f.set('캐릭터 검색', '회색 후디');
+  f.button('회색 후디 대두형').click();
+  await turn();
+  assert.ok(f.button('이전 캐릭터').disabled && f.button('다음 캐릭터').disabled,
+    'a single search result has no neighboring character');
+  assert.equal(stage().getAttribute('aria-label'), '흰 티와 청바지 전신형 · 배경 없음');
+  f.button('이 모습 선택').click();
+  await turn();
+  f.button('배경 선택').click();
+  await turn();
+  f.button('장미 정원').click();
+  await turn();
+  assert.equal(avatar().querySelectorAll('.pj-character-figure').length, 1);
+  assert.equal(stage().getAttribute('aria-label'), '회색 후디 대두형 · 배경 장미 정원');
+  assert.equal(f.saves().length, 0);
+  f.submit();
+  await waitFor(() => f.state.successes === 1, 'avatar should save with profile');
+  assert.deepEqual(f.saves()[0].p_data.previousAvatar, {id:1,form:'full',bg:0});
+  assert.deepEqual(f.state.profile.avatar, {id:2,form:'mini',bg:2});
+  await f.reopen();
+  assert.equal(stage().getAttribute('aria-label'), '회색 후디 대두형 · 배경 장미 정원');
+  assert.equal(avatar().querySelectorAll('.pj-character-figure').length, 1);
+});
+
+test('103 male outfits reuse every existing backdrop and reopen on the saved pair', async t => {
+  const f = await fixture(t,{profile:{gender:'남성',showGender:true,avatarCollection:'male'}});
+  const region = () => f.form().querySelector('[aria-label="내 캐릭터"]');
+  const stage = () => region().querySelector('[role="img"]');
+  const click = async label => { f.button(label).click(); await turn(); };
+  const backgrounds = () => [...region().querySelectorAll('.pj-avatar-scenes button')]
+    .map(b => [b.textContent.trim(), b.querySelector('img')?.getAttribute('src') ?? null]);
+  assert.match(stage().querySelector('.pj-character-figure').style.backgroundImage,/avatars-male-20261125-01\.webp/);
+
+  await click('배경 선택');
+  const sharedBackgrounds = backgrounds();
+  assert.equal(sharedBackgrounds.length, 9);
+  assert.deepEqual(sharedBackgrounds.map(([,src]) => src), [null,
+    ...Array.from({length:8}, (_,i) => '/features/pajang/assets/avatar-bg-20261125-' + (i + 1) + '.webp')]);
+  const chosenBackground = sharedBackgrounds[8][0];
+  await click(chosenBackground);
+  await click('캐릭터 선택');
+  const sheet = f.window.document.createElement('style');
+  sheet.textContent = require('node:fs').readFileSync(path.join(pajang, 'letterroom.css'), 'utf8');
+  f.window.document.head.append(sheet);
+  const frameHeight = form => f.window.getComputedStyle(region().querySelector('.pj-avatar-pair .' + form)).height;
+  assert.ok(frameHeight('full'));
+  assert.ok(!f.button('여자'));
+  await f.set('캐릭터 검색','회색 후디');
+  assert.equal(region().querySelectorAll('.pj-avatar-pair').length,0);
+  await f.set('캐릭터 검색','');
+  assert.equal(frameHeight('mini'), frameHeight('full'), 'the male art already contains its intended height ratio');
+
+  const looks = [];
+  const sprites = new Set();
+  for (let page = 0; page < 13; page++) {
+    for (const card of region().querySelectorAll('.pj-avatar-card')) {
+      const pair = [...card.querySelectorAll('.pj-avatar-pair button')];
+      assert.deepEqual(pair.map(b => b.textContent), ['대두형','전신형']);
+      const atlas = String(Math.floor(looks.length / 4) + 1).padStart(2,'0');
+      for (const button of pair) {
+        const figure = button.querySelector('.pj-character-figure');
+        const therapist=button.getAttribute('aria-label')==='물리치료사 전신형';
+        const cityWalk=card.querySelector('strong').textContent==='도시의 산책';
+        const asset=cityWalk?'avatars-city-walk-20261127.webp':therapist?'avatar-153-full-20261126.webp':'avatars-male-' + (atlas==='26'?'20261126':'20261125') + '-' + atlas + '.webp';
+        assert.ok(figure.style.backgroundImage.includes(asset));
+        sprites.add(figure.style.backgroundImage + ' ' + figure.style.backgroundPosition);
+      }
+      looks.push(card.querySelector('strong').textContent);
+    }
+    if (page < 12) await click('다음');
+  }
+  assert.equal(looks.length, 103);
+  assert.equal(new Set(looks).size, 103);
+  assert.equal(sprites.size, 206);
+
+  const lastShort = looks[102] + ' 대두형';
+  await click(lastShort);
+  await click('이 모습 선택');
+  assert.equal(region().querySelectorAll('.pj-character-figure').length, 1);
+  assert.ok(stage().querySelector('.pj-character-figure').style.backgroundImage.includes('avatars-city-walk-20261127.webp'));
+  assert.ok(stage().getAttribute('aria-label').includes(chosenBackground));
+  await click('배경 선택');
+  assert.deepEqual(backgrounds(), sharedBackgrounds);
+  await click(chosenBackground);
+  f.submit();
+  await waitFor(() => f.state.successes === 1, 'male outfit and shared backdrop should save');
+
+  await f.reopen();
+  assert.ok(stage().getAttribute('aria-label').includes(looks[102]));
+  assert.ok(stage().getAttribute('aria-label').includes(chosenBackground));
+  await click('캐릭터 선택');
+  assert.equal(f.button(lastShort).getAttribute('aria-pressed'), 'true');
+  await click('다음');
+  assert.equal(region().querySelector('.pj-avatar-pages span').textContent,'1 / 13');
+  assert.ok(!f.button('여자'));
+  assert.deepEqual(f.saves()[0].p_data.avatar, {id:207,form:'mini',bg:8});
+  assert.ok(f.state.calls.every(call => call.p_data.avatarCatalog === 4));
+});
+
+test('an older profile read uses the registered gender and preserves the original avatar for conflict detection',async t=>{
+  for(const [gender,oldId,newId] of [['남성',2,103],['여성',102,3]]){
+    await t.test(gender,async t=>{
+      const previous={id:oldId,form:'mini',bg:4};
+      const f=await fixture(t,{profile:{gender,showGender:true,avatar:previous},save:(_data,attempt)=>
+        attempt===1?{data:null,error:{code:'40001',message:'다른 화면에서 변경했어요.'}}:undefined});
+      const character=f.form().querySelector('[aria-label="내 캐릭터"]');
+      const stage=()=>character.querySelector('.pj-avatar-stage').getAttribute('aria-label');
+      assert.ok(stage().startsWith(gender==='남성'?'책방 가는 날':'회색 후디'));
+      f.button('캐릭터 선택').click();await turn();
+      character.querySelectorAll('.pj-avatar-pair')[2].querySelector('button').click();await turn();
+      f.button('이 모습 선택').click();await turn();
+      const selected=stage();
+      f.submit();await waitFor(()=>!!f.alert(),'a conflicting save leaves the editor open');
+      assert.equal(stage(),selected);
+      assert.deepEqual(f.saves()[0].p_data.previousAvatar,previous);
+      f.submit();await waitFor(()=>f.state.successes===1,'a valid retry can save the chosen outfit');
+      assert.deepEqual(f.saves()[1].p_data.previousAvatar,previous);
+      assert.deepEqual(f.state.profile.avatar,{id:newId,form:'mini',bg:4});
+    });
+  }
+});
+
+test('hiding gender keeps the private catalog restricted and previews the tree for either collection',async t=>{
+  for(const collection of ['female','male']){
+    await t.test(collection,async t=>{
+      const f=await fixture(t,{profile:{gender:null,showGender:false,avatarCollection:collection}});
+      const stage=()=>f.form().querySelector('.pj-avatar-stage');
+      assert.match(stage().getAttribute('aria-label'),/^나무 분장/);
+      f.button('캐릭터 선택').click();await turn();
+      assert.equal(f.button(collection==='male'?'여자':'남자'),undefined);
+      const name=collection==='male'?'책방 가는 날':'회색 후디';
+      f.button(name+' 대두형').click();await turn();
+      f.button('이 모습 선택').click();await turn();
+      assert.match(stage().getAttribute('aria-label'),/^나무 분장 대두형/);
+      f.submit();await waitFor(()=>f.state.successes===1,'private selection saves under the costume');
+      assert.deepEqual(f.state.profile.avatar,{id:collection==='male'?102:2,form:'mini',bg:0});
+    });
+  }
+});
+
+test('a missing registration gender permits a shared backdrop and profile edits without unlocking either catalog',async t=>{
+  const avatar={id:147,form:'mini',bg:0};
+  const f=await fixture(t,{profile:{gender:'여성',avatarCollection:null,avatar}});
+  assert.ok(f.button('캐릭터 선택').disabled,'explicitly unregistered takes precedence over public gender and outfit');
+  await f.set('닉네임','새 보리');
+  f.button('배경 선택').click();await turn();
+  f.button('장미 정원').click();await turn();
+  f.submit();await waitFor(()=>f.state.successes===1,'background and public fields can still save');
+  assert.deepEqual(f.saves()[0].p_data.previousAvatar,avatar);
+  assert.deepEqual(f.saves()[0].p_data.avatar,{...avatar,bg:2});
+  assert.equal(f.saves()[0].p_data.name,'새 보리');
 });

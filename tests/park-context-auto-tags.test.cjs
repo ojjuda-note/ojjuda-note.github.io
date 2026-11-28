@@ -2,42 +2,51 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const read = name => fs.readFileSync(path.join(__dirname, '..', name), 'utf8');
 
-const root = path.resolve(__dirname, '..');
-const source = fs.readFileSync(path.join(root, 'note/preview.js'), 'utf8');
-const start = source.indexOf('// 자동 태그: 태그는 모두 5개까지.');
-const end = source.indexOf('let autoTagMode = true', start);
-assert.ok(start >= 0 && end > start, 'the 2026-11-24 original composer auto-tagger is restored');
+(async () => {
+  const { Garu } = await import('../note/vendor/node_modules/garu-ko/dist/node.js');
+  const { parkWordTags } = await import('../note/park-word-tags.mjs');
+  const analyzer = await Garu.load();
+  const extract = body => parkWordTags(body, analyzer);
+  const body = '도서관에서 책을 읽고 공원에서 친구를 만나 커피를 마셨다.';
+  assert.deepEqual(extract(body), ['도서관','책','읽다','공원','친구','만나다','커피','마시다']);
+  assert.deepEqual(extract('고양이가 밥을 먹었다. 밥을 또 먹고 잤다.'), ['고양이','밥','먹다','자다']);
+  assert.deepEqual(extract('친구랑 산책하고 공부했다.'), ['친구','산책','산책하다','공부','공부하다']);
+  assert.deepEqual(extract('#독서_기록 서울역에서 KTX를 탔다.'), ['독서_기록','서울역','KTX','타다']);
+  assert.deepEqual(extract('좋은 날씨 정말 예쁘다.'), ['날씨']);
+  assert.deepEqual(extract('아메리카노랑 베이글을 먹었다.'), ['아메리카노','베이글','먹다']);
+  assert.deepEqual(extract(''), []);
 
-const context = vm.createContext({});
-vm.runInContext(source.slice(start, end), context);
-const suggest = (body, limit = 5) => Array.from(vm.runInContext('suggestTags(' + JSON.stringify(body) + ',' + limit + ')', context));
-
-for (const phrase of ['완벽은 없다', '완벽은 없지만', '완벽은 존재하지 않는다']) {
-  assert.ok(suggest(phrase).includes('완벽'), phrase + ' must produce #완벽');
-}
-assert.ok(suggest('친구랑 커피 마셨어.').includes('친구'));
-assert.ok(suggest('친구랑 커피 마셨어.').includes('커피'));
-assert.ok(suggest('여기에도 40대 있나요?').includes('40대'));
-assert.ok(suggest('퇴근길에 빵집 들렀다.').includes('퇴근길'));
-assert.ok(suggest('퇴근길에 빵집 들렀다.').includes('빵집'));
-assert.ok(suggest('완벽은 없다', 1).length <= 1);
-assert.ok(suggest('완벽은 없다', 5).length <= 5);
-
-assert.match(source, /const TAG_STOP = new Set/);
-assert.match(source, /const TAG_SUFFIX = \[/);
-assert.match(source, /const TAG_VERB = /);
-assert.match(source, /suggestTags\(text\.value, 12\)/, 'writing must update tags immediately');
-assert.match(source, /autoTagMode = !guest && !editingId/, 'restore original authoring boundaries');
-assert.doesNotMatch(source, /serverTagResult|serverTagTimer|scheduleServerAutoTags|noteRpc\('suggest_card_tags'/,
-  'delayed server tagging must never replace legacy suggestions');
-assert.match(source, /!rejectedTags\.has\(t\)/, 'the original removed-tag behavior remains');
-assert.match(source, /tags\.value = \[\.\.\.mine, \.\.\.autoTagsNow\]\.join/,
-  'manual tags keep their precedence');
-
-const park = fs.readFileSync(path.join(root, 'park/index.html'), 'utf8');
-assert.match(park, /\/note\/preview\.js\?v=20261125-original-auto-tags1/,
-  'cached versions must reload original tags');
-assert.deepEqual(JSON.parse(fs.readFileSync(path.join(root, 'park/version.json'),'utf8')),
-  { version: '1.9.2' });
-console.log('PASS: original auto-tag implementation restored and #완벽 generated on input');
+  const source = read('note/preview.js');
+  const context = vm.createContext({ extract, text:{value:body}, tags:{value:''}, composerRun:1,
+    backdrop:{hidden:false}, maskedTextLength:s=>[...s].length, updateComposer(){}, recordDraft(){} });
+  vm.runInContext(source.slice(source.indexOf('const MAX_CARD_TAGS'),source.indexOf('// 일반 카드의 첨부 사진')),context);
+  vm.runInContext(source.slice(source.indexOf('const tagList ='),source.indexOf('function shownName(')),context);
+  vm.runInContext('wordTagger = extract', context);
+  await vm.runInContext('refreshAutoTags()',context);
+  assert.deepEqual(context.tags.value.split(', '), ['도서관','책','읽다','공원','친구']);
+  context.tags.value = '주말, ' + context.tags.value.split(', ').filter(x=>x!=='책').join(', ');
+  vm.runInContext('noteTagEdit()',context);
+  await vm.runInContext('refreshAutoTags()',context);
+  assert.deepEqual(context.tags.value.split(', '), ['주말','도서관','읽다','공원','친구']);
+  context.text.value = '';
+  await vm.runInContext('refreshAutoTags()',context);
+  assert.equal(context.tags.value, '주말');
+  context.text.value = body + ' #산책기록 #독서';
+  await vm.runInContext('refreshAutoTags()',context);
+  assert.deepEqual(context.tags.value.split(', '), ['주말','산책기록','독서','도서관','읽다']);
+  context.tags.value += ', 새태그';
+  vm.runInContext('noteTagEdit()',context);
+  assert.equal(context.tags.value, '주말, 산책기록, 독서, 도서관, 새태그');
+  await vm.runInContext('refreshAutoTags()',context);
+  assert.equal(context.tags.value, '주말, 새태그, 산책기록, 독서, 도서관');
+  context.text.value += ' #19금';
+  await vm.runInContext('refreshAutoTags()',context);
+  assert.equal(context.tags.value, '주말, 새태그, 19금, 산책기록, 독서');
+  vm.runInContext("manualTags=['하나','둘','셋','넷','다섯'];setAutoTags(['19금'])",context);
+  assert.equal(context.tags.value, '하나, 둘, 셋, 넷, 19금');
+  const script = read('park/index.html').match(/\/note\/preview\.js\?v=[^"]+/)[0];
+  assert.ok(read('park/world-park-notes.js').includes(script));
+  analyzer.destroy();
+})().catch(error => { console.error(error); process.exitCode = 1; });

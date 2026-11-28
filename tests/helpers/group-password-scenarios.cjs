@@ -1,0 +1,101 @@
+module.exports=async function({db,assert,as,api,board,val,uid,migration}){
+ await db.exec('reset role; create schema extensions; create extension pgcrypto with schema extensions;');
+ await db.exec(migration('_group_media_previews.sql'));
+ await db.exec(migration('_group_auto_join_mode.sql'));
+ await as(1);
+ const legacy=(await board('create_room',{name:'기존 승인제'})).id;
+ await db.exec('reset role');
+ await db.exec(migration('_group_password_access.sql'));
+ await as(1);
+ const room_id=uid(9701), open=(await board('create_room',{name:'빈 비번'})).id;
+ const pw='모임-! 42', next='다음 모임 ?', post=uid(9702), opts={room_id};
+ const secret=p=>({...opts,password:p});
+ assert.equal((await board('create_room',{id:room_id,name:'암호방',password:pw})).id,room_id);
+ await board('create_room',{id:room_id,name:'재시도',password:'다른 암호'});
+ const inviteCode=(await board('invite',opts)).code;let link=(await api('link',opts)).code;
+ const invitation=(await api('send',{...opts,user_id:uid(3)})).id;
+ const cards=await board('directory',{sort:'activity'});
+ assert.equal(cards.find(r=>r.id===legacy).join_mode,'legacy');
+ assert.equal(cards.find(r=>r.id===open).join_mode,'open');
+ const locked=cards.find(r=>r.id===room_id);
+ assert.equal(locked.join_mode,'password');assert.equal(locked.password_required,true);assert.equal(locked.password_confirmation_required,false);
+ assert.equal(JSON.stringify(cards).includes('password_hash'),false);assert.equal(JSON.stringify(cards).includes(pw),false);
+ await assert.rejects(board('create_room',{name:'잘못된 비번',password:'한'.repeat(25)}),e=>e.code==='22023');
+ const calendarDate='2055-12-15', photo=uid(1)+'/'+room_id+'/'+post+'/'+uid(9731)+'.jpg', preview=photo.replace(/\.jpg$/,'.thumb.webp');
+ await db.exec("select set_config('storage.operation','object.upload',false)");
+ for(const [name,mime] of [[photo,'image/jpeg'],[preview,'image/webp']]){
+  await db.query("insert into storage.objects(bucket_id,name,owner_id,metadata) values('group-media',$1,$2,$3)",[name,uid(1),JSON.stringify({size:128,mimetype:mime})]);
+ }
+ await board('save',{...opts,id:post,title:'비공개 투표',kind:'post',activity:{kind:'poll',options:['A','B']},media:[{path:photo,name:'group.jpg',preview_path:preview}]});
+ await board('save',{...opts,id:uid(9732),kind:'event',title:'비공개 일정',starts_at:calendarDate+'T02:00:00Z',ends_at:calendarDate+'T03:00:00Z'});
+ const pictures=async()=>{await db.exec("select set_config('storage.operation','object.get_authenticated',false)");return val("select count(*)::int value from storage.objects where bucket_id='group-media' and name=any($1::text[])",[[photo,preview]]);};
+ const calendarEntries=async()=>Number((await board('calendar',{month:'2055-12-01'})).find(d=>d.day===calendarDate)?.count||0);
+ await as(2);
+ assert.equal((await board('request',{room_id:open})).member,true);
+ assert.equal((await board('request',{room_id:legacy})).requested,true);
+ assert.equal((await board('request',opts)).reason,'password_required');
+ assert.equal((await board('join',{code:inviteCode,password:'오답'})).reason,'password_incorrect');
+ assert.equal((await api('accept_link',{code:link})).reason,'password_required');
+ assert.equal((await api('preview_link',{code:link})).password_required,true);
+ await assert.rejects(board('feed',opts),e=>e.code==='42501');
+ assert.equal((await board('request',secret(pw))).member,true);
+ await assert.rejects(board('set_password',secret(next)),e=>e.code==='42501');
+ assert.ok((await board('feed',opts)).some(e=>e.id===post));
+ assert.equal((await api('accept_link',{code:link})).member,true,'confirmed members skip the prompt');
+ assert.equal(await pictures(),2);assert.equal(await calendarEntries(),1);
+ await as(3);
+ assert.equal((await api('received')).find(i=>i.id===invitation).password_required,true);
+ assert.equal((await api('accept',{id:invitation})).reason,'password_required');
+ assert.equal((await api('accept',{id:invitation,password:pw})).joined,true);
+ await as(4);
+ assert.equal((await api('accept_link',{code:link,password:pw})).member,true);
+ await as(5);
+ assert.equal((await board('join',{code:inviteCode,password:pw})).member,true);
+ await as(1);
+ assert.equal((await board('set_password',secret(next))).ok,true);
+ const rev=(await board('rooms')).find(g=>g.id===room_id).password_revision;
+ await board('set_password',secret(next));
+ assert.equal((await board('rooms')).find(g=>g.id===room_id).password_revision,rev);
+ await assert.rejects(board('set_password',{...secret(pw),expected_revision:rev-1}),e=>e.code==='40001');
+ assert.ok((await board('feed',opts)).some(e=>e.id===post));
+ await as(2);
+ assert.equal((await board('rooms')).find(g=>g.id===room_id).password_confirmation_required,true);
+ for(const [action,p] of [['feed',opts],['members',opts],['activity_state',{id:post}],['comment',{id:post,comment_id:uid(9721),body:'내용'}]]){
+  await assert.rejects(board(action,p),e=>e.code==='42501'&&e.message.includes('비밀번호'));
+ }
+ assert.equal((await board('feed',{})).some(e=>e.id===post),false);
+ assert.equal(await calendarEntries(),0);assert.equal(await pictures(),0);
+ await assert.rejects(api('link',opts),e=>e.code==='42501'&&e.message.includes('비밀번호'));
+ assert.equal((await board('unlock',secret(pw))).reason,'password_incorrect');
+ assert.equal((await board('unlock',secret(next))).member,true);
+ assert.equal((await board('unlock',opts)).member,true);assert.equal(await pictures(),2);
+ await board('leave',opts);
+ assert.equal((await board('request',opts)).reason,'password_required');
+ await assert.rejects(board('unlock',secret(next)),e=>e.code==='42501');
+ await board('request',secret(next));await as(1);await board('kick',{...opts,user_id:uid(2)});link=(await api('link',opts)).code;
+ await as(2);assert.equal((await board('request',opts)).reason,'password_required');
+ // A single counter follows a caller across join methods and cannot be reset by other rooms.
+ await as(20);
+ for(let i=0;i<8;i++)assert.equal((await board('request',secret('오답'))).reason,'password_incorrect');
+ assert.equal((await api('accept_link',{code:link,password:next})).reason,'password_rate_limited');
+ await db.exec("reset role; update ojjuda_groups_internal.password_attempts set started_at=started_at-interval '6 minutes'");await as(20);
+ assert.equal((await board('request',secret(next))).member,true);
+ await db.exec('reset role');await db.query('insert into public.blocks values($1,$2)',[uid(1),uid(22)]);
+ await as(22);await assert.rejects(board('request',secret(next)),e=>e.code==='42501');
+ await assert.rejects(api('accept_link',{code:link,password:next}),e=>e.code==='42501');
+ await as(21);
+ assert.equal((await api('accept_link',{code:link,password:next})).member,true);
+ await as(1);await board('set_password',secret(''));await as(3);
+ assert.equal((await board('rooms')).find(g=>g.id===room_id).password_confirmation_required,false);
+ assert.ok((await board('feed',opts)).some(e=>e.id===post));
+ // Existing pending requests still respect a subsequently enabled room password.
+ await as(1);await board('set_password',{room_id:legacy,password:next});
+ await assert.rejects(board('approve',{room_id:legacy,user_id:uid(2)}),e=>e.code==='42501');
+ await as(2);assert.equal((await board('request',{room_id:legacy,password:next})).member,true);
+ for(const table of ['room_access','password_confirmations','password_attempts']){
+  await assert.rejects(db.query('select * from ojjuda_groups_internal.'+table),e=>e.code==='42501');
+ }
+ assert.equal(await val("select has_function_privilege('authenticated','ojjuda_groups_internal.check_room_password(uuid,text)','execute') value"),false);
+ await as(0);await assert.rejects(board('request',secret(next)),e=>e.code==='42501');
+ await db.exec('reset role');
+};

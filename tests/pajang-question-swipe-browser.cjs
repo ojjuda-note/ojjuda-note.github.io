@@ -62,6 +62,13 @@ function installFixture(data) {
           if(args.p_cursor&&control.holdMore)await new Promise(done=>{control.releaseMore=done;});
           if(signal?.aborted)throw new DOMException('Aborted','AbortError');
           const scenario=new URL(location.href).searchParams.get('fixture');
+          if(scenario==='refresh' && control.revised){
+            if(args.p_cursor && !args.p_cursor.revised)throw Error('Used a cursor from before the feed changed');
+            const result=ok(args.p_cursor?[{...data.c1,body:'지난 질문에서 고친 답변이에요.'}]:[data.a1,data.b1]);
+            result.data.total=3;
+            result.data.nextCursor=args.p_cursor?null:{page:2,revised:true};
+            return result;
+          }
           if(scenario==='keys')return ok(data.keys);
           if(scenario==='archive'){
             const page=Number(args.p_cursor?.page??0),start=page*24;
@@ -134,11 +141,13 @@ async function swipe(page,direction,{short=false,vertical=false,target='heading'
       import AnswerHistory from './src/app/answer-history';
       const fixture=window.questionSwipeFixture;
       const capture=(action)=>(value)=>fixture.actions.push({action,value:structuredClone(value)});
-      createRoot(document.getElementById('fixture-root')).render(
-        <AnswerHistory active={true} station={fixture.station} revision={0}
+      const root=createRoot(document.getElementById('fixture-root'));
+      fixture.render=(active=true)=>root.render(
+        <AnswerHistory active={active} station={fixture.station} revision={0}
           onProfile={capture('profile')} onSignal={capture('signal')} onChat={capture('chat')}
           onWrite={capture('write')} onEdit={capture('edit')}/>
-      );`,resolveDir:feature,sourcefile:'question-swipe-fixture.tsx',loader:'tsx'},
+      );
+      fixture.render();`,resolveDir:feature,sourcefile:'question-swipe-fixture.tsx',loader:'tsx'},
     bundle:true,write:false,jsx:'automatic',platform:'browser',target:'es2022',logLevel:'silent'
   });
   const stationTemplate=await fs.readFile(path.join(feature,'station.html'),'utf8');
@@ -216,6 +225,19 @@ async function swipe(page,direction,{short=false,vertical=false,target='heading'
     assert.deepEqual(await page.evaluate(()=>questionSwipeFixture.calls.filter(call=>call.p_cursor).map(call=>call.p_cursor)),
       [{page:2}],'reverse swipe finishes pagination before wrapping');
     await swipe(page,'left',{target:'body'});await shown([a1,aOwn,a2],1,3);
+    checkpoint='returning to a loaded archive quietly updates answers and preserves the question';
+    await reset('?fixture=refresh');
+    await previous().click();await shown([c1],3,3);
+    await page.evaluate(()=>{questionSwipeFixture.render(false);});
+    await page.evaluate(()=>{questionSwipeFixture.revised=true;questionSwipeFixture.holdMore=true;questionSwipeFixture.render(true);});
+    await page.waitForFunction(()=>typeof questionSwipeFixture.releaseMore==='function');
+    assert.equal(await active().locator('.quote').textContent(),c1.body,'old question remains readable during refresh');
+    await page.evaluate(()=>{questionSwipeFixture.holdMore=false;questionSwipeFixture.releaseMore();});
+    await shown([{...c1,body:'지난 질문에서 고친 답변이에요.'}],3,3);
+    assert.equal(await page.getByRole('button',{name:'새로고침'}).count(),0);
+    await next().click();await shown([a1],1,3);
+    const refreshCursors=await page.evaluate(()=>questionSwipeFixture.calls.map(call=>call.p_cursor));
+    assert.deepEqual(refreshCursors,[null,{page:2},null,{page:2,revised:true}]);
     await reset();await shown([a1,aOwn],1,2);
 
     checkpoint='real mobile touch gestures';

@@ -26,7 +26,7 @@ function fixture() {
     day:'2026-11-19', slot:'am', nextAt:new Date(Date.now() + 3600000).toISOString(),
     authenticated:true, remaining:3, signals:[], messages:[], people:[],
     question:{id:12, q:['서로에게 소개하고 싶은 작은 행복은 무엇인가요?'], answers:[]},
-    me:{id:'11111111-1111-4111-8111-111111111111', name:'보리', region:'서울특별시', interest:'book', body:'함께 나눌 이야기가 좋아요.'},
+    me:{id:'11111111-1111-4111-8111-111111111111', name:'보리', region:'서울특별시', interest:'book', avatarId:101, gender:'male', body:'함께 나눌 이야기가 좋아요.'},
     locationEnabled:false, locationVersion:0, radarOn:false
   };
   const base = {
@@ -34,7 +34,7 @@ function fixture() {
     sent:false, received:false, own:false, question:state.question.q[0]
   };
   const rows = [
-    {...base, peer:'22222222-2222-4222-8222-222222222222', name:'은하', interest:'book', body:'서로 책을 골라 주고 싶어요.', relationship_intents:['conversation','friendship']},
+    {...base, peer:'22222222-2222-4222-8222-222222222222', name:'은하', avatarId:9, interest:'book', body:'서로 책을 골라 주고 싶어요.', relationship_intents:['conversation','friendship']},
     {...base, peer:'33333333-3333-4333-8333-333333333333', name:'단비', interest:'walk', body:'먼저 함께 산책하며 알아가요.', relationship_intents:['casual','dating']},
     {...base, peer:'44444444-4444-4444-8444-444444444444', name:'다솜', interest:'coffee', body:'함께할 미래를 이야기해요.', relationship_intents:['marriage']},
     {...base, peer:'55555555-5555-4555-8555-555555555555', name:'솔', interest:'vinyl', body:'오늘은 음악 이야기가 하고 싶어요.', relationship_intents:[]}
@@ -45,16 +45,17 @@ function fixture() {
     const emptyPreferences = ${emptyPreferences.toString()};
     const records = new Map();
     records.set(state.me.id,{person:state.me.id,preferences:emptyPreferences(),version:0});
-    let privateProfile={fields:{drinking:'가끔 마셔요',smoking:'피우지 않아요',bio:'반가워요.'},age:35,gender:'남성',showAge:false,showGender:false};
+    const ownAnswer={...rows[0],peer:state.me.id,own:true,name:state.me.name,body:state.me.body,avatarId:state.me.avatarId,gender:state.me.gender,relationship_intents:[]};
+    let privateProfile={ownedCharacters:[],characterCoins:20,fields:{drinking:'가끔 마셔요',smoking:'피우지 않아요',bio:'반가워요.'},avatar:{id:101,form:'full',bg:0},avatarCollection:'male',age:35,gender:'남성',showAge:false,showGender:true};
     for (const row of rows) records.set(row.peer,{
-      person:row.peer,version:1,
+      person:row.peer,avatarId:row.peer===rows[0].peer?120:row.avatarId,version:1,
       preferences:{...emptyPreferences(),relationship_intents:[...row.relationship_intents],custom:{...emptyPreferences().custom,meeting_styles:['별 보며 걷기']}}
     });
     const listeners = new Set();
     let session = {user:{id:'auth-member',is_anonymous:false},access_token:'mock-member-token'};
     const control = window.preferenceFixture = {
       reads:[],saves:[],feeds:[],unexpected:[],readResponses:[],saveResponses:[],pendingReads:[],pendingSaves:[],
-      detailReads:[],detailSaves:[],detailReadResponses:[],detailSaveResponses:[],pendingDetailReads:[],pendingDetailSaves:[],
+      detailReads:[],detailSaves:[],detailReadResponses:[],detailSaveResponses:[],pendingDetailReads:[],pendingDetailSaves:[],purchases:[],
       emptyFilter:'',pagination:false,deniedFeed:false,historyEvents:0
     };
     window.addEventListener('popstate',()=>control.historyEvents++,true);
@@ -124,6 +125,14 @@ function fixture() {
           if(Object.hasOwn(data,'interest'))state.me.interest=data.interest;
           return {data:structuredClone(state),error:null};
         }
+        if(name==='pajang_character_purchase'){
+          control.purchases.push(structuredClone(args));
+          if(args.p_person!==state.me.id||args.p_character!==102||!args.p_request_id)throw Error('Invalid purchase');
+          if(!privateProfile.ownedCharacters.includes(102)){
+            privateProfile.ownedCharacters.push(102);privateProfile.characterCoins-=10;
+          }
+          return {data:{ok:true,person:args.p_person,character:102,userId:session.user.id,coins:privateProfile.characterCoins,charged:10},error:null};
+        }
         if(name==='pajang_profile_details'&&args.p_action==='mine'){
           control.detailReads.push(structuredClone(args));
           const mode=control.detailReadResponses.shift() || 'success';
@@ -145,7 +154,10 @@ function fixture() {
           if(mode==='conflict'||data.preferencesVersion!==current.version)return error('PT412','다른 화면에서 프로필을 변경했어요. 다시 열어 주세요.');
           const record={person:state.me.id,preferences:{...current.preferences,...structuredClone(data.preferences)},version:current.version+1};
           records.set(state.me.id,record);
-          privateProfile={...privateProfile,fields:structuredClone(data.fields),showAge:data.showAge,showGender:data.showGender};
+          privateProfile={...privateProfile,fields:structuredClone(data.fields),showAge:data.showAge??privateProfile.showAge,showGender:data.showGender??privateProfile.showGender};
+          if(data.avatar)privateProfile.avatar=structuredClone(data.avatar);
+          state.me.avatarId=privateProfile.showGender?privateProfile.avatar.id:201;
+          state.me.gender=privateProfile.showGender?'male':null;
           Object.assign(state.me,{name:data.name.trim(),region:data.region,interest:data.interest,
              preferences:record.preferences,preferencesVersion:record.version});
           return {data:control.detail(),error:null};
@@ -153,7 +165,7 @@ function fixture() {
         if(name==='pajang_discovery_feed'){
           control.feeds.push(structuredClone(args));
           if(control.deniedFeed)return error('42501','회원 정보를 확인해 주세요.');
-          let source=rows;
+          let source=[...rows,ownAnswer];
           if(control.pagination)source=Array.from({length:26},(_,i)=>({...rows[0],peer:'page-'+i,name:'대화 친구 '+(i+1),at:i}));
           const filtered=source.filter(row=>args.p_interest==='all'||row.relationship_intents.includes(args.p_interest));
           const selected=control.emptyFilter===args.p_interest?[]:filtered;
@@ -207,6 +219,124 @@ async function openGroup(dialog,label) {
   return group;
 }
 
+async function paintedHeight(figure) {
+  return figure.evaluate(async node=>{
+    const css=getComputedStyle(node);
+    const atlas=new Image();
+    atlas.src=css.backgroundImage.match(/url\(["']?(.+?)["']?\)/)[1];
+    await atlas.decode();
+    const [scaleX,scaleY]=css.backgroundSize.split(' ').map(size=>parseFloat(size)/100);
+    const sourceWidth=atlas.naturalWidth/scaleX,sourceHeight=atlas.naturalHeight/scaleY;
+    // A percentage background position aligns matching points in the source and its box.
+    const left=(atlas.naturalWidth-sourceWidth)*parseFloat(css.backgroundPositionX)/100;
+    const upper=(atlas.naturalHeight-sourceHeight)*parseFloat(css.backgroundPositionY)/100;
+    const canvas=document.createElement('canvas');
+    canvas.width=Math.round(sourceWidth);canvas.height=Math.round(sourceHeight);
+    const ctx=canvas.getContext('2d');
+    ctx.drawImage(atlas,left,upper,sourceWidth,sourceHeight,0,0,canvas.width,canvas.height);
+    const pixels=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+    let top=canvas.height,bottom=-1;
+    for(let y=0;y<canvas.height;y++){
+      for(let x=0;x<canvas.width;x++){
+        if(pixels[(y*canvas.width+x)*4+3]>32){top=Math.min(top,y);bottom=y;break;}
+      }
+    }
+    const fraction=(bottom-top+1)/canvas.height;
+    return {height:node.getBoundingClientRect().height*fraction,fraction};
+  });
+}
+
+async function checkCharacterViewer(page,editor) {
+  const search=editor.getByRole('searchbox',{name:'캐릭터 검색'});
+  const category=editor.getByRole('combobox',{name:'의상 분류'});
+  const stage=editor.locator('.pj-avatar-stage');
+  const original=await stage.getAttribute('aria-label');
+  const viewer=page.getByRole('dialog',{name:'캐릭터 미리보기',exact:true});
+  const button=name=>viewer.getByRole('button',{name,exact:true});
+  await editor.getByRole('button',{name:'흰 티와 청바지 대두형',exact:true}).click();
+  await button('이전 캐릭터').click();
+  await viewer.getByText('도시의 산책',{exact:true}).waitFor();
+  assert.ok((await paintedHeight(viewer.locator('.pj-character-figure.mini'))).fraction>0.9);
+  await button('전신형').click();
+  assert.ok((await paintedHeight(viewer.locator('.pj-character-figure.full'))).fraction>0.9);
+  await page.keyboard.press('ArrowRight');
+  await viewer.getByText('흰 티와 청바지',{exact:true}).waitFor();
+  await button('목록으로').click();
+  await search.fill('물리치료사');
+  const therapist=editor.getByRole('button',{name:'물리치료사 전신형',exact:true});
+  assert.ok((await paintedHeight(therapist.locator('.full'))).fraction>0.9);
+  await therapist.click();
+  const corrected=viewer.locator('.pj-character-figure.full');
+  assert.match(await corrected.evaluate(node=>node.style.backgroundImage),/hd\/avatar-153-full-20261126/);
+  assert.ok((await paintedHeight(corrected)).fraction>0.9);
+  await button('목록으로').click();
+  await category.selectOption('일상복');
+  await search.fill('차분');
+  const names=await editor.locator('.pj-avatar-card strong').allTextContents();
+  assert.ok(names.length>=2,'comparison requires at least two outfits matching both filters');
+  const tile=editor.getByRole('button',{name:names[0]+' 전신형',exact:true});
+  for(const width of [320,390]){
+    await page.setViewportSize({width,height:640});
+    const thumbnail=await paintedHeight(tile.locator('.pj-character-figure'));
+    assert.ok(thumbnail.fraction>0.5,'the full figure comes from a painted atlas cell');
+    const oldFrame=Math.max(56,Math.min(width*0.12,92));
+    assert.ok(thumbnail.height>=3*oldFrame*thumbnail.fraction-1,'the list artwork itself has tripled at '+width+'px');
+    await tile.click();
+    await viewer.waitFor();
+    const figure=viewer.locator('.pj-character-figure.full');
+    const whole=await paintedHeight(figure);
+    assert.ok(whole.height>=3*oldFrame*thumbnail.fraction-1,'the whole outfit is large enough before zoom');
+    const viewport=viewer.locator('.pj-viewer-scroll');
+    const frame=await figure.boundingBox(),area=await viewport.boundingBox();
+    assert.ok(frame.y>=area.y-1&&frame.y+frame.height<=area.y+area.height+1&&
+      frame.x>=area.x-1&&frame.x+frame.width<=area.x+area.width+1,'the entire figure fits before zoom');
+    await viewer.screenshot({path:path.join(artifacts,'character-preview-'+width+'.png'),animations:'disabled'});
+    await button('3배 확대').click();
+    const zoomed=await paintedHeight(figure);
+    assert.ok(zoomed.height>=whole.height*3-1,'zoom enlarges the painted outfit, not just its container');
+    assert.ok(await viewport.evaluate(node=>node.scrollHeight>node.clientHeight),'the enlarged outfit can be panned');
+    console.log('Character artwork at %dpx: %dpx in the list, %dpx in full view, %dpx zoomed.',
+      width,Math.round(thumbnail.height),Math.round(whole.height),Math.round(zoomed.height));
+    await button('전신 보기').click();
+    assert.ok(Math.abs((await paintedHeight(figure)).height-whole.height)<1);
+    await assertNoOverflow(page,'outfit preview at '+width+'px');
+    await button('목록으로').click();
+    await viewer.waitFor({state:'hidden'});
+  }
+  await tile.click();
+  const current=name=>viewer.getByText(name,{exact:true}).waitFor();
+  await current(names[0]);
+  await button('다음 캐릭터').click();await current(names[1]);
+  await button('이전 캐릭터').click();await current(names[0]);
+  await page.keyboard.press('ArrowRight');await current(names[1]);
+  await page.keyboard.press('ArrowLeft');await current(names[0]);
+  await button('이전 캐릭터').click();
+  assert.notEqual(await viewer.locator('header strong').textContent(),names[0]);
+  const scroller=viewer.locator('.pj-viewer-scroll');
+  const bounds=await scroller.boundingBox();
+  const x=bounds.x+bounds.width*0.75,y=bounds.y+bounds.height/2;
+  const session=await page.context().newCDPSession(page);
+  try{
+    await session.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});
+    await session.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x-bounds.width/2,y}]});
+    await session.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+  }finally{await session.detach();}
+  await current(names[0]);
+  await button('대두형').click();
+  await viewer.locator('.pj-character-figure.mini').waitFor();
+  await button('전신형').click();
+  await viewer.locator('.pj-character-figure.full').waitFor();
+  await button('목록으로').click();
+  await viewer.waitFor({state:'hidden'});
+  assert.equal(await category.inputValue(),'일상복');
+  assert.equal(await search.inputValue(),'차분');
+  assert.deepEqual(await editor.locator('.pj-avatar-card strong').allTextContents(),names);
+  assert.equal(await stage.getAttribute('aria-label'),original);
+  assert.deepEqual(await page.evaluate(()=>[window.preferenceFixture.purchases.length,window.preferenceFixture.detailSaves.length,
+    window.preferenceFixture.detail().characterCoins]),[0,0,20]);
+  await page.setViewportSize({width:390,height:844});
+}
+
 (async()=>{
   const bundle=await fs.readFile(process.env.PAJANG_TEST_BUNDLE||path.join(feature,'assets/station.js'));
   const template=(await fs.readFile(path.join(feature,'station.html'),'utf8'))
@@ -219,7 +349,7 @@ async function openGroup(dialog,label) {
   const errors=[];
   try{
     await fs.mkdir(artifacts,{recursive:true});
-    const context=await browser.newContext({viewport:{width:390,height:844},locale:'ko-KR'});
+    const context=await browser.newContext({viewport:{width:390,height:844},locale:'ko-KR',hasTouch:true});
     await context.route('**/*',async route=>{
       const url=new URL(route.request().url());
       // Every request is fixture-local; this test never reads or mutates production.
@@ -227,10 +357,10 @@ async function openGroup(dialog,label) {
       if(url.pathname==='/features/pajang/station.html')return route.fulfill({contentType:'text/html',body:template});
       if(url.pathname==='/fixture.js')return route.fulfill({contentType:'text/javascript',body:fixture()});
       if(url.pathname==='/program.js')return route.fulfill({contentType:'text/javascript',body:bundle});
-      if(!/\.(?:css|svg|woff2?)$/.test(url.pathname))return route.abort();
+      if(!/\.(?:css|svg|woff2?|webp)$/.test(url.pathname))return route.abort();
       const file=path.resolve(root,'.'+url.pathname);
       if(!file.startsWith(root+path.sep))return route.abort();
-      try{return route.fulfill({contentType:url.pathname.endsWith('.css')?'text/css':url.pathname.endsWith('.svg')?'image/svg+xml':'font/woff2',body:await fs.readFile(file)});}
+      try{return route.fulfill({contentType:url.pathname.endsWith('.css')?'text/css':url.pathname.endsWith('.svg')?'image/svg+xml':url.pathname.endsWith('.webp')?'image/webp':'font/woff2',body:await fs.readFile(file)});}
       catch{return route.fulfill({status:404,body:''});}
     });
     const page=await context.newPage();
@@ -247,7 +377,10 @@ async function openGroup(dialog,label) {
     const answers=page.locator('#answers');
     const filters=answers.locator('[aria-label="원하는 인연으로 필터"]');
     assert.deepEqual(await filters.getByRole('button').allTextContents(),['전체',...intentOptions.map(([,label])=>label)]);
-    assert.equal(await answers.locator('.answercard').count(),4,'All includes members without an inferred intention');
+    assert.equal(await answers.locator('.answercard').count(),5,'All includes my answer and members without an inferred intention');
+    const ownPortrait=answers.locator('.answercard').filter({hasText:'함께 나눌 이야기가 좋아요.'}).locator('.pj-character-portrait');
+    assert.match(await ownPortrait.evaluate(el=>el.style.backgroundImage),/avatars-male-20261125-01\.webp/);
+    assert.match(await ownPortrait.getAttribute('aria-label'),/흰 티와 청바지/);
     const unclassified=answers.locator('.answercard').filter({hasText:'오늘은 음악 이야기가 하고 싶어요.'});
     assert.equal(await unclassified.locator('.answer-intents .tag').count(),0,'an existing hobby is not converted into a relationship intention');
     const conversationCard=answers.locator('.answercard').filter({hasText:'서로 책을 골라 주고 싶어요.'});
@@ -255,6 +388,9 @@ async function openGroup(dialog,label) {
     assert.match(await conversationCard.locator('.answer-intents').textContent(),/친구/);
     for(const width of [320,390]){
       await page.setViewportSize({width,height:844});
+      const badge=await conversationCard.locator('.pj-character-portrait').boundingBox();
+      assert.equal(badge.width,34,'the answer avatar stays compact');
+      assert.equal(badge.height,34);
       await assertNoOverflow(page,'relationship filters at '+width+'px');
       await answers.screenshot({path:path.join(artifacts,'relationship-feed-'+width+'.png'),animations:'disabled'});
     }
@@ -278,10 +414,42 @@ async function openGroup(dialog,label) {
     assert.equal(await filters.getByRole('button',{name:'전체',exact:true}).getAttribute('aria-pressed'),'true');
 
     // A profile opened from an answer displays only that member's chosen public information.
-    await answers.locator('.answercard').filter({hasText:'서로 책을 골라 주고 싶어요.'}).getByRole('button',{name:/은하/}).click();
+    await conversationCard.locator('.pj-character-portrait').click();
     const publicMember=page.getByRole('dialog').getByRole('region',{name:'공개 프로필',exact:true});
     await publicMember.getByRole('heading',{name:'나를 표현하는 취향',exact:true}).waitFor();
     await publicMember.locator('.preference-tags').getByText('별 보며 걷기',{exact:true}).waitFor();
+    const dialog=page.getByRole('dialog');
+    const preview=dialog.locator('.pj-character-preview');
+    assert.match(await preview.locator('.pj-character-preview-art').evaluate(el=>el.style.backgroundImage),/avatars-male-20261125-05\.webp/,
+      'the opened profile uses the current character even when its feed card was older');
+    for(const width of [320,390]){
+      await page.setViewportSize({width,height:844});
+      const circle=await preview.boundingBox(),art=await preview.locator('.pj-character-preview-art').boundingBox();
+      const nickname=dialog.getByRole('heading',{name:'은하',exact:true});
+      const name=await nickname.boundingBox();
+      const textCenter=await nickname.evaluate(heading=>{
+        const range=document.createRange();
+        range.selectNodeContents(heading);
+        const text=range.getBoundingClientRect();
+        return text.left+text.width/2;
+      });
+      assert.ok(Math.abs(textCenter-(circle.x+circle.width/2))<=1,'nickname text is centered beneath the circle');
+      assert.ok(Math.abs(circle.width-Math.min(name.width,200))<=1,'public profile portraits fit a 200px circle');
+      assert.ok(Math.abs(circle.width-circle.height)<=1,'the portrait remains circular at both screen widths');
+      assert.ok(Math.abs(art.height-circle.height*.86)<=1,'the body scales with the circle');
+      assert.ok(Math.abs(circle.x+circle.width/2-(name.x+name.width/2))<=1,'the circle is centered across the dialog content');
+      assert.equal(await preview.evaluate(el=>getComputedStyle(el).borderRadius),'50%');
+      assert.ok(circle.y+circle.height<=name.y+1,'the circle sits above the name');
+      assert.ok(art.width>0&&art.height>art.width&&art.y>=circle.y&&art.y+art.height<=circle.y+circle.height,
+        'the complete illustrated figure fits vertically inside the circle');
+    }
+    await preview.click();
+    const publicViewer=page.getByRole('dialog',{name:'캐릭터 미리보기',exact:true});
+    await publicViewer.getByRole('button',{name:'3배 확대',exact:true}).click();
+    await publicViewer.getByRole('button',{name:'전신 보기',exact:true}).waitFor();
+    assert.equal(await publicViewer.getByRole('button',{name:/구매|이 모습 선택/}).count(),0);
+    await publicViewer.getByRole('button',{name:'닫기',exact:true}).click();
+    await publicViewer.waitFor({state:'hidden'});
     assert.equal(await publicMember.getByText('만남 스타일',{exact:true}).isVisible(),true,'a peer\'s public tastes are visible without opening an editor or disclosure');
     assert.ok((await page.evaluate(()=>window.preferenceFixture.reads)).some(read=>read.peer==='22222222-2222-4222-8222-222222222222'));
     await page.getByRole('dialog').screenshot({path:path.join(artifacts,'public-member-profile.png'),animations:'disabled'});
@@ -304,6 +472,10 @@ async function openGroup(dialog,label) {
       await assertNoOverflow(page,'unified profile at '+width+'px');
       const box=await form.dialog.boundingBox();
       assert.ok(box&&box.x>=-1&&box.x+box.width<=width+1,'unified profile editor fits '+width);
+      const stage=await form.dialog.locator('.pj-avatar-stage').boundingBox();
+      assert.ok(Math.abs(stage.height-844*.24)<=1,'the profile editor uses its original 24svh preview');
+      const actions=await form.dialog.locator('.pj-avatar-actions').boundingBox();
+      assert.ok(actions.y>=box.y&&actions.y+actions.height<=box.y+box.height,'both picker buttons fit below the preview');
       await form.dialog.screenshot({path:path.join(artifacts,'unified-profile-'+width+'.png'),animations:'disabled'});
     }
     const intentions=form.dialog.getByRole('group',{name:'원하는 인연',exact:true});
@@ -316,14 +488,49 @@ async function openGroup(dialog,label) {
     await meeting.getByRole('button',{name:'차분한 대화',exact:true}).click();
     await meeting.getByRole('textbox',{name:'만남 스타일 직접 입력',exact:true}).fill('별 보며 걷기');
     await meeting.getByRole('button',{name:'만남 스타일 추가',exact:true}).click();
-    let art=await openGroup(form.dialog,'대표 취향 · 프로필 그림');
+    const options=meeting.locator('.preference-chips').first().getByRole('button');
+    for(const n of [1,2,3])await options.nth(n).click();
+    assert.equal(await meeting.getByRole('button',{pressed:true}).count(),5);
+    assert.ok(await options.nth(4).isDisabled());
+    assert.ok(await meeting.getByRole('textbox').isDisabled());
+    assert.equal(await options.first().evaluate(el=>getComputedStyle(el,'::before').content),'none');
+    assert.notEqual(await options.first().evaluate(el=>getComputedStyle(el).backgroundColor),
+      await options.nth(4).evaluate(el=>getComputedStyle(el).backgroundColor));
+    const values=await openGroup(form.dialog,'관계에서 중요한 것');
+    assert.ok(await values.getByRole('button').first().isEnabled());
+    await openGroup(form.dialog,'만남 스타일');
+    for(const n of [1,2,3])await options.nth(n).click();
+    assert.ok(await meeting.getByRole('textbox').isEnabled());
+    const art=await openGroup(form.dialog,'대표 취향');
     await art.getByRole('button',{name:'카페',exact:true}).click();
+    await form.dialog.getByRole('button',{name:'캐릭터 선택',exact:true}).click();
+    assert.equal(await form.dialog.getByRole('button',{name:'여자',exact:true}).count(),0);
+    await checkCharacterViewer(page,form.dialog);
+    const search=form.dialog.getByRole('searchbox',{name:'캐릭터 검색'});
+    await search.fill('차분한 분위기 초록 바지');
+    const bookOutfit=form.dialog.getByRole('button',{name:'책방 가는 날 대두형',exact:true});
+    const viewer=page.getByRole('dialog',{name:'캐릭터 미리보기',exact:true});
+    const buy=viewer.getByRole('button',{name:'구매하기',exact:true});
+    await bookOutfit.click();
+    await buy.click();
+    await page.getByRole('button',{name:'취소',exact:true}).click();
+    await viewer.waitFor();
+    assert.ok(await viewer.getByText('책방 가는 날',{exact:true}).isVisible());
+    assert.equal(await page.evaluate(()=>window.preferenceFixture.detail().characterCoins),20);
+    assert.equal(await page.evaluate(()=>window.preferenceFixture.purchases.length),0);
+    await buy.click();
+    await page.getByRole('button',{name:'10쭈로 구매',exact:true}).click();
+    await page.getByRole('button',{name:'10쭈로 구매',exact:true}).waitFor({state:'hidden'});
+    assert.deepEqual(await page.evaluate(()=>[window.preferenceFixture.purchases.length,window.preferenceFixture.detail().characterCoins]),[1,10]);
 
     const privateSection=form.dialog.locator('.unified-private-profile');
     assert.equal(await privateSection.evaluate(node=>node.open),true,'exchange details start expanded');
     await form.dialog.getByLabel('직업',{exact:true}).fill('책방지기');
     await form.dialog.getByLabel('자기소개',{exact:false}).fill('서로 이야기를 나누고 싶어요.');
     await form.dialog.locator('.unified-private-fields .exchange-check').filter({hasText:'나이'}).locator('input[type="checkbox"]').check();
+    const genderCheckbox=()=>form.dialog.locator('.exchange-check').filter({hasText:'성별'}).getByRole('checkbox');
+    await genderCheckbox().uncheck();
+    assert.match(await form.dialog.locator('.pj-avatar-stage').getAttribute('aria-label'),/^나무 분장 대두형/);
     await form.save.click();
     await form.dialog.waitFor({state:'hidden'});
     let detailSaves=await page.evaluate(()=>window.preferenceFixture.detailSaves);
@@ -340,6 +547,8 @@ async function openGroup(dialog,label) {
     assert.equal(first.fields.job,'책방지기');
     assert.equal(first.fields.bio,'서로 이야기를 나누고 싶어요.');
     assert.equal(first.interest,'coffee');
+    assert.deepEqual(first.avatar,{id:102,form:'mini',bg:0});
+    assert.equal(first.showGender,false);
     assert.equal(first.showAge,true);
     assert.deepEqual(await page.evaluate(()=>window.preferenceFixture.detail().name),'새 보리');
     assert.equal(await page.evaluate(()=>window.preferenceFixture.detail().region),'경기도');
@@ -347,6 +556,9 @@ async function openGroup(dialog,label) {
     assert.equal(await settings.getByRole('region',{name:'공개 프로필',exact:true}).count(),0,
       'settings does not add an extra profile summary card');
     assert.equal(await onlyButton().count(),1,'settings has exactly one profile editor link');
+    await page.getByRole('navigation',{name:'파장 메뉴'}).getByRole('link',{name:'오늘',exact:true}).click();
+    assert.match(await ownPortrait.getAttribute('aria-label'),/나무/,'a stale feed row cannot reveal the hidden outfit');
+    assert.equal(await ownPortrait.getAttribute('data-gender-tone'),null);
 
     form=await openProfile(page);
     assert.equal(await form.dialog.getByLabel('닉네임',{exact:true}).inputValue(),'새 보리');
@@ -356,6 +568,15 @@ async function openGroup(dialog,label) {
     const privateAgain=form.dialog.locator('.unified-private-profile');
     assert.equal(await privateAgain.evaluate(node=>node.open),true,'exchange details reopen expanded');
     assert.equal(await form.dialog.getByLabel('직업',{exact:true}).inputValue(),'책방지기');
+    await form.dialog.getByRole('button',{name:'캐릭터 선택',exact:true}).click();
+    const savedOutfit=form.dialog.getByRole('button',{name:'책방 가는 날 대두형',exact:true});
+    assert.equal(await savedOutfit.getAttribute('aria-pressed'),'true','hiding gender preserves the member’s private selection');
+    await savedOutfit.click();
+    await viewer.getByRole('button',{name:'이 모습 선택',exact:true}).click();
+    assert.equal(await page.evaluate(()=>window.preferenceFixture.purchases.length),1);
+    assert.equal(await page.evaluate(()=>window.preferenceFixture.detail().characterCoins),10);
+    await genderCheckbox().check();
+    assert.match(await form.dialog.locator('.pj-avatar-stage').getAttribute('aria-label'),/^책방 가는 날 대두형/);
     await form.dialog.getByLabel('닉네임',{exact:true}).fill('고친 보리');
     await form.dialog.getByLabel('직업',{exact:true}).fill('새 직업');
     await page.evaluate(()=>window.preferenceFixture.detailSaveResponses.push('error'));
@@ -374,6 +595,9 @@ async function openGroup(dialog,label) {
     assert.equal(detailSaves[2].p_data.preferencesVersion,1,'retry uses the original expected version');
     assert.equal(await page.evaluate(()=>window.preferenceFixture.detail().name),'고친 보리');
     assert.equal(await page.evaluate(()=>window.preferenceFixture.detail().fields.job),'새 직업');
+    await page.getByRole('navigation',{name:'파장 메뉴'}).getByRole('link',{name:'오늘',exact:true}).click();
+    assert.match(await ownPortrait.getAttribute('aria-label'),/책방 가는 날/,'showing gender restores the saved outfit without reloading');
+    assert.equal(await ownPortrait.getAttribute('data-gender-tone'),'male');
 
     // Clearing the public relationship choices must not erase exchange details.
     form=await openProfile(page);

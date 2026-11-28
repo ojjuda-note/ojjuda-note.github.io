@@ -77,3 +77,17 @@ test('old answered-round hint only admits an unjoined account after a fresh succ
   assert.equal(await app.verified(),true);
   assert.deepEqual(calls,['state','entry']);
 });
+
+test('temporary account lookup failures do not present the signed-out entrance', async t => {
+  const error = {status:503, message:'Service unavailable'};
+  for (const stage of ['session', 'user']) {
+    const app = fixture(t, async () => accepted);
+    if (stage === 'session') app.db.auth.getSession = async () => ({data:{session:null}, error});
+    else app.db.auth.getUser = async () => ({data:{user:null}, error});
+    assert.equal(await app.requireMember(), undefined);
+    const gate = app.w.document.querySelector('#gate');
+    assert.equal(gate.querySelector('[data-guest-account]'), null);
+    assert.match(gate.textContent, /다시/);
+    assert.equal(app.w.document.querySelector('#station').hidden, true);
+  }
+});

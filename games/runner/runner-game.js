@@ -42,8 +42,6 @@
     return Math.max(groundSpeed + 65,
       groundSpeed * (shark.pace + Math.sin(time * 4.5 + shark.phase) * .09));
   }
-  const MELODY = [392, 440, 523.25, 587.33, 523.25, 440, 349.23, 392,
-    392, 523.25, 659.25, 587.33, 523.25, 440, 392, 329.63];
   const safeGet = key => { try { return localStorage.getItem(key); } catch { return null; } };
   const safeSet = (key, value) => { try { localStorage.setItem(key, value); } catch { /* private mode */ } };
   const reducedMotion = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -814,7 +812,7 @@
     for (let i = 0; i < 6; i++)
       pickups.push({ x: W + 86 + i * 55, y: GROUND - 173 - Math.sin(i * .58) * 14, kind: 'pearl' });
     let pearls = 0, combo = 0, lastScore = -1, ended = false, paused = false;
-    let stage = 0, shake = 0, flash = 0, dustIn = 0, musicTick = .16, note = 0;
+    let stage = 0, shake = 0, flash = 0, dustIn = 0;
     let fever = 0, scoreSync = 0, bonus = '', bonusLife = 0;
     let lastButtonKey = '', lastButtonAt = -1000;
     let lastHazard = '';
@@ -825,14 +823,14 @@
       1 + Math.floor(Math.max(0, peakSpeed - SPEED_GATE) / 300);
     const globalSoundOn = () => typeof api.soundEnabled !== 'function' || !!api.soundEnabled();
     function ensureAudio() {
-      if (!musicOn || !globalSoundOn() || audio) { if (audio?.state === 'suspended' && globalSoundOn()) void audio.resume().catch(() => {}); return; }
+      if (!globalSoundOn() || audio) { if (audio?.state === 'suspended' && globalSoundOn()) void audio.resume().catch(() => {}); return; }
       try {
         audio = new (window.AudioContext || window.webkitAudioContext)();
         if (audio.state === 'suspended') void audio.resume().catch(() => {});
       } catch { audio = null; }
     }
     function tone(frequency, duration, volume, wave = 'sine') {
-      if (!musicOn || !globalSoundOn() || !audio || audio.state !== 'running') return;
+      if (!globalSoundOn() || !audio || audio.state !== 'running' || document.hidden) return;
       try {
         const now = audio.currentTime, oscillator = audio.createOscillator(), gain = audio.createGain();
         oscillator.type = wave; oscillator.frequency.setValueAtTime(frequency, now);
@@ -842,11 +840,6 @@
         oscillator.connect(gain); gain.connect(audio.destination);
         oscillator.start(now); oscillator.stop(now + duration + .02);
       } catch { /* audio is optional */ }
-    }
-    function music() {
-      const frequency = MELODY[note++ % MELODY.length];
-      tone(frequency / 2, .19, .011, 'triangle');
-      if (note % 4 === 0) tone(frequency, .17, .008);
     }
     function sound(kind) {
       if (kind === 'jump' || kind === 'slide') api.sound?.tap?.();
@@ -889,12 +882,13 @@
     function togglePause() {
       if (ended) return;
       paused = !paused;
+      window.OjjudaArcadeMusic?.setPlaying(musicOn && !paused,'runner');
       const button = document.querySelector('#gov [data-g="key:p"]');
       if (button) { button.textContent = paused ? '▶ 계속' : 'Ⅱ 일시정지'; button.setAttribute('aria-pressed', String(paused)); }
     }
     function toggleMusic() {
       musicOn = !musicOn; safeSet('ojjuda:runner:music', musicOn ? 'on' : 'off');
-      if (musicOn) ensureAudio();
+      window.OjjudaArcadeMusic?.setPlaying(musicOn && !paused,'runner');
       const button = document.querySelector('#gov [data-g="key:m"]');
       if (button) { button.textContent = musicOn ? '♫ 음악 켜짐' : '♪ 음악 꺼짐'; button.setAttribute('aria-pressed', String(musicOn)); }
     }
@@ -1006,6 +1000,7 @@
       hearts--; combo = 0; fever = 0; invulnerable = 1.25; shake = 12; flash = .23;
       particle(HERO_X, GROUND + offset - 54, 'hit', 20); sound('hurt');
       if (hearts <= 0) {
+        window.OjjudaArcadeMusic?.stop('runner');
         ended = true; api.setScore(score()); api.end(score());
       }
     }
@@ -1161,8 +1156,6 @@
         if (lastScore !== next && scoreSync >= .08) {
           lastScore = next; scoreSync = 0; api.setScore(next);
         }
-        musicTick -= dt;
-        if (musicTick <= 0) { musicTick += .225; if (musicOn) music(); }
       },
       draw(c) {
         const view = fit(c);
@@ -1252,11 +1245,13 @@
         sharks: hazards.filter(h => h.kind === 'shark').map(h =>
           ({ x: h.x, y: h.y, speed: h.currentSpeed })) }; },
       destroy() {
+        window.OjjudaArcadeMusic?.stop('runner');
         document.removeEventListener?.('pointerdown', handleButtonPointer);
         ended = true; hazards = []; pickups = []; effects = []; platforms = []; gaps = [];
         if (audio) { void audio.close().catch(() => {}); audio = null; }
       }
     };
+    window.OjjudaArcadeMusic?.mount('runner',document.getElementById?.('gov'),musicOn);
     ensureAudio();
     return game;
   }

@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<link rel="canonical" href="https://ojjuda.kr/lifetime/">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f2f5f4">
+<title>수명시계</title>
+<meta property="og:type" content="website">
+<meta property="og:title" content="오쭈다 수명시계">
+<meta property="og:description" content="내 인생을 하루로 보면 지금은 몇 시일까요?">
+<meta property="og:url" content="https://ojjuda.kr/lifetime/">
+<link rel="stylesheet" href="/shared/share/page-share.css?v=6123ec516">
+<script defer src="/shared/share/page-share.js?v=3b563446c"></script>
+<link rel="stylesheet" href="/features/lifetime/style.css?v=2cb0c237a">
+<script defer src="/features/lifetime/population.js?v=5f56da251"></script>
+<script defer src="/features/lifetime/research.js?v=5bc04de35"></script>
+<script defer src="/features/lifetime/estimate.js?v=4e6c0937e"></script>
+<script defer src="/features/lifetime/conditions.js?v=158879d06"></script>
+<script defer src="/features/lifetime/survival.js?v=9247fe780"></script>
+<script defer src="/features/lifetime/clock-scenery.js?v=f8560ee27"></script>
+<script defer src="/features/lifetime/clock-display.js?v=41e64a48f"></script>
+<script defer src="/features/lifetime/clock.js?v=e18988df6"></script>
+</head>
+<body>
+<main>
+  <header>
+    <span class="clockmark" aria-hidden="true"></span><h1>수명시계</h1>
+    <button type="button" class="page-share-button" data-share-page="lifetime">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m8.5 10.5 7-4m-7 7 7 4"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="5" r="3"/><circle cx="18" cy="19" r="3"/></svg>
+      공유하기
+    </button>
+  </header>
+  <details id="birth-settings" class="birth-settings" open>
+    <summary>생일 입력</summary>
+    <form id="birth-form">
+      <div class="fields">
+        <div class="field"><label for="birth">생년월일</label><input type="date" id="birth" required></div>
+        <div class="field"><label for="birth-time">태어난 시각 (선택)</label><input type="time" id="birth-time" step="60" aria-describedby="birth-time-note"><small id="birth-time-note">모르면 00시로 계산해요.</small></div>
+      </div>
+      <button type="submit" class="apply">저장</button>
+    </form>
+  </details>
+  <section class="instrument" aria-label="수명시계">
+    <div class="life-reading">
+      <canvas id="sky-window" aria-hidden="true"></canvas>
+      <div class="face-header"><h2 id="life-label">내 생의 24시간</h2>
+        <span class="phase" id="phase-badge"><b id="meridiem">—</b><span id="daypart">—</span></span>
+      </div>
+      <div class="dial">
+        <div class="dial-inner" aria-hidden="true">
+          <div class="dial-ticks"></div><div id="dial-numbers"></div>
+          <div class="hand hour-hand" id="hour-hand"></div><div class="hand minute-hand" id="minute-hand"></div>
+          <div class="hand second-hand" id="second-hand"></div><div class="hand-pin"></div>
+        </div>
+        <time id="life-time" role="timer" aria-live="off">--:--:--</time>
+      </div>
+      <p class="encouragement" id="encouragement"></p>
+    </div>
+    <div class="remaining-reading"><h2 id="remaining-label">남은 추정 수명</h2>
+      <div id="flip-board" aria-hidden="true"></div>
+      <span class="sr-only" id="remaining" role="timer" aria-live="off">—</span>
+    </div>
+  </section>
+  <button class="open-conditions" id="open-conditions" type="button" aria-haspopup="dialog" aria-controls="condition-dialog">조건 넣기</button>
+  <p id="save-feedback" class="save-feedback" role="status"></p>
+  <dialog id="condition-dialog" aria-labelledby="dialog-title">
+    <form id="condition-form">
+      <header class="form-head"><h2 id="dialog-title" tabindex="-1">조건 넣기</h2><button id="cancel-x" type="button" aria-label="닫기">×</button></header>
+      <div class="form-body">
+        <section><h3>기본 정보</h3><div class="fields" id="base-fields"></div></section>
+        <section><h3>생활 조건</h3>
+          <div class="fields" id="daily-fields"></div>
+        </section>
+        <section><h3>생활습관</h3><div class="fields" id="habit-fields"></div></section>
+        <section><h3>가족과 생활</h3><div class="fields" id="social-fields"></div></section>
+        <details class="preferences" id="extra-conditions"><summary>생활·건강 정보 더 넣기</summary><div class="fields" id="extra-fields"></div></details>
+        <details class="preferences" id="play-conditions"><summary>왠지 오래 살 것 같은 이유</summary>
+          <div id="play-questions"></div>
+          <label id="previous-story-bonus" hidden><input id="keep-previous-stories" type="checkbox"><span id="previous-story-label">지난 질문 보너스 유지</span></label>
+        </details>
+        <details class="preferences" id="exam-conditions"><summary>검진 결과 넣기</summary><p class="optional-note">검진표가 있으면 아는 수치만 골라 주세요.</p><div class="fields" id="health-fields"></div></details>
+      </div>
+      <footer class="form-actions"><button id="cancel" type="button">취소</button><button type="submit" class="apply">저장</button></footer>
+    </form>
+  </dialog>
+  <details class="more"><summary>더보기</summary>
+    <div id="birth-edit-position"></div>
+    <p>전국·지역 생명표와 생활습관 연구를 바탕으로, 과거의 수명 증가 추세가 이어진다고 가정해 예상한 시간이에요.</p>
+    <h3>참고 자료</h3>
+    <div class="sources"><a href="https://mods.go.kr/board.es?act=view&amp;bid=208&amp;list_no=439533&amp;mid=a10301040300" target="_blank" rel="noopener noreferrer">전국 생명표</a>
+      <a href="https://kostat.go.kr/boardDownload.es?bid=208&amp;list_no=434042&amp;seq=3" target="_blank" rel="noopener noreferrer">지역 생명표</a>
+      <a href="https://www.index.go.kr/unity/potal/eNara/sub/showStblGams3.do?freq=Y&amp;idx_cd=2758&amp;period=N&amp;stts_cd=275801" target="_blank" rel="noopener noreferrer">연도별 기대수명</a>
+      <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7314763/" target="_blank" rel="noopener noreferrer">한국 생활습관 연구</a></div>
+    <div><details class="reference"><summary>조건별 연구 원문</summary>
+      <p><strong>생활·사회</strong></p>
+      <div class="sources"><a href="https://pubmed.ncbi.nlm.nih.gov/42383937/" target="_blank" rel="noopener noreferrer">가구 형태</a>
+        <a href="https://mods.go.kr/boardDownload.es?bid=208&amp;list_no=271983&amp;seq=2" target="_blank" rel="noopener noreferrer">혼인 상태</a>
+        <a href="https://doi.org/10.1186/1475-9276-11-71" target="_blank" rel="noopener noreferrer">학력</a>
+        <a href="https://doi.org/10.18332/tid/189952" target="_blank" rel="noopener noreferrer">흡연</a>
+        <a href="https://www.jpmph.org/upload/pdf/jpmph-45-301.pdf" target="_blank" rel="noopener noreferrer">음주</a>
+        <a href="https://www.e-pan.org/upload/pdf/JENB_2017_v21n2_23.pdf" target="_blank" rel="noopener noreferrer">운동시간</a>
+        <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7594310/" target="_blank" rel="noopener noreferrer">수면시간</a>
+        <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11300113/" target="_blank" rel="noopener noreferrer">식생활평가지수</a>
+        <a href="https://www.kihasa.re.kr/api/kihasa/file/download?seq=29368" target="_blank" rel="noopener noreferrer">가구 소득분위</a>
+        <a href="https://doi.org/10.1186/s12889-023-16682-9" target="_blank" rel="noopener noreferrer">등록 장애</a>
+        <a href="https://doi.org/10.3346/jkms.2016.31.7.1020" target="_blank" rel="noopener noreferrer">경제활동</a>
+        <a href="https://doi.org/10.2196/48047" target="_blank" rel="noopener noreferrer">일하는 형태</a>
+        <a href="https://doi.org/10.1093/eurjpc/zwag340" target="_blank" rel="noopener noreferrer">중요한 일을 의논하는 사람</a>
+        <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9925289/" target="_blank" rel="noopener noreferrer">모임과 사회활동</a>
+        <a href="https://doi.org/10.3346/jkms.2016.31.7.1020" target="_blank" rel="noopener noreferrer">스스로 느끼는 건강</a></div>
+      <p><strong>건강검진</strong></p>
+      <div class="sources"><a href="https://doi.org/10.4178/epih.e2023055" target="_blank" rel="noopener noreferrer">누워서 잰 혈압</a>
+        <a href="https://pubmed.ncbi.nlm.nih.gov/35836264/" target="_blank" rel="noopener noreferrer">당화혈색소·당뇨 진단</a>
+        <a href="https://doi.org/10.3346/jkms.2019.34.e74" target="_blank" rel="noopener noreferrer">현재 제2형 당뇨 신규 진단</a>
+        <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9837041/" target="_blank" rel="noopener noreferrer">대사증후군 · 검진 기준</a>
+        <a href="https://www.krcp-ksn.org/upload/pdf/j-krcp-22-088.pdf" target="_blank" rel="noopener noreferrer">신장 기능·요단백 함께</a>
+        <a href="https://www.krcp-ksn.org/upload/pdf/j-krcp-22-088.pdf" target="_blank" rel="noopener noreferrer">신장 기능 · eGFR</a>
+        <a href="https://www.krcp-ksn.org/upload/pdf/j-krcp-22-088.pdf" target="_blank" rel="noopener noreferrer">소변 시험지 단백</a>
+        <a href="https://pubmed.ncbi.nlm.nih.gov/32397655/" target="_blank" rel="noopener noreferrer">청력검사</a>
+        <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6527975/" target="_blank" rel="noopener noreferrer">악력</a>
+        <a href="https://doi.org/10.3389/fmed.2022.837743" target="_blank" rel="noopener noreferrer">치과 검진에서 빠진 치아 수</a>
+        <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC5619780/#pone.0185458.t001" target="_blank" rel="noopener noreferrer">공복혈당</a>
+        <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC5619780/#pone.0185458.t001" target="_blank" rel="noopener noreferrer">총콜레스테롤</a>
+        <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC5619780/#pone.0185458.t001" target="_blank" rel="noopener noreferrer">혈색소</a>
+        <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC5619780/#pone.0185458.t001" target="_blank" rel="noopener noreferrer">간 수치(ALT)</a>
+        <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC5619780/#pone.0185458.t001" target="_blank" rel="noopener noreferrer">간질환 병력</a></div>
+      <p><strong>추가 읽을거리</strong></p>
+      <div class="sources"><a href="https://pubmed.ncbi.nlm.nih.gov/32152164/" target="_blank" rel="noopener noreferrer">스트레스 연구</a>
+        <a href="https://pubmed.ncbi.nlm.nih.gov/29150678/" target="_blank" rel="noopener noreferrer">반려견 연구 · 스웨덴</a>
+        <a href="https://pubmed.ncbi.nlm.nih.gov/29241716/" target="_blank" rel="noopener noreferrer">반려견 연구 · 영국</a></div>
+    </details></div>
+  </details>
+  <nav class="service-banners" aria-label="오쭈다 서비스">
+    <a class="service-banner agit" href="https://ojjuda.kr/world.html?tab=hub" target="_self">
+      <span><strong>아지트</strong><small>모임·게임</small></span>
+      <img src="/features/lifetime/agit.webp" width="310" height="207" loading="lazy" decoding="async" alt="">
+    </a>
+    <a class="service-banner park" href="https://ojjuda.kr/park/" target="_self">
+      <span><strong>공원</strong><small>일상·소통</small></span>
+      <img src="/features/lifetime/park.webp" width="260" height="260" loading="lazy" decoding="async" alt="">
+    </a>
+    <a class="service-banner pajang" href="https://ojjuda.kr/pajang/" target="_self">
+      <span><strong>파장</strong><small>19+ 소개팅</small></span>
+      <img src="/features/lifetime/pajang.webp" width="260" height="260" loading="lazy" decoding="async" alt="">
+    </a>
+    <a class="service-banner focus" href="https://github.com/ojjuda-note/ojjuda-note.github.io/releases/download/focus-v0.15.15/OjjudaFocus-Studio-0.15.15.apk" target="_self" download="OjjudaFocus-Studio-0.15.15.apk">
+      <span><strong>포커스</strong><small>APK 다운로드</small></span>
+      <img src="/features/lifetime/focus.webp" width="260" height="260" loading="lazy" decoding="async" alt="">
+    </a>
+  </nav>
+  <noscript>초 단위 시계를 보려면 브라우저에서 자바스크립트를 켜 주세요.</noscript>
+</main>
+</body>
+</html>

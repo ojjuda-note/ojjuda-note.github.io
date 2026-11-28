@@ -11,11 +11,20 @@ const world = read('world.html');
 const version = JSON.parse(read('version.json')).version;
 
 const sections = ['start', 'games', 'together', 'rankings', 'park', 'zu',
-  'settings', 'account', 'discover', 'fortune', 'fanpages', 'faq'];
+  'settings', 'account', 'discover', 'fortune', 'fanpages', 'pajang', 'focus', 'faq'];
 for (const id of sections) {
   assert.match(guide, new RegExp('href="#' + id + '"'), id + ' menu link');
   assert.match(guide, new RegExp('<section id="' + id + '"'), id + ' section');
 }
+
+const focus = guide.match(/<section id="focus"[\s\S]*?<\/section>/)[0];
+for (const link of ['/assets/guide/focus-settings.webp', '/features/focus/privacy.html']) {
+  assert.ok(focus.includes('href="' + link + '"') && fs.existsSync(path.join(root, link)), link);
+}
+const duration = /최대\s*(\d+)일/;
+const pajang = guide.match(/<section id="pajang"[\s\S]*?<\/section>/)[0];
+assert.equal(pajang.match(duration)[1], read('features/pajang/index.html').match(duration)[1],
+  'public guide matches the answer visibility period shown when answering');
 
 const cards = [...guide.matchAll(/<details class="game-card" id="([^"]+)" data-game>/g)];
 assert.equal(cards.length, 24, 'all 24 current game guides, including One Card and drinking games');
@@ -35,7 +44,7 @@ assert.match(world, /world-game-rankings\.js\?v=[^"\s]+/, 'signup button JS rema
 assert.match(world, /world-game-rankings\.css\?v=[^"\s]+/, 'signup CSS remains cache-versioned');
 assert.ok(world.includes('Go="' + version + '";'), 'world and portal version agree');
 
-for (const link of ['/groups/index.html', '/world.html?game=festival',
+for (const link of ['/world.html?tab=group', '/world.html?game=festival',
   '/world.html?game=restaurants', '/?auth=signup&amp;next=world']) {
   assert.ok(guide.includes('href="' + link + '"'), link + ' is in guide');
 }

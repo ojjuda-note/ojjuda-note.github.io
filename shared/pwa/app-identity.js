@@ -41,8 +41,7 @@
     let target;
     try { target = new URL(value || location.href, location.href); } catch (_) { return true; }
     if (target.origin !== location.origin) return false;
-    if (target.searchParams.has('game') || target.searchParams.get('tab') === 'arcade' ||
-        target.searchParams.get('place') === 'arcade') return true;
+    if (target.searchParams.has('game')) return true;
     if (/^\/(?:arcade|games\/)/.test(target.pathname)) {
       const path = target.pathname.replace(/index\.html$/, '');
       return !playSafeDestinations.has(path) && !playSafeDestinations.has(target.pathname);
@@ -56,7 +55,8 @@
   const isPark = url.pathname === '/park' || url.pathname.startsWith('/park/') ||
     (url.pathname === '/world.html' && url.searchParams.getAll('game').length !== 1 &&
       (url.searchParams.get('place') === 'park' || url.searchParams.get('tab') === 'park'));
-  const isPajang = url.pathname === '/features/pajang' || url.pathname.startsWith('/features/pajang/');
+  const isPajang = /^\/pajang(?:\/index\.html|\/)?$/.test(url.pathname) ||
+    url.pathname === '/features/pajang' || url.pathname.startsWith('/features/pajang/');
   const app = apps[isPajang ? 'pajang' : isPark ? 'park' : 'agit'];
   const versioned = (path) => path + '?v=' + iconRevision;
 
@@ -86,13 +86,10 @@
     const safeStyle = document.createElement('style');
     safeStyle.id = 'ojjuda-play-store-agit-safe-mode';
     safeStyle.textContent = `
-      html[data-play-store-agit="true"] [data-tab="arcade"],
       html[data-play-store-agit="true"] [data-place="arcade"],
       html[data-play-store-agit="true"] [data-id="arcade"],
       html[data-play-store-agit="true"] .wd-arcade,
-      html[data-play-store-agit="true"] a[href*="tab=arcade"],
-      html[data-play-store-agit="true"] a[href*="place=arcade"],
-      html[data-play-store-agit="true"] a[href*="/arcade/"],
+      html[data-play-store-agit="true"] a[href^="/arcade/"],
       html[data-play-store-agit="true"] a[href*="/games/"]:not([href*="/games/certified-restaurants/"]):not([href*="/games/festival-schedule/"]):not([href*="/games/moonlit-tarot/"]):not([href*="/games/starlit-saju/"]),
       html[data-play-store-agit="true"] [data-act="game-open"],
       html[data-play-store-agit="true"] [data-game],
@@ -110,10 +107,18 @@
       .replace('게임·타로·사주·익명카드', '일상·운세·익명카드')
       .replace('게임부터 일상 이야기까지', '일상 이야기부터 운세까지');
 
+    const isLobbyControl = control => {
+      if (control.matches('[data-act="tab"][data-tab="arcade"]')) return true;
+      if (!control.matches('a[href]')) return false;
+      const target = new URL(control.href, location.href);
+      return target.origin === location.origin && target.pathname === '/world.html' &&
+        !isPlaySafeBlockedUrl(target.href) && [target.searchParams.get('tab'), target.searchParams.get('place')].includes('arcade');
+    };
     const hidePlayStoreGameEntrances = root => {
       const controls = root.querySelectorAll?.('button,a,[role="button"],[data-tab],[data-place]');
       if (!controls) return;
       controls.forEach(control => {
+        if (isLobbyControl(control)) return;
         const label = [
           control.innerText,
           control.getAttribute('aria-label'),
@@ -143,7 +148,7 @@
 
     const blockPlayStoreGameAction = event => {
       const control = event.target?.closest?.('a[href],button,[role="button"],[data-act],[data-tab],[data-place]');
-      if (!control) return;
+      if (!control || isLobbyControl(control)) return;
       const action = control.dataset?.act || '';
       const isArcadeControl = control.dataset?.tab === 'arcade' ||
         control.dataset?.place === 'arcade' ||

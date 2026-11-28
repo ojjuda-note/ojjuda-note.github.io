@@ -1,24 +1,17 @@
-# 스마트 글래스 연결 경계
+# 공원 카드와 Even G2
 
-`glasses.html`은 브라우저에서 확인하는 화면 미리보기입니다. 실제 안경에 표시하려면 기기별 앱과 실기 검증이 필요합니다.
+공원 설정 → 활동·도움 → 스마트 글라스 → 이븐리얼리티 G2에서 기기 항목을 연다. 안경에 설치할 패키지는 `note/even-app/app.json`과 같은 공원 화면 소스로 빌드한다. 설치판은 휴대폰의 현재 위치를 Even 앱에서 받아 날씨와 가까운 공개 카드를 표시한다. 설치한 앱을 실행하면 G2 브리지가 자동으로 카드 화면을 연다. 휴대폰의 **화면 끄기**로 렌즈를 비우고, **화면 켜기** 또는 안경 한 번 탭으로 다시 표시한다.
 
-## 공통 표시 계약
+답카드에서 **탭해 답 보기**가 보이면 본문을 탭하거나 **달린 답카드 보기**를 누른다. 하위 목록의 첫 답카드에서 위로 넘기면 읽던 상위 답카드로 돌아간다.
 
-`glasses.js`는 `window.OJJUDA_GLASS_PREVIEW`를 제공합니다.
+공원 설정의 기기 항목과 **G2 안경으로 보기**는 베타 설치·실행 안내를 연다. 초대를 수락한 계정은 Even 앱의 **내 플러그인 → 베타**에서 설치·업데이트하고 앱 홈의 **오쭈다 공원**을 눌러 실행한다. 휴대폰에 카드만 보이면 하단 연결 상태를 확인하고 **안경 다시 연결**을 누른다. 브라우저 미리보기는 `/park/glasses.html`이며 개발용 QR은 `?developer=1`에서만 표시한다.
 
-- `setLocation({latitude, longitude})`: 위치를 근처 조회 POST RPC로 보내며 화면·URL·저장소·표시 이벤트에 좌표를 넣지 않습니다.
-- `setBattery(0..100)`: **안경** 배터리만 전달합니다. 브라우저 배터리 값은 안경 배터리로 취급하지 않습니다.
-- `move(-1|1)`, `select()`: 카드 이동과 한 줄/전체 전환.
-- `getView()` 및 `ojjuda:glasses-view`: 현재 시각, 배터리, 카드 본문·거리 구간만 전달합니다. 좌표는 없습니다.
+렌즈 왼쪽 위에는 시간, 오른쪽 위에는 안경 배터리와 충전 중 번개, 오른쪽에는 카드 두 장이 표시된다. 왼쪽 아래는 기상청 관측 기온과 날씨, 오른쪽 아래는 위치 측정 속도(km/h)다. 값이 없거나 오래되면 대시를 표시한다. 카드 오른쪽 아래는 작성 위치까지의 거리 구간이다. 목록에서 스크롤로 이동하고 탭하면 원글과 공개 답카드 수가 보인다. 원글에서 아래로 넘기면 가까운 답카드부터 한 장씩 읽는다. 위로 넘기면 원글로 돌아가고 탭하면 목록으로 닫힌다. 두 번 탭하면 종료를 확인한다.
 
-근처 조회는 `ojjuda_note.list_cards`의 `p_sort:'nearby'`를 사용합니다. 공개 응답은 서버가 정한 순서와 `distance_band`만 사용합니다. 일반 카드의 정확한 GPS는 응답에서 제외합니다. 위치 접근 거부 시 샘플 화면으로 UI를 살펴볼 수 있습니다.
+처음 열면 휴대폰에서 위치 권한을 요청한다. 위치를 허용하면 현재 위치에서 30km 이내의 공개 카드를 가까운 순으로 보여준다. 가까운 카드가 없거나 위치를 확인할 수 없으면 최신 공개 카드를 볼 수 있다. 위치를 다시 확인하려면 **현재 위치 확인**을 누른다. 위치를 알 수 없는 카드에는 거리를 표시하지 않는다.
 
-## Even G2
+홈페이지에서 로그인한 회원에게는 계정 위치 설정과 보호자 동의가 적용된다. 답카드의 거리를 알 수 있으면 가까운 순으로 읽고 거리 미확인 답카드는 마지막에 둔다. 위치를 끄면 날씨와 거리를 지우고 공개 카드로 돌아간다. 화면이 숨겨지거나 계정이 바뀌면 측정을 중단한다. 예시 카드는 **예시 보기**를 선택했을 때만 사용한다.
 
-공식 [Even Hub SDK](https://hub.evenrealities.com/docs/build/display)는 웹앱을 동반 앱의 WebView에서 실행하지만 안경 화면은 HTML/CSS가 아니라 576×288 SDK 컨테이너로 그립니다. `glasses-even-g2.mjs`는 SDK 위치·배터리·터치/링 입력을 공통 계약에 연결하는 **번들링 전 소스**입니다. 배포용 Even Hub 프로젝트에서 SDK를 설치·고정하고 `glasses.js` 로드 후 `attachEvenG2()`를 호출해야 합니다. 매니페스트에 [`location` 권한과 Supabase origin의 `network.whitelist`](https://hub.evenrealities.com/docs/build/networking)를 선언하고, CORS와 로그인/익명 조회 동작을 실제 G2·동반 앱에서 검증해야 합니다. 원본 파일을 GitHub Pages에서 직접 import하면 bare package import가 해석되지 않습니다.
+날씨 요청에는 현재 위치에 해당하는 기상청 5km 격자만 전송한다. [기상청 단기예보 조회서비스](https://www.data.go.kr/data/15084084/openapi.do)
 
-## Rokid
-
-대상은 공식 제품명 [Rokid Glasses (With Display)](https://global.rokid.com/products/rokid-glasses)입니다. 화면이 없는 `Rokid AI Glasses Style`, `Max 2`, `Glass3`의 SDK와 혼동하지 않습니다. Rokid 개발 포털은 동반 Rokid AI 앱을 확장하는 [CXR-L SDK](https://open.rokid.com/sdk?lang=en)와 안경 내부 앱용 [CXR-S SDK/YodaOS-Sprite](https://open.rokid.com/sprite?lang=en)를 안내합니다. 이 리포지토리에는 Rokid 전용 앱 빌드·SDK 인증·실기 연결이 없으므로 현재는 위 공통 표시 계약까지만 준비했습니다. 해당 SDK 접근과 실제 디스플레이 기기가 확보되면 시각·안경 배터리·카드 한 줄/전체·이동을 기기 앱에 매핑해야 합니다. 정적 웹페이지 자체가 Rokid 안경 화면으로 자동 표시되는 것은 아닙니다.
-
-실제 기기 연결, 권한, 표시 크기, 긴 글 스크롤, 위치 변화에 따른 새로고침, 배터리 값은 아직 실기 검증 전입니다.
+개발 자료: [Even Hub 화면](https://hub.evenrealities.com/docs/build/display), [실기 QR 테스트](https://hub.evenrealities.com/docs/test/local-testing).

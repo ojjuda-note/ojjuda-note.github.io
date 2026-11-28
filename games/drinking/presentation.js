@@ -5,6 +5,7 @@
 
   const kinds = new Set(['croc', 'bottle', 'bomb', 'stopwatch', 'liar', 'king', 'truth', 'initial', 'minority', 'mission', 'fingers', 'imagevote', 'updown','secretcount','partyroulette','shapematch']);
   const seenResults = new Set();
+  const visits = window.OjjudaTutorialVisits;
   const focusable = 'button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
   const glassAsset = '/games/drinking/assets/result-glass-v2.webp?v=20261114-result-glass2';
   let active = null;
@@ -320,28 +321,48 @@
     const guide = window.DrinkingGameGuides?.[active?.kind];
     const data = active?.local ? guide : guide?.multi || guide;
     if (!data || !accessible()) return false;
+    if (!manual && (!visits || visits.has(active.kind,true))) {
+      active.guidePending = false;
+      return false;
+    }
     const panel = open('guide', `${data.title} 하는 법`, manual);
     if (!panel) return false;
+    visits?.record(active.kind,true);
     active.guidePending = false;
-    const body = node('div', 'dp-dialog-body dp-guide-body');
-    const goal = node('p', 'dp-guide-goal', data.goal);
-    goal.id = 'dp-guide-goal';
-    panel.setAttribute('aria-describedby', goal.id);
-    const steps = node('ol', 'dp-guide-steps');
-    for (const text of data.steps || []) steps.append(node('li', '', text));
-    body.append(goal, steps);
-    if (data.resultNote) body.append(node('p', 'dp-guide-note', data.resultNote));
-    if (!active.local && window.PartyFX) {
-      const label = node('label', 'dp-guide-sound');
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.checked = window.PartyFX.prefs.sound;
-      checkbox.addEventListener('change', () => window.PartyFX.change('sound', checkbox.checked));
-      label.append(checkbox, ' 게임 효과음');
-      body.append(label);
+    const ui=window.OjjudaLessonPanel;
+    if (!ui || !window.DrinkingPracticeSteps) {
+      const body=node('div','dp-dialog-body dp-guide-body');
+      body.append(node('p','dp-guide-goal',data.goal));
+      const steps=node('ol','dp-guide-steps');
+      data.steps.forEach(text=>steps.append(node('li','',text)));body.append(steps);
+      panel.append(body);footer(panel,manual?'닫기':'건너뛰기');return true;
     }
-    panel.append(body);
-    footer(panel, '알겠어요');
+    const id=active.kind;
+    const steps=window.DrinkingPracticeSteps(id,active.local);
+    steps.forEach((step,i)=>{step.rule=[data.steps[i],i===2?data.resultNote:''].filter(Boolean).join(' ');});
+    const art=id==='croc'?'/games/croc/art/croc.webp':'/games/drinking/local/art/'+id+'.webp';
+    const settings=node('details','lesson-settings');
+    settings.append(node('summary','','소리 설정'));
+    if (!active.local && window.PartyFX) {
+      const label=node('label','dp-guide-sound');
+      const box=document.createElement('input');box.type='checkbox';box.checked=window.PartyFX.prefs.sound;
+      box.onchange=()=>window.PartyFX.change('sound',box.checked);
+      label.append(box,' 게임 효과음');settings.append(label);
+    }
+    const music=node('button','dp-guide-music','배경음악');music.type='button';music.dataset.arcadeMusicToggle='';
+    settings.append(music);
+    const dismiss=panel.querySelector('[data-drinking-close]');panel.replaceChildren(dismiss);
+    panel.classList.add('dp-lesson-panel');
+    panel.setAttribute('aria-labelledby','lesson-title');
+    const theme=['liar','mission','secretcount','shapematch','partyroulette'].includes(id)?'night':
+      ['bottle','updown','stopwatch','initial'].includes(id)?'ocean':['king','bomb','fingers'].includes(id)?'amber':'rose';
+    const caution=id==='shapematch'?'주의 · 실제 게임에 갑작스러운 귀신 그림과 비명이 나와요.':'';
+    ui.board(panel,{id,name:data.title,goal:data.goal,steps,art,theme,layout:'cards',caution},{
+      close:()=>close(),finish:()=>close(),settings,party:true,local:active.local,
+      closeLabel:manual?'닫기':'건너뛰기',finishLabel:'연습 마치기'
+    });
+    window.OjjudaArcadeMusic?.refresh();
+    focusDialog();
     return true;
   }
 
@@ -439,9 +460,12 @@
     const local = options.local === true;
     if (!active || active.kind !== kind || active.local !== local) {
       leave();
-      active = { kind, local, phase: 'entry', roundKey: null, urgent: false, guidePending: true, pendingResult: null };
+      active = { kind, local, phase: 'entry', roundKey: null, urgent: false, guidePending: !!visits && !visits.has(kind,true), pendingResult: null };
     }
-    if (mount()) flush();
+    if (mount()) {
+      if (accessible() && active.musicKind!==kind) {window.OjjudaArcadeMusic?.mount(kind);active.musicKind=kind;}
+      flush();
+    }
   }
 
   function update(value = {}) {
@@ -483,6 +507,7 @@
   }
 
   function leave() {
+    window.OjjudaArcadeMusic?.stop();
     close(false);
     clearFit();
     host?.removeEventListener('load', requestFit, true);
@@ -506,8 +531,8 @@
 
   document.addEventListener('ojjuda:drinking-access', event => {
     accessAllowed = event.detail?.allowed === true;
-    if (!accessAllowed) suspend();
-    else if (active && mount()) flush();
+    if (!accessAllowed) {window.OjjudaArcadeMusic?.stop(); if(active)active.musicKind=null; suspend();}
+    else if (active && mount()) {window.OjjudaArcadeMusic?.mount(active.kind);active.musicKind=active.kind;flush();}
   });
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) suspend();

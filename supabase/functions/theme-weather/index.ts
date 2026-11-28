@@ -1,8 +1,9 @@
 // Current KMA observations for one 5 km weather grid. No forecast or fallback city.
 // Public source used by weather.go.kr's current-weather panel (app-index.js).
 // Deploy with verify_jwt = false; this handler validates the project apikey.
+import {districtCells} from './districts.ts';
 type Kind = 'rain' | 'snow' | null;
-type Observation = { kind: Kind; observedAt: number; cacheUntil: number };
+type Observation = { temperature: number | null; label: string; kind: Kind; observedAt: number; cacheUntil: number };
 type Grid = { nx: number; ny: number };
 const MINUTE=60000,MAX_AGE=30*MINUTE,MAX_BYTES=262144;
 const ORIGINS=new Set(['https://ojjuda.kr','https://www.ojjuda.kr']);
@@ -65,7 +66,9 @@ export function parseObservation(html: string,now: number): Observation {
   if(!timeLabel||!icon)throw Error('Missing current observation');
   const label=icon[2].replace(/&nbsp;|&#160;/g,' ').trim();
   const observedAt=observationTime(timeLabel,now),kind=weatherKind(label,icon[1]);
-  return {kind,observedAt,cacheUntil:Math.min(now+2*MINUTE,observedAt+MAX_AGE)};
+  const degrees=iconBlock?.match(/<span\b[^>]*class=["'][^"']*\btmp\b[^"']*["'][^>]*>\s*([+-]?\d{1,2}(?:\.\d+)?)\s*(?:<small\b|℃|<\/span>)/i);
+  const temperature=degrees?Number(degrees[1]):null;
+  return {temperature,label,kind,observedAt,cacheUntil:Math.min(now+2*MINUTE,observedAt+MAX_AGE)};
 }
 function configuredKeys(): string[]{
   try{
@@ -102,7 +105,7 @@ function requestedGrid(url: URL): Grid {
 }
 function summarize(value: Observation,now: number){
   if(value.observedAt>now+2*MINUTE||now-value.observedAt>=MAX_AGE)throw Error('Stale observation');
-  return {kind:value.kind,expiresAt:Math.min(now+10*MINUTE,value.observedAt+MAX_AGE),source:'kma',observedAt:value.observedAt};
+  return {temperature:value.temperature,label:value.label,kind:value.kind,expiresAt:Math.min(now+10*MINUTE,value.observedAt+MAX_AGE),source:'kma',observedAt:value.observedAt};
 }
 export function createHandler({fetch:request=fetch,now=Date.now,publishableKeys=configuredKeys()}: {fetch?: typeof fetch;now?:()=>number;publishableKeys?:string[]}={}){
   const cache=new Map<string,Observation>(),inflight=new Map<string,Promise<Observation>>(),failedUntil=new Map<string,number>();
@@ -137,9 +140,17 @@ export function createHandler({fetch:request=fetch,now=Date.now,publishableKeys=
   }
   return async function handler(req: Request): Promise<Response>{
     const origin=req.headers.get('origin')||'';
+    const url=new URL(req.url);
+    const district=url.searchParams.get('district')||'';
+    const publicDistrict=url.searchParams.size===1 && districtCells.has(district);
+    // Installed WebViews have no fixed Origin. This route accepts a KMA grid only.
+    const cell=url.searchParams.get('cell')||'';
+    const [cx,cy]=cell.split(',').map(Number);
+    const publicCell=url.searchParams.size===1 && /^\d{1,3},\d{1,3}$/.test(cell) && validGrid(cx,cy);
     const headers=new Headers({'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','Vary':'Origin, apikey'});
-    if(origin&&!ORIGINS.has(origin))return new Response('{"error":"Origin not allowed"}',{status:403,headers});
-    if(origin)headers.set('Access-Control-Allow-Origin',origin);
+    if(origin&&!publicDistrict&&!publicCell&&!ORIGINS.has(origin))return new Response('{"error":"Origin not allowed"}',{status:403,headers});
+    if(publicDistrict||publicCell)headers.set('Access-Control-Allow-Origin','*');
+    else if(origin)headers.set('Access-Control-Allow-Origin',origin);
     headers.set('Access-Control-Allow-Methods','GET, OPTIONS');
     headers.set('Access-Control-Allow-Headers','accept, apikey, authorization');
     if(req.method==='OPTIONS')return new Response(null,{status:204,headers});
@@ -147,7 +158,12 @@ export function createHandler({fetch:request=fetch,now=Date.now,publishableKeys=
     if(!publishableKeys.length)return new Response('{"error":"Weather unavailable"}',{status:503,headers});
     if(!keyMatches(req.headers.get('apikey')||'',publishableKeys))return new Response('{"error":"Unauthorized"}',{status:401,headers});
     let grid: Grid;
-    try{grid=requestedGrid(new URL(req.url));}catch{return new Response('{"error":"KMA weather grid required"}',{status:400,headers});}
+    if(publicCell) grid={nx:cx,ny:cy};
+    else if(publicDistrict) {
+      const [nx,ny]=district.split(',').map(Number); grid={nx,ny};
+    } else {
+      try{grid=requestedGrid(url);}catch{return new Response('{"error":"KMA weather grid required"}',{status:400,headers});}
+    }
     try{
       const summary=summarize(await currentFor(grid),now());
       headers.set('Cache-Control','public, max-age='+Math.max(0,Math.min(120,Math.floor((summary.expiresAt-now())/1000))));

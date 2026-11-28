@@ -115,6 +115,27 @@ fs.mkdirSync(proof,{recursive:true});
    };
    seedShareCards();
   });
+  const inkSamples=await page.evaluate(()=>{
+   const sample=(textColor,boxColor,boxTransparency)=>{
+    const style={font:'calligraphy',textColor,boxColor,boxTransparency};
+    const card={...shareCards[5],body:'부탁을 거절했더니 마음이 불편하다. 그래도 내 일정도 중요하니까.',style};
+    const photo=cardElement(card).querySelector('.photo');
+    const canvas=photo.querySelector('.park-ink-art');
+    const pixels=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;
+    let lightEdges=0,darkEdges=0;
+    for(let i=0;i<pixels.length;i+=4){
+     if(pixels[i+3]<230)continue;
+     if(pixels[i]===255&&pixels[i+1]===255&&pixels[i+2]===255)lightEdges++;
+     if(pixels[i]===16&&pixels[i+1]===16&&pixels[i+2]===32)darkEdges++;
+    }
+    return {lightEdges,darkEdges,corner:pixels[3]};
+   };
+   return {forest:sample('black','yellow',80),bright:sample('white','black',0),solid:sample('black','white',100)};
+  });
+  assert.ok(inkSamples.forest.lightEdges>100,'dark ink on a translucent lemon box gets a light painted edge');
+  assert.ok(inkSamples.bright.darkEdges>100,'pale ink over an exposed photo gets a dark painted edge');
+  assert.equal(inkSamples.solid.lightEdges,0,'dark ink on an opaque light box needs no outline');
+  assert.equal(inkSamples.forest.corner,0,'the photo stays visible around the text');
   const action=name=>page.locator(`[data-card-share-action="${name}"]`);
   const open=async n=>{await page.evaluate(id=>shareCard(id),id(n));await page.locator('#note-share-url').waitFor();};
   const ready=async()=>page.waitForFunction(()=>{const button=document.querySelector('[data-card-share-action="share"],[data-card-share-action="save"]');return button&&!button.disabled;});

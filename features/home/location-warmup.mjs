@@ -1,4 +1,4 @@
-import '../../shared/location/location.js?v=20261119-kma-current1';
+import '../../shared/location/location.js?v=20261127-battery1';
 
 // Prepare a short-lived position on Agit. Member features decide when to save it.
 export function warmLocationOnAgit(db,{surface=window,service=globalThis.OjjudaLocation}={}){
@@ -12,7 +12,7 @@ export function warmLocationOnAgit(db,{surface=window,service=globalThis.OjjudaL
     if(closed||!account||surface.document.hidden||read||parkEntry()||(!force&&Date.now()-lastAttempt<120000))return;
     lastAttempt=Date.now();
     const controller=new AbortController();read=controller;
-    void service.readPosition({db,accountId:account,coarseCache:true,signal:controller.signal,preciseTimeout:12000})
+    void service.readPosition({db,accountId:account,coarseCache:true,signal:controller.signal,preciseTimeout:12000,automatic:true})
       .catch(()=>{}).finally(()=>{if(read===controller)read=null;});
   }
   function sessionChanged(session){

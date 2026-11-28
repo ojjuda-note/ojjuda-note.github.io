@@ -635,3 +635,89 @@ html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
 .monthly-game-link{display:inline-flex;flex:0 0 auto;align-items:center;justify-content:center;gap:4px;min-width:44px;min-height:38px;padding:6px 9px;border:1px solid #afc7ae;border-radius:9px;background:#e7f0e3;color:#2c5b40;text-decoration:none;white-space:nowrap;font-size:11px;font-weight:700}
 .monthly-game-link:hover{background:#dce9d7}.monthly-game-link:focus-visible{outline:3px solid #ccaa5c;outline-offset:2px}
 @media(max-width:380px){.monthly-game-link{padding-inline:6px}.monthly-game-link span{display:none}}
+
+/* The range uses a dark enamel frame and warm brass instruments. */
+body { background:#13272d; }
+body { display:flex;flex-direction:column; }
+.standalone-arcade-nav { flex:none;background:#13272d; }
+body>.standalone-arcade-nav .arcade-return {
+  background:#233b40;border-color:#547071;color:#ecede1;border-radius:8px;
+}
+body>.app-shell { flex:1;min-height:0;height:auto;background:linear-gradient(120deg,#203b41,#142b32 68%,#263c3c); }
+.app-header { color:#e9eee5; }
+.brand strong { color:#f9edcc;font-weight:800; }
+.brand-mark { color:#f1ce83;background:linear-gradient(145deg,#466563,#203d41);border:1px solid #87967b;box-shadow:inset 0 0 0 2px #254248; }
+.brand-mark svg { color:#f3d28c; }
+.header-actions .button { color:#e7ede1;background:#2d454a;border-color:#55706e;border-radius:8px; }
+.header-actions .shop-open { color:#292f2a;background:linear-gradient(150deg,#f5deb0,#cda66d);border-color:#e0b97f; }
+.app-header .coin-balance,.app-header .coin-balance strong,.app-header .coin-balance small { color:#f2d69a; }
+.app-header .coin-balance { background:none; }
+.game-card { background:#f6f0df;border:1px solid #6c8079;box-shadow:0 3px 12px #0c1b214a; }
+.round-heading { color:#223c40;background:linear-gradient(110deg,#faf4e5,#e7e5ce); }
+.round-heading .level-number { color:#83602d;border-color:#c9bf9f;font-variant-numeric:tabular-nums; }
+.round-heading h2,.round-score>strong { color:#183b40; }
+.round-heading .gear-recommendation { color:#586851; }
+.round-heading .monthly-game-link { color:#315151;background:#f7f4e5;border-color:#c3cab9; }
+.power-row.bow-power { background:#263f44;color:#ebedda;border-top:1px solid #72908a; }
+.bow-power>strong { color:#f2d199; }
+.bow-power>.power-track { background:#4b6363; }
+.bow-power #powerFill { background:linear-gradient(90deg,#7cb8a4,#edd599); }
+.field .field-pill,.field .shot-counter {
+  background:#19333ae8;border:1px solid #b9cfbe83;color:#f3f1df;
+  box-shadow:0 2px 5px #0d222633;border-radius:9px;font-variant-numeric:tabular-nums;
+}
+.field .field-pill svg,.field .shot-counter strong { color:#e6d49b; }
+.field .tiny-dot { background:#cadd99; }
+.field .shot-counter { color:#faf0d8; }
+.field .field-pill:focus-visible,.aim-touchpad:focus-visible { outline:2px solid #ffdc90;outline-offset:-2px; }
+.control-status { height:auto;min-height:28px; }
+.shot-feedback,.shot-feedback.miss,.shot-feedback.gold {
+  position:relative;align-items:center;width:fit-content;max-width:100%;min-height:28px;padding:4px 9px;
+  color:#f1efde;background:#173038f2;border:1px solid #a3b9ab;border-radius:8px;box-shadow:0 3px 8px #0d252940;
+}
+.shot-feedback.gold { color:#ffe09b;border-color:#bba074; }
+.shot-feedback span { color:#e2e5d7; }
+.shot-feedback #shotPlot { display:flex;flex:0 0 auto; }
+#shotPlot:empty { display:none; }
+#shotPlot svg { width:32px;height:32px; }
+.impact-plot { background:#263e46;border-radius:50%; }
+.impact-plot .plot-ring { fill:none;stroke:#d2d7c2;stroke-width:1; }
+.impact-plot .plot-cross { fill:none;stroke:#9daea5;stroke-width:.65; }
+.impact-plot .plot-hit { fill:#f7cd78;stroke:#162a30;stroke-width:1; }
+.round-report { width:100%;text-align:left;background:#f2efe2;color:#213d41;border:1px solid #c9cfbd;border-radius:9px;font-size:12px; }
+.round-report summary { cursor:pointer;padding:10px 12px;min-height:40px; }
+.round-report summary b { float:right;color:#365c57;font-size:11px; }
+.round-report .report-body { display:flex;align-items:center;gap:10px;padding:0 12px 12px; }
+.round-report .impact-plot { width:80px;height:80px;flex:none; }
+.round-report .report-body>div { flex:1;min-width:0; }
+.round-report ol { list-style:none;display:flex;flex-wrap:wrap;gap:4px;padding:0;margin:5px 0 0; }
+.round-report li { display:grid;gap:2px;justify-items:center;padding:3px 5px;border-radius:4px;background:#e1e5d7;line-height:1.2; }
+.round-report small { color:#536964;font-size:9px; }
+.round-report b { color:#233f41; }
+@media(max-height:460px) {
+  .shot-feedback #shotPlot svg { width:24px;height:24px; }
+}
+
+.game-menu .round-report { margin:8px 0; }
+.modal[data-view="menu"],.modal[data-view="stages"],.modal[data-view="shop"] {
+  border-color:#b8bda7;background:linear-gradient(145deg,#fbf7ec,#eae9dc);
+}
+.game-menu .menu-action,.stage-card { border-color:#c1c9b7; }
+.game-menu .menu-action>svg { color:#587973; }
+
+/* The range journal shares the paintings and brass trim of the playing field. */
+.app-header {
+  background:linear-gradient(90deg,#122c2bf5 8%,#183a39ed 55%,#162d30f5),url('./seorak-dawn.webp') center 40%/cover;
+  border-color:#4e625b;box-shadow:inset 0 1px #c4b58a42,0 3px 12px #10252433;
+}
+.round-heading {
+  background:linear-gradient(102deg,#f8efdb 0%,#e9dfc9 55%,#d9d3bb 100%);
+  box-shadow:inset 0 1px #fffcf1,inset 0 -1px #a99a7559;
+}
+.brand-mark {
+  background:radial-gradient(ellipse at 32% 18%,#527267,#28463f 60%,#19352f);
+  border:1px solid #ad9767;box-shadow:inset 0 0 0 2px #29433c,0 1px 4px #152c2966;
+}
+.field { background:#345245 url('./seorak-dawn.webp') center/cover; }
+.help-balloon { margin:13px 0 0;font-size:13px;line-height:1.55;color:#47594e; }
+.help-balloon strong { color:#6d4626;margin-right:4px; }

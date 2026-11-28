@@ -1,6 +1,7 @@
-// Procedural artwork for 바람의 궁수. All coordinates are CSS pixels.
+// Range paintings, world objects, and first-person equipment use CSS pixels.
 // Distant art and tree sprites are cached; world scenery follows the camera.
-import {drawAnimalModel} from './animal-zones.mjs?v=20261104-archery-eagle-dive1';
+import {drawAnimalModel,getAnimalFallPose,getAnimalAimPoint} from './animal-zones.mjs?v=20261104-archery-eagle-dive1';
+import {rangePalette, paintPanorama, paintFir, paintRedPine} from './range-art.mjs?v=20261128-motion1';
 const layers = new Map();
 const TAU = Math.PI * 2;
 
@@ -47,51 +48,6 @@ function shape(ctx, points, fill) {
   ctx.closePath(); ctx.fillStyle = fill; ctx.fill();
 }
 
-function pine(ctx, x, base, height, width, palette, seed = 1) {
-  const rand = rng(seed), top = base - height;
-  ctx.fillStyle = palette.trunk;
-  ctx.beginPath(); ctx.moveTo(x - width * .035, base); ctx.lineTo(x - width * .012, top + height * .25);
-  ctx.lineTo(x + width * .018, top + height * .25); ctx.lineTo(x + width * .045, base); ctx.fill();
-  for (let i = 5; i >= 0; i--) {
-    const y = top + height * (.13 + i * .125), span = width * (.12 + i * .075);
-    ctx.beginPath(); ctx.moveTo(x, y - height * .16);
-    ctx.bezierCurveTo(x - span * .27, y - height * .055, x - span * .68, y + height * .01, x - span, y + height * .09);
-    ctx.quadraticCurveTo(x - span * .6, y + height * .115, x - span * .17, y + height * .076);
-    ctx.quadraticCurveTo(x + span * .5, y + height * .115, x + span * (1.02 + rand() * .08), y + height * .075);
-    ctx.bezierCurveTo(x + span * .54, y + height * .01, x + span * .19, y - height * .06, x, y - height * .16);
-    ctx.fillStyle = i % 2 ? palette.dark : palette.mid; ctx.fill();
-    ctx.beginPath(); ctx.moveTo(x, y - height * .15);
-    ctx.bezierCurveTo(x - span * .1, y - height * .035, x + span * .18, y + height * .04, x + span * .7, y + height * .071);
-    ctx.quadraticCurveTo(x + span * .24, y + height * .06, x, y + height * .03);
-    ctx.closePath(); ctx.fillStyle = palette.light; ctx.fill();
-  }
-}
-
-function broadleaf(ctx, x, base, height, width, palette, seed = 1) {
-  const rand = rng(seed), cy = base - height * .72;
-  ctx.lineCap = 'round';
-  line(ctx, x, base, x + width * .015, cy, palette.trunk, Math.max(1, width * .095));
-  line(ctx, x, base - height * .33, x - width * .25, cy - height * .05, palette.trunk, Math.max(1, width * .045));
-  line(ctx, x, base - height * .43, x + width * .23, cy - height * .07, palette.trunk, Math.max(1, width * .035));
-  for (let i = 0; i < 13; i++) {
-    const angle = i * 2.4, radius = i < 6 ? .26 : .14;
-    const dx = Math.cos(angle) * width * radius, dy = Math.sin(angle) * height * .12;
-    ellipse(ctx, x + dx, cy + dy, width * (.25 + rand() * .1), height * (.13 + rand() * .07), i % 3 ? palette.mid : palette.dark, angle * .06);
-  }
-  for (let i = 0; i < 9; i++) {
-    const dx = (rand() - .35) * width * .65, dy = -height * .13 + rand() * height * .18;
-    ellipse(ctx, x + dx, cy + dy, width * (.1 + rand() * .09), height * (.045 + rand() * .045), palette.light, -.25);
-  }
-  line(ctx, x + width * .023, base - 1, x + width * .03, base - height * .35, palette.bark || '#b4aa78', Math.max(.5, width * .016));
-}
-
-const forestPalettes = [
-  {trunk:'#719886', dark:'#83ad95', mid:'#91b79e', light:'#a7c6aa'},
-  {trunk:'#5f7f62', dark:'#547f65', mid:'#638e6c', light:'#83a77b'},
-  {trunk:'#685d3e', dark:'#325d49', mid:'#456e50', light:'#769163', bark:'#9d9564'},
-  {trunk:'#514e35', dark:'#294d3b', mid:'#385b41', light:'#63845a', bark:'#958661'}
-];
-
 function makeLayer(width, height, ratio = 1) {
   const canvas = typeof OffscreenCanvas === 'function'
     ? new OffscreenCanvas(Math.ceil(width * ratio), Math.ceil(height * ratio))
@@ -102,38 +58,12 @@ function makeLayer(width, height, ratio = 1) {
 
 // The distant forest is a fixed image with generous overscan. Moving a camera
 // translates/scales that image; it never allocates a new forest every frame.
-function buildBackdrop(w, h) {
-  const ratio = Math.min(1.5, typeof devicePixelRatio === 'number' ? devicePixelRatio : 1);
-  const {canvas,ctx} = makeLayer(w * 2, h * 1.6, ratio);
-  const ox = w * .5, oy = h * .3, horizon = h * .405, rand = rng(7321);
+function buildBackdrop(w,h,palette) {
+  const ratio=Math.min(1.5,typeof devicePixelRatio==='number'?devicePixelRatio:1,2048/(2*w));
+  const {canvas,ctx}=makeLayer(w*2,h*1.6,ratio);
+  const ox=w*.5,oy=h*.3,horizon=h*.405;
   ctx.translate(ox,oy);
-  const sky = ctx.createLinearGradient(0,-oy,0,horizon+h*.18);
-  sky.addColorStop(0,'#c5e3dd'); sky.addColorStop(.65,'#e2ecdc'); sky.addColorStop(1,'#f0edcf');
-  ctx.fillStyle=sky;ctx.fillRect(-ox,-oy,w*2,h*1.6);
-  const sunx=w*.735,suny=Math.max(28,horizon*.21);
-  const sun=ctx.createRadialGradient(sunx,suny,2,sunx,suny,Math.min(w,h)*.29);
-  sun.addColorStop(0,'rgba(255,252,215,.8)');sun.addColorStop(.23,'rgba(255,250,220,.25)');sun.addColorStop(1,'rgba(255,250,220,0)');
-  ctx.fillStyle=sun;ctx.fillRect(-ox,-oy,w*2,h*1.6);
-  ellipse(ctx,sunx,suny,Math.min(w,h)*.034,Math.min(w,h)*.034,'rgba(255,252,227,.88)');
-  for(let i=0;i<3;i++)shape(ctx,[{x:sunx-5+i*12,y:suny},{x:w*(.12+i*.16),y:h},{x:w*(.23+i*.19),y:h},{x:sunx+5+i*12,y:suny}],'rgba(255,250,220,.045)');
-  for(let layer=0;layer<3;layer++){
-    const y=horizon-h*(.115-layer*.035);
-    ctx.beginPath();ctx.moveTo(-ox,horizon+60);ctx.lineTo(-ox,y+20);
-    ctx.bezierCurveTo(-w*.28,y-35,-w*.12,y-12,w*.08,y+6);
-    ctx.bezierCurveTo(w*.17,y-45,w*.22,y-12,w*.32,y+3);
-    ctx.bezierCurveTo(w*.45,y-50+layer*13,w*.62,y-18,w*.71,y+6);
-    ctx.bezierCurveTo(w*.85,y-43,w*1.05,y-26,w*1.1,y+27);
-    ctx.bezierCurveTo(w*1.22,y-40,w*1.37,y-15,w*1.5,y+20);
-    ctx.lineTo(w*1.5,horizon+60);ctx.closePath();ctx.fillStyle=['#b7cfbb','#a5c5ad','#94b8a0'][layer];ctx.fill();
-  }
-  for(let i=0;i<100;i++){
-    const x=i/99*w*2-ox,edge=Math.min(1,Math.abs(x/w-.5)*2);
-    const height=h*(.037+rand()*.045+edge*.055);
-    pine(ctx,x,horizon+h*.028+rand()*10,height,height*.55,forestPalettes[0],i+20);
-  }
-  const mist=ctx.createLinearGradient(0,horizon-45,0,horizon+35);
-  mist.addColorStop(0,'rgba(224,235,212,0)');mist.addColorStop(.6,'rgba(224,235,212,.28)');mist.addColorStop(1,'rgba(224,235,212,0)');
-  ctx.fillStyle=mist;ctx.fillRect(-ox,horizon-45,w*2,80);
+  paintPanorama(ctx,w,h,palette);
   return {canvas,ox,oy,horizon};
 }
 
@@ -150,14 +80,14 @@ const worldTrees = [
   {z:7,x:4.8,height:5,width:3.7,palette:3}
 ];
 const treeSprites = new Map();
-function getTreeSprite(index,side) {
-  const key=index*2+(side===1?1:0);
+function getTreeSprite(index,side,palette) {
+  const key=palette.sky[0]+':'+index+':'+side;
   if(treeSprites.has(key))return treeSprites.get(key);
   const tree=worldTrees[index], unit=360/tree.height;
   const sw=Math.ceil(tree.width*unit*1.45+12),sh=396,base=382;
   const {canvas,ctx}=makeLayer(sw,sh);
-  if((index+(side===1?1:0))%3===0) broadleaf(ctx,sw/2,base,360,tree.width*unit,forestPalettes[tree.palette],50+index*3+side);
-  else pine(ctx,sw/2,base,360,tree.width*unit,forestPalettes[tree.palette],70+index*4+side);
+  const painter=(index+(side===1?2:0))%3===0?paintRedPine:paintFir;
+  painter(ctx,sw/2,base,360,tree.width*unit,palette,tree.palette,3351+index*19+side*7);
   const sprite={canvas,sw,sh,base,unit};treeSprites.set(key,sprite);return sprite;
 }
 
@@ -172,20 +102,104 @@ const meadow=(()=>{
   return {gravel,grass};
 })();
 
-function drawGround(ctx,w,h,camera,project) {
+const edgePlants=(()=>{
+  const random=rng(92011),plants=[];
+  for(let i=0;i<270;i++){
+    const z=1.25+110*random()**2,side=i%2?1:-1;
+    plants.push({x:side*(1.55+random()**1.6*10)+.32*Math.sin(z*.19),y:0,z,size:.11+random()*.5,variety:i%9});
+  }
+  return plants.sort((a,b)=>b.z-a.z);
+})();
+const plantSprites=new Map();
+function plantSprite(palette,variety){
+  const key=palette.sky[0]+variety;
+  if(plantSprites.has(key))return plantSprites.get(key);
+  const {canvas,ctx}=makeLayer(128,72),random=rng(722+variety);
+  ellipse(ctx,62,64,48,5,palette.trees[3]+'46');
+  if(variety<3){
+    const rock=[[20,62],[29,43],[48,32],[70,38],[84,52],[90,61],[64,66]];
+    const points=rock.map(([x,y])=>({x,y}));
+    shape(ctx,points,palette.rock[2]);shape(ctx,[points[0],points[1],points[2],points[3],{x:57,y:48}],palette.rock[0]);
+    shape(ctx,[points[3],points[4],points[5],points[6],{x:57,y:48}],palette.rock[1]);
+  }
+  for(let i=0;i<28;i++){
+    const x=18+random()*91,y=61+random()*5,height=4+random()*(variety<3?13:37),bend=(x-64)*.3+(random()-.5)*15;
+    ctx.beginPath();ctx.moveTo(x-1.5,y);ctx.quadraticCurveTo(x+bend*.4,y-height*.72,x+bend,y-height);
+    ctx.quadraticCurveTo(x+bend*.35+3,y-height*.48,x+2,y);ctx.fillStyle=i%3?palette.grass[2]:palette.leaf;ctx.fill();
+    if(variety>=6&&i%4===0){
+      for(let k=0;k<4;k++)ellipse(ctx,x+bend+Math.cos(k*1.57)*2.2,y-height+Math.sin(k*1.57)*2,2.6,1.8,palette.bloom,k*1.57);
+      ellipse(ctx,x+bend,y-height,1.3,1.3,'#9b693e');
+    }
+  }
+  plantSprites.set(key,canvas);return canvas;
+}
+
+let soilTile;
+function drawSoilGrain(ctx,w,h,camera){
+  if(!soilTile){
+    const {canvas,ctx:tile}=makeLayer(192,192),noise=rng(12873);
+    const pixels=tile.createImageData(192,192);
+    for(let y=0;y<192;y++)for(let x=0;x<192;x++){
+      const index=(y*192+x)*4;
+      const wave=Math.sin(x*Math.PI/32+Math.cos(y*Math.PI/48)*2)+Math.cos((x+y)*Math.PI/24);
+      const v=(noise()-.5)*36+wave*5,light=v>0?245:42;
+      pixels.data[index]=light;pixels.data[index+1]=light;pixels.data[index+2]=light;
+      pixels.data[index+3]=Math.abs(v);
+    }
+    tile.putImageData(pixels,0,0);soilTile=canvas;
+  }
+  const horizon=camera.horizon,first=Math.max(0,Math.floor(horizon+3));
+  if(first>=h||camera.y<=.02)return;
+  const grain=ctx.createPattern(soilTile,'repeat');if(!grain)return;
+  for(let y=first;y<h;){
+    const height=Math.min(h-y,Math.max(2,Math.ceil((y-horizon)*.095)));
+    const scale=(y+height*.5-horizon)/camera.y;
+    const tileScale=Math.max(.012,scale/92),worldZ=camera.z+camera.focal/scale;
+    const left=camera.cx-camera.x*scale,top=y+(worldZ*scale);
+    ctx.save();ctx.translate(left,top);ctx.scale(tileScale,tileScale);ctx.fillStyle=grain;
+    ctx.fillRect(-left/tileScale,(y-top)/tileScale,w/tileScale,height/tileScale);ctx.restore();y+=height;
+  }
+}
+
+function drawGround(ctx,w,h,camera,project,palette) {
   const horizon=camera.horizon, near=camera.z+.2;
   const groundTop=Math.max(0,Math.min(h,horizon));
   const grass=ctx.createLinearGradient(0,groundTop,0,Math.max(groundTop+1,h));
-  grass.addColorStop(0,'#a2b78a');grass.addColorStop(.35,'#87a275');grass.addColorStop(1,'#668957');
+  grass.addColorStop(0,palette.grass[0]);grass.addColorStop(.35,palette.grass[1]);grass.addColorStop(1,palette.grass[2]);
   ctx.fillStyle=grass;ctx.fillRect(0,groundTop,w,h-groundTop);
   // Clip each strip in world space before perspective division. This also lets
   // the range continue under the camera when an arrow overshoots the target.
-  const depths=[600,400,285,200,145,105,80,55,38,26,18,12,8,5,3,1.7,0];
-  for(let i=0;i<depths.length-1;i++){
-    const far=depths[i],close=Math.max(depths[i+1],near);
+  const terrainDepths=[600,400,285,200,145,105,80,55,38,26,18,12,8,6,4,3,2,1,0];
+  const bank=(z,side)=>side*(1.22+.17*Math.sin(z*.65+side))+.32*Math.sin(z*.19);
+  const dirt=ctx.createLinearGradient(0,groundTop,0,Math.max(groundTop+1,h));
+  dirt.addColorStop(0,palette.path[0]);dirt.addColorStop(1,palette.path[1]);
+  for(let i=0;i<terrainDepths.length-1;i++){
+    const far=terrainDepths[i],close=Math.max(terrainDepths[i+1],near);
     if(far<=close)continue;
-    shape(ctx,[project({x:-1.8,y:0,z:far}),project({x:1.8,y:0,z:far}),project({x:1.8,y:0,z:close}),project({x:-1.8,y:0,z:close})],i%2?'#c9bd97':'#cec19c');
-    for(const side of[-1,1])shape(ctx,[project({x:side*1.8,y:.015,z:far}),project({x:side*2.05,y:.015,z:far}),project({x:side*2.05,y:.015,z:close}),project({x:side*1.8,y:.015,z:close})],'rgba(88,112,61,.22)');
+    for(const side of [-1,1]){
+      const verge=(z,offset)=>project({x:bank(z,side)+side*offset,y:.006,z});
+      shape(ctx,[verge(far,0),verge(far,.27),verge(close,.27),verge(close,0)],palette.path[1]+'69');
+    }
+    shape(ctx,[project({x:bank(far,-1),y:.01,z:far}),project({x:bank(far,1),y:.01,z:far}),
+      project({x:bank(close,1),y:.01,z:close}),project({x:bank(close,-1),y:.01,z:close})],dirt);
+  }
+  // Slanted shadows project with the same camera as the trees.
+  for(const tree of worldTrees){
+    if(tree.z<near+2)continue;
+    const edge=tree.x*1.16,span=tree.height*.98;
+    const corners=[[edge+.35,tree.z-.4],[edge-.3,tree.z+.3],
+      [edge-span*.45,tree.z-1.1],[edge-span*.79,tree.z-1.1],[edge-span,tree.z-2.25],
+      [edge-span*.86,tree.z-2.66],[edge-span*.59,tree.z-2.15],[edge-span*.35,tree.z-1.2]];
+    shape(ctx,corners.map(([x,z])=>project({x,y:.016,z:Math.max(near,z)})),palette.trees[3]+'23');
+  }
+  drawSoilGrain(ctx,w,h,camera);
+  // Low clumps of meadow flowers, fern and slate break up the banks of the trail.
+  for(const patch of edgePlants){
+    if(patch.z<=near)continue;
+    const q=project(patch),size=Math.min(h*.19,patch.size*q.scale);
+    if(!q.visible||size<1.3||q.x< -size*2||q.x>w+size*2||q.y<0||q.y>h+size)continue;
+    const sprite=plantSprite(palette,patch.variety);
+    ctx.drawImage(sprite,q.x-size,q.y-size,size*2,size*1.12);
   }
   for(const stone of meadow.gravel){
     if(stone.z<=near)continue;
@@ -206,52 +220,139 @@ function drawGround(ctx,w,h,camera,project) {
   }
 }
 
-function drawWorldTrees(ctx,w,h,camera,project) {
+function drawWorldTrees(ctx,w,h,camera,project,palette) {
   for(let index=0;index<worldTrees.length;index++){
     const tree=worldTrees[index];if(tree.z<=camera.z+.2)continue;
     for(const side of[-1,1]){
-      const p=project({x:side*tree.x,y:0,z:tree.z});
+      const p=project({x:side*tree.x*(side<0?1.06:1.16),y:0,z:tree.z+(side<0?0:1.1)});
       if(!p.visible)continue;
       const treeW=tree.width*p.scale,treeH=tree.height*p.scale;
       if(p.x+treeW*.8<0||p.x-treeW*.8>w||p.y<0||p.y-treeH>h)continue;
-      const sprite=getTreeSprite(index,side),scale=p.scale/sprite.unit;
+      const sprite=getTreeSprite(index,side,palette),scale=p.scale/sprite.unit;
       ellipse(ctx,p.x,p.y+2,treeW*.58,Math.max(2,treeW*.08),'rgba(43,73,43,.14)');
       ctx.drawImage(sprite.canvas,p.x-sprite.sw*.5*scale,p.y-sprite.base*scale,sprite.sw*scale,sprite.sh*scale);
     }
   }
 }
 
-/** Draw the sunlit range. camera.horizon is always a CSS-pixel coordinate. */
-export function drawScenery(ctx,w,h,options={}) {
-  if(!(w>0&&h>0))return;
-  const baseFocal=Math.min(w*1.08,h*1.5),input=options.camera||{};
-  const camera={x:0,y:1.65,z:0,cx:w/2,horizon:h*.405,focal:baseFocal,...input};
-  const project=options.project||((p)=>{const depth=Math.max(.2,p.z-camera.z),scale=camera.focal/depth;return {x:camera.cx+(p.x-camera.x)*scale,y:camera.horizon-(p.y-camera.y)*scale,scale,visible:p.z>camera.z+.2};});
-  const key=[Math.round(w),Math.round(h)].join(':');let backdrop=layers.get(key);
-  if(!backdrop){backdrop=buildBackdrop(w,h);layers.set(key,backdrop);if(layers.size>2)layers.delete(layers.keys().next().value);}
-  ctx.save();ctx.fillStyle='#c5e3dd';ctx.fillRect(0,0,w,h);
+let previousView,stillScene;
+function paintTerrain(ctx,w,h,palette,camera,project,backdrop,baseFocal,distance){
+  ctx.fillStyle=palette.sky[0];ctx.fillRect(0,0,w,h);
   const zoom=Math.max(.4,Math.min(2.5,camera.focal/baseFocal));
   // Distant scenery has small parallax, while nearby objects use full world
   // projection. Overscan covers normal aiming pans and the eased chase view.
   const dx=camera.cx-w*.5*zoom-camera.x*camera.focal/350;
   const dy=camera.horizon-backdrop.horizon*zoom-(camera.y-1.65)*camera.focal/350;
   ctx.drawImage(backdrop.canvas,dx-backdrop.ox*zoom,dy-backdrop.oy*zoom,w*2*zoom,h*1.6*zoom);
-  drawGround(ctx,w,h,camera,project);drawWorldTrees(ctx,w,h,camera,project);
-  const maxDistance=Math.max(20,Number(options.stage?.distance)||40);
+  drawGround(ctx,w,h,camera,project,palette);drawWorldTrees(ctx,w,h,camera,project,palette);
+  drawDistancePosts(ctx,w,h,camera,project,distance);
+}
+function drawDistancePosts(ctx,w,h,camera,project,distance){
+  const maxDistance=Math.max(20,distance);
   for(let z=80;z>=10;z-=10){
     if(z>maxDistance+5||z<=camera.z+.2)continue;
     const p=project({x:-2.52,y:0,z}),markerH=Math.min(58,p.scale*.48),markerW=Math.min(44,p.scale*.6);
     if(!p.visible||p.x<8||p.x>w-8||p.y>h-10||p.y<0||markerW<9)continue;
     line(ctx,p.x,p.y,p.x,p.y-markerH,'#77714c',Math.min(4,Math.max(1.5,p.scale*.034)));
-    ctx.fillStyle='#ece3c4';ctx.fillRect(p.x-markerW/2,p.y-markerH,markerW,markerH*.48);
-    ctx.fillStyle='#4f674b';ctx.font=`600 ${Math.max(6,markerW*.25)}px system-ui,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(`${z}m`,p.x,p.y-markerH*.76);
+    ctx.fillStyle='#344d4a';ctx.fillRect(p.x-markerW/2,p.y-markerH,markerW,markerH*.48);
+    ctx.fillStyle='#f2dfab';ctx.font=`600 ${Math.max(6,markerW*.25)}px system-ui,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(`${z}m`,p.x,p.y-markerH*.76);
+  }
+}
+
+const rangeImages=new Map(),decodedArt=new WeakSet();
+function paintedAsset(name){
+  if(typeof Image!=='function')return null;
+  if(!rangeImages.has(name)){
+    const image=new Image();image.decoding='async';
+    image.onload=()=>{decodedArt.add(image);};
+    image.src=new URL(`./${name}.webp`,import.meta.url).href;
+    rangeImages.set(name,image);
+    image.decode?.().then(()=>decodedArt.add(image),()=>{});
+  }
+  const image=rangeImages.get(name);
+  return decodedArt.has(image)&&image.naturalWidth>0?image:null;
+}
+function rangePhotograph(distance){
+  return paintedAsset(distance>=90?'seorak-moon':distance>=40?'seorak-sunset':'seorak-dawn');
+}
+function paintRangePhoto(ctx,w,h,camera,baseFocal,image){
+  const horizon=.51,iw=image.naturalWidth,ih=image.naturalHeight;
+  const cover=Math.max(w/iw,h*.405/(ih*horizon),h*.595/(ih*(1-horizon)));
+  const zoom=Math.max(1,Math.min(4,camera.focal/baseFocal));
+  const scale=cover*1.045*zoom*(1+Math.min(.11,Math.max(0,camera.z)/750));
+  const width=iw*scale,height=ih*scale;
+  const cx=w*.5+(camera.cx-w*.5)*.65-camera.x*camera.focal/290;
+  const cy=h*.405+(camera.horizon-h*.405)*.72+(camera.y-1.65)*camera.focal/290;
+  const x=Math.min(0,Math.max(w-width,cx-width*.5));
+  const y=Math.min(0,Math.max(h-height,cy-height*horizon));
+  ctx.drawImage(image,x,y,width,height);
+  // Reproject the near meadow towards the viewer while the distant ridge holds its position.
+  const travel=1-Math.exp(-Math.max(0,camera.z)/24);
+  if(travel<.003)return;
+  const seam=y+height*horizon,visible=Math.max(1,h-seam);
+  const first=Math.max(0,Math.floor(seam)),step=Math.max(6,Math.ceil(h/44));
+  function sourceY(screenY){
+    const down=screenY-seam,weight=Math.max(0,down/visible);
+    return ((seam+down/(1+.43*travel*weight))-y)*ih/height;
+  }
+  for(let top=first;top<h;top+=step){
+    const bottom=Math.min(h,top+step+1),sy=sourceY(top),sb=sourceY(bottom);
+    const weight=Math.max(0,((top+bottom)*.5-seam)/visible),stretch=1+.24*travel*weight;
+    ctx.drawImage(image,0,sy,iw,Math.max(.1,sb-sy),cx+(x-cx)*stretch,top,width*stretch,bottom-top);
+  }
+}
+
+const meadowDetails=Array.from({length:54},(_,i)=>{
+  const random=rng(72419+i*7151),side=i%2?1:-1;
+  return {y:0,z:3+i*2.85+random()*1.5,x:side*(1.3+random()*2.8),width:.36+random()*.46,variant:i%3};
+}).reverse();
+function drawMeadowDetails(ctx,w,h,camera,project,distance){
+  const image=paintedAsset('range-meadow-details');if(!image)return;
+  const cell=image.naturalWidth/3,height=image.naturalHeight;
+  for(const tuft of meadowDetails){
+    if(tuft.z<camera.z+.4||tuft.z>Math.min(distance+16,camera.z+36))continue;
+    const foot=project(tuft),width=tuft.width*foot.scale,heightPx=width*height/cell;
+    if(width<3||foot.x+width*.5<0||foot.x-width*.5>w||foot.y-heightPx>h||foot.y<0)continue;
+    ctx.drawImage(image,tuft.variant*cell,0,cell,height,foot.x-width*.5,foot.y-heightPx,width,heightPx);
+  }
+}
+/** Draw the sunlit range. camera.horizon is always a CSS-pixel coordinate. */
+export function drawScenery(ctx,w,h,options={}) {
+  if(!(w>0&&h>0))return;
+  const baseFocal=Math.min(w*1.08,h*1.5),input=options.camera||{};
+  const camera={x:0,y:1.65,z:0,cx:w/2,horizon:h*.405,focal:baseFocal,...input};
+  const project=options.project||((p)=>{const depth=Math.max(.2,p.z-camera.z),scale=camera.focal/depth;return {x:camera.cx+(p.x-camera.x)*scale,y:camera.horizon-(p.y-camera.y)*scale,scale,visible:p.z>camera.z+.2};});
+  const distance=Number(options.stage?.distance)||10,palette=rangePalette(distance);
+  ctx.save();
+  const photo=rangePhotograph(distance);
+  if(photo){
+    paintRangePhoto(ctx,w,h,camera,baseFocal,photo);
+    drawMeadowDetails(ctx,w,h,camera,project,distance);
+    drawDistancePosts(ctx,w,h,camera,project,distance);
+  }else{
+    const key=[Math.round(w),Math.round(h),palette.sky[0]].join(':');let backdrop=layers.get(key);
+    if(!backdrop){backdrop=buildBackdrop(w,h,palette);layers.set(key,backdrop);if(layers.size>2)layers.delete(layers.keys().next().value);}
+
+    const signature=[key,camera.x,camera.y,camera.z,camera.cx,camera.horizon,camera.focal,distance].join('|');
+    if(stillScene?.signature===signature){
+      ctx.drawImage(stillScene.canvas,0,0,w,h);
+    }else if(previousView===signature){
+      const ratio=Math.min(1.5,typeof devicePixelRatio==='number'?devicePixelRatio:1,1536/Math.max(w,h));
+      const layer=makeLayer(w,h,ratio);
+      paintTerrain(layer.ctx,w,h,palette,camera,project,backdrop,baseFocal,distance);
+      stillScene={signature,canvas:layer.canvas};
+      ctx.drawImage(stillScene.canvas,0,0,w,h);
+    }else{
+      paintTerrain(ctx,w,h,palette,camera,project,backdrop,baseFocal,distance);
+    }
+    previousView=signature;
   }
   const time=Number(options.time)||0,wind=Number(options.stage?.wind)||0;
   for(let i=0;i<windLeafCount(wind);i++){
     const leaf=windLeafAt(i,time,w,h,wind),r=leaf.radius;
     ctx.save();ctx.translate(leaf.x,leaf.y);ctx.rotate(leaf.rotation);ctx.globalAlpha=.40+leaf.depth*.22;
     ctx.beginPath();ctx.moveTo(-r,0);ctx.quadraticCurveTo(-r*.12,-r*.88,r,0);ctx.quadraticCurveTo(-r*.12,r*.72,-r,0);
-    ctx.fillStyle=i%3?'#d8d698':'#b8c18a';ctx.fill();line(ctx,-r*1.45,0,r*.68,0,'#7a8b59',.7);ctx.restore();
+    ctx.fillStyle=i%3?palette.bloom:palette.leaf;ctx.fill();line(ctx,-r*1.45,0,r*.68,0,'#7a8b59',.7);ctx.restore();
   }
   const vignette=ctx.createRadialGradient(w*.5,h*.47,Math.min(w,h)*.25,w*.5,h*.47,Math.max(w,h)*.8);
   vignette.addColorStop(0,'rgba(16,47,34,0)');vignette.addColorStop(1,'rgba(16,47,34,.13)');ctx.fillStyle=vignette;ctx.fillRect(0,0,w,h);
@@ -519,13 +620,59 @@ export function drawUfo(ctx,x,y,radius,time=0,direction=1) {
   ctx.restore();
 }
 
-/** Friendly woodland targets share their painted anatomy with the hit test. */
+// Each 4 × 4 sheet was registered against one full cycle of the game's moving silhouette.
+const wildlifeSheets={
+  rabbit:[-0.85119,-0.73214,302,208,7.2],
+  wildcat:[-1.04762,-0.625,350,205,6.1],
+  deer:[-0.97024,-0.7619,352,249,5.4],
+  cheetah:[-1.34524,-0.48214,402,179,10],
+  bird:[-1.17262,-0.75,368,216,8.5],
+  pigeon:[-1.04762,-0.70833,337,200,10.2],
+  eagle:[-1.47024,-0.88095,494,244,2.2],
+};
 export function drawAnimal(ctx,x,y,radius,kind,time=0,direction=1,pose=null) {
   if(!Number.isFinite(x)||!Number.isFinite(y))return;
-  const r=Math.max(.1,Number.isFinite(radius)?radius:1);
-  ctx.save();ctx.translate(x,y);ctx.scale(direction<0?-r:r,r);
-  drawAnimalModel(ctx,kind,Number.isFinite(pose?.poseTime)?pose.poseTime:time,pose);
+  const r=Math.max(.1,Number.isFinite(radius)?radius:1),side=direction<0?-1:1;
+  const clock=Number.isFinite(pose?.poseTime)?pose.poseTime:time;
+  const sheet=wildlifeSheets[kind],art=sheet&&paintedAsset('wildlife-'+kind);
+  ctx.save();ctx.translate(x,y);ctx.scale(side*r,r);
+  if(!art)drawAnimalModel(ctx,kind,clock,pose);
+  else{
+    const [left,top,width,height,speed]=sheet;
+    const frame=(Math.round(clock*speed*16/TAU)%16+16)%16;
+    const fall=getAnimalFallPose(pose);
+    ctx.save();ctx.rotate(fall.rotation);ctx.scale(1,fall.scaleY);
+    ctx.drawImage(art,frame%4*width,Math.floor(frame/4)*height,width,height,left,top,width/168,height/168);
+    ctx.restore();
+    const mark=pose&&getAnimalAimPoint(pose);
+    if(mark){
+      const mx=(mark.x-pose.x)*side/pose.radius,my=(pose.y-mark.y)/pose.radius;
+      ctx.beginPath();ctx.arc(mx,my,.100,0,TAU);ctx.lineWidth=.019;
+      ctx.strokeStyle='#463722bd';ctx.stroke();ctx.lineWidth=.011;ctx.strokeStyle='#ffdf96';ctx.stroke();
+      ellipse(ctx,mx,my,.019,.019,'#fff1c5');
+    }
+  }
   ctx.restore();
+}
+
+export function drawRangeTarget(ctx,x,y,r,groundX,groundY,rock=null,back=null){
+  const board=paintedAsset('range-straw-boss'),stand=paintedAsset('range-oak-easel');
+  if(!board||!stand)return false;
+  const top=y-r*.65,feet=Math.max(top+r*.95,groundY);
+  const standWidth=r*1.94;
+  ctx.drawImage(stand,groundX-standWidth*.5,top,standWidth,feet-top);
+  // The printed face is calibrated to the five scoring bands.
+  const width=r/.388,height=width*board.naturalHeight/board.naturalWidth;
+  ctx.save();
+  if(rock){
+    ctx.translate(rock.x,rock.y);ctx.transform(1,rock.tilt,0,1-rock.squash,0,0);ctx.translate(-rock.x,-rock.y);
+  }
+  if(back?.visible&&Math.hypot(back.x-x,back.y-y)>1.5){
+    ellipse(ctx,back.x,back.y,r*1.17,r*1.15,'#765533');
+    ellipse(ctx,(back.x+x)*.5,(back.y+y)*.5,r*1.17,r*1.15,'#a37c49');
+  }
+  ctx.drawImage(board,x-width*.497,y-height*.505,width,height);ctx.restore();
+  return true;
 }
 
 /** Gold impact at a projected hit point. Age is seconds after impact, not replay time. */
@@ -997,8 +1144,109 @@ function drawAbilityArrowTip(ctx,ability,pointStart,pointWidth,accent) {
   }
 }
 
+const gearFinishes=new Map(),pendingIconPaint=new WeakMap();
+function gearName(type,view){
+  return type==='bow'?'gear-recurve':'gear-'+(type==='gun'?'rifle':'crossbow')+'-'+view;
+}
+function finishedGear(name,accent){
+  const image=paintedAsset(name);
+  if(!image||!accent||!/^#[a-f0-9]{6}$/i.test(accent))return image;
+  const key=name+accent;
+  if(gearFinishes.has(key))return gearFinishes.get(key);
+  const layer=makeLayer(image.naturalWidth,image.naturalHeight);
+  layer.ctx.drawImage(image,0,0);layer.ctx.globalCompositeOperation='source-atop';
+  layer.ctx.fillStyle=accent;layer.ctx.globalAlpha=.18;layer.ctx.fillRect(0,0,image.naturalWidth,image.naturalHeight);
+  gearFinishes.set(key,layer.canvas);
+  if(gearFinishes.size>8)gearFinishes.delete(gearFinishes.keys().next().value);
+  return layer.canvas;
+}
+function drawBowLimbs(ctx,art,upper,lower){
+  const iw=art.width||art.naturalWidth,ih=art.height||art.naturalHeight;
+  const gx=.82*iw,gy=.5*ih;
+  for(const [end,sy,start,height] of [[upper,.013*ih,0,Math.ceil(gy)],[lower,.988*ih,Math.floor(gy),ih-Math.floor(gy)]]){
+    const ux=.048*iw-gx,uy=sy-gy,len=ux*ux+uy*uy;
+    const a=(ux*end.x+uy*end.y)/len,b=(ux*end.y-uy*end.x)/len;
+    ctx.save();ctx.transform(a,b,-b,a,-a*gx+b*gy,-b*gx-a*gy);
+    ctx.drawImage(art,0,start,iw,height,0,start,iw,height);ctx.restore();
+  }
+}
+function drawGalleryGear(ctx,w,h,options){
+  const {weaponType='bow',color,scopeMounted=false,burstCount=1}=options;
+  const name=gearName(weaponType,'catalog'),art=finishedGear(name,color);
+  if(!art){
+    const img=rangeImages.get(name),canvas=ctx.canvas;
+    if(canvas&&img&&!decodedArt.has(img)&&typeof img.addEventListener==='function'){
+      const previous=pendingIconPaint.get(canvas);
+      if(previous?.image===img){previous.options=options;return false;}
+      const pending={image:img,options};pendingIconPaint.set(canvas,pending);
+      img.addEventListener('load',()=>{
+        if(pendingIconPaint.get(canvas)!==pending||canvas.isConnected===false)return;
+        ctx.clearRect(0,0,w,h);drawEquipmentIcon(ctx,w,h,pending.options);
+      },{once:true});
+    }
+    return false;
+  }
+  if(ctx.canvas)pendingIconPaint.delete(ctx.canvas);
+  const iw=art.width||art.naturalWidth,ih=art.height||art.naturalHeight;
+  ctx.save();ctx.translate(w*.5,h*.50);
+  if(weaponType==='bow'){
+    const size=Math.min(w,h)*.94;ctx.rotate(.55);
+    const scale=size/ih,ox=-iw*.50*scale,oy=-size*.5;
+    ctx.drawImage(art,ox,oy,iw*scale,size);
+    const tipX=ox+iw*.048*scale;
+    line(ctx,tipX,oy+size*.013,tipX,oy+size*.988,'#79746b',Math.max(.62,size*.006));
+    if(scopeMounted)drawScopeTube(ctx,ox+iw*.78*scale,0,size*.19,size*.024,0);
+  }else{
+    const a=weaponType==='gun'?-.21:-.12;
+    const scale=Math.min(w*.89/(iw*Math.cos(a)+ih*Math.abs(Math.sin(a))),h*.88/(ih*Math.cos(a)+iw*Math.abs(Math.sin(a))));
+    ctx.rotate(a);ctx.scale(scale,scale);ctx.drawImage(art,-iw*.5,-ih*.5,iw,ih);
+    if(scopeMounted)drawScopeTube(ctx,-iw*.09,-ih*.33,iw*.20,iw*.026,0);
+    if(burstCount>1)for(let n=0;n<3;n++)line(ctx,-iw*(.24+n*.028),ih*.025,-iw*(.24+n*.028)+iw*.01,ih*.16,'#d6ac61',iw*.010);
+  }
+  ctx.restore();return true;
+}
+const clampMotion=value=>Math.max(-.5,Math.min(.5,value));
+function drawHeldStock(ctx,w,h,options){
+  const {weaponType,color,scopeMounted,aim,charge=0,drawing,burstCount=1,fletching,arrowColor,releaseAge,reducedMotion}=options;
+  const isGun=weaponType==='gun',art=finishedGear(gearName(weaponType,'held'),color);
+  if(!art)return false;
+  const kick=releaseAge===null||reducedMotion?0:Math.sin(Math.min(1,releaseAge/.16)*Math.PI)*Math.exp(-releaseAge*10);
+  const size=Math.min(w*.68,h*.56)*(1+kick*(isGun?.15:.055));
+  const rearX=w*(isGun?.62:.53)+(reducedMotion?0:clampMotion((aim?.x??w*.5)/w-.5)*w*.12);
+  const rearY=h+size*(.12+kick*.14);
+  const dx=(aim?.x??w*.5)-rearX,dy=(aim?.y??h*.405)-rearY;
+  const angle=Math.atan2(dy,dx)+Math.PI/2-kick*(isGun?.095:.037);
+  ctx.save();ctx.translate(rearX,rearY);ctx.rotate(angle);ctx.scale(size,size);
+  const glove=paintedAsset('range-glove-grip');
+  if(glove)ctx.drawImage(glove,-.40,-.34,.46,.46);
+  const iw=art.width||art.naturalWidth,ih=art.height||art.naturalHeight;
+  // Map both ends of the painted prop onto the same on-screen line as the reticle.
+  const fromX=(isGun?.717:.50)*iw,fromY=ih*.975;
+  const ux=(isGun?.026:.50)*iw-fromX,uy=.023*ih-fromY;
+  const len=ux*ux+uy*uy,front=isGun?.98:.88;
+  const a=-front*uy/len,b=-front*ux/len;
+  ctx.save();ctx.transform(a,b,-b,a,-a*fromX+b*fromY,-b*fromX-a*fromY);
+  ctx.drawImage(art,0,0,iw,ih);ctx.restore();
+  if(!isGun&&releaseAge===null){
+    const rear=-.37+(drawing?charge*.065:0);
+    line(ctx,0,rear,0,-.83,'#573f2b',.013);
+    line(ctx,-.002,rear,-.002,-.83,'#e7c993',.006);
+    ctx.save();ctx.translate(0,rear);ctx.rotate(-Math.PI/2);drawFletching(ctx,0,0,fletching,arrowColor,0,.37);ctx.restore();
+    if(burstCount>1)for(const off of [-.038,.038])line(ctx,off,-.48,off,-.62,'#b89354',.007);
+  }
+  if(scopeMounted){
+    ctx.fillStyle='#273739';ctx.beginPath();ctx.roundRect(-.056,-.62,.112,.19,.03);ctx.fill();
+    ellipse(ctx,0,-.44,.069,.055,'#a58b60');ellipse(ctx,0,-.444,.057,.045,'#263c40');
+    ellipse(ctx,-.012,-.453,.032,.020,'#698d89',-.25);
+  }
+  ctx.restore();
+  const onRail=along=>({x:rearX+Math.sin(angle)*size*along,y:rearY-Math.cos(angle)*size*along});
+  return isGun?true:{tip:onRail(.83),tail:onRail(.37-(drawing?charge*.065:0))};
+}
+
 /** Draws a transparent shop item illustration, without clearing the canvas. */
 export function drawEquipmentIcon(ctx,w,h,{kind='bow',tier=0,color,grip=30,elasticity=40,tipMass=4,fletching,weaponType='bow',scopeMounted=false,burstCount=1,grouping=0}={}) {
+  if(kind==='bow'&&drawGalleryGear(ctx,w,h,{kind,tier,color,grip,elasticity,tipMass,fletching,weaponType,scopeMounted,burstCount,grouping}))return;
   const variant=equipmentVariant(tier);
   const colors=['#a67548','#b88c4c','#487967','#b69a54','#8d6850','#887447','#788b60','#668b80','#526e78','#a2a568','#b39467','#7c889e','#709e95','#a79679','#bcafcf','#718ea2','#598f83','#a79679','#b1a471','#bcafcf','#7c9a83','#9a8467','#7b949b','#9c8e73','#a8b1bf'];
   const accent=color||colors[variant];
@@ -1074,83 +1322,124 @@ export function drawEquipmentIcon(ctx,w,h,{kind='bow',tier=0,color,grip=30,elast
 }
 
 /** Foreground bow and drawing hand. The shooting corridor stays unobstructed. */
-export function drawFirstPersonBow(ctx,w,h,{tier=0,charge=0,swayX=0,swayY=0,color='#a9784e',drawing=false,grip=30,elasticity=40,tipMass=4,fletching,arrowColor='#a35f3f',weaponType='bow',scopeMounted=false,burstCount=1,grouping=0}={}) {
+export function drawFirstPersonBow(ctx,w,h,{aim,tier=0,charge=0,swayX=0,swayY=0,color='#a9784e',drawing=false,grip=30,elasticity=40,tipMass=4,fletching,arrowColor='#a35f3f',weaponType='bow',scopeMounted=false,burstCount=1,grouping=0,releaseAge=null,reducedMotion=false}={}) {
+  if(weaponType==='gun'||weaponType==='crossbow'){
+    const held=drawHeldStock(ctx,w,h,{weaponType,color,scopeMounted,aim,charge,drawing,burstCount,fletching,arrowColor,releaseAge,reducedMotion});
+    if(held)return held;
+  }
   if(weaponType==='gun'){drawFirstPersonGun(ctx,w,h,{tier,swayX,swayY,color,grip,scopeMounted});return;}
   if(weaponType==='crossbow'){drawFirstPersonCrossbow(ctx,w,h,{charge,swayX,swayY,color,drawing,grip,elasticity,tipMass,fletching,arrowColor,scopeMounted,burstCount,grouping});return;}
   const pull=Math.max(0,Math.min(1,charge));
   const gripRatio=equipmentValue(grip,30,0,100)/100,elasticRatio=equipmentValue(elasticity,40,0,100)/100;
   const pointMass=equipmentValue(tipMass,4,2,14);
-  const size=Math.min(w*.66,h*.45);
-  const gripX=w*(w/h>1.5?.39:.32)+Math.max(-12,Math.min(12,swayX*100));
-  const gripY=h*.93+Math.max(-7,Math.min(7,swayY*65));
-  ctx.save();ctx.translate(gripX,gripY);ctx.scale(size,size);ctx.rotate(-.12);
+  const size=Math.min(w*.56,h*.52);
+  const aimX=aim?.x??w*.5,aimY=aim?.y??h*.405;
+  const loose=releaseAge!==null,age=releaseAge??0;
+  const kick=loose&&!reducedMotion?Math.sin(Math.min(1,age/.17)*Math.PI)*Math.exp(-age*8):0;
+  const gripX=w*.39+Math.max(-8,Math.min(8,swayX*65))+(reducedMotion?0:clampMotion(aimX/w-.5)*w*.12)-kick*size*.045;
+  const gripY=h-Math.min(h*.23,size*.48)+Math.max(-6,Math.min(6,swayY*50))-kick*size*.075;
+  ctx.save();ctx.translate(gripX,gripY);ctx.scale(size,size);
   ctx.lineJoin='round';ctx.lineCap='round';
 
-  // A soft rim shadow gives the carved limbs a tangible foreground weight.
-  const bend=pull*(.025+elasticRatio*.025),limbWidth=.034+elasticRatio*.03;
+  // The arrow always runs from the string through the same rest to the reticle.
+  const restX=-.050,restY=-.13;
+  const dx=(aimX-gripX)/size-restX,dy=(aimY-gripY)/size-restY;
+  const length=Math.hypot(dx,dy)||1,fx=dx/length,fy=dy/length;
+  const tension=loose?pull*Math.exp(-age*26)*Math.cos(age*57):drawing?pull:0;
+  const brace=.15,travel=tension*.32;
+  const nockX=restX-fx*(brace+travel),nockY=restY-fy*(brace+travel);
+  const tipX=restX+fx*(.47-travel),tipY=restY+fy*(.47-travel);
+  const flex=tension*(.035+elasticRatio*.035);
+  const midX=restX-fx*(brace+flex),midY=restY-fy*(brace+flex);
+  const upper={x:midX-.25,y:midY-.66},lower={x:midX+.25,y:midY+.66};
+  const limbWidth=.027+elasticRatio*.026;
   const limb=()=>{
-    ctx.beginPath();ctx.moveTo(-.11,-.62);
-    ctx.bezierCurveTo(-.22,-.55,-.23,-.42,-.12-bend,-.23);
-    ctx.bezierCurveTo(-.055-bend,-.13,-.025,-.07,0,0);
-    ctx.bezierCurveTo(-.025,.08,-.055-bend,.14,-.12-bend,.25);
-    ctx.bezierCurveTo(-.23,.44,-.22,.56,-.11,.64);
+    ctx.beginPath();ctx.moveTo(upper.x,upper.y);
+    ctx.bezierCurveTo(upper.x+.06,upper.y+.012,-.20,-.46,-.092,-.24);
+    ctx.bezierCurveTo(-.039,-.15,-.012,-.08,0,0);
+    ctx.bezierCurveTo(.025,.16,.094,.30,.15,.41);
+    ctx.bezierCurveTo(.21,.54,lower.x-.055,lower.y-.01,lower.x,lower.y);
   };
-  limb();ctx.strokeStyle='rgba(38,48,31,.28)';ctx.lineWidth=limbWidth+.015;ctx.stroke();
-  limb();ctx.strokeStyle=color;ctx.lineWidth=limbWidth;ctx.stroke();
-  // The lighter laminated edge follows the same recurve shape.
-  ctx.save();ctx.translate(.008,-.005);limb();ctx.strokeStyle='#dab482';ctx.lineWidth=.009;ctx.stroke();ctx.restore();
-  for(const y of[-.6,.62]) {
-    line(ctx,-.116,y-.025,-.095,y+.017,'#4c4935',.025);
-    line(ctx,-.118,y-.017,-.104,y+.006,'#c9bb91',.006);
+  const bowBody=finishedGear('gear-recurve',color);
+  if(bowBody)drawBowLimbs(ctx,bowBody,upper,lower);
+  else{
+    const lacquer=ctx.createLinearGradient(-.24,-.55,.24,.59);
+    lacquer.addColorStop(0,'#4a3026');lacquer.addColorStop(.17,'#d0a46a');
+    lacquer.addColorStop(.29,color);lacquer.addColorStop(.48,'#51372b');
+    lacquer.addColorStop(.76,color);lacquer.addColorStop(1,'#cba870');
+    limb();ctx.strokeStyle='#332a24';ctx.lineWidth=limbWidth+.012;ctx.stroke();
+    limb();ctx.strokeStyle=lacquer;ctx.lineWidth=limbWidth;ctx.stroke();
+    ctx.save();ctx.translate(-.006,.002);limb();ctx.strokeStyle='#dfbd87';ctx.lineWidth=.005;ctx.stroke();ctx.restore();
   }
+  const gripGlove=paintedAsset('range-glove-grip'),drawGlove=paintedAsset('range-glove-draw');
+  let sleeve='#203c3c';
+  if(gripGlove){
+    const span=.75;
+    ctx.drawImage(gripGlove,-.83*span,-.25*span,span,span);
+  }else{
+    // Leather grip, left hand and a small sleeve establish the first-person view.
+    line(ctx,-.003,-.074,.005,.085,'#4c4835',.068+gripRatio*.026);
+    const gripWraps=4+Math.round(gripRatio*6);
+    for(let i=0;i<gripWraps;i++){const y=-.06+i*.125/(gripWraps-1);line(ctx,-.038,y,.037,y+.005,'#a68b62',.006);}
+    ctx.beginPath();ctx.moveTo(-.075,.005);ctx.quadraticCurveTo(-.16,.03,-.20,.11);
+    ctx.lineTo(-.68,.57);ctx.lineTo(-.45,.70);ctx.lineTo(-.025,.21);
+    ctx.quadraticCurveTo(.048,.15,.045,.07);ctx.closePath();ctx.fillStyle='#ceab7d';ctx.fill();
+    ctx.beginPath();ctx.moveTo(-.14,.115);ctx.lineTo(-.90,.81);ctx.lineTo(-.65,.91);ctx.lineTo(-.02,.23);ctx.closePath();
+    sleeve=ctx.createLinearGradient(-.28,.21,-.11,.38);
+    sleeve.addColorStop(0,'#182f35');sleeve.addColorStop(.43,'#446166');sleeve.addColorStop(.60,'#30474c');sleeve.addColorStop(1,'#142e34');
+    ctx.fillStyle=sleeve;ctx.fill();
+    shape(ctx,[{x:-.19,y:.155},{x:-.138,y:.114},{x:-.022,y:.226},{x:-.085,y:.301},{x:-.154,y:.274}],'#714b34');
+    line(ctx,-.181,.157,-.088,.279,'#e2bb7b',.011);
+    line(ctx,-.15,.136,-.051,.248,'#bc9262',.006);
+    ellipse(ctx,-.126,.219,.012,.012,'#f2d291');
+    line(ctx,-.145,.11,-.02,.23,'#829069',.029);
+    ctx.beginPath();ctx.moveTo(-.09,.04);ctx.quadraticCurveTo(-.035,-.055,.014,-.015);
+    ctx.quadraticCurveTo(.067,.016,.033,.059);ctx.lineTo(-.023,.049);ctx.quadraticCurveTo(-.061,.13,-.1,.1);ctx.closePath();ctx.fillStyle='#d7b78c';ctx.fill();
+    for(let i=0;i<3;i++){
+      line(ctx,-.032,.067+i*.024,.035,.059+i*.024,'#c6a173',.023);
+      line(ctx,-.022,.062+i*.024,.026,.055+i*.024,'#e7c99f',.005);
+    }
 
-  // Bowstring and nock move toward the shooting hand as the draw grows.
-  const nockX=drawing?.16+pull*.34:.08;
-  const nockY=drawing?.025+pull*.15:.015;
-  ctx.beginPath();ctx.moveTo(-.11,-.62);ctx.lineTo(nockX,nockY);ctx.lineTo(-.11,.64);
-  ctx.strokeStyle='rgba(43,48,31,.28)';ctx.lineWidth=.012;ctx.stroke();
-  ctx.beginPath();ctx.moveTo(-.109,-.62);ctx.lineTo(nockX,nockY);ctx.lineTo(-.109,.64);
-  ctx.strokeStyle='#f3e7c5';ctx.lineWidth=.0055;ctx.stroke();
-
-  // Arrow points up the range, with feathers close to the nocking hand.
-  const tipX=.34,tipY=-.58;
-  line(ctx,nockX,nockY,tipX,tipY,'#514f39',.017);
-  line(ctx,nockX-.002,nockY-.002,tipX-.002,tipY-.004,'#e2c795',.009);
-  const angle=Math.atan2(tipY-nockY,tipX-nockX);
-  ctx.save();ctx.translate(tipX,tipY);ctx.rotate(angle);
-  const pointLength=.04+pointMass*.003,pointWidth=.012+pointMass*.001;
-  shape(ctx,[{x:pointLength,y:0},{x:-.015,y:-pointWidth},{x:-.007,y:0},{x:-.015,y:pointWidth}],'#617769');
-  line(ctx,pointLength*.77,-.002,-.01,-pointWidth*.68,'#b6c7aa',.003);ctx.restore();
-  ctx.save();ctx.translate(nockX,nockY);ctx.rotate(angle);
-  drawFletching(ctx,.012,0,fletching,arrowColor,0,.68);
-  ctx.restore();
+  }
+  ctx.beginPath();ctx.moveTo(upper.x,upper.y);ctx.lineTo(nockX,nockY);ctx.lineTo(lower.x,lower.y);
+  ctx.strokeStyle='#3c3330a8';ctx.lineWidth=.010;ctx.stroke();
+  ctx.strokeStyle='#eee7cf';ctx.lineWidth=.004;ctx.stroke();
+  for(const end of [upper,lower]){
+    ellipse(ctx,end.x,end.y,.019,.014,'#493c31');
+    ellipse(ctx,end.x-.004,end.y-.003,.010,.006,'#e6ce98');
+  }
+  const angle=Math.atan2(fy,fx);
+  if(!loose){
+    line(ctx,nockX,nockY,tipX,tipY,'#514f39',.017);
+    line(ctx,nockX-.002,nockY-.002,tipX-.002,tipY-.004,'#e2c795',.009);
+    ctx.save();ctx.translate(tipX,tipY);ctx.rotate(angle);
+    const pointLength=.04+pointMass*.003,pointWidth=.012+pointMass*.001;
+    shape(ctx,[{x:pointLength,y:0},{x:-.015,y:-pointWidth},{x:-.007,y:0},{x:-.015,y:pointWidth}],'#617769');
+    line(ctx,pointLength*.77,-.002,-.01,-pointWidth*.68,'#b6c7aa',.003);ctx.restore();
+    ctx.save();ctx.translate(nockX,nockY);ctx.rotate(angle);
+    drawFletching(ctx,.012,0,fletching,arrowColor,0,.68);
+    ctx.restore();
+  }
 
   if(scopeMounted){line(ctx,0,-.16,.085,-.20,'#5d7258',.022);drawScopeTube(ctx,.09,-.25,.20,.032,angle);}
 
-  // Leather grip, left hand and a small sleeve establish the first-person view.
-  line(ctx,-.003,-.074,.005,.085,'#4c4835',.068+gripRatio*.026);
-  const gripWraps=4+Math.round(gripRatio*6);
-  for(let i=0;i<gripWraps;i++){const y=-.06+i*.125/(gripWraps-1);line(ctx,-.038,y,.037,y+.005,'#a68b62',.006);}
-  ctx.beginPath();ctx.moveTo(-.075,.005);ctx.quadraticCurveTo(-.16,.03,-.20,.11);
-  ctx.lineTo(-.4,.32);ctx.lineTo(-.22,.45);ctx.lineTo(-.025,.21);
-  ctx.quadraticCurveTo(.048,.15,.045,.07);ctx.closePath();ctx.fillStyle='#ceab7d';ctx.fill();
-  ctx.beginPath();ctx.moveTo(-.14,.115);ctx.lineTo(-.43,.35);ctx.lineTo(-.24,.49);ctx.lineTo(-.02,.23);ctx.closePath();ctx.fillStyle='#536b49';ctx.fill();
-  line(ctx,-.145,.11,-.02,.23,'#829069',.029);
-  ctx.beginPath();ctx.moveTo(-.09,.04);ctx.quadraticCurveTo(-.035,-.055,.014,-.015);
-  ctx.quadraticCurveTo(.067,.016,.033,.059);ctx.lineTo(-.023,.049);ctx.quadraticCurveTo(-.061,.13,-.1,.1);ctx.closePath();ctx.fillStyle='#d7b78c';ctx.fill();
-  for(let i=0;i<3;i++){
-    line(ctx,-.032,.067+i*.024,.035,.059+i*.024,'#c6a173',.023);
-    line(ctx,-.022,.062+i*.024,.026,.055+i*.024,'#e7c99f',.005);
-  }
-
-  if(drawing) {
+  // The string springs forward, but the released hand continues toward the player.
+  const handTravel=loose?pull*.32+.115*(1-Math.exp(-age*18)):travel;
+  const handX=restX-fx*(brace+handTravel),handY=restY-fy*(brace+handTravel);
+  ctx.save();ctx.translate(handX-nockX,handY-nockY);
+  if(drawGlove){
+    const span=.73*(1+(reducedMotion?0:Math.max(0,handTravel)*.34));
+    ctx.drawImage(drawGlove,nockX-.138*span,nockY-.218*span,span,span);
+  }else {
     // The string hand stays low, opening a clear sight line over the arrow.
     ctx.beginPath();ctx.moveTo(nockX+.03,nockY-.012);ctx.quadraticCurveTo(nockX+.12,nockY-.06,nockX+.15,nockY+.026);
     ctx.lineTo(nockX+.32,nockY+.24);ctx.lineTo(nockX+.15,nockY+.33);
     ctx.quadraticCurveTo(nockX+.045,nockY+.18,nockX-.012,nockY+.09);ctx.closePath();ctx.fillStyle='#c7a174';ctx.fill();
-    ctx.beginPath();ctx.moveTo(nockX+.13,nockY+.13);ctx.lineTo(nockX+.35,nockY+.25);ctx.lineTo(nockX+.18,nockY+.36);ctx.lineTo(nockX+.05,nockY+.2);ctx.closePath();ctx.fillStyle='#536b49';ctx.fill();
+    ctx.beginPath();ctx.moveTo(nockX+.13,nockY+.13);ctx.lineTo(nockX+.83,nockY+.76);ctx.lineTo(nockX+.63,nockY+.85);ctx.lineTo(nockX+.05,nockY+.2);ctx.closePath();ctx.fillStyle=sleeve;ctx.fill();
     for(let i=0;i<2;i++)line(ctx,nockX+.005,nockY+.018+i*.028,nockX+.09,nockY+.005+i*.028,'#ddba8f',.03);
     line(ctx,nockX+.13,nockY+.13,nockX+.06,nockY+.2,'#8b9872',.023);
   }
   ctx.restore();
+  ctx.restore();
+  return {tip:{x:gripX+size*tipX,y:gripY+size*tipY},tail:{x:gripX+size*nockX,y:gripY+size*nockY}};
 }

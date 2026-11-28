@@ -7,7 +7,7 @@ const path = require('node:path');
 const {rpcArgs, root} = require('./drinking-ui-fixture.cjs');
 
 const origin = 'https://drinking-fixture.test';
-const mime = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8',
+const mime = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8',
   '.css':'text/css; charset=utf-8','.svg':'image/svg+xml','.json':'application/json',
   '.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg','.woff2':'font/woff2'};
 

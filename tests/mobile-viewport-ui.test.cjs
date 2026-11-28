@@ -196,6 +196,24 @@ async function checkCompactColors(page, viewport, area, keyboard = false) {
           const nav = await page.locator('.bottomnav').boundingBox();
           await assertInside(page, page.locator('#last-content'), {bottom:nav.y}, `${source} last content`);
         }
+        if (source === 'note' && viewport.width < 900) {
+          await page.evaluate(() => {
+            const card = {id:'00000000-0000-4000-8000-000000000001', kind:'memo',
+              body:'공원 카드', tags:['공원'], background_key:'plain', created_at:'2026-11-25T00:00:00Z'};
+            feed.hidden = true;
+            detail.hidden = false;
+            slot.replaceChildren(cardElement(card, false, true));
+            replies.replaceChildren(cardElement({...card, id:'00000000-0000-4000-8000-000000000002', kind:'comment'}, true));
+          });
+          await settle(page);
+          await page.evaluate(() => window.scrollTo(0, document.scrollingElement.scrollHeight));
+          const nav = await page.locator('.bottomnav').boundingBox();
+          const reply = page.locator('#reply-list .reply-card');
+          const box = await reply.boundingBox();
+          assert.ok(box.y + box.height <= nav.y, `last reply at ${box.y + box.height} overlaps navigation at ${nav.y} on ${viewport.width}×${viewport.height}`);
+          await assertInside(page, reply.locator('[data-reaction="like"]'), {bottom:nav.y}, 'reply like button');
+          await page.evaluate(() => showFeed(false));
+        }
         await page.addScriptTag({content:read('features/wallet/ju-charge.js')});
         await page.evaluate(source => {
           OjjudaCharge.install({source,getUserId:()=> 'viewport-test',client:{rpc:async()=>({data:{ok:true,enabled:true,coins:70,used:0,limit:5,left:5}})}});

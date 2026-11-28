@@ -59,30 +59,45 @@ export function useCompass(){
     }
     function redraw(){if(!frame)frame=window.requestAnimationFrame(render);}
     function reading(event:Event){
+      if(document.hidden)return;
       const sample=event as DeviceOrientationEvent & OrientationSample;
       if(!sample.absolute && event.type!=="deviceorientationabsolute" && sample.webkitCompassHeading===undefined)return;
       last=sample;redraw();
     }
-    function visibility(){
-      clearTimeout(timer);last=null;previous=-1;
-      setState({status:"waiting",heading:null,message:"휴대폰 방향을 확인하고 있어요."});
-      if(!document.hidden)timeout();
-    }
-    window.addEventListener("deviceorientationabsolute",reading);
-    window.addEventListener("deviceorientation",reading);
-    window.screen.orientation?.addEventListener?.("change",redraw);
-    window.addEventListener("orientationchange",redraw);
-    document.addEventListener("visibilitychange",visibility);
-    cleanup.current=()=>{
-      clearTimeout(timer);cancelAnimationFrame(frame);
+    let listening=false, away=false;
+    function detach(){
+      clearTimeout(timer);cancelAnimationFrame(frame);frame=0;last=null;previous=-1;
+      if(!listening)return;
+      listening=false;
       window.removeEventListener("deviceorientationabsolute",reading);
       window.removeEventListener("deviceorientation",reading);
       window.screen.orientation?.removeEventListener?.("change",redraw);
       window.removeEventListener("orientationchange",redraw);
+    }
+    function visibility(){
+      if(away||document.hidden){detach();return;}
+      if(listening)return;
+      listening=true;
+      window.addEventListener("deviceorientationabsolute",reading);
+      window.addEventListener("deviceorientation",reading);
+      window.screen.orientation?.addEventListener?.("change",redraw);
+      window.addEventListener("orientationchange",redraw);
+      setState({status:"waiting",heading:null,message:"휴대폰 방향을 확인하고 있어요."});
+      timeout();
+    }
+    const hide=()=>{away=true;detach();};
+    const show=()=>{away=false;visibility();};
+    document.addEventListener("visibilitychange",visibility);
+    window.addEventListener("pagehide",hide);
+    window.addEventListener("pageshow",show);
+    cleanup.current=()=>{
+      detach();
       document.removeEventListener("visibilitychange",visibility);
+      window.removeEventListener("pagehide",hide);
+      window.removeEventListener("pageshow",show);
       cleanup.current=()=>{};
     };
-    timeout();
+    visibility();
   }
   return {...state,start,stop};
 }

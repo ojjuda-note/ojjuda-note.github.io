@@ -1,3 +1,4 @@
+import {pollWhileVisible} from "../lib/visible-poll";
 import {useEffect, useRef, useState} from "react";
 
 const bucket = "pajang-exchange-photos";
@@ -115,8 +116,8 @@ function PhotoLibrary({peer}:{peer?:string}) {
       else if(!document.hidden)void pull();
     };
     document.addEventListener("visibilitychange",onVisibility);
-    const timer=peer?window.setInterval(()=>{if(!document.hidden)void pull();},12000):undefined;
-    return ()=>{alive=false;window.clearInterval(timer);document.removeEventListener("visibilitychange",onVisibility);};
+    const stopPoll=peer?pollWhileVisible(()=>void pull(),12000):undefined;
+    return ()=>{alive=false;stopPoll?.();document.removeEventListener("visibilitychange",onVisibility);};
   },[peer,revision]);
   async function change(work:(db:Db)=>Promise<string>) {
     if(working.current) return;

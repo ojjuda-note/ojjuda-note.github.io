@@ -10,6 +10,61 @@
         "99:24:73:40:5B:48:1B:CA:D0:B9:88:32:F1:1C:81:E4:12:57:79:A1:91:B1:1F:9E:A0:FA:5E:B4:22:54:B9:33",
         "30:3A:6A:E5:47:FA:7B:8C:D2:09:CE:14:56:6D:72:7F:E4:43:99:E6:94:F9:C5:0B:5C:9E:8E:D2:23:79:9E:26"
       ]
+    },
+    "relation_extensions": {
+      "delegate_permission/common.handle_all_urls": {
+        "dynamic_app_link_components": [
+          {
+            "/": "/park",
+            "exclude": true
+          },
+          {
+            "/": "/park/*",
+            "exclude": true
+          },
+          {
+            "/": "/note",
+            "exclude": true
+          },
+          {
+            "/": "/note/*",
+            "exclude": true
+          },
+          {
+            "/": "/pajang",
+            "exclude": true
+          },
+          {
+            "/": "/pajang/*",
+            "exclude": true
+          },
+          {
+            "/": "/features/pajang",
+            "exclude": true
+          },
+          {
+            "/": "/features/pajang/*",
+            "exclude": true
+          },
+          {
+            "/": "/world.html",
+            "?": {
+              "tab": "park"
+            },
+            "exclude": true
+          },
+          {
+            "/": "/world.html",
+            "?": {
+              "place": "park"
+            },
+            "exclude": true
+          },
+          {
+            "/": "*"
+          }
+        ]
+      }
     }
   },
   {
@@ -23,6 +78,28 @@
         "96:01:36:FF:F5:B3:27:DE:7F:C9:08:D9:44:97:5B:DE:DF:0C:DF:CE:F8:1E:8D:DB:A4:F5:88:1F:CC:CA:17:A0",
         "9F:E2:BE:07:19:60:CC:AB:D3:37:DC:CF:36:F4:23:78:33:5C:AF:0F:55:01:DD:04:30:94:F6:D8:2D:10:17:89"
       ]
+    },
+    "relation_extensions": {
+      "delegate_permission/common.handle_all_urls": {
+        "dynamic_app_link_components": [
+          {
+            "/": "/pajang"
+          },
+          {
+            "/": "/pajang/*"
+          },
+          {
+            "/": "/features/pajang"
+          },
+          {
+            "/": "/features/pajang/*"
+          },
+          {
+            "/": "*",
+            "exclude": true
+          }
+        ]
+      }
     }
   },
   {
@@ -36,6 +113,40 @@
         "5B:66:ED:65:F9:74:BB:1C:5B:15:8E:CF:DB:A7:18:C7:6F:9C:C8:6C:5B:67:45:1B:5F:95:74:55:28:D0:9E:B1",
         "A5:9C:39:4A:4B:50:5D:DF:C3:BE:D3:28:09:1C:BA:C0:27:14:C6:AA:93:D8:F7:2B:08:15:8D:93:2A:5F:29:2D"
       ]
+    },
+    "relation_extensions": {
+      "delegate_permission/common.handle_all_urls": {
+        "dynamic_app_link_components": [
+          {
+            "/": "/park"
+          },
+          {
+            "/": "/park/*"
+          },
+          {
+            "/": "/note"
+          },
+          {
+            "/": "/note/*"
+          },
+          {
+            "/": "/world.html",
+            "?": {
+              "tab": "park"
+            }
+          },
+          {
+            "/": "/world.html",
+            "?": {
+              "place": "park"
+            }
+          },
+          {
+            "/": "*",
+            "exclude": true
+          }
+        ]
+      }
     }
   }
 ]

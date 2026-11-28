@@ -6,6 +6,7 @@ const notices = {
   disabled:'위치가 꺼져 있어요. 공원이나 파장에서 위치를 켜 주세요.',
   guardian:'위치를 이용하려면 보호자의 위치 동의가 필요해요.',
   account:'로그인 상태를 확인한 뒤 위치를 이용해 주세요.',
+  prompt:'현재 위치를 사용하려면 위치 확인을 눌러 주세요.',
   denied:'위치 권한이 막혀 있어요. 휴대폰 설정에서 브라우저의 위치 권한과 오쭈다 사이트의 위치 허용을 확인해 주세요.',
   unavailable:'위치 신호를 받지 못했어요. 휴대폰의 위치 기능과 인터넷 연결을 확인한 뒤 다시 시도해 주세요.',
   timeout:'위치 확인 시간이 초과됐어요. 창가나 실외에서 다시 확인해 주세요.',
@@ -20,7 +21,8 @@ function positionFrom(position,maxAccuracy=2000) {
   const {latitude,longitude,accuracy}=position.coords||{};
   if(!Number.isFinite(latitude)||!Number.isFinite(longitude)||!Number.isFinite(accuracy)||
       Math.abs(latitude)>90||Math.abs(longitude)>180||accuracy<0||accuracy>maxAccuracy)return null;
-  return {latitude,longitude,accuracy,capturedAt:Number.isFinite(position.timestamp)?position.timestamp:Date.now()};
+  return {latitude,longitude,accuracy,capturedAt:Number.isFinite(position.timestamp)?position.timestamp:Date.now(),
+    ...(Number.isFinite(position.coords.speed)&&position.coords.speed>=0?{speed:position.coords.speed}:{})};
 }
 function locate(geo,{signal,precise,timeout,fresh}) {
   return new Promise((resolve,reject)=>{
@@ -58,16 +60,25 @@ function locate(geo,{signal,precise,timeout,fresh}) {
   });
 }
 
-async function measurePosition({signal,onProgress,fresh=false,preciseTimeout=20000},authorize) {
+async function measurePosition({signal,onProgress,fresh=false,preciseTimeout=20000,automatic=false},authorize) {
   if(!navigator.geolocation||globalThis.isSecureContext===false)throw failure('unsupported');
-  await authorize();
+  async function beforeGPS(){
+    await authorize();
+    if(automatic){
+      let permission;
+      try { permission=await navigator.permissions?.query({name:'geolocation'}); } catch {}
+      if(permission?.state!=='granted')throw failure(permission?.state==='denied'?'denied':'prompt');
+    }
+    if(signal?.aborted)throw signal.reason;
+  }
+  await beforeGPS();
   onProgress?.('위치를 확인하고 있어요.');
   try {
     return await locate(navigator.geolocation,{signal,precise:false,timeout:4000,fresh});
   }catch(error){
     if(error.name==='AbortError'||error.code==='denied'||error.code==='disabled')throw error;
   }
-  await authorize();
+  await beforeGPS();
   onProgress?.('더 정확한 위치를 확인하고 있어요.');
   return locate(navigator.geolocation,{signal,precise:true,timeout:preciseTimeout,fresh:true});
 }
@@ -80,6 +91,11 @@ try{if(root.top&&root.location?.origin&&root.top.location.origin===root.location
 // https://www.weather.go.kr/w/resources/js/app-2021/app-index.js (convertDfsGrid)
 function weatherCell(position){
   if(!freshPosition(position,5000))return null;
+  return weatherGrid(position);
+}
+function weatherGrid(position){
+  if(!Number.isFinite(position?.latitude)||Math.abs(position.latitude)>=90||
+     !Number.isFinite(position.longitude)||Math.abs(position.longitude)>180)return null;
   const rad=Math.PI/180,re=6371.00877/5,lat1=30*rad,lat2=60*rad;
   const sn=Math.log(Math.cos(lat1)/Math.cos(lat2))/Math.log(Math.tan(Math.PI/4+lat2/2)/Math.tan(Math.PI/4+lat1/2));
   const sf=Math.pow(Math.tan(Math.PI/4+lat1/2),sn)*Math.cos(lat1)/sn;
@@ -192,17 +208,33 @@ function subscribe(accountId,callback){
   if(preferences.has(accountId))callback(preferences.get(accountId));
   return()=>{listeners.get(accountId)?.delete(callback);};
 }
-function observe(db,accountId,callback){
+function observe(db,accountId,callback,{legacyDisabled=false,isVisible=()=>true}={}){
   const unsubscribe=subscribe(accountId,callback);
-  let closed=false,checking=false;
+  let closed=false,checking=false,away=false,timer=null;
+  const visible=()=>!closed&&!away&&!root.document?.hidden&&isVisible();
   const refresh=async()=>{
-    if(closed||checking||root.document?.hidden)return;
+    if(checking||!visible())return;
     checking=true;
-    try{await preference(db,accountId,{refresh:true});}catch{}finally{checking=false;}
+    try{
+      await preference(db,accountId,{refresh:true,legacyDisabled});
+      legacyDisabled=false;
+    }catch{}finally{checking=false;}
   };
-  const timer=setInterval(refresh,12000);
-  root.document?.addEventListener('visibilitychange',refresh);void refresh();
-  return()=>{closed=true;clearInterval(timer);unsubscribe();root.document?.removeEventListener('visibilitychange',refresh);};
+  function sync(){
+    if(!visible()){clearInterval(timer);timer=null;return;}
+    if(timer===null){timer=setInterval(refresh,12000);void refresh();}
+  }
+  const hide=()=>{away=true;sync();},show=()=>{away=false;sync();};
+  root.document?.addEventListener('visibilitychange',sync);
+  root.document?.addEventListener('ojjuda:park-view',sync);
+  root.addEventListener?.('pagehide',hide);root.addEventListener?.('pageshow',show);
+  sync();
+  return()=>{
+    closed=true;sync();unsubscribe();
+    root.document?.removeEventListener('visibilitychange',sync);
+    root.document?.removeEventListener('ojjuda:park-view',sync);
+    root.removeEventListener?.('pagehide',hide);root.removeEventListener?.('pageshow',show);
+  };
 }
 function freshPosition(value,maxAccuracy=2000){
   return value&&Number.isFinite(value.capturedAt)&&Date.now()>=value.capturedAt&&Date.now()-value.capturedAt<120000&&
@@ -334,6 +366,9 @@ function forget(accountId){
   clearPosition(accountId);preferences.delete(accountId);
   for(const controller of active.get(accountId)||[])controller.abort();
 }
-root.OjjudaLocation={readPosition,readWeatherPosition,authorizePosition,preference,setPreference,acceptPreference,subscribe,observe,forget,
+root.OjjudaLocation={readPosition,readWeatherPosition,weatherCell,weatherGrid,
+  readGuestPosition:options=>measurePosition(options,()=>{}),
+  authorizePosition,preference,setPreference,acceptPreference,subscribe,observe,forget,
   current:accountId=>preferences.get(accountId),errorText:error=>error?.message||notices.unavailable};
 })(globalThis);
+

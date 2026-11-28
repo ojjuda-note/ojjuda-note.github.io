@@ -119,7 +119,7 @@
     dialog.tabIndex = -1;
 
     function writingField() {
-      const focused = document.activeElement;
+      const focused = dialog.getRootNode().activeElement;
       return body.contains(focused) && focused.matches('input,textarea') ? focused : null;
     }
     function syncHighlight() {
@@ -191,7 +191,7 @@
     toolbar.addEventListener('keydown', event => {
       if (!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
       const visible = Object.values(buttons).filter(button => toolbar.contains(button) && !button.hidden && !button.disabled);
-      const index = visible.indexOf(document.activeElement);
+      const index = visible.indexOf(dialog.getRootNode().activeElement);
       if (index < 0) return;
       event.preventDefault();
       const next = event.key === 'Home' ? 0 : event.key === 'End' ? visible.length - 1 :

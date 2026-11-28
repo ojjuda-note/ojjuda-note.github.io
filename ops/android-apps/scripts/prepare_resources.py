@@ -82,16 +82,6 @@ def manifest():
     <activity android:name="${applicationId}.LauncherActivity" android:exported="true"
         android:alwaysRetainTaskState="true" android:label="@string/launcherName">
 ''' + metadata() + '''
-      <intent-filter android:autoVerify="true">
-        <action android:name="android.intent.action.VIEW" />
-        <category android:name="android.intent.category.DEFAULT" /><category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="https" android:host="ojjuda.com" />
-      </intent-filter>
-      <intent-filter android:autoVerify="true">
-        <action android:name="android.intent.action.VIEW" />
-        <category android:name="android.intent.category.DEFAULT" /><category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="https" android:host="ojjuda.kr" />
-      </intent-filter>
     </activity>
 ''' + '\n'.join(aliases) + '''
     <activity android:name="com.google.androidbrowserhelper.trusted.FocusActivity" />
@@ -112,6 +102,39 @@ def manifest():
         <action android:name="android.intent.action.TIMEZONE_CHANGED" />
       </intent-filter>
     </receiver>
+  </application>
+</manifest>
+'''
+
+
+def app_links_manifest(app):
+    # Shared login and query-routed World links can belong to more than one service.
+    # The browser resolves those; each app claims only unambiguous service paths.
+    directories = {
+        'agit': ('agit', 'groups', 'games', 'arcade', 'features/arcade'),
+        'park': ('park', 'note'),
+        'pajang': ('pajang', 'features/pajang'),
+    }[app]
+    filters = []
+    for host in ('ojjuda.kr', 'ojjuda.com'):
+        rules = []
+        if host == 'ojjuda.com' and app == 'park':
+            rules.append(('path', '/'))  # Original Park app start URL.
+        for directory in directories:
+            rules.extend([('path', '/' + directory), ('pathPrefix', '/' + directory + '/')])
+        paths = '\n'.join(f'        <data android:{kind}="{value}" />' for kind, value in rules)
+        filters.append(f'''      <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="https" android:host="{host}" />
+{paths}
+      </intent-filter>''')
+    return '''<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <application>
+    <activity android:name="${applicationId}.LauncherActivity" android:exported="true">
+''' + '\n'.join(filters) + '''
+    </activity>
   </application>
 </manifest>
 '''
@@ -148,6 +171,7 @@ def prepare():
         if baseline['package'] != f'kr.ojjuda.{app}':
             raise SystemExit(f'Unexpected original package for {app}')
         res = OUTPUT / app / 'res'
+        write(OUTPUT / app / 'AndroidManifest.xml', app_links_manifest(app))
         strings, web_manifest = direct_entry(app, baseline)
         statements = [{'relation': ['delegate_permission/common.handle_all_urls'], 'target': {'namespace': 'web', 'site': origin}} for origin in ('https://ojjuda.kr', 'https://ojjuda.com')]
         strings['assetStatements'] = json.dumps(statements, ensure_ascii=False)

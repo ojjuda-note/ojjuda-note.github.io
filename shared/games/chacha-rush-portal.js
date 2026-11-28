@@ -34,7 +34,11 @@ export function installChachaRushPortal({ currentOwner, submitScore, onSaved, on
     frame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-pointer-lock');
     frame.setAttribute('allow', 'autoplay; fullscreen');
     frame.setAttribute('referrerpolicy', 'no-referrer');
-    overlay.append(close, frame);
+    const bar=document.createElement('div');
+    bar.style.cssText='display:flex;align-items:center;justify-content:space-between';
+    const music=document.createElement('button');
+    music.type='button'; music.dataset.arcadeMusicToggle=''; music.textContent='배경음악';
+    bar.append(close,music); overlay.append(bar,frame);
     const oldOverflow = document.body.style.overflow;
     const previousFocus = document.activeElement;
     let expiryTimer = null;
@@ -59,6 +63,7 @@ export function installChachaRushPortal({ currentOwner, submitScore, onSaved, on
     activeClose = closeGame;
     document.body.style.overflow = 'hidden';
     document.body.append(overlay);
+    window.OjjudaArcadeMusic?.mount("chacha_rush",overlay);
     window.addEventListener('keydown', onKeyDown, true);
     window.addEventListener('pagehide', onPageHide, { once: true });
     close.focus({ preventScroll: true });

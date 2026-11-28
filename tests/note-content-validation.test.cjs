@@ -160,6 +160,15 @@ for (const options of [
   });
 }
 
+test('Park can publish manual and explicit tags when both suggestion sources are unavailable', async t => {
+  const f = composer(t);
+  f.run("wordTagger = () => { throw Error('analyzer unavailable'); };");
+  f.document.getElementById('compose-text').value = '산책하며 읽은 책 #독서 #19금 #독서';
+  await f.send();
+  assert.equal(f.writes.length, 1);
+  assert.deepEqual(f.writes[0].args.p_tags, ['검사태그', '19금', '독서']);
+});
+
 test('actual constraint and rate failures retain their normal explanation and draft', async t => {
   const f = composer(t, { guest: true });
   f.setError({ code: '23514', message: 'valid_note_body constraint' });

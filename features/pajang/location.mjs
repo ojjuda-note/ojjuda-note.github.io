@@ -1,4 +1,4 @@
-import '../../shared/location/location.js?v=20261119-kma-current1';
+import '../../shared/location/location.js?v=20261127-battery1';
 
 export async function readLocationCell(options={}) {
   const {latitude,longitude}=await globalThis.OjjudaLocation.readPosition({...options,coarseCache:true});
@@ -15,7 +15,7 @@ export async function prepareLocation(state, db, accountId, {signal,onProgress}=
   signal?.addEventListener('abort',cancel,{once:true});
   window.addEventListener('pagehide',cancel,{once:true});
   try {
-    const cell = await readLocationCell({db,accountId,signal:controller.signal,preciseTimeout:12000,
+    const cell = await readLocationCell({db,accountId,signal:controller.signal,preciseTimeout:12000,automatic:true,
       onProgress});
     if(controller.signal.aborted||(entryFrame&&!entryFrame.isConnected))return state;
     const {data:{session}} = await db.auth.getSession();
@@ -34,6 +34,7 @@ export async function prepareLocation(state, db, accountId, {signal,onProgress}=
     };
   } catch (error) {
     if(error.name==='AbortError')return state;
+    if(error.code==='prompt')return {...state,locationChecked:true,locationNotice:''};
     return {...state, locationChecked:true, locationNotice:error.message};
   } finally {
     window.removeEventListener('pagehide',cancel);

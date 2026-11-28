@@ -19,6 +19,11 @@
   <script defer src="/features/arcade/arcade-rooms.js?v=20261120-service-actions1"></script>
   <script type="module" src="./app.mjs?v=20261120-service-actions1"></script>
 <script src="/shared/analytics/growth-attribution.js?v=20261121-campaign1" defer></script>
+<script defer src="/shared/games/arcade-music.js?v=20261127-ensemble1" data-game="onecard"></script>
+<link rel="stylesheet" href="/shared/games/arcade-practice.css?v=20261127-coach1">
+<script defer src="/shared/games/lesson-panel.js?v=20261127-coach1"></script>
+<script defer src="/shared/games/tutorial-visits.js?v=20261127-tutorial-once1"></script>
+<script defer src="/shared/games/arcade-practice.js?v=20261127-tutorial-once1" data-game="onecard"></script>
 </head>
 <body class="onecard-page" data-mp-entry="true">
 <header class="mp-entry-bar"><a id="entry-arcade-back" class="mp-entry-back arcade-return" href="/world.html?tab=arcade">← 오쭈다 오락실</a><span>오쭈다 오락실</span></header>
@@ -58,7 +63,7 @@
     <a id="arcade-back" class="icon-btn back-link" href="/world.html?tab=arcade" aria-label="오락실로 돌아가기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6M8 12h12"/></svg><span>오락실</span></a>
     <div class="brand"><h1>원카드</h1><span id="game-record-mode" class="small-note">연습 · 순위 제외</span></div>
     <div class="topbar-actions">
-      <button id="sound-toggle" class="icon-btn" type="button" aria-label="효과음 끄기" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m11 5-5 4H3v6h3l5 4V5Zm4 4a5 5 0 0 1 0 6m3-9a9 9 0 0 1 0 12"/></svg></button>
+      <button type="button" data-arcade-music-toggle data-compact class="icon-btn" aria-label="배경음악 켜기·끄기">♫</button><button id="sound-toggle" class="icon-btn" type="button" aria-label="효과음 끄기" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m11 5-5 4H3v6h3l5 4V5Zm4 4a5 5 0 0 1 0 6m3-9a9 9 0 0 1 0 12"/></svg></button>
       <button id="menu-button" class="icon-btn" type="button" aria-label="게임 메뉴" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg></button>
     </div>
   </header>

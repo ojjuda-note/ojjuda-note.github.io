@@ -15,7 +15,12 @@
   <script src="ranking.js?v=20261108-sacheonseong-200-stacks1" defer></script>
 <script src="/shared/games/puzzle-record-queue.js?v=20261117-arcade-score-repair1" defer></script>
   <script src="server.js?v=20261117-arcade-score-repair1" defer></script>
-  <script src="app.js?v=20261113-game-popup-order1" defer></script>
+  <link rel="stylesheet" href="/shared/games/arcade-practice.css?v=20261127-coach1">
+  <script defer src="/shared/games/lesson-panel.js?v=20261127-coach1"></script>
+<script defer src="/shared/games/tutorial-visits.js?v=20261127-tutorial-once1"></script>
+<script defer src="/shared/games/arcade-practice.js?v=20261127-tutorial-once1"></script>
+  <script defer src="/shared/games/arcade-music.js?v=20261127-tearoom1" data-game="sacheonseong"></script>
+  <script src="app.js?v=20261127-arcade-practice1" defer></script>
 <link rel="stylesheet" href="/shared/games/arcade-return.css?v=20261112-arcade-entry-return1">
 </head>
 <body>
@@ -85,6 +90,8 @@
       <button class="action-button" id="online-ranking">오락실 게임순위 <span>↗</span></button>
       <button class="action-button" id="ranking">내 기록 <span>↗</span></button>
       <button class="action-button" id="help">게임 방법 <svg class="icon"><use href="#i-help"/></svg></button>
+      <button class="action-button" id="practice" type="button">튜토리얼</button>
+      <button class="action-button" id="music" data-arcade-music-toggle type="button" aria-pressed="true">배경음악 켬</button>
       <button class="action-button" id="sound" aria-label="효과음 켜기" aria-pressed="false">효과음 끔 <svg class="icon"><use href="#i-muted"/></svg></button>
       <button class="action-button" id="restart">다시 하기 <svg class="icon"><use href="#i-reset"/></svg></button>
     </div>

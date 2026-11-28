@@ -8,7 +8,7 @@
 <title>이번 달 게임 순위 · 오쭈다 아지트</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/app/world/world-themes.css?v=20261119-auto-theme1">
-<link rel="stylesheet" href="./monthly-ranking.css?v=20261122-guide-only1">
+<link rel="stylesheet" href="./monthly-ranking.css?v=20261127-ranking-play1">
 <script src="/app/world/world-themes.js?v=20261119-auto-theme1" defer></script>
 <script src="/config.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js" defer></script>
@@ -18,14 +18,17 @@
 <script src="/games/mole/ranking.js?v=20261117-arcade-score-repair1" defer></script>
 <script src="/shared/games/score-format.js?v=20261117-saetbyeol-growth1" defer></script>
 <script src="/shared/games/ranking-details.js?v=20261122-janggi-priority1" defer></script>
-<script src="./monthly-ranking.js?v=20261122-guide-only1" defer></script>
+<script src="./monthly-ranking.js?v=20261127-ranking-play1" defer></script>
 <script src="/shared/navigation/section-back.js?v=20261119-history1" data-return-to="hub" defer></script></head>
 <body>
 <header class="topbar"><a class="home" href="/world.html?tab=hub" aria-label="오쭈다 아지트로 돌아가기">← 아지트</a><strong>오쭈다 아지트</strong><span>월간 게임 순위</span></header>
 <main>
   <section class="intro" aria-labelledby="ranking-title">
     <div class="eyebrow">MONTHLY TOP 10</div>
-    <h1 id="ranking-title">이번 달 게임 순위 <span aria-hidden="true">🏆</span></h1>
+    <div class="ranking-title-row">
+      <h1 id="ranking-title">이번 달 게임 순위 <span aria-hidden="true">🏆</span></h1>
+      <a id="ranking-play" hidden>게임 바로가기 <span aria-hidden="true">›</span></a>
+    </div>
     <label class="chooser" for="ranking-game">게임 선택 <select id="ranking-game" aria-label="순위를 볼 게임"></select></label>
     <p id="ranking-period" class="period" aria-live="polite">순위를 준비하고 있어요…</p>
   </section>

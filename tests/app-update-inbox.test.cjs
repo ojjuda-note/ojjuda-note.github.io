@@ -179,3 +179,68 @@ test('a drinking invite shows its sender and room only in the eligible recipient
   await db.exec("update public.arcade_friend_invites set status='accepted'");
   assert.equal((await inbox(userB)).unread_count,0);
 });
+
+test('service inbox scopes pages, badge and bulk reads before pagination and preserves common receipts',async t=>{
+  const db=await fixture();t.after(()=>db.close());
+  const scalar=async(sql,args=[])=>Object.values((await db.query(sql,args)).rows[0])[0];
+  const login=user=>scalar("select set_config('request.jwt.claim.sub',$1,false)",[user]);
+  const page=(app,limit=30,cursor=null)=>scalar('select public.list_app_notifications($1::text,$2::integer,$3::timestamptz,$4::text)',
+    [app,limit,cursor?.created_at||null,cursor?.id||null]);
+  const summary=app=>scalar('select public.app_notification_summary($1::text)',[app]);
+  const bulk=(app,time)=>scalar('select public.mark_app_notifications_read($1::text,null,null,$2::timestamptz)',[app,time]);
+  await db.exec(`
+    create schema ojjuda_note;create schema ojjuda_rewards_internal;create schema ojjuda_arcade_internal;
+    create table ojjuda_rewards_internal.visit_gifts(user_id uuid,first_visit_ju integer,launch_ju integer,claimed_at timestamptz);
+    create table ojjuda_arcade_internal.drinking_rooms(code text,title text);
+    create table public.arcade_friend_invites(id uuid,room_code text,sender_id uuid,recipient_id uuid);
+    create table ojjuda_note_internal.cards_test(recipient uuid,id uuid primary key default gen_random_uuid(),
+      kind text,card_id uuid default gen_random_uuid(),inquiry_id uuid,created_at timestamptz default now(),read_at timestamptz);
+    create or replace function ojjuda_note_internal.visible_notifications()
+      returns table(id uuid,kind text,card_id uuid,inquiry_id uuid,created_at timestamptz,read_at timestamptz)
+      language sql stable as $$select id,kind,card_id,inquiry_id,created_at,read_at from ojjuda_note_internal.cards_test where recipient=auth.uid()$$;
+    create or replace function ojjuda_note_internal.mark_notifications_read(uuid[],timestamptz,timestamptz)
+      returns integer language sql as $$with changed as (update ojjuda_note_internal.cards_test set read_at=now()
+      where recipient=auth.uid() and read_at is null and ($1 is null or id=any($1))
+      and ($2 is null or created_at=$2) and ($3 is null or created_at<=$3) returning 1) select count(*)::integer from changed$$;
+    create function ojjuda_note.list_retention_alerts() returns table(id uuid,card_id uuid,created_at timestamptz,archive_due_at timestamptz,read_at timestamptz)
+      language sql stable as $$select gen_random_uuid(),gen_random_uuid(),now(),now(),null::timestamptz where auth.uid()='${userA}'::uuid$$;
+    grant usage on schema auth,ojjuda_note,ojjuda_note_internal to authenticated;
+    insert into ojjuda_note_internal.cards_test(recipient,kind,created_at)
+      select '${userA}','reply',now()-interval '1 minute' from generate_series(1,104);
+    insert into ojjuda_note_internal.cards_test(recipient,kind,created_at) values
+      ('${userA}','inquiry_reply',now()-interval '1 day'),('${userB}','reply',now());
+    insert into ojjuda_groups_internal.rooms values ('${userB}','${userB}',false,'그룹');
+    insert into ojjuda_groups_internal.invitations values ('${userB}','${userA}','${userB}','${userB}','pending',now()-interval '2 hours');
+    insert into ojjuda_note_internal.friend_messages values ('${userB}','${userA}','${userB}',now()-interval '1 hour');
+  `);
+  const script=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(n=>n.endsWith('_app_scoped_notifications.sql'));
+  await db.exec(migration(script));await login(userA);
+  await db.exec('set role authenticated');
+  const first=await page('agit',1);
+  assert.deepEqual(first.items.map(i=>i.kind),['world_message']);assert.equal(first.unread_count,3);
+  const second=await page('agit',1,first.next_cursor);
+  assert.deepEqual(second.items.map(i=>i.kind),['group_invite']);
+  assert.deepEqual((await page('pajang')).items.map(i=>i.kind),['inquiry_reply']);
+  const park=await page('park',1);
+  assert.deepEqual(park.items.map(i=>i.kind),['reply']);
+  assert.deepEqual(await summary('park'),{notifications:106,retention:1});
+  assert.deepEqual(await summary('agit'),{notifications:3,retention:0});
+  assert.deepEqual(await summary('pajang'),{notifications:1,retention:0});
+  assert.equal(await scalar("select public.mark_app_notifications_read('agit',$1::text[],$2::timestamptz,null)",
+    [[park.items[0].id],park.items[0].created_at]),0);
+  assert.deepEqual((await page(null)).items,[]);
+  assert.equal(await bulk('pajang',first.as_of),1);
+  assert.equal((await summary('agit')).notifications,2);
+  await db.exec('reset role');
+  await db.query("insert into ojjuda_note_internal.cards_test(recipient,kind) values ($1,'like')",[userA]);
+  await db.exec('set role authenticated');
+  assert.equal(await bulk('park',park.as_of),105);
+  assert.equal(await bulk('park',park.as_of),0);
+  assert.deepEqual(await summary('park'),{notifications:1,retention:1});
+  assert.equal((await summary('agit')).notifications,1,'Agit group invite is still unread');
+  assert.equal((await summary('pajang')).notifications,0);
+  await login(userB);assert.deepEqual(await summary('park'),{notifications:1,retention:0});
+  assert.deepEqual(await summary('pajang'),{notifications:0,retention:0});
+  assert.equal(await scalar("select has_function_privilege('anon','public.app_notification_summary(text)','execute')"),false);
+  await login('');await assert.rejects(page('agit'),/Sign in required/);
+});

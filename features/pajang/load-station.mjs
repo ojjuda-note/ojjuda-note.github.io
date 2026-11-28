@@ -1,11 +1,11 @@
-import {call,client,sameMember,showGate} from './member.mjs?v=20261126-adult-service1';
+import {call,client,sameMember,showGate} from './member.mjs?v=20261127-service-fixes1';
 
 // Each protected read uses the current member token. No member data is stored between pages.
 export async function prepareProgram(db,ready){
+  // First-time participants only need private assets when they enter the station.
+  if(ready)await ready;
   const {data:manifest,error}=await db.functions.invoke('pajang-assets');
   if(error||!manifest?.files?.['station.js'])throw Error('missing_program');
-  // A first-time participant needs only the question until they choose to enter.
-  if(ready)await ready;
   const bucket=db.storage.from(manifest.bucket),hash=manifest.files['station.js'];
   const {data,error:downloadError}=await bucket.download([hash,'station.js'].join('/'));
   if(downloadError||!data)throw Error('missing_program');

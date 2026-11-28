@@ -12,6 +12,7 @@
 .nn-list{margin:0;padding:0;list-style:none}
 .nn-item{padding:18px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
 .nn-copy{margin:0 0 7px;font-size:16px;font-weight:400}
+.nn-dialog .nn-card-link{display:block;width:100%;min-height:44px;padding:0;text-align:start;border:0;background:transparent;color:inherit;font-family:inherit;cursor:pointer}
 .nn-unread .nn-copy{font-weight:700}
 .nn-retention-preview{margin:0 0 9px;padding:9px 11px;border-left:3px solid var(--accent);border-radius:0 9px 9px 0;background:var(--surface-2);font-size:13px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
 .nn-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--ink-2)}
@@ -59,3 +60,6 @@
 .nn-source{padding:0 6px;border-radius:6px;background:var(--accent-soft);color:var(--ink)}
 .nn-entry :focus-visible,.nn-bell:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
 @media(max-width:380px){.nn-top-actions{gap:5px}.nn-bell{width:32px;height:32px}.mobile-top .note-brand-row{gap:4px}.mobile-top .brand{font-size:20px}.mobile-top .brand-icon{width:27px;height:27px}}
+
+.nn-group-password {display:grid;gap:4px;max-width:24rem;margin-top:8px;color:var(--ink);font-size:14px}
+.nn-group-password input {min-width:0;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font:inherit;font-size:16px;padding:8px}

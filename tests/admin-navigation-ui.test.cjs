@@ -115,6 +115,52 @@ function fixtureBoot() {
 }
 world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(world.indexOf('</script>', boot));
 
+// Open the independent service pages with a local, empty administrator account.
+async function checkServiceLayout(context) {
+  const page = await context.newPage();
+  await page.route('**/config.js?*', route => route.fulfill({
+    contentType: 'text/javascript', body: "window.OJJUDA_CONFIG={supabaseUrl:'https://fixture.test',supabaseKey:'fixture'};"
+  }));
+  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@*', route => route.fulfill({
+    contentType: 'text/javascript', body: `
+      const user = {id:'11111111-1111-4111-8111-111111111111'};
+      window.supabase = {createClient: () => ({
+        auth: {getUser: async () => ({data:{user}}), getSession: async () => ({data:{session:{user}}}),
+          onAuthStateChange: () => ({data:{subscription:{unsubscribe(){}}}})},
+        from: () => ({select: () => ({eq: () => ({maybeSingle: async () => ({data:{user_id:user.id}})})})}),
+        schema() { return this; },
+        rpc: async name => ({data: name === 'is_note_moderator' ? true :
+          name === 'admin_pajang_answers' ? {items:[],total_count:0} : []})
+      })};
+    `
+  }));
+  try {
+    for (const [service, tab, content] of [['park','cards','.na-embedded'], ['pajang','pajang-answers','.apm-panel']]) {
+      await page.goto('https://fixture.test/admin/index.html?from=' + service + '&admin=' + tab);
+      await page.locator('#admin-panel ' + content).waitFor();
+      for (const width of [320, 390, 760, 768, 1280]) {
+        await page.setViewportSize({width, height:844});
+        const layout = await page.evaluate(() => {
+          const bounds = selector => document.querySelector(selector).getBoundingClientRect().toJSON();
+          return {workspace:bounds('#workspace'), nav:bounds('.adm-navigation'),
+            menu:bounds('#service-menu'), panel:bounds('#admin-panel'), pageWidth:document.documentElement.scrollWidth};
+        });
+        const {workspace, nav, menu, panel} = layout;
+        const label = service + ' at ' + width + 'px: ' + JSON.stringify(layout);
+        assert.ok(layout.pageWidth <= width, label);
+        if (width <= 760) {
+          assert.ok(Math.abs(nav.width - workspace.width) <= 1, label);
+          assert.ok(Math.abs(panel.width - workspace.width) <= 1 && panel.top >= nav.bottom, label);
+        } else {
+          assert.ok(Math.abs(menu.top - panel.top) <= 1 && panel.left >= nav.right, label);
+        }
+      }
+    }
+  } finally {
+    await page.close();
+  }
+}
+
 (async () => {
   const browser = await chromium.launch({
     headless: true,
@@ -132,6 +178,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
       return file.startsWith(root + path.sep) && fs.existsSync(file) && fs.statSync(file).isFile()
         ? route.fulfill({ path: file }) : route.abort();
     });
+    await checkServiceLayout(context);
     const page = await context.newPage();
     const errors = [];
     let acceptDialogs = false, dialogCount = 0;

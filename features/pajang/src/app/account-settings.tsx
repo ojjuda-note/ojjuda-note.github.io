@@ -6,7 +6,7 @@ import {openPajangSupport,closePajangSupport} from "../lib/account-support.mjs";
 import {client} from "../../member.mjs";
 
 export type AccountAction="logout"|"withdraw";
-export type AccountSettingsAction=AccountAction|"edit"|"privateProfile"|"privatePhotos"|"visibility"|"answers"|"buySignals"|"help"|"delete";
+export type AccountSettingsAction=AccountAction|"edit"|"privateProfile"|"privatePhotos"|"answers"|"buySignals"|"help"|"delete";
 
 export function AccountSettings({profileId,onOpen}:{profileId:string;onOpen:(action:AccountSettingsAction)=>void}){
   const [admin,setAdmin]=useState({owner:"",allowed:false});
@@ -56,7 +56,6 @@ export function AccountSettings({profileId,onOpen}:{profileId:string;onOpen:(act
     <section className="ojjuda-settings-group" aria-labelledby="account-activity-title">
       <h2 className="ojjuda-settings-heading" id="account-activity-title">내 활동</h2>
       <div className="ojjuda-settings-list">
-        {row("visibility","답변 공개 설정")}
         {row("answers","내가 남긴 답변")}
         {row("buySignals","신호 구매")}
         <button type="button" className="ojjuda-settings-row" data-ju-charge-open aria-haspopup="dialog" aria-controls="ju-charge-dialog">
@@ -88,21 +87,6 @@ export function AccountSettings({profileId,onOpen}:{profileId:string;onOpen:(act
       </div>
       {supportError&&<p className="error" role="alert">{supportError}</p>}
     </section>
-    <section className="ojjuda-settings-group" aria-labelledby="account-app-download-title">
-      <h2 className="ojjuda-settings-heading" id="account-app-download-title">앱 다운로드</h2>
-      <div className="ojjuda-settings-list app-store-downloads">
-        <a className="ojjuda-settings-row" data-store-app="agit" href="https://play.google.com/store/apps/details?id=kr.ojjuda.agit&hl=ko" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 아지트 Google Play에서 보기 (새 창)">
-          <span className="ojjuda-settings-label">오쭈다 아지트</span><span className="ojjuda-settings-arrow" aria-hidden="true">↗</span>
-        </a>
-        <a className="ojjuda-settings-row" data-store-app="pajang" href="https://play.google.com/store/apps/details?id=kr.ojjuda.pajang" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 파장 Google Play에서 보기 (새 창)">
-          <span className="ojjuda-settings-label">오쭈다 파장</span><span className="ojjuda-settings-arrow" aria-hidden="true">↗</span>
-        </a>
-        <a className="ojjuda-settings-row" data-store-app="park" href="https://play.google.com/store/apps/details?id=kr.ojjuda.park" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 공원 Google Play에서 보기 (새 창)">
-          <span className="ojjuda-settings-label">오쭈다 공원</span><span className="ojjuda-settings-arrow" aria-hidden="true">↗</span>
-        </a>
-      </div>
-      <p className="app-store-note">앱 이름을 누르면 Google Play 페이지가 열립니다. 아지트 비공개 테스트 참여가 필요하면 <a href="https://play.google.com/apps/testing/kr.ojjuda.agit" target="_blank" rel="noopener noreferrer">먼저 참여</a>한 뒤 설치하세요.</p>
-    </section>
     <section className="ojjuda-settings-group" aria-labelledby="account-access-title">
       <h2 className="ojjuda-settings-heading" id="account-access-title">계정 관리</h2>
       <div className="ojjuda-settings-list">
@@ -119,6 +103,24 @@ export function AccountSettings({profileId,onOpen}:{profileId:string;onOpen:(act
       </div>
     </section>}
     {createElement("ojjuda-service-banners", {current:"pajang"})}
+    <section className="ojjuda-settings-group" aria-labelledby="account-app-download-title">
+      <h2 className="ojjuda-settings-heading" id="account-app-download-title">앱 다운로드</h2>
+      <div className="ojjuda-settings-list app-store-downloads">
+        <a className="ojjuda-settings-row" data-store-app="agit" href="https://play.google.com/store/apps/details?id=kr.ojjuda.agit&hl=ko" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 아지트 Google Play에서 보기 (새 창)">
+          <span className="ojjuda-settings-label">오쭈다 아지트</span><span className="ojjuda-settings-arrow" aria-hidden="true">↗</span>
+        </a>
+        <a className="ojjuda-settings-row" data-store-app="pajang" href="https://play.google.com/store/apps/details?id=kr.ojjuda.pajang" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 파장 Google Play에서 보기 (새 창)">
+          <span className="ojjuda-settings-label">오쭈다 파장</span><span className="ojjuda-settings-arrow" aria-hidden="true">↗</span>
+        </a>
+        <a className="ojjuda-settings-row" data-store-app="park" href="https://play.google.com/store/apps/details?id=kr.ojjuda.park" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 공원 Google Play에서 보기 (새 창)">
+          <span className="ojjuda-settings-label">오쭈다 공원</span><span className="ojjuda-settings-arrow" aria-hidden="true">↗</span>
+        </a>
+        <a className="ojjuda-settings-row" data-store-app="focus" href="https://play.google.com/store/apps/details?id=kr.framenote.camera.studio&hl=ko" target="_blank" rel="noopener noreferrer" aria-label="오쭈다포커스 Google Play에서 설치 (새 창)">
+          <span className="ojjuda-settings-label">오쭈다포커스 설치</span><span className="ojjuda-settings-arrow" aria-hidden="true">↗</span>
+        </a>
+      </div>
+      <p className="app-store-note">처음 설치할 때는 등록된 Google 계정으로 먼저 참여하세요. <a href="https://play.google.com/apps/testing/kr.ojjuda.agit?hl=ko" target="_blank" rel="noopener noreferrer">아지트 참여</a> · <a href="https://play.google.com/apps/testing/kr.ojjuda.pajang?hl=ko" target="_blank" rel="noopener noreferrer">파장 참여</a> · <a href="https://play.google.com/apps/testing/kr.ojjuda.park?hl=ko" target="_blank" rel="noopener noreferrer">공원 참여</a> · <a href="https://play.google.com/apps/testing/kr.framenote.camera.studio?hl=ko" target="_blank" rel="noopener noreferrer">포커스 참여</a></p>
+    </section>
   </section>;
 }
 

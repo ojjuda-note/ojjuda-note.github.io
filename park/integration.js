@@ -132,24 +132,23 @@
     }
     const apps = group('앱 다운로드');
     apps.classList.add('app-store-downloads');
-    const agitLink = link(apps, 'app-agit', '오쭈다 아지트', 'https://play.google.com/store/apps/details?id=kr.ojjuda.agit&hl=ko', true);
-    agitLink.dataset.storeApp = 'agit';
-    agitLink.rel = 'noopener noreferrer';
-    agitLink.setAttribute('aria-label', '오쭈다 아지트 Google Play에서 보기 (새 창)');
-    
-    for (const [app, name] of [['pajang', '오쭈다 파장'], ['park', '오쭈다 공원']]) {
-      const storeLink = link(apps, `app-${app}`, name, `https://play.google.com/store/apps/details?id=kr.ojjuda.${app}`, true);
+    const appStoreNote = node('p', 'app-store-note');
+    appStoreNote.append(document.createTextNode('처음 설치할 때는 등록된 Google 계정으로 먼저 참여하세요. '));
+    const downloads = [
+      ['agit', '오쭈다 아지트', '아지트', 'kr.ojjuda.agit'],
+      ['pajang', '오쭈다 파장', '파장', 'kr.ojjuda.pajang'],
+      ['park', '오쭈다 공원', '공원', 'kr.ojjuda.park'],
+      ['focus', '오쭈다포커스', '포커스', 'kr.framenote.camera.studio']
+    ];
+    for (const [app, name, shortName, packageId] of downloads) {
+      const storeLink = link(apps, `app-${app}`, `${name} 설치`, `https://play.google.com/store/apps/details?id=${packageId}&hl=ko`, true);
       storeLink.dataset.storeApp = app;
       storeLink.rel = 'noopener noreferrer';
-      storeLink.setAttribute('aria-label', `${name} Google Play에서 보기 (새 창)`);
+      storeLink.setAttribute('aria-label', `${name} Google Play에서 설치 (새 창)`);
+      const testLink = link(appStoreNote, `test-${app}`, `${shortName} 참여`, `https://play.google.com/apps/testing/${packageId}?hl=ko`, true);
+      testLink.rel = 'noopener noreferrer';
+      testLink.setAttribute('aria-label', `${name} 비공개 테스트 참여 (새 창)`);
     }
-    const appStoreNote = node('p', 'app-store-note');
-    appStoreNote.append(document.createTextNode('앱 이름을 누르면 Google Play 페이지가 열립니다. 아지트 비공개 테스트 참여가 필요하면 '));
-    const agitTesterLink = node('a', '', '먼저 참여');
-    agitTesterLink.href = 'https://play.google.com/apps/testing/kr.ojjuda.agit';
-    agitTesterLink.target = '_blank';
-    agitTesterLink.rel = 'noopener noreferrer';
-    appStoreNote.append(agitTesterLink, document.createTextNode('한 뒤 설치하세요.'));
     apps.parentElement.append(appStoreNote);
     const preferences = group('이용 설정');
     if (owner) {
@@ -159,6 +158,9 @@
       preferences.append(node('p', 'management-help', '로그인하면 친구 신청 알림과 차단 목록을 관리할 수 있어요.'));
     }
     const help = group('활동·도움');
+    const glasses = disclosure(help, '스마트 글라스');
+    link(glasses, 'even-g2', '이븐리얼리티 G2', '/park/even-g2.html');
+    link(glasses, 'rokid-glasses', '로키드 AI 글라스 1', '/park/rokid-glasses.html');
     if (!parkJunior()) {
       const charge = row(help, 'charge', '쭈 충전', () => window.OjjudaCharge?.open?.());
       charge.setAttribute('aria-haspopup', 'dialog');
@@ -199,7 +201,7 @@
         if (owner !== session?.user?.id || !(canOpenAdmin() || (!hosted && moderator === true)) || !canLeave()) event.preventDefault();
       });
     };
-    settings.append(serviceBanners);
+    settings.append(serviceBanners, apps.parentElement);
     managementBody.append(settings);
     syncAdminSettings();
     if (owner) send({type:'ojjuda:park-admin-refresh', userId:owner});
@@ -580,6 +582,8 @@
     if (!hosted || event.origin !== location.origin || event.source !== parent) return;
     if (event.data?.type === 'ojjuda:park-visibility') {
       hostVisible = event.data.visible === true;
+      parkHostVisible=hostVisible;syncParkActivity();
+      document.dispatchEvent(new Event('ojjuda:park-view'));
       if (hostVisible) { previousOverlay = previousComposer = previousDetail = previousNavigation = previousBalance = null; scheduleReport(); }
       return;
     }

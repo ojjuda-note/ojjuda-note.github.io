@@ -14,7 +14,7 @@ const missing=(code='PGRST202',name='public.app_notification_summary')=>({error:
 function fixture({user='member-a',handle,refreshClosedBadge,options={}}={}){
   const dom=new JSDOM('<main><div data-notifications-slot></div><span data-notification-badge hidden></span><i data-notification-dot hidden></i><button data-note-my></button></main>',
     {url:'https://ojjuda.kr/world.html',runScripts:'outside-only',pretendToBeVisual:true});
-  const w=dom.window,calls=[],timers=[],intervals=[],broadcasts=[],channels=[],openedGroups=[];
+  const w=dom.window,calls=[],timers=[],intervals=new Map(),broadcasts=[],channels=[],openedGroups=[];
   let identity=user,visibility='visible',clock=1000000,authCallback;
   let responder=handle||((name)=>name==='app_notification_summary'?{data:{notifications:3,retention:2}}:
     name==='app_notification_unread_count'?{data:3}:name==='list_retention_alerts'?{data:[retention(1),retention(2)]}:
@@ -23,17 +23,19 @@ function fixture({user='member-a',handle,refreshClosedBadge,options={}}={}){
   Object.defineProperty(w.document,'visibilityState',{configurable:true,get:()=>visibility});
   w.Date.now=()=>clock;
   w.setTimeout=callback=>{timers.push(callback);return timers.length;};
-  w.setInterval=callback=>{intervals.push(callback);return intervals.length;};
+  let intervalId=0;w.setInterval=callback=>{intervals.set(++intervalId,callback);return intervalId;};
+  w.clearInterval=id=>intervals.delete(id);
   w.BroadcastChannel=class {constructor(){channels.push(this);}postMessage(value){broadcasts.push(value);}close(){}};
   const invoke=async(schema,name,args)=>{calls.push({schema,name,user:identity,args});return responder(name,args,identity,schema);};
   const client={rpc:(name,args)=>invoke('public',name,args),schema:schema=>({rpc:(name,args)=>invoke(schema,name,args)}),
     auth:{onAuthStateChange(callback){authCallback=callback;}}};
-  w.eval(source);const api=w.OjjudaNotifications.install({client,getUserId:()=>identity,refreshClosedBadge,onOpenGroup:id=>openedGroups.push(id),...options});
+  w.eval(source);const api=w.OjjudaNotifications.install({app:'park',client,getUserId:()=>identity,refreshClosedBadge,onOpenGroup:id=>openedGroups.push(id),...options});
   return {dom,w,api,calls,channels,broadcasts,openedGroups,
     badge:()=>({hidden:w.document.querySelector('#note-notification-badge').hidden,text:w.document.querySelector('#note-notification-badge').textContent}),
     respond:callback=>{responder=callback;},advance:ms=>{clock+=ms;},
     async boot(){for(const callback of timers.splice(0))callback();await settle();},
-    async poll(){for(const callback of intervals)callback();await settle();},
+    intervalCount:()=>intervals.size,
+    async poll(){for(const callback of intervals.values())callback();await settle();},
     async user(next){identity=next;authCallback(next?'SIGNED_IN':'SIGNED_OUT',next?{user:{id:next}}:null);for(const callback of timers.splice(0))callback();await settle();},
     visibility(value){visibility=value;w.document.dispatchEvent(new w.Event('visibilitychange'));},
     close:()=>w.close()
@@ -204,6 +206,31 @@ test('group notifications identify the inviter and join only after acceptance',a
       if(action==='decline')assert.equal(d.querySelector('[data-group-invite-action]'),null);
     }finally{f.close();}
   }
+});
+
+test('a locked group notification retains its invitation through a wrong password and accepts on retry',async()=>{
+ const notice={id:'world:group_invite:'+uuid(710),target_id:uuid(710),kind:'group_invite',source:'world',created_at:'2026-11-06T00:00:00Z'};
+ const f=fixture({handle:(name,args)=>{
+  if(name==='group_invitation'){
+   const value=args.p_payload.password;
+   if(value==='정확함')return {data:{room_id:uuid(711)}};
+   return {data:{ok:false,reason:value?'password_incorrect':'password_required',message:value?'다시 입력해 주세요.':'그룹 비밀번호를 입력해 주세요.'}};
+  }
+  if(name==='app_notification_summary')return {data:{notifications:1,retention:0}};
+  if(name==='list_retention_alerts')return {data:[]};
+  if(name==='list_app_notifications')return {data:{items:[notice],unread_count:1,as_of:notice.created_at,has_more:false}};
+  return {data:null};
+ }});
+ try{
+  await f.boot();f.api.open();await settle();
+  const d=f.w.document,accept=d.querySelector('[data-group-invite-action=accept]');
+  accept.click();await settle();const input=d.querySelector('.nn-group-password input');
+  assert.equal(input.type,'password');assert.equal(d.activeElement,input);assert.deepEqual(f.openedGroups,[]);
+  input.value='틀림';accept.click();await settle();
+  assert.match(d.querySelector('.nn-status').textContent,/다시 입력/);assert.deepEqual(f.openedGroups,[]);
+  input.value='정확함';input.dispatchEvent(new f.w.KeyboardEvent('keydown',{key:'Enter',bubbles:true}));await settle();
+  assert.deepEqual(f.openedGroups,[uuid(711)]);assert.equal(f.api.isOpen(),false);
+ }finally{f.close();}
 });
 
 test('visit gifts need explicit confirmation even after mark-all; a repeated click sends one claim', async () => {
@@ -471,4 +498,89 @@ test('keyboard pagination focuses the new notification or retry, and respects a 
     close.click();
     assert.equal(doc.activeElement, bell);
   } finally { f.close(); }
+});
+
+test('a timed-out badge read waits for the next polling interval and keeps the last good count', async () => {
+  const f = fixture();
+  try {
+    await f.boot();
+    f.advance(15000);
+    f.calls.length = 0;
+    f.respond(() => ({error:{code:'57014',message:'statement timeout'}}));
+    await f.poll();
+    f.w.dispatchEvent(new f.w.Event('focus'));
+    f.visibility('visible');
+    await settle();
+    assert.equal(f.calls.length, 1);
+    assert.equal(f.badge().text, '5');
+    f.respond(() => ({data:{notifications:1,retention:0}}));
+    f.advance(15000);
+    await f.poll();
+    assert.equal(f.badge().text, '1');
+  } finally { f.close(); }
+});
+
+test('Park settings keeps its accessible name when notifications change', async () => {
+  const f = fixture();
+  try {
+    const button = f.w.document.querySelector('[data-note-my]');
+    button.dataset.settingsLabel = '설정';
+    await f.boot();
+    assert.equal(button.getAttribute('aria-label'), '설정, 읽지 않은 알림 5개');
+    f.respond(() => ({data:{notifications:0,retention:0}}));
+    await f.api.refresh();
+    assert.equal(button.getAttribute('aria-label'), '설정');
+  } finally { f.close(); }
+});
+
+test('polling is disarmed for guests, hidden tabs and logout, and rearms once on return',async()=>{
+  const f=fixture({user:null});
+  try{
+    await f.boot();assert.equal(f.intervalCount(),0);
+    await f.user('member-a');assert.equal(f.intervalCount(),1);
+    f.visibility('hidden');assert.equal(f.intervalCount(),0);
+    const before=f.calls.length;f.advance(30000);await f.poll();assert.equal(f.calls.length,before);
+    f.visibility('visible');f.visibility('visible');await settle();assert.equal(f.intervalCount(),1);
+    await f.user(null);assert.equal(f.intervalCount(),0);
+  }finally{f.close();}
+});
+
+test('Park reply opens from its text while the read receipt is pending',async()=>{
+  const card=uuid(12),receipt=deferred(),opened=[];
+  const notice={id:'note:'+uuid(11),source:'note',kind:'reply',card_id:card,created_at:'2026-11-27T00:00:00Z'};
+  const f=fixture({options:{app:'park',onOpenCard:id=>opened.push(id)},handle:(name,args)=>{
+    if(name==='list_retention_alerts')return {data:[]};
+    assert.equal(args.p_app,'park');
+    if(name==='app_notification_summary')return {data:{notifications:1,retention:0}};
+    if(name==='list_app_notifications')return {data:{items:[notice],unread_count:1,as_of:notice.created_at}};
+    if(name==='mark_app_notifications_read')return receipt.promise;
+    throw Error(name);
+  }});
+  try{
+    await f.boot();f.api.open();await settle();
+    const row=f.w.document.querySelector('[data-notification-id]');
+    const message=row.querySelector('button.nn-copy');
+    assert.match(message.textContent,/새 답글/);message.click();
+    assert.deepEqual(opened,[card]);assert.equal(f.api.isOpen(),false);
+    const write=f.calls.find(call=>call.name==='mark_app_notifications_read');
+    assert.equal(write.args.p_ids[0],notice.id);
+    receipt.resolve({data:1});await settle();
+  }finally{f.close();}
+});
+
+test('Agit scopes badges, list, fallback and bulk read without querying Park retention',async()=>{
+  const f=fixture({options:{app:'agit'},handle:(name,args)=>{
+    assert.equal(args.p_app,'agit');
+    if(name==='app_notification_summary')return missing();
+    if(name==='app_notification_unread_count')return {data:1};
+    if(name==='list_app_notifications')return {data:{items:[],unread_count:1,as_of:'2026-11-27T00:00:00Z'}};
+    if(name==='mark_app_notifications_read')return {data:1};
+    throw Error(name);
+  }});
+  try{
+    await f.boot();assert.equal(f.badge().text,'1');
+    f.api.open();await settle();f.w.document.getElementById('note-notifications-read-all').click();await settle();
+    assert.ok(f.calls.some(call=>call.name==='mark_app_notifications_read'&&call.args.p_before));
+    assert.ok(f.calls.every(call=>call.args.p_app==='agit'));
+  }finally{f.close();}
 });

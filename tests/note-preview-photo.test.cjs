@@ -70,17 +70,24 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
   const maskedTextLengthSource = source.match(/^const maskedTextLength = .*;$/m)[0];
   const guestComposerSource = source.slice(source.indexOf('function isGuestComposer()'),source.indexOf('\nfunction updateComposer()'));
   const publishSource = source.slice(source.indexOf('async function publishCard()'),source.indexOf('\nfunction updateAuth()'));
+  const autoTagSource = source.slice(source.indexOf('const MAX_CARD_TAGS'),source.indexOf('// 일반 카드의 첨부 사진'));
+  const refreshSource = source.slice(source.indexOf('function setAutoTags('),source.indexOf('function shownName('));
+  const tagListSource = source.match(/^const tagList = .*;$/m)[0];
+  const parsedTagsSource = source.slice(source.indexOf('function parsedTags('),source.indexOf('function validEventBody('));
+  const { Garu } = await import('../note/vendor/node_modules/garu-ko/dist/node.js');
+  const { parkWordTags } = await import('../note/park-word-tags.mjs');
+  const analyzer = await Garu.load();
   const publishFromPreview = async ({body='미리보기 사진 유지',background='42',kind='memo',parent=null,attachment=false,draftBackground=background,withDraft=true}={}) => {
     const requestId=randomUUID(), photoId=randomUUID(), attachmentPath=`${member}/${photoId}.jpg`;
     if(attachment) await db.query('insert into storage.objects(bucket_id,name,owner_id) values($1,$2,$3)',[kind==='event'?'note-event-photos':'note-card-photos',attachmentPath,member]);
     const calls=[];
-    const c={ console:{warn(){}},busy:false,ready:true,authKnown:true,submit:{disabled:false},text:{value:body},composeMessage:{textContent:''},
+    const c={ extractWords: value => parkWordTags(value, analyzer), console:{warn(){}},busy:false,ready:true,authKnown:true,submit:{disabled:false},text:{value:body},tags:{value:''},composeMessage:{textContent:''},
       cardPhotoPreparing:false,editingId:null,composerUserId:member,identityEpoch:1,composerRun:1,backgroundKey:background,
       cardPhotoEditPath:null,kind,parentId:parent,cardPhotoBlob:attachment&&kind!=='event'?{}:null,cardVideoPrepared:null,cardPhotoRequestId:photoId,
       photoFromWorld:{card:true,event:true},eventPhotoBlob:attachment&&kind==='event'?{}:null,eventPhotoRequestId:photoId,
       eventPhotoRemove:false,eventPhotoPreparing:false,eventPhotoError:'',photoRequestId:randomUUID(),publishRequestId:requestId,EVENT_PHOTO_BUCKET:'note-event-photos',
       session:{user:{id:member}},myIdentity:{},myGender:'private',writingPosition:{latitude:37,longitude:127},eventPosition:{latitude:37,longitude:127},
-      cache:new Map(),backdrop:{hidden:false},currentStyle:()=>({}),parsedTags:()=>[],chosenPhoto:()=> 'plain',
+      cache:new Map(),backdrop:{hidden:false},currentStyle:()=>({}),chosenPhoto:()=> 'plain',
       validEventBody:()=>true,validEventPosition:()=>true,validEventOptions:()=>true,archiveDueThisMonth:()=>false,parentArchiveDue:()=>null,
       composerPhotoOverflows:()=>false,cardPhotoOverflows:()=>false,noteSpamMessage:()=>'',ensureComposeFont:async()=>true,recordDraft(){},setComposerInputs(){},updateComposer(){},
       window:{confirm:()=>true},$:selector=>({value:selector.includes('radius')||selector.includes('hours')?'1':selector.includes('gender')?'private':'anonymous'}),
@@ -95,10 +102,13 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
       c.identityEpoch++; // Stop after the real publication succeeds, before unrelated feed rendering.
       return result;
     };
-    vm.createContext(c);vm.runInContext([validCardIdSource,maskedTextLengthSource,guestComposerSource,publishSource].join('\n'),c);await vm.runInContext('publishCard()',c);
+    vm.createContext(c);vm.runInContext([validCardIdSource,maskedTextLengthSource,autoTagSource,refreshSource,tagListSource,parsedTagsSource,guestComposerSource,publishSource].join('\n'),c);await vm.runInContext('wordTagger = extractWords; publishCard()',c);
     return {calls,message:c.composeMessage.textContent,result:await value('select result as value from ojjuda_note_internal.spend_requests where request_id=$1',[requestId])};
   };
   const overlength=await publishFromPreview({body:'가'.repeat(201)});assert.equal(overlength.calls.length,0);assert.equal(overlength.result,undefined,'overlength photo card is not published');
+  const tagged=await publishFromPreview({body:'완벽은 없다',withDraft:false});
+  assert.deepEqual(Array.from(tagged.calls[0].args.p_tags),['완벽']);
+  assert.deepEqual(await value('select tags as value from ojjuda_note.cards where id=$1',[tagged.result.card_id]),['완벽']);
   for(const key of ['10','42','73','189']){
     const saved=await publishFromPreview({background:key});
     assert.equal(saved.calls[0].args.p_background_key,key);

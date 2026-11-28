@@ -99,3 +99,19 @@ for (const filename of [coreFile, aacFile, tusFile]) {
 }
 await writeFile(path.join(here, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
 console.log(JSON.stringify(manifest, null, 2));
+
+// The G2 QR opens the hosted Park page. Bundle the official bridge locally.
+await build({
+  ...common,
+  entryPoints: [path.resolve(here, '../glasses-even-g2.mjs')],
+  nodePaths: [path.join(here, 'node_modules')],
+  outfile: path.resolve(here, '../../park/even-g2.bundle.mjs'),
+});
+
+// The dictionary loads only when Park needs to tag a new post.
+const { cp } = await import('node:fs/promises');
+const tagger = 'garu-ko-0.14.0';
+for (const asset of ['dist/browser.js', 'dist/core.js', 'dist/normalize.js', 'pkg', 'models/base.gmdl',
+  'models/NOTICE.md', 'models/bulk-provenance.json', 'models/licenses', 'LICENSE', 'NOTICE']) {
+  await cp(path.join(here, 'node_modules/garu-ko', asset), path.join(here, tagger, asset), { recursive: true });
+}

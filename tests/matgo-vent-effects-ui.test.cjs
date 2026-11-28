@@ -11,6 +11,8 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
  async function screen({muted=false,reduced=false,room=initial,tableOnly=false,viewport={width:390,height:760}}={}){
   const context=await browser.newContext({viewport,hasTouch:true,reducedMotion:reduced?'reduce':'no-preference'});
   await context.addInitScript(({muted,room,tableOnly})=>{
+   // Isolate purchase effects while measuring every audible source.
+   localStorage.setItem('ojjuda.arcade.background-music.v1','off');
    localStorage.setItem('ojjuda-matgo-sound',muted?'off':'on');window.fixtureRoom=room;window.payments=[];window.decline=false;window.slowPurchase=false;
    window.ventRoll=.01;Math.random=()=>window.ventRoll;
    window.audioStarts=[];window.audioContexts=[];window.audioMetrics={peak:0,energy:0,count:0};

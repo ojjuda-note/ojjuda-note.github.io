@@ -445,7 +445,7 @@
       if (isWheel) resultTools();
       // Keep focus in the dialog after replacing the clicked control.
       const focus = isWheel ? button : stage.querySelector(reverse ? `[data-finish="${finish}"]` : `[data-lane="${lane}"]`);
-      if (document.activeElement === document.body || document.activeElement === d) {
+      if (!d.getRootNode().activeElement || d.getRootNode().activeElement === document.body || d.getRootNode().activeElement === d) {
         focus.focus({preventScroll:true});
       }
     }

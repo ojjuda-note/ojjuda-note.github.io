@@ -65,6 +65,29 @@ const proof = process.env.ARCHERY_MOBILE_PROOF_DIR;
       assert.equal(await page.locator('#modalTitle').innerText(), '게임 메뉴');
       await page.locator('#modalClose').click();
       assert.equal(await page.locator('#modalBackdrop').isVisible(), false, 'menu closes without hiding the game');
+      if (viewport.width === 390) {
+        const pad = page.locator('#aimTouchpad');
+        await page.waitForSelector('#aimTouchpad[aria-disabled="false"]');
+        const bounds = await pad.boundingBox();
+        const finger = {x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2};
+        const input = await page.context().newCDPSession(page);
+        await input.send('Input.dispatchTouchEvent', {type: 'touchStart', touchPoints: [finger]});
+        await page.waitForSelector('#aimTouchpad[data-active="true"]');
+        // A changing browser toolbar relays a height-only resize to the playfield.
+        const oldHeight = await page.locator('#field').evaluate(field => {
+          const height = field.getBoundingClientRect().height;
+          field.style.height = (height - 40) + 'px';
+          return height;
+        });
+        await page.waitForFunction(height => document.querySelector('#gameCanvas').getBoundingClientRect().height < height - 20, oldHeight);
+        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        assert.equal(await pad.getAttribute('data-active'), 'true', 'resizing the field keeps the finger captured');
+        await input.send('Input.dispatchTouchEvent', {type: 'touchMove', touchPoints: [{x: finger.x + 12, y: bounds.y - 12}]});
+        await input.send('Input.dispatchTouchEvent', {type: 'touchEnd', touchPoints: []});
+        await page.waitForSelector('#gameCanvas[data-shots="1"]');
+        assert.equal(await pad.getAttribute('data-active'), 'false');
+        await input.detach();
+      }
       assert.deepEqual(errors, [], `${viewport.width}px: no game runtime errors`);
 
       if (proof) {

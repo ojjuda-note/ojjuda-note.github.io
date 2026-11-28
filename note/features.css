@@ -372,3 +372,8 @@ select{font:inherit;color:inherit}
 .compose-publish-settings .note-location-consent{margin:0;justify-content:flex-start}
 .compose-publish-settings .compose-quick{display:flex;align-items:center}
 .compose-publish-settings .quick-label{font-size:12px}
+
+.photo .card-tags.tags-many,.compose-photo .compose-tag-display.tags-many {
+  justify-content:flex-start; flex-wrap:nowrap; max-width:100%; overflow-x:auto; overflow-y:hidden;
+  overscroll-behavior-x:contain; scrollbar-width:thin; pointer-events:auto;
+}

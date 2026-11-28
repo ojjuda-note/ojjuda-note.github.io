@@ -3,7 +3,7 @@
 let toolbarLoad=null, toolbarReady=false, earlyControl=null;
 function prepareToolbar(){
   if(toolbarLoad)return toolbarLoad;
-  toolbarLoad=import('./account-toolbar.mjs?v=20261126-adult-service1')
+  toolbarLoad=import('./account-toolbar.mjs?v=20261127-app-inbox1')
     .then(({installPajangToolbar})=>{
       installPajangToolbar();
       toolbarReady=true;
@@ -38,7 +38,7 @@ if(typeof requestAnimationFrame==='function'){
   setTimeout(()=>void prepareToolbar(),0);
 }
 // Optional measurement never delays or blocks the member app and its toolbar.
-void import('./usage.mjs?v=20261126-adult-service1')
+void import('./usage.mjs?v=20261127-service-fixes1')
   .then(({installPajangUsage})=>installPajangUsage()).catch(()=>{});
 
 // The Agit host restores focus and scroll when it dismisses its entry dialog.

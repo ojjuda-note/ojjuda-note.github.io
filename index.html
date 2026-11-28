@@ -15,7 +15,7 @@
     "ojjuda.kr"
   ],
   "url": "https://ojjuda.kr/",
-  "description": "오쭈다 아지트는 게임과 일상을 즐기는 온라인 공간입니다. 오쭈다 공원에서 익명카드로 이야기를 나누고, 오쭈다 파장에서 질문과 취향으로 인연을 만나보세요. 타로·사주와 팬페이지도 함께 즐겨요.",
+  "description": "관심사가 맞는 사람들과 그룹을 만들어 글과 사진을 나누고 투표해 보세요. 오락실에서 게임을 즐기고, 아지트에서 팬페이지와 오늘의 타로·사주, 전국 맛집·축제도 둘러볼 수 있어요.",
   "inLanguage": "ko-KR",
   "creator": {
     "@type": "Person",
@@ -24,6 +24,16 @@
     "url": "https://ojjuda.kr/features/guide/creator.html"
   },
   "hasPart": [
+    {
+      "@type": "WebPage",
+      "name": "아지트 그룹",
+      "url": "https://ojjuda.kr/world.html?tab=group"
+    },
+    {
+      "@type": "WebPage",
+      "name": "아지트 오락실",
+      "url": "https://ojjuda.kr/world.html?tab=arcade"
+    },
     {
       "@type": "WebPage",
       "@id": "https://ojjuda.kr/guide.html#webpage",
@@ -39,12 +49,12 @@
     {
       "@type": "WebPage",
       "name": "오쭈다 공원",
-      "url": "https://ojjuda.kr/features/guide/park.html"
+      "url": "https://ojjuda.kr/park/"
     },
     {
       "@type": "WebPage",
       "name": "오쭈다 파장",
-      "url": "https://ojjuda.kr/features/pajang/"
+      "url": "https://ojjuda.kr/pajang/"
     }
   ]
 }
@@ -62,8 +72,8 @@
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#245a48">
-  <meta name="description" content="오쭈다 아지트는 게임과 일상을 즐기는 온라인 공간입니다. 오쭈다 공원에서 익명카드로 이야기를 나누고, 오쭈다 파장에서 질문과 취향으로 인연을 만나보세요. 타로·사주와 팬페이지도 함께 즐겨요.">
-  <title>오쭈다 아지트 | 게임·타로·사주·익명카드</title>
+  <meta name="description" content="관심사가 맞는 사람들과 그룹을 만들어 글과 사진을 나누고 투표해 보세요. 오락실에서 게임을 즐기고, 아지트에서 팬페이지와 오늘의 타로·사주, 전국 맛집·축제도 둘러볼 수 있어요.">
+  <title>오쭈다 아지트 | 그룹 모임과 오락실 게임</title>
   <link rel="stylesheet" href="/shared/auth/signup-identity.css?v=20261106-source-folders1">
   <script src="/shared/auth/portal-availability.js?v=20261106-source-folders1" defer></script>
   <script src="/shared/auth/signup-identity.js?v=20261125-park-guardian1" defer></script>
@@ -81,7 +91,7 @@
   <link rel="stylesheet" href="/shared/auth/signup-referral.css?v=20261106-source-folders1">
   <script src="/shared/auth/invite-referral.js?v=20261119-invite-referral1" defer></script>
   <script src="/shared/auth/signup-referral.js?v=20261119-invite-referral1" defer></script>
-  <script src="/app/portal/portal.js?v=20261125-guardian-service1" defer></script>
+  <script src="/app/portal/portal.js?v=20261126-group-intro1" defer></script>
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=seasonal-v1-autumn-d0c431c01ed9">
 <link rel="manifest" href="/manifest.webmanifest?v=20261119-illustrated-icons-1">
 <script src="/shared/pwa/app-identity.js?v=app-icons-a6a612391e00"></script>
@@ -98,16 +108,16 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="오쭈다 아지트">
 <meta property="og:url" content="https://ojjuda.kr/world.html">
-<meta property="og:title" content="오쭈다 아지트 | 게임·타로·사주·익명카드">
-<meta property="og:description" content="오쭈다 아지트는 게임과 일상을 즐기는 온라인 공간입니다. 오쭈다 공원에서 익명카드로 이야기를 나누고, 오쭈다 파장에서 질문과 취향으로 인연을 만나보세요. 타로·사주와 팬페이지도 함께 즐겨요.">
+<meta property="og:title" content="오쭈다 아지트 | 그룹 모임과 오락실 게임">
+<meta property="og:description" content="관심사가 맞는 사람들과 그룹을 만들어 글과 사진을 나누고 투표해 보세요. 오락실에서 게임을 즐기고, 아지트에서 팬페이지와 오늘의 타로·사주, 전국 맛집·축제도 둘러볼 수 있어요.">
 <meta property="og:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="오쭈다 아지트 | 게임·타로·사주·익명카드">
-<meta name="twitter:description" content="오쭈다 아지트는 게임과 일상을 즐기는 온라인 공간입니다. 오쭈다 공원에서 익명카드로 이야기를 나누고, 오쭈다 파장에서 질문과 취향으로 인연을 만나보세요. 타로·사주와 팬페이지도 함께 즐겨요.">
+<meta name="twitter:title" content="오쭈다 아지트 | 그룹 모임과 오락실 게임">
+<meta name="twitter:description" content="관심사가 맞는 사람들과 그룹을 만들어 글과 사진을 나누고 투표해 보세요. 오락실에서 게임을 즐기고, 아지트에서 팬페이지와 오늘의 타로·사주, 전국 맛집·축제도 둘러볼 수 있어요.">
 <meta name="twitter:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
 </head>
@@ -123,7 +133,7 @@
   </header>
   <main id="main" class="front" aria-labelledby="front-title">
     <section id="places" class="front-heading account-landing">
-      <div class="account-landing-copy"><span class="account-entry-kicker">OJJUDA · YOUR LITTLE PLACE</span><h1 id="front-title">오쭈다 아지트</h1><p id="front-copy">취향이 모이는 우리의 아지트.</p>
+      <div class="account-landing-copy"><span class="account-entry-kicker">OJJUDA · YOUR LITTLE PLACE</span><h1 id="front-title">오쭈다 아지트</h1><p id="front-copy">그룹에서 모임 소식을 나누고, 오락실에서 함께 한 판 즐겨요.</p>
         <div class="account-landing-actions"><button class="pill-button" type="button" data-open-auth="signup">회원가입 <span aria-hidden="true">↗</span></button><button class="account-landing-login" type="button" data-open-auth="login">로그인</button></div>
         <a class="account-landing-browse" id="entry-browse" href="/world.html?tab=hub">먼저 둘러보기 <span aria-hidden="true">→</span></a>
       </div>
@@ -131,9 +141,9 @@
     </section>
     <section class="entry-status" id="entry-status" role="status" hidden><p id="entry-message">연결을 확인하고 있어요.</p><div class="entry-recovery-actions"><button type="button" id="entry-retry">다시 시도</button><a href="/world.html?place=park&amp;guest=1">손님으로 둘러보기</a></div></section>
   </main>
-  <footer class="site-footer"><span>© 2026 ojjuda</span><nav aria-label="안내 및 법적 고지"><a href="/guide.html">사용법</a><a href="/features/guide/creator.html">제작자 소개</a><a href="/sitemap.html">사이트맵</a><a href="terms.html" target="_blank" rel="noopener">이용약관</a><a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a><a href="mailto:mj830417@gmail.com">문의</a></nav></footer>
+  <footer class="site-footer"><span>© 2026 ojjuda</span><nav aria-label="안내 및 법적 고지"><a href="/park/">오쭈다 공원</a><a href="/pajang/">오쭈다 파장</a><a href="/guide.html">사용법</a><a href="/features/guide/creator.html">제작자 소개</a><a href="/sitemap.html">사이트맵</a><a href="terms.html" target="_blank" rel="noopener">이용약관</a><a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a><a href="mailto:mj830417@gmail.com">문의</a></nav></footer>
 
-  <dialog class="auth-dialog" id="auth-dialog" aria-labelledby="auth-title"><div class="dialog-shell"><button class="dialog-close" type="button" data-close-dialog aria-label="닫기">×</button><aside class="account-entry-art" aria-hidden="true"><span class="account-entry-kicker">OJJUDA · WELCOME</span><strong id="account-space-name">아지트</strong><span class="account-entry-still"><i></i><b>o.</b></span><p id="account-space-line">취향이 모이는<br>우리의 아지트.</p><span class="account-entry-caption">당신의 하루에 작은 쉼표.</span></aside><div class="account-entry-form"><svg class="dialog-mark ojjuda-theme-logo" viewBox="-16 -16 544 544" width="48" height="48" aria-hidden="true" focusable="false"><path fill="currentColor" d="M100 0H354Q369 0 381 12L499 130Q512 143 512 165V428Q512 512 428 512H84Q0 512 0 428V100Q0 0 100 0Z"/>  <path fill="#FFF" d="M346 37Q346 22 358 31L476 149Q485 161 470 161H395Q346 161 346 112Z"/>  <path d="M108 290Q256 420 404 290" fill="none" stroke="#FFF" stroke-width="60" stroke-linecap="round"/></svg><span class="dialog-kicker">OJJUDA ACCOUNT</span><h2 id="auth-title">오쭈다 아지트</h2><p class="ojjuda-copy ojjuda-copy--auth" id="auth-space-copy">취향이 모이는 우리의 아지트.</p><p class="dialog-intro" id="auth-intro">오락실에서 게임을 즐기고 공원에서 이야기를 나눠요.</p><div class="auth-tabs" role="tablist" aria-label="계정 시작 방법"><button type="button" role="tab" id="login-tab" data-auth-mode="login" aria-selected="true">로그인</button><button type="button" role="tab" id="signup-tab" data-auth-mode="signup" aria-selected="false">회원가입</button></div><form id="auth-form" novalidate><div class="field signup-only" hidden><label id="nickname-label" for="nickname">닉네임</label><input id="nickname" name="nickname" maxlength="12" autocomplete="nickname" placeholder="1~12자"><p id="nickname-auto-help" class="identity-hint" hidden>자동으로 만든 닉네임이에요. 원하는 이름으로 바꿔도 돼요.</p></div><div class="field email-field"><label for="email">이메일</label><input id="email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="hello@example.com" required></div><div id="recovery-identity-slot" class="member-identity-fields" hidden><div class="field"><label for="recovery-phone">등록된 전화번호</label><input id="recovery-phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="010-0000-0000" required></div><div class="field"><label for="recovery-birth">생년월일</label><input id="recovery-birth" type="date" min="1900-01-01" required></div><div class="field"><label for="recovery-gender">성별</label><select id="recovery-gender" required><option value="">선택</option><option value="male">남성</option><option value="female">여성</option></select></div></div><div class="field password-field"><label for="password" id="password-label">비밀번호</label><input id="password" name="password" type="password" minlength="6" autocomplete="current-password" placeholder="6자 이상" required></div><div class="field password-confirm-field" hidden><label for="password-confirm" id="password-confirm-label">비밀번호 확인</label><input id="password-confirm" name="password-confirm" type="password" minlength="6" autocomplete="new-password" placeholder="한 번 더 입력" disabled></div><div class="signup-only" id="signup-identity-slot" hidden></div><section id="park-guardian-panel" class="field" aria-labelledby="park-guardian-title" hidden>
+  <dialog class="auth-dialog" id="auth-dialog" aria-labelledby="auth-title"><div class="dialog-shell"><button class="dialog-close" type="button" data-close-dialog aria-label="닫기">×</button><aside class="account-entry-art" aria-hidden="true"><span class="account-entry-kicker">OJJUDA · WELCOME</span><strong id="account-space-name">아지트</strong><span class="account-entry-still"><i></i><b>o.</b></span><p id="account-space-line">취향이 모이는<br>우리의 아지트.</p><span class="account-entry-caption">당신의 하루에 작은 쉼표.</span></aside><div class="account-entry-form"><svg class="dialog-mark ojjuda-theme-logo" viewBox="-16 -16 544 544" width="48" height="48" aria-hidden="true" focusable="false"><path fill="currentColor" d="M100 0H354Q369 0 381 12L499 130Q512 143 512 165V428Q512 512 428 512H84Q0 512 0 428V100Q0 0 100 0Z"/>  <path fill="#FFF" d="M346 37Q346 22 358 31L476 149Q485 161 470 161H395Q346 161 346 112Z"/>  <path d="M108 290Q256 420 404 290" fill="none" stroke="#FFF" stroke-width="60" stroke-linecap="round"/></svg><span class="dialog-kicker">OJJUDA ACCOUNT</span><h2 id="auth-title">오쭈다 아지트</h2><p class="ojjuda-copy ojjuda-copy--auth" id="auth-space-copy">그룹에서 모임 소식을 나누고, 오락실에서 함께 한 판 즐겨요.</p><p class="dialog-intro" id="auth-intro">오락실에서 게임을 즐기고 공원에서 이야기를 나눠요.</p><div class="auth-tabs" role="tablist" aria-label="계정 시작 방법"><button type="button" role="tab" id="login-tab" data-auth-mode="login" aria-selected="true">로그인</button><button type="button" role="tab" id="signup-tab" data-auth-mode="signup" aria-selected="false">회원가입</button></div><form id="auth-form" novalidate><div class="field signup-only" hidden><label id="nickname-label" for="nickname">닉네임</label><input id="nickname" name="nickname" maxlength="12" autocomplete="nickname" placeholder="1~12자"><p id="nickname-auto-help" class="identity-hint" hidden>자동으로 만든 닉네임이에요. 원하는 이름으로 바꿔도 돼요.</p></div><div class="field email-field"><label for="email">이메일</label><input id="email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="hello@example.com" required></div><div id="recovery-identity-slot" class="member-identity-fields" hidden><div class="field"><label for="recovery-phone">등록된 전화번호</label><input id="recovery-phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="010-0000-0000" required></div><div class="field"><label for="recovery-birth">생년월일</label><input id="recovery-birth" type="date" min="1900-01-01" required></div><div class="field"><label for="recovery-gender">성별</label><select id="recovery-gender" required><option value="">선택</option><option value="male">남성</option><option value="female">여성</option></select></div></div><div class="field password-field"><label for="password" id="password-label">비밀번호</label><input id="password" name="password" type="password" minlength="6" autocomplete="current-password" placeholder="6자 이상" required></div><div class="field password-confirm-field" hidden><label for="password-confirm" id="password-confirm-label">비밀번호 확인</label><input id="password-confirm" name="password-confirm" type="password" minlength="6" autocomplete="new-password" placeholder="한 번 더 입력" disabled></div><div class="signup-only" id="signup-identity-slot" hidden></div><section id="park-guardian-panel" class="field" aria-labelledby="park-guardian-title" hidden>
 <h3 id="park-guardian-title">보호자 확인</h3>
 <p>만 12~13세는 부모님 등 법정대리인이 동의한 뒤 가입할 수 있어요.</p>
 <p class="identity-hint">공개 카드와 답글은 누구나 볼 수 있어요. 집 주소, 학교, 전화번호는 올리지 마세요.</p>

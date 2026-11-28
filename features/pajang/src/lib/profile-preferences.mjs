@@ -2,7 +2,7 @@ import {maskedTextLength} from '../../../../shared/content/text-length.mjs';
 
 // These are optional, self-selected profile details, not inferred personality types.
 export const MAX_PROFILE_CUSTOM_LENGTH = 40;
-export const MAX_PROFILE_GROUP_SELECTIONS = 32;
+export const MAX_PROFILE_GROUP_SELECTIONS = 5;
 
 export const relationshipIntents = Object.freeze([
   {key:"conversation", label:"대화 상대", shortLabel:"대화", description:"일상과 생각을 편하게 나눌 사람을 찾아요."},

@@ -1,5 +1,5 @@
 import '../../shared/analytics/site-usage.js?v=20261121-pajang-visits1';
-import {client} from './member.mjs?v=20261126-adult-service1';
+import {client} from './member.mjs?v=20261127-service-fixes1';
 
 export function installPajangUsage() {
   let pending=null,db=null,host=null,frame=null,observer=null;

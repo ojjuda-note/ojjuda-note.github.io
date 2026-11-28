@@ -107,15 +107,12 @@ test('standalone mobile and desktop settings buttons open the canonical settings
         button.click(); await f.settle();
         assert.ok(f.root(),'actual navigation opens canonical settings');
         assert.equal(f.w.document.getElementById('note-my-screen').hidden,true,'legacy dashboard is not displayed');
-        assert.equal(f.root().lastElementChild.localName,'ojjuda-service-banners');
-        const testLink = f.root().lastElementChild.querySelector('.ojjuda-test-service-link');
-        assert.equal(testLink.textContent, 'Test service');
-        assert.equal(testLink.getAttribute('href'), '/avatar-test/');
-        assert.equal(testLink.target, '_top');
+        assert.equal(f.root().lastElementChild.getAttribute('aria-label'),'앱 다운로드');
+        assert.equal(f.root().lastElementChild.previousElementSibling.querySelectorAll('.ojjuda-service-banner').length,2);
         assert.deepEqual([...f.root().querySelectorAll('.ojjuda-service-banner')].map(link=>link.dataset.service),['agit','pajang']);
         assert.ok(f.root().querySelector('.ojjuda-settings-group .ojjuda-settings-list .ojjuda-settings-row'));
         assert.deepEqual([...f.root().querySelectorAll('.ojjuda-settings-heading')].map(el=>el.textContent),
-          ['내 정보','앱 다운로드','이용 설정','활동·도움']);
+          ['내 정보','이용 설정','활동·도움','앱 다운로드']);
         for (const id of ['events','event-new','notifications']) assert.equal(f.setting(id),null);
         for (const id of ['profile','friends','friend-alert']) {
           if (!member) { assert.equal(f.setting(id),null); continue; }
@@ -123,7 +120,9 @@ test('standalone mobile and desktop settings buttons open the canonical settings
           assert.equal(f.setting(id).hasAttribute('href'),false);
         }
         assert.ok(f.setting('charge'));
-        assert.deepEqual([...f.root().querySelectorAll('[data-store-app]')].map(el=>el.dataset.storeApp),['agit','pajang','park']);
+        assert.deepEqual([...f.root().querySelectorAll('[data-store-app]')].map(el=>el.dataset.storeApp),['agit','pajang','park','focus']);
+        assert.equal(f.setting('app-focus').href,'https://play.google.com/store/apps/details?id=kr.framenote.camera.studio&hl=ko');
+        assert.equal(f.setting('test-focus').href,'https://play.google.com/apps/testing/kr.framenote.camera.studio?hl=ko');
         await f.back();
         assert.equal(f.management().hidden,true);
       }
@@ -136,7 +135,7 @@ test('guests can open Park settings, read policies and reach login', async () =>
   try {
     assert.equal(f.api.navigate('settings'),true);
     assert.ok(f.root());
-    assert.equal(f.root().lastElementChild.localName,'ojjuda-service-banners');
+    assert.equal(f.root().lastElementChild.getAttribute('aria-label'),'앱 다운로드');
     assert.deepEqual([...f.root().querySelectorAll('.ojjuda-service-banner')].map(link=>link.dataset.service),['agit','pajang']);
     assert.equal(f.api.navigationAction(),'settings');
     assert.ok(f.setting('login'),'guest settings have a login entry');
@@ -462,14 +461,14 @@ test('Park settings shows its administrator mode only for the matching verified 
     f.api.setAdminAccess({userId:'park-member-a',allowed:true});
     assert.equal(f.setting('admin').textContent,'공원 관리자모드›');
     assert.equal(f.setting('admin').classList.contains('park-settings-row'),true,'administrator entry shares the existing settings layout');
-    assert.equal(f.root().lastElementChild.localName,'ojjuda-service-banners','asynchronous administrator access keeps service banners at the bottom');
+    assert.equal(f.root().lastElementChild.getAttribute('aria-label'),'앱 다운로드','asynchronous administrator access keeps downloads last');
     f.w.parkFixture.setBusy(true); clickAdmin();
     assert.equal(destinations.length,0,'an unfinished account save blocks leaving settings');
     assert.ok(f.root());
     f.w.parkFixture.setBusy(false);
     f.api.setAdminAccess({userId:'park-member-a',allowed:false});
     assert.equal(f.setting('admin'),null,'revoked access disappears immediately');
-    assert.equal(f.root().lastElementChild.localName,'ojjuda-service-banners','revoking access leaves the same final banner row');
+    assert.equal(f.root().lastElementChild.getAttribute('aria-label'),'앱 다운로드','revoking access keeps downloads last');
     assert.equal(f.api.navigate('admin'),false);
     await f.changeUser({user:{id:'park-member-a',user_metadata:{is_admin:true,role:'admin'}}});
     f.api.navigate('settings');

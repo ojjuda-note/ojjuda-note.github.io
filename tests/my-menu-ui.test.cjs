@@ -152,7 +152,7 @@ async function worldFixture(context, mobile, errors) {
   assert.equal(await page.locator('[data-notifications-slot]').count(), 0,
     'World menu omits the oversized notification shortcut');
   assert.deepEqual(await page.locator('.world-settings-page .ojjuda-settings-heading').allTextContents(),
-    ['내 계정', '이용 설정', '이용 안내', '앱 다운로드', '계정 관리'], 'settings retain the Park-style section order');
+    ['내 계정', '이용 설정', '이용 안내', '계정 관리', '앱 다운로드'], 'settings retain the Park-style section order');
   assert.equal(await page.locator('.world-settings-header h2').textContent(), '아지트 설정');
   assert.equal(await page.getByRole('button', { name: '설정 닫기', exact: true }).getAttribute('data-act'), 'navigation-back',
     'closing settings returns to the actual previous screen');

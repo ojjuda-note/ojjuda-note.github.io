@@ -46,6 +46,11 @@
 <link rel="stylesheet" href="/shared/games/game-entry.css?v=20261109-unified-multiplayer-ui2">
 <script src="/shared/games/game-entry.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/shared/games/arcade-return.css?v=20261112-arcade-entry-return1">
+<script defer src="/shared/games/arcade-music.js?v=20261127-ensemble1" data-game="spot"></script>
+<link rel="stylesheet" href="/shared/games/arcade-practice.css?v=20261127-coach1">
+<script defer src="/shared/games/lesson-panel.js?v=20261127-coach1"></script>
+<script defer src="/shared/games/tutorial-visits.js?v=20261127-tutorial-once1"></script>
+<script defer src="/shared/games/arcade-practice.js?v=20261127-tutorial-once1" data-game="spot"></script>
 </head>
 <body>
   <header class="topbar">
@@ -58,7 +63,7 @@
       <div class="scene-info"><span class="eyebrow" id="stage-label">그림 불러오는 중</span><h1 id="scene-title">틀린그림찾기</h1><p id="scene-instructions">1분 안에 그림마다 다른 곳 6개 또는 10개를 찾아보세요. 찾은 곳은 붉은 원으로 표시돼요.</p></div>
       <div class="score" aria-label="찾은 정답"><strong id="found-count">0</strong><span>/ <span id="found-total">—</span> <small>찾았어요</small></span><div class="dots" id="dots" aria-hidden="true"></div></div>
     </section>
-    <section class="round-status" aria-label="게임 상태"><div class="hearts" id="hearts" role="img" aria-label="남은 하트 3개">♥ ♥ ♥</div><span class="rule-copy">오답이면 하트 −1</span><div class="wallet"><span id="wallet-balance">계정 연결 중</span><button id="hint" class="soft-button ju-paid-action">힌트 · 1 ZU</button><details id="wallet-menu" class="wallet-menu"><summary aria-label="게임 메뉴" title="게임 메뉴">⋯</summary><div class="wallet-menu-panel">
+    <section class="round-status" aria-label="게임 상태"><div class="hearts" id="hearts" role="img" aria-label="남은 하트 3개">♥ ♥ ♥</div><span class="rule-copy">오답이면 하트 −1</span><div class="wallet"><span id="wallet-balance">계정 연결 중</span><button id="hint" class="soft-button ju-paid-action">힌트 · 1 ZU</button><details id="wallet-menu" class="wallet-menu"><summary aria-label="게임 메뉴" title="게임 메뉴">⋯</summary><div class="wallet-menu-panel"><button type="button" class="soft-button" data-practice-replay>튜토리얼</button><button type="button" data-arcade-music-toggle class="soft-button" aria-label="배경음악 켜기·끄기">배경음악</button>
       <button id="reveal-answers" class="text-button admin-button" aria-pressed="false" hidden>정답 보기</button>
       <button id="reset" class="text-button" aria-label="이 문제 다시 풀기">다시 풀기</button><button id="continue" class="text-button">다음 문제</button>
       <nav class="stage-nav" aria-label="문제 이동"><div class="stage-select"><button id="prev" class="icon-button" aria-label="이전 문제">‹</button><label for="stage-picker" class="sr-only">문제 선택</label><select id="stage-picker"></select><button id="next" class="icon-button" aria-label="다음 문제">›</button></div></nav>

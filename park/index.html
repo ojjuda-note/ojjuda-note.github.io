@@ -10,9 +10,9 @@
   } catch {}
   </script>
   <script src="/config.js?v=20261111-shared-member-auth1" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2" defer></script>
-  <script src="/park/opening.js?v=20261123-park-first-paint1" async></script>
-<script src="/shared/location/location.js?v=20261125-park-guardian1" defer></script>
+  <script id="park-auth-sdk" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2" defer></script>
+  <script src="/park/opening.js?v=20261127-early-cards1" async></script>
+<script src="/shared/location/location.js?v=20261127-battery1" defer></script>
   <script src="/park/route.js?v=20261123-independent-park1"></script>
   <script src="/shared/auth/invite-referral.js?v=20261119-invite-referral1" defer></script>
 <script src="/shared/diagnostics/diagnostics.js?v=20261106-source-folders1" defer></script>
@@ -21,9 +21,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#2674c5">
-  <title>오쭈다 공원 | 오늘 하루 어땠나요? 괜찮았나요</title>
-  <meta name="description" content="오늘 하루 어땠나요? 괜찮았나요. 오늘의 마음을 익명카드로 나누고 서로 공감해 보세요.">
+  <title>오쭈다 공원 | 익명카드로 나누는 오늘의 마음</title>
+  <meta name="description" content="오쭈다 공원은 오늘의 마음을 익명카드로 나누는 공간이에요. 카드를 둘러보고 공감과 답글로 서로의 하루를 응원해 보세요.">
   <link rel="canonical" href="https://ojjuda.kr/park/">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"오쭈다 공원","url":"https://ojjuda.kr/park/","description":"오쭈다 공원은 오늘의 마음을 익명카드로 나누는 공간이에요. 카드를 둘러보고 공감과 답글로 서로의 하루를 응원해 보세요.","inLanguage":"ko-KR","isPartOf":{"@id":"https://ojjuda.kr/#website"}}</script>
   <link rel="icon" href="/park/assets/icon-192.png?v=seasonal-v1-autumn-d0c431c01ed9" type="image/png">
   <link rel="apple-touch-icon" href="/park/assets/apple-touch-icon.png?v=seasonal-v1-autumn-d0c431c01ed9">
   <link rel="manifest" href="/park/manifest.webmanifest?v=20261123-independent-park1">
@@ -32,12 +33,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Nanum+Gothic+Coding:wght@400;700&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="/note/style.css?v=20261004-home2">
-  <link rel="stylesheet" href="/note/features.css?v=20261120-video1">
+  <link rel="stylesheet" href="/note/features.css?v=20261125-pos1">
   <link rel="stylesheet" href="/park/fonts.css?v=20261120-nanum-myeongjo1">
   <link rel="stylesheet" href="/note/event-photo.css?v=20261004-design1" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="/note/effects.css?v=0.45.28-beta">
   <link rel="stylesheet" href="/note/support.css?v=20261119-support-layout1" media="print" onload="this.media='all'">
-  <link rel="stylesheet" href="/note/notifications.css?v=20261116-guest-inbox1" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="/note/notifications.css?v=20261127-app-inbox1" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="/note/map.css?v=20261004-design1" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="/note/pull-refresh.css?v=0.45.10-beta" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="/note/feed-swipe.css?v=20260929-swipe1">
@@ -45,7 +46,7 @@
   <link rel="stylesheet" href="/note/account.css?v=20260929-account1" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="/features/guide/guide-entry.css?v=20261106-source-folders1" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="/shared/media/photo-protection.css?v=20261106-source-folders1">
-<link rel="stylesheet" href="/features/profile/my-menu.css?v=20261106-source-folders1">
+<link rel="stylesheet" href="/features/profile/my-menu.css?v=20261106-source-folders1" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="/features/wallet/ju-charge.css?v=20261106-source-folders1" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="/ju-coins/ju-coins.css?v=20261106-source-folders1" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="/features/wallet/ju-decorations.css?v=20261106-source-folders1" media="print" onload="this.media='all'">
@@ -54,16 +55,16 @@
 <script src="/shared/media/photo-protection.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/shared/viewport/mobile-viewport.css?v=20261106-source-folders1">
 <script src="/shared/viewport/mobile-viewport.js?v=20261106-source-folders1" defer></script>
-<link rel="stylesheet" href="/features/profile/world-profile-photo.css?v=20261125-local-settings1">
-<link rel="stylesheet" href="/features/friends/friend-messages.css?v=20261125-local-settings1">
+<link rel="stylesheet" href="/features/profile/world-profile-photo.css?v=20261125-local-settings1" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="/features/friends/friend-messages.css?v=20261125-local-settings1" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="/park/embedded.css?v=20261125-local-settings1">
 <link rel="stylesheet" href="/features/account/settings-list.css?v=20261119-guest-account1" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="/shared/brand/service-banners.css?v=20261125-avatar-test1">
-<script src="/shared/brand/service-banners.js?v=20261125-avatar-test1" defer></script>
+<link rel="stylesheet" href="/shared/brand/service-banners.css?v=20261125-settings-banners2">
+<script src="/shared/brand/service-banners.js?v=20261125-settings-banners2" defer></script>
 <link rel="stylesheet" href="/shared/brand/brand-copy.css?v=20261106-source-folders1">
 <link rel="stylesheet" href="/features/wallet/paid-ui.css?v=20261106-source-folders1">
 <link rel="stylesheet" href="/app/world/world-design.css?v=20261106-source-folders1">
-<link rel="stylesheet" href="/park/design.css?v=20261124-park-layout450">
+<link rel="stylesheet" href="/park/design.css?v=20261125-reply-tags2">
 <link rel="stylesheet" href="/note/composer-tools.css?v=20261120-video1" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="/park/card-grid.css?v=20261124-park-450">
 <link rel="stylesheet" href="/app/world/world-themes.css?v=20261119-auto-theme1">
@@ -73,16 +74,16 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="오쭈다 공원">
 <meta property="og:url" content="https://ojjuda.kr/park/">
-<meta property="og:title" content="오쭈다 공원 | 오늘 하루 어땠나요? 괜찮았나요">
-<meta property="og:description" content="오늘 하루 어땠나요? 괜찮았나요. 오늘의 마음을 익명카드로 나누고 서로 공감해 보세요.">
+<meta property="og:title" content="오쭈다 공원 | 익명카드로 나누는 오늘의 마음">
+<meta property="og:description" content="오쭈다 공원은 오늘의 마음을 익명카드로 나누는 공간이에요. 카드를 둘러보고 공감과 답글로 서로의 하루를 응원해 보세요.">
 <meta property="og:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="오쭈다 공원 | 오늘 하루 어땠나요? 괜찮았나요">
-<meta name="twitter:description" content="오늘 하루 어땠나요? 괜찮았나요. 오늘의 마음을 익명카드로 나누고 서로 공감해 보세요.">
+<meta name="twitter:title" content="오쭈다 공원 | 익명카드로 나누는 오늘의 마음">
+<meta name="twitter:description" content="오쭈다 공원은 오늘의 마음을 익명카드로 나누는 공간이에요. 카드를 둘러보고 공감과 답글로 서로의 하루를 응원해 보세요.">
 <meta name="twitter:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
 <link rel="stylesheet" href="/shared/brand/service-header.css?v=20261119-main-invite1">
@@ -195,6 +196,7 @@
           <div class="feed-layout">
             <div class="feed-column">
               <div class="feed-sort-tabs tabs" role="group" aria-label="카드 정렬"></div>
+          <a class="back-link" href="/park/even-g2.html" target="_top">G2 안경으로 보기</a>
               <div class="feed-list park-photo-cards" id="feed-list" aria-live="polite"><p class="park-feed-loading-status" role="status">🌷 쭈가 오늘의 카드를 모으는 중…</p>
                 <div class="park-skeleton-card" aria-hidden="true"><div class="park-skeleton-photo"><span class="park-skeleton-quote"></span><span class="park-skeleton-quote short"></span></div><div class="park-skeleton-meta"><span></span><span></span></div></div>
                 <div class="park-skeleton-card" aria-hidden="true"><div class="park-skeleton-photo"><span class="park-skeleton-quote"></span><span class="park-skeleton-quote short"></span></div><div class="park-skeleton-meta"><span></span><span></span></div></div>
@@ -242,7 +244,7 @@
           <label class="compose-photo-attach" id="card-photo-attach" role="button" tabindex="0" hidden title="사진·영상 첨부"><input id="card-photo-file" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm,.mp4,.mov,.m4v,.webm" aria-describedby="card-media-status" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 4 7.6 6H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-2.6L15 4H9Zm3 5a4 4 0 1 1 0 8 4 4 0 0 1 0-8Zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/></svg><span class="visually-hidden">사진·영상 첨부 · 무료</span></label><button class="compose-photo-remove" id="card-photo-remove" type="button" hidden aria-label="첨부 빼기">×</button>
           <textarea id="compose-text" aria-label="카드 글" maxlength="200" placeholder="오늘 하루 어땠나요?&#10;괜찮았나요" rows="2"></textarea>
           <div class="compose-tag-display" id="compose-tag-display" aria-live="polite" aria-label="카드 태그 미리보기"></div>
-          <input id="compose-tags" type="text" placeholder="#태그 · 공백이나 쉼표로 나눠요 (최대 5개)" maxlength="120" autocomplete="off" aria-label="카드 태그 (최대 5개, 공백이나 쉼표로 나눠요)">
+          <input id="compose-tags" type="text" placeholder="#태그 · 최대 5개" maxlength="4096" autocomplete="off" aria-label="카드 태그 최대 5개, 공백이나 쉼표로 나눠요">
         </div>
         <p class="compose-media-status" id="card-media-status" role="status" aria-live="polite" hidden></p>
         <div class="event-photo-choice" id="event-photo-choice" hidden>
@@ -297,24 +299,23 @@
   </div>
   <script src="/note/map.js?v=20260929-pinch" defer></script>
   <script src="/note/support.js?v=20261124-service-return1" defer></script>
-  <script src="/note/drafts.js?v=20261117-park-wash-rhythm1" defer></script>
-  <script src="/note/notifications.js?v=20261125-local-settings1" defer></script>
+  <script src="/note/drafts.js?v=20261125-pos1" defer></script>
+  <script src="/note/notifications.js?v=20261127-app-inbox1" defer></script>
   <script src="/note/feed-swipe.js?v=20261125-local-settings1" defer></script>
   <script src="/features/account/account-deletion.js?v=20261120-park-video1" defer></script>
   <script src="/note/share-image.js?v=20261117-park-wash-rhythm1" defer></script>
   <script src="/note/share-kakao.js?v=20261031-kakao-card-share1" defer></script>
   <script src="/note/composer-tools.js?v=20261120-video1" defer></script>
-  <script src="/note/preview.js?v=20261125-original-auto-tags1" defer></script>
+  <script src="/note/preview.js?v=20261127-app-inbox1" defer></script>
   <script src="/note/pull-refresh.js?v=20261004-refresh1" defer></script>
   <script src="/note/navigation.js?v=20261125-classic-settings1" defer></script>
   <script src="/features/profile/world-profile-photo.js?v=20261125-local-settings1" defer></script>
   <script src="/features/friends/friend-messages.js?v=20261125-local-settings1" defer></script>
   <script src="/park/account-settings.js?v=20261125-local-settings1" defer></script>
   <script src="/park/friends.js?v=20261125-local-settings1" defer></script>
-  <script src="/park/integration.js?v=20261125-local-settings1" defer></script>
+  <script src="/park/integration.js?v=20261127-focus-download" defer></script>
   <!-- The brush renderer is optional for the first cards and initializes after Park is usable. -->
   <script src="/note/calligraphy-motifs.js?v=20261117-park-phrase1" defer></script>
-  <script src="/note/calligraphy.js?v=20261123-park-deferred-ink1" defer></script>
+  <script src="/note/calligraphy.js?v=20261125-card-contrast1" defer></script>
 </body>
 </html>
-

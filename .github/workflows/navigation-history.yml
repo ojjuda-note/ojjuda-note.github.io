@@ -53,6 +53,7 @@ jobs:
       - name: Verify history state, authentication return and embedded screens
         run: |
           node --test tests/section-back-navigation.test.cjs tests/public-dialog-navigation.test.cjs tests/world-navigation-departure.test.cjs tests/admin-back-navigation.test.cjs tests/park-settings-navigation.test.cjs tests/park-frame-cache.test.cjs tests/admin-service-scope.test.cjs tests/group-navigation-history.test.cjs tests/pajang-navigation.test.mjs tests/pajang-navigation-dom.test.cjs tests/pajang-account.test.mjs
+          node --test tests/group-invitations-db.test.cjs
           node tests/portal-auth-entry.test.cjs
           node --test tests/service-document-return.test.cjs
           node tests/inline-scripts.test.cjs
@@ -71,6 +72,7 @@ jobs:
           navigation_test_failed=0
           node tests/public-navigation-history-ui.test.cjs || navigation_test_failed=1
           node tests/group-navigation-history-ui.test.cjs || navigation_test_failed=1
+          node --test tests/agit-group-navigation-ui.test.cjs tests/group-password-ui.test.cjs || navigation_test_failed=1
           PAJANG_NAVIGATION_ONLY=1 node tests/pajang-discovery-browser.cjs || navigation_test_failed=1
           node tests/world-game-back-ui.test.cjs || navigation_test_failed=1
           node tests/arcade-exit-ui.test.cjs || navigation_test_failed=1

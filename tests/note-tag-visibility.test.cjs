@@ -119,12 +119,13 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
   const context=vm.createContext({query:()=>({from:()=>new Query()}),columns:'id,tags,kind,created_at',
     feedMode:'all',feedSort:'latest',feedTerm:'',feedSnapshot:null,feedCursor:null,editingId:null,kind:'memo',
     tags:{value:''},text:{value:'산책하며 찍은 사진'},manualTags:[],autoTagsNow:[],rejectedTags:new Set(),
-    suggestTags:()=>['산책','일상','사진','휴식','운동']});
+    autoTagMode:true, composerRun:1, backdrop:{hidden:false}, updateComposer(){}, recordDraft(){}, wordTagger:()=>['산책','일상','사진','휴식','운동']});
   // The isolated VM must load the real card-length helper used by parsedTags.
   // Do not replace it with a test-only approximation: the ❤️❤️ mask counts as one.
   const lengthHelper = source.match(/^const maskedTextLength = [^\n]+;/m)?.[0];
   assert.ok(lengthHelper, 'maskedTextLength definition must remain present in the public composer');
   vm.runInContext(lengthHelper, context);
+  vm.runInContext(source.slice(source.indexOf('const MAX_CARD_TAGS'),source.indexOf('let wordTagger,')),context);
   assert.equal(vm.runInContext("maskedTextLength('❤️❤️')", context), 1);
   vm.runInContext(source.slice(source.indexOf('const tagList ='),source.indexOf('function shownName(')),context);
   vm.runInContext(source.slice(source.indexOf('function parsedTags('),source.indexOf('function validEventBody(')),context);
@@ -134,7 +135,7 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
   }
   assert.equal(parsed('a b c d e f'),null);
   assert.equal(parsed('일상 일상'),null);
-  assert.equal(parsed('a'.repeat(21)),null);
+  assert.equal(parsed('a'.repeat(202)),null);
   assert.deepEqual(parsed(' , #  '),[]);
   const adminSource=read('note/admin.js');
   const adminContext=vm.createContext({tags:{input:{value:' #일상\t산책,  19금 '}}});
@@ -158,10 +159,10 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
   context.kind='memo';
   vm.runInContext('tags.value=initialComposerTags(); manualTags=tagList(tags.value); refreshAutoTags()',context);
   assert.deepEqual(parsed(context.tags.value),['19금','산책','일상','사진','휴식']);
-  assert.equal(vm.runInContext("tagList(initialComposerTags('a b c d e')).length",context),6,'restoring a full draft must not discard its tags');
+  assert.equal(vm.runInContext("tagList(initialComposerTags('a b c d e')).length",context),5,'reserve a slot for the search-only tag when restoring a draft');
   vm.runInContext("tags.value=initialComposerTags('a b c d e'); manualTags=tagList(tags.value); refreshAutoTags()",context);
-  assert.equal(context.tags.value,'19금, a, b, c, d, e');
-  assert.equal(parsed(context.tags.value),null, 'the five-tag limit is enforced without silently dropping draft tags');
+  assert.equal(context.tags.value,'19금, a, b, c, d');
+  assert.equal(parsed(context.tags.value).length, 5);
   context.feedTerm='';
   vm.runInContext(source.slice(source.indexOf('function filterSearchOnlyTags('),source.indexOf('async function loadFeed(')),context);
   const search = async tag => { context.feedTerm=tag; return await vm.runInContext('filteredFeed()',context).rows(); };

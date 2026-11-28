@@ -1,95 +1,131 @@
-// Integration source for a future Even Hub package. This module is not loaded
-// by glasses.html: it must be bundled with @evenrealities/even_hub_sdk inside
-// an Even Hub WebView, then connected to OJJUDA_GLASS_PREVIEW after glasses.js.
-// It has not been verified on G2 hardware.
-import {
-  AppLocationAccuracy,
-  OsEventTypeList,
-  waitForEvenAppBridge
-} from '@evenrealities/even_hub_sdk';
+import {AppLocationAccuracy, OsEventTypeList, waitForEvenAppBridge} from '@evenrealities/even_hub_sdk';
 
-function shortLine(text) {
-  const clean = String(text || '').replace(/\s+/g, ' ').trim();
-  const chars = Array.from(clean);
-  return chars.length > 12 ? `${chars.slice(0, 12).join('')}…` : clean;
+function box(id, name, x, y, w, h, content, capture = 0, border = 0) {
+  return {containerID:id, containerName:name, xPosition:x, yPosition:y, width:w, height:h,
+    content, isEventCapture:capture, borderWidth:border, borderColor:10, paddingLength:border ? 4 : 0};
 }
 
-function page(model) {
-  const card = model.card;
-  const status = `${model.time || '--:--'}   배터리 ${model.battery == null ? '—' : `${model.battery}%`}`;
-  const summary = card
-    ? `${card.distance}  ${shortLine(card.oneLine)}`
-    : '가까운 카드를 찾는 중';
-  const full = card ? `${card.distance}  ${card.index}/${card.count}\n${card.body}` : summary;
-  const open = !!model.expanded && !!card;
-  return {
-    containerTotalNum: 2,
-    textObject: [
-      {
-        xPosition: 205, yPosition: 17, width: 330, height: 26,
-        containerID: 1, containerName: 'status', content: status,
-        isEventCapture: 0
-      },
-      {
-        xPosition: open ? 95 : 205,
-        yPosition: open ? 49 : 65,
-        width: open ? 430 : 330,
-        height: open ? 188 : 60,
-        borderWidth: 1, borderColor: 8, borderRadius: 6,
-        paddingLength: 7,
-        containerID: 2, containerName: 'card',
-        content: open ? full : summary,
-        isEventCapture: 1
-      }
-    ]
-  };
+export function g2Page(view) {
+  if (view.paused) return {containerTotalNum:1,textObject:[box(1,'standby',0,0,576,288,' ',1)]};
+  const cards = view.cards;
+  const fields = [
+    box(1,'clock',12,6,426,32,view.clockText ?? view.time),
+    box(2,'battery',454,6,118,32,(view.battery ?? '—') + '%' + (view.charging ? ' ⚡' : '')),
+    box(3,'weather',12,248,325,36,view.weather),
+    box(4,'speed',426,248,146,36,(view.speed ?? '—') + ' km/h')
+  ];
+  if (view.reader) {
+    const reader=view.reader;
+    fields.push(box(5,'full',118,48,448,180,'',0,1),
+      box(6,'reader',125,52,431,138,(reader.title+'\n'+reader.body).slice(0,950),1),
+      box(7,'fulldist',441,194,119,30,reader.distance));
+  } else {
+    const summary = card => (view.sample ? '예시 · ' : '') + card.oneLine;
+    fields.push(box(5,'first',348,48,218,84,cards[0] ? '▶ ' + summary(cards[0]) : '근처 카드 —',1,1),
+      box(6,'second',348,143,218,84,cards[1] ? summary(cards[1]) : '—',0,1),
+      box(7,'firstdist',443,100,118,29,cards[0]?.distance ?? ''),
+      box(8,'seconddist',443,195,118,29,cards[1]?.distance ?? ''));
+  }
+  return {containerTotalNum:fields.length,textObject:fields};
 }
 
-export async function attachEvenG2(preview = window.OJJUDA_GLASS_PREVIEW) {
-  if (!preview) throw new Error('glasses.js must load before the Even G2 adapter');
+function simplePage(view) {
+  const clock = view.clockText ?? view.time;
+  const lines = view.reader ? [clock, view.reader.title, view.reader.body, view.reader.distance] :
+    [clock, ...view.cards.map((card,i) => [(i === 0 ? '▶ ' : '') + card.oneLine,card.distance].filter(Boolean).join('  ')), view.weather, (view.speed ?? '—') + ' km/h'];
+  const content = view.paused ? ' ' : lines.filter(Boolean).join('\n').slice(0,750);
+  return {containerTotalNum:1,textObject:[box(1,'park',8,8,560,272,content || '오쭈다 공원',1)]};
+}
+
+const attemptedStartup = new WeakSet();
+export async function readPhonePosition() {
   const bridge = await waitForEvenAppBridge();
-  const result = await bridge.createStartUpPageContainer(page(preview.getView()));
-  if (result !== 0) throw new Error('Even G2 display initialization failed');
-
-  let alive = true;
-  let pending = Promise.resolve();
-  const redraw = () => {
-    if (!alive) return;
-    // Avoid concurrent BLE redraws. The HUD keeps the middle of the view clear.
-    pending = pending.then(() => bridge.rebuildPageContainer(page(preview.getView())));
-    pending = pending.catch(() => {});
-  };
-  const onView = () => redraw();
-  window.addEventListener('ojjuda:glasses-view', onView);
+  const fix = await bridge.getAppLocation({accuracy:AppLocationAccuracy.High, timeoutMs:12000});
+  if (!fix) throw Error('휴대폰의 위치 기능과 Even 앱의 위치 권한을 확인해 주세요.');
+  return fix;
+}
+export async function attachEvenG2(hud) {
+  let timer;
+  const bridge = await Promise.race([waitForEvenAppBridge(),new Promise((_, reject) => {
+    timer = setTimeout(() => reject(Error('BRIDGE')), 10000);
+  })]).finally(() => clearTimeout(timer));
+  const info = await Promise.race([Promise.resolve().then(() => bridge.getDeviceInfo?.()).catch(() => null),
+    new Promise(resolve => { timer = setTimeout(() => resolve(null), 1200); })]).finally(() => clearTimeout(timer));
+  if (['disconnected','connectionFailed','connecting'].includes(info?.status?.connectType)) throw Error('DEVICE');
+  let page = simplePage(hud.getView());
+  let result;
+  try {
+    if (attemptedStartup.has(bridge) && await bridge.rebuildPageContainer(page)) result = 0;
+    else {
+      attemptedStartup.add(bridge);
+      result = await bridge.createStartUpPageContainer(page);
+    }
+  } catch { throw Error('DISPLAY'); }
+  if (result !== 0) throw Error('DISPLAY-' + String(result));
+  let alive = true, drawing = false, dirty = false, listener, generation = 0;
+  let locWork = Promise.resolve();
+  async function paint() {
+    dirty = true;
+    if (drawing) return;
+    drawing = true;
+    try {
+      while (alive && dirty) {
+        dirty = false;
+        const next = g2Page(hud.getView());
+        if (page.containerTotalNum !== next.containerTotalNum || page.textObject[0].containerName !== next.textObject[0].containerName) {
+          if (await bridge.rebuildPageContainer(next)) page = next;
+          else if (page.textObject[0].containerName === 'park') {
+            const fallback = simplePage(hud.getView()).textObject[0];
+            if (await bridge.textContainerUpgrade({containerID:1,containerName:'park',content:fallback.content})) page.textObject[0] = fallback;
+          }
+        } else {
+          for (let i=0;i<next.textObject.length && alive;i++) {
+            const {containerID,containerName,content} = next.textObject[i];
+            if (page.textObject[i].content !== content &&
+                await bridge.textContainerUpgrade({containerID,containerName,content})) page.textObject[i].content=content;
+          }
+        }
+      }
+    } catch { /* A later device or clock event retries the latest view. */ }
+    finally { drawing = false; }
+  }
+  const redraw = () => { void paint(); };
+  window.addEventListener('ojjuda:glasses-view',redraw);
   const offEvents = bridge.onEvenHubEvent(event => {
-    const type = event.textEvent?.eventType;
-    if (!event.textEvent) return;
-    if (type === OsEventTypeList.CLICK_EVENT || type === undefined) preview.select();
-    else if (!preview.getView().expanded && type === OsEventTypeList.SCROLL_TOP_EVENT) preview.move(-1);
-    else if (!preview.getView().expanded && type === OsEventTypeList.SCROLL_BOTTOM_EVENT) preview.move(1);
+    const envelope = event.sysEvent || event.textEvent;
+    if (!envelope) return;
+    const type = envelope.eventType ?? OsEventTypeList.CLICK_EVENT;
+    if (type === OsEventTypeList.DOUBLE_CLICK_EVENT) { void bridge.shutDownPageContainer(1); return; }
+    if (type === OsEventTypeList.CLICK_EVENT) hud.select();
+    else if (type === OsEventTypeList.SCROLL_TOP_EVENT) hud.move(-1);
+    else if (type === OsEventTypeList.SCROLL_BOTTOM_EVENT) hud.move(1);
   });
-  const offDevice = bridge.onDeviceStatusChanged(value => {
-    preview.setBattery(value?.batteryLevel);
-  });
-  const info = await bridge.getDeviceInfo();
-  preview.setBattery(info?.status?.batteryLevel);
-
-  const offLocation = bridge.onAppLocationChanged(loc => {
-    // The preview sends coordinates by POST to the protected nearby RPC only.
-    // This adapter never renders, stores, or logs them.
-    void preview.setLocation(loc);
-  });
-  const first = await bridge.getAppLocation({ accuracy: AppLocationAccuracy.High, timeoutMs: 12000 });
-  if (first) await preview.setLocation(first);
-  await bridge.startAppLocationUpdates({
-    accuracy: AppLocationAccuracy.Medium, intervalMs: 60000, distanceFilter: 250
-  });
+  const battery = state => { if (alive) hud.setBattery(state?.batteryLevel,state?.isCharging); };
+  battery(info?.status);
+  const offDevice = bridge.onDeviceStatusChanged?.(battery);
+  const offLocation = bridge.onAppLocationChanged?.(fix => listener?.(fix));
+  const schedule = job => { locWork = locWork.catch(() => {}).then(job); return locWork; };
+  function stopLocation() {
+    ++generation; listener = undefined;
+    return schedule(() => bridge.stopAppLocationUpdates());
+  }
+  function startLocation(receive) {
+    const run = ++generation; listener = receive;
+    return schedule(async () => {
+      if (!alive || generation !== run) return;
+      const enabled = await bridge.startAppLocationUpdates({accuracy:AppLocationAccuracy.High,
+        intervalMs:4000, distanceFilter:0});
+      if (generation !== run) return;
+      if (!enabled) throw Error('Even 앱에서 위치 사용을 허용해 주세요.');
+      const first = await bridge.getAppLocation({accuracy:AppLocationAccuracy.High,timeoutMs:10000});
+      if (generation === run && first) receive(first);
+    });
+  }
   redraw();
-
-  return async () => {
-    alive = false;
-    window.removeEventListener('ojjuda:glasses-view', onView);
-    offEvents(); offDevice(); offLocation();
-    await bridge.stopAppLocationUpdates();
-  };
+  return {startLocation,stopLocation,dispose() {
+    alive=false;
+    window.removeEventListener('ojjuda:glasses-view',redraw);
+    offEvents?.(); offDevice?.(); offLocation?.();
+    if (listener) void stopLocation().catch(() => {});
+  }};
 }

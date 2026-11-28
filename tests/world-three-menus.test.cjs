@@ -37,21 +37,29 @@ function fixture(url='https://ojjuda.kr/world.html'){
   };
   assert.equal(active(),'hub','the initial page opens Hub');
   for(const selector of ['.bottomnav','.sidenav']){
-   assert.deepEqual([...w.document.querySelectorAll(selector+' [data-tab]')].map(b=>b.textContent.trim()),['아지트','오락실','설정']);
+   assert.deepEqual([...w.document.querySelectorAll(selector+' [data-tab]')].map(b=>b.textContent.trim()),['아지트','그룹','오락실','설정']);
    assert.equal(w.document.querySelector(selector+' [aria-current=page]').dataset.tab,'hub');
+   for(const button of w.document.querySelectorAll(selector+' [data-tab]')){
+    const href=button.querySelector('svg use').getAttribute('href'),asset=new URL(href,w.location.href);
+    const sprite=new w.DOMParser().parseFromString(fs.readFileSync(path.join(root,asset.pathname),'utf8'),'image/svg+xml');
+    assert.ok(sprite.getElementById(asset.hash.slice(1))?.querySelector('path,circle,rect'),button.textContent+' has a drawable navigation icon');
+   }
   }
-  // Fanpages were swapped with festival: group, fanpages / restaurants, festival.
+  // The main menu replaces the duplicate group tile.
   assert.deepEqual([...w.document.querySelectorAll('#agit-daily .agit-life-grid > *')].map(el =>
     el.dataset.act === 'agit-fan' ? 'fanpages' : el.dataset.v
-  ), ['group','fanpages','restaurants','festival']);
+  ), ['fanpages','restaurants','festival']);
   assert.deepEqual([...w.document.querySelectorAll('[data-act=agit-daily]')].map(b=>b.dataset.v),
-    ['group','restaurants','festival']);
+    ['restaurants','festival']);
   assert.equal(w.document.querySelector('#agit-daily h2').textContent,'일상 둘러보기');
-  assert.deepEqual([...w.document.querySelectorAll('[data-act=agit-daily][aria-label*="회원 전용"]')].map(b=>b.dataset.v),['group']);
+  assert.deepEqual([...w.document.querySelectorAll('[data-act=agit-daily][aria-label*="회원 전용"]')].map(b=>b.dataset.v),[]);
   assert.equal(w.document.querySelector('.agit-park-banner,.agit-pajang-banner,ojjuda-service-banners'),null,'large service banners no longer occupy the Agit home');
   t.actions.tab({tab:'my'});
   const bannerRow=w.document.querySelector('ojjuda-service-banners[current="agit"]');
-  assert.equal(bannerRow.parentElement.lastElementChild,bannerRow,'service banners occupy the bottom of Settings');
+  assert.equal(bannerRow.parentElement.lastElementChild.querySelector('.app-store-downloads')?.closest('section')?.previousElementSibling,bannerRow,'service banners precede the final download section');
+  const downloads=bannerRow.parentElement.lastElementChild;
+  assert.equal(downloads.querySelector('[data-store-app="focus"]').href,'https://play.google.com/store/apps/details?id=kr.framenote.camera.studio&hl=ko');
+  assert.equal(downloads.querySelector('.app-store-note a:last-child').href,'https://play.google.com/apps/testing/kr.framenote.camera.studio?hl=ko');
   assert.deepEqual([...bannerRow.querySelectorAll('.ojjuda-service-banner')].map(link=>link.dataset.service),['park','pajang']);
   const parkBanner=bannerRow.querySelector('[data-service="park"]');
   assert.equal(new URL(parkBanner.href).pathname,'/park/');
@@ -72,19 +80,12 @@ function fixture(url='https://ojjuda.kr/world.html'){
   assert.equal(w.document.querySelector('[data-arcade-games=solo] [data-v=poker]'),null,'poker is not duplicated in the solo list');
   w.OjjudaMatgoAccess={visible:minimum=>(minimum||19)<=19};
   t.auth.online=true;t.auth.user={id:'adult-menu-fixture'};t.render();
-  const poker=w.document.querySelector('[data-arcade-games=adult] [data-v=poker]');
-  assert.ok(poker,'eligible members see poker in the adult section');
-  assert.equal(poker.previousElementSibling.dataset.act,'matgo-open','poker stays immediately after Matgo');
-  assert.match(poker.textContent,/최대 4명/,'the menu displays the maximum player count');
-  const roulette=w.document.querySelector('[data-arcade-games=adult] [data-v=roulette]');
-  assert.ok(roulette,'eligible members see roulette in the adult section');
-  assert.equal(roulette.previousElementSibling,poker,'roulette follows poker');
-  assert.match(roulette.textContent,/최대 4명/,'roulette displays its four-player capacity');
+  for(const id of ['poker','roulette'])assert.equal(w.document.querySelector('[data-arcade-games=adult] [data-v='+id+']'),null,'retired games have no menu entry');
   const gameId=button=>button.dataset.act==='matgo-open'?'matgo':button.dataset.act==='bl-open'?'billiards':button.dataset.v;
   const categories={
    solo:['chacha_rush','solitaire','archery','sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw'],
    multi:['onecard','bang','tank','yut','tour','ttang','janggi','chess','billiards'],
-   adult:['matgo','poker','roulette','photo_ttang','drinking']
+   adult:['matgo','photo_ttang','drinking']
   };
   assert.deepEqual([...w.document.querySelectorAll('[data-arcade-games]')].map(grid=>grid.dataset.arcadeGames),Object.keys(categories),'Arcade has solo, multiplayer and adult games');
   assertArcadeCategories();
@@ -152,7 +153,7 @@ function fixture(url='https://ojjuda.kr/world.html'){
   }
   for(const id of ['cafe','library']){t.actions['enter-place']({id});assert.equal(active(),'arcade');}
   t.auth.isAdmin=true;t.auth.online=true;t.auth.user={id:'admin-menu-fixture'};t.actions.tab({tab:'my'});
-  assert.equal(w.document.querySelectorAll('.sidenav [data-tab]').length,3,'administration is inside settings');
+  assert.equal(w.document.querySelectorAll('.sidenav [data-tab]').length,4,'administration is inside settings');
   assert.ok(w.document.querySelector('.my-hub [data-tab=admin]'));
   assert.deepEqual(Array.from(t.adminTabs.content,x=>x[0]),['cards','messages','pajang-answers','pajang-questions','pajang-chats','groups','photo-stages','drinking-prompts','risk','map','rewards']);
   assert.equal(t.adminTabs.operations.some(x=>x[0]==='quiz'),false);
@@ -198,5 +199,5 @@ function fixture(url='https://ojjuda.kr/world.html'){
   w.OjjudaGameRankings.mount(host,{client,owner:null,rankingsOnly:true});assert.ok(host.textContent.includes('로그인하면 게임 기록을 저장하고 순위에 도전'));
   w.OjjudaGameRankings.mount(null);
  }finally{dom.window.close();}
- console.log('PASS: three main menus, dedicated Park menus, legacy redirects, initial links, settings, presence, rankings-only requests, game launch, score refresh and access isolation');
+ console.log('PASS: four main menus, dedicated Park menus, legacy redirects, initial links, settings, presence, rankings-only requests, game launch, score refresh and access isolation');
 })().catch(error=>{console.error(error);process.exitCode=1});

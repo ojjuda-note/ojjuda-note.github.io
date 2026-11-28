@@ -1,0 +1,17 @@
+{
+  "package_id": "kr.ojjuda.park",
+  "edition": "202601",
+  "name": "오쭈다 공원",
+  "version": "1.4.2",
+  "min_sdk_version": "0.0.16",
+  "entrypoint": "index.html",
+  "supported_languages": ["ko"],
+  "permissions": [
+    {"name":"location","desc":"현재 위치의 날씨와 가까운 공원 카드를 표시합니다."},
+    {
+      "name": "network",
+      "desc": "공원의 공개 카드, 답카드와 현재 위치의 날씨를 불러옵니다.",
+      "whitelist": ["https://ojjuda.kr", "https://ziezbdjofcugznowiuda.supabase.co"]
+    }
+  ]
+}

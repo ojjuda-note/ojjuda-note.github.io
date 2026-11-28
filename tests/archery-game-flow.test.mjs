@@ -166,7 +166,7 @@ async function appHarness(saved = null, ammoOptions = {}) {
   const laser = new vm.SourceTextModule(laserSource, { context, identifier: 'laser.mjs' });
   const coinExchangeModule = new vm.SourceTextModule(coinExchangeSource, { context, identifier: 'coin-exchange.mjs' });
   const ammoModule = new vm.SourceTextModule(ammoSource, { context, identifier: 'ammo-client.mjs' });
-  const sceneryNames = ['drawScenery', 'drawAnimal', 'drawClay', 'drawUfo', 'drawObstacle', 'drawPasser', 'drawEquipmentIcon', 'drawFirstPersonBow', 'drawBullseyeImpact', 'drawBullseyeVignette'];
+  const sceneryNames = ['drawScenery', 'drawRangeTarget', 'drawAnimal', 'drawClay', 'drawUfo', 'drawObstacle', 'drawPasser', 'drawEquipmentIcon', 'drawFirstPersonBow', 'drawBullseyeImpact', 'drawBullseyeVignette'];
   const scenery = new vm.SyntheticModule(sceneryNames, function () {
     for (const name of sceneryNames) this.setExport(name, name === 'drawScenery' ? (_ctx, _w, _h, options) => { sceneryFrame = options; } : name === 'drawFirstPersonBow' ? (_ctx, _w, _h, options) => { firstPersonFrame = options; } : name === 'drawAnimal' ? (...args) => animalFrames.push(args.slice(1)) : name === 'drawBullseyeImpact' ? (...args) => bullseyeFrames.push(args.slice(1)) : name === 'drawBullseyeVignette' ? (...args) => vignetteFrames.push(args.slice(1)) : noop);
   }, { context });
@@ -175,7 +175,7 @@ async function appHarness(saved = null, ammoOptions = {}) {
   const bulletEffects = new vm.SyntheticModule(Object.keys(bulletEffectFrames), function () {
     for (const [name, frames] of Object.entries(bulletEffectFrames)) this.setExport(name, (...args) => frames.push(args.slice(1)));
   }, { context });
-  const game = new vm.SourceTextModule(gameSource + '\nexport const testApi = { state, get progress(){return progress;}, get ammo(){return ammo;}, startStage, resetRound, finishRound, showShop, equipItem, installScope, equippedScope, hasScope, maximumZoom, setAimZoom, installLaser, activeLaser, laserEnabled, setLaserSettings, adjustLaser, resetLaser, toggleLaser, setLaserStep, laserFrame, openLaserAdjustments, closeLaserAdjustments, save, closeModal, activeBow, activeArrow, activeBullet, aimAngles, shotParams, effectiveSway, isSteady, get camera(){return camera;}, sceneItems, resize, project, onImpact, retryAmmo, showStabilizers, buyStabilizer, useStabilizer, aimBounds, cinematicFrame, renderTime, adminTrialRequested:false, adminTrialActive:false, get pointer(){return pointer;} };', { context, identifier: 'game.mjs' });
+  const game = new vm.SourceTextModule(gameSource + '\nexport const testApi = { state, get progress(){return progress;}, planBalloon, balloonPosition, checkBalloon, get ammo(){return ammo;}, startStage, resetRound, finishRound, showShop, equipItem, installScope, equippedScope, hasScope, maximumZoom, setAimZoom, installLaser, activeLaser, laserEnabled, setLaserSettings, adjustLaser, resetLaser, toggleLaser, setLaserStep, laserFrame, openLaserAdjustments, closeLaserAdjustments, save, closeModal, activeBow, activeArrow, activeBullet, aimAngles, shotParams, effectiveSway, isSteady, get camera(){return camera;}, sceneItems, resize, project, onImpact, retryAmmo, showStabilizers, buyStabilizer, useStabilizer, aimBounds, cinematicFrame, renderTime, adminTrialRequested:false, adminTrialActive:false, get pointer(){return pointer;} };', { context, identifier: 'game.mjs' });
   await game.link(specifier => specifier.startsWith('./engine.mjs') ? engine : specifier.startsWith('./animal-zones.mjs') ? animals : specifier.startsWith('./view.mjs') ? view : specifier.startsWith('./cinematic.mjs') ? cinematic : specifier.startsWith('./bullet-cinematic.mjs') ? bulletCinematic : specifier.startsWith('./bullet-effects.mjs') ? bulletEffects : specifier.startsWith('./coach.mjs') ? coach : specifier.startsWith('./laser.mjs') ? laser : specifier.startsWith('./ammo-client.mjs') ? ammoModule : specifier.startsWith('./coin-exchange.mjs') ? coinExchangeModule : scenery);
   await game.evaluate();
   await flush();
@@ -5574,4 +5574,160 @@ test('retired item-trial URLs cannot create equipment, open every stage or avoid
   assert.equal(app.api.progress.coins,0);app.api.startStage(220);assert.equal(app.api.state.stage.id,1);
   app.api.showShop('bow');for(const id of [20,21,22])app.api.equipItem(id);assert.equal(app.api.activeBow().id,0);
   assert.doesNotMatch(gameSource,/startAdminTrial|createTrialAmmoClient|모든 장비 무료 체험/);
+});
+
+test('round report plots only measured hits and clears when replaying a stage', async () => {
+  const app=await appHarness({version:1,stageCatalog:STAGE_CATALOG,coins:100,sound:false});
+  const draw=preciseMainDraw(app);
+  draw.pad.emit('pointerup',draw.coords);await app.flush();
+  app.until(()=>app.api.state.mode==='settling');
+  const {state}=app.api;
+  assert.equal(state.shotLog.length,1);
+  const point=state.shotLog[0][0].point;
+  assert.ok(Math.hypot(point.x,point.y)<.2);
+  assert.match(app.getElement('shotPlot').innerHTML,/plot-hit/);
+  app.api.onImpact();assert.equal(state.shotLog.length,1);
+  app.until(()=>state.mode==='ready');
+  app.getElement('menuBtn').emit('click');
+  assert.match(app.getElement('modalContent').innerHTML,/1회.*10점/);
+  assert.match(app.getElement('modalContent').innerHTML,/평균 착탄 · 중앙/);
+  app.api.closeModal();app.api.resetRound();assert.equal(state.shotLog.length,0);
+});
+
+test('bonus balloon rolls once per round and varies both turn and delay', async () => {
+  const app=await appHarness();
+  const {api}=app,stage=api.state.stage;
+  let appearances=0;
+  for(let i=0;i<10000;i++){
+    let first=true;
+    const bonus=api.planBalloon(stage,5,()=>{if(first){first=false;return i/10000;}return .5;});
+    if(bonus)appearances++;
+  }
+  assert.equal(appearances,500);
+  const sample=(turn,delay)=>{const draws=[.04999,turn,delay,.9,.3,.7];return api.planBalloon(stage,5,()=>draws.shift());};
+  const early=sample(0,0),late=sample(.99,.99);
+  assert.equal(early.turn,0);assert.equal(late.turn,3);assert.ok(late.delay>early.delay);
+  app.setRandom(()=>.05);api.resetRound();assert.equal(api.state.balloon,null);
+  app.frames(120);assert.equal(api.state.balloon,null);
+  app.setRandom(()=>0);api.resetRound();
+  const b=api.state.balloon;api.showShop();app.frames(60);
+  assert.equal(b.started,null);api.closeModal();app.frames(10);assert.equal(b.started,null);
+  app.frames(20);assert.ok(b.started!==null);
+  assert.ok(api.balloonPosition(b,b.started+2).y>api.balloonPosition(b,b.started).y);
+  assert.equal(api.balloonPosition(b,b.started+10.1),null);
+});
+
+test('a flying arrow pops the balloon and credits exactly 200 shop coins once', async () => {
+  const app=await appHarness(),{api}=app,{state}=api;
+  const draw=preciseMainDraw(app);
+  draw.pad.emit('pointerup',draw.coords);await app.flush();
+  assert.equal(state.mode,'flight');
+  const coins=api.progress.coins;
+  const z=.55,radius=.22,age=(app.engine.PLAYER.y-radius)/(.24+z*.033);
+  const b={x:0,z,radius,phase:0,started:state.time-age,popped:null};
+  state.balloon=b;
+  const from={x:3,y:1.65,z:0},to={x:3,y:1.65,z:2};
+  api.checkBalloon(from,to,state.time,state.time+.01);
+  assert.equal(api.progress.coins,coins);
+  app.until(()=>b.popped!==null);
+  assert.equal(api.progress.coins,coins+200);assert.equal(state.earned,200);
+  assert.equal(app.snapshot().coins,coins+200);
+  assert.equal(state.score,0);assert.equal(api.progress.hits,0);
+  assert.match(app.getElement('toast').textContent,/200 코인/);
+  api.checkBalloon({...from,x:0},{...to,x:0},state.time,state.time+.01);
+  assert.equal(api.progress.coins,coins+200);
+  app.until(()=>state.mode==='settling');
+  assert.equal(state.score,10);assert.equal(api.progress.hits,1);
+  assert.equal(state.earned,200+app.engine.getScoreCoinReward(10,state.stage.id));
+  assert.equal(api.progress.coins,coins+state.earned);
+});
+
+test('the live arrow recedes from the camera at both phone and desktop widths', async () => {
+  for(const [width,height] of [[390,415],[980,540]]){
+    const stage=lessonStageId('fixed-intro',50);
+    const app=await appHarness(progressForStage({version:1,stageCatalog:STAGE_CATALOG,lastStage:stage,sound:false}));
+    app.resize(width,height);
+    const {pad,coords}=preciseMainDraw(app);
+    pad.emit('pointerup',coords);await app.flush();
+    const {state}=app.api;
+    const snapshots=[];
+    for(const depth of [8,22,38]){
+      app.until(()=>state.mode==='flight'&&state.shot.position.z>=depth);
+      const point=app.api.project(state.shot.position);
+      assert.ok(point.visible&&point.x>0&&point.x<width&&point.y>0&&point.y<height);
+      snapshots.push(point.scale);
+      assert.ok(app.api.sceneItems(app.engine.targetAt(state.stage,state.time)).some(item=>item.kind==='flight-shadow'));
+    }
+    assert.ok(snapshots[0]>snapshots[1]&&snapshots[1]>snapshots[2]);
+    assert.ok(snapshots[2]<snapshots[0]*.64,'the late-flight arrow has a smaller onscreen scale');
+  }
+});
+
+test('a held touch survives mobile toolbar resizing and still releases exactly once', async () => {
+  const app = await appHarness(), pad = app.getElement('aimTouchpad');
+  app.resize(390, 480);
+  const down = {pointerId: 4, pointerType: 'touch', clientX: 186, clientY: 417};
+  pad.emit('pointerdown', down);
+  app.advanceTo(app.now + 320);
+  const started = app.api.state.drawStarted;
+  app.resize(390, 437);
+  assert.equal(app.api.state.mode, 'drawing');
+  assert.equal(app.api.state.drawStarted, started);
+  const before = baseAimScreen(app);
+  const up = {...down, clientX: 206, clientY: 407};
+  pad.emit('pointermove', up);
+  const after = baseAimScreen(app);
+  assert.ok(Math.abs(after.x-before.x-20) < 1e-8 && Math.abs(after.y-before.y+10) < 1e-8);
+  pad.emit('pointerup', up);pad.emit('lostpointercapture', up);pad.emit('pointerup', up);
+  assert.equal(app.api.state.used, 1);
+});
+
+test('touch duration follows the press and lift timestamps when event delivery is delayed', async () => {
+  const app = await appHarness(), pad = app.getElement('aimTouchpad');
+  const pressed = app.now + 5;
+  app.advanceTo(pressed + 130, {frame: false});
+  pad.emit('pointerdown', {pointerType: 'touch', timeStamp: pressed});
+  const lifted = pressed + 500;
+  app.advanceTo(lifted + 240, {frame: false});
+  pad.emit('pointerup', {pointerType: 'touch', timeStamp: lifted});
+  assert.equal(app.api.state.used, 1);
+  assert.equal(app.api.state.charge, .4);
+  assert.equal(app.api.state.shot.startedAt, app.now);
+});
+
+test('release carries the held arrow into flight, then yields to the simulated path and stays single-scored', async () => {
+  const app=await appHarness(), {state}=app.api;
+  app.resize(390,540);
+  const {pad,coords}=preciseMainDraw(app,{x:.2,y:0});
+  const held={tip:{x:168,y:304},tail:{x:128,y:425}};
+  state.heldShaft=held;
+  pad.emit('pointerup',coords);await app.flush();
+  const items=()=>app.api.sceneItems(app.engine.targetAt(state.stage,state.time));
+  const start=items().find(i=>i.kind==='tip'&&i.flying);
+  for(const [key,p] of [['point',held.tip],['tail',held.tail]]){
+    const projected=app.api.project(start[key]);
+    assert.ok(Math.abs(projected.x-p.x)<1e-6&&Math.abs(projected.y-p.y)<1e-6);
+  }
+  app.frames(2);
+  assert.ok(app.firstPersonFrame.releaseAge>0&&app.firstPersonFrame.releaseAge<.24);
+  app.until(()=>state.shot.position.z>=state.shot.heldOrigin.reach);
+  const later=items().find(i=>i.kind==='tip'&&i.flying);
+  assert.deepEqual({...later.point},{...state.shot.position});
+  app.until(()=>state.mode==='settling');app.frames(2);
+  assert.ok(items().some(i=>i.kind==='contact-fragment'));
+  assert.ok(state.shotLog[0][0].flightTime>0);
+  app.until(()=>state.mode==='ready');
+  assert.equal(state.used,1);assert.equal(state.shotLog.length,1);
+  assert.equal(app.firstPersonFrame.releaseAge,null);
+});
+
+test('reduced motion retains the normal arrow path and skips release and impact movement', async () => {
+  const app=await appHarness(null,{reducedMotion:true}), {state}=app.api;
+  const {pad,coords}=preciseMainDraw(app,{x:.2,y:0});
+  state.heldShaft={tip:{x:500,y:320},tail:{x:380,y:510}};
+  pad.emit('pointerup',coords);await app.flush();app.frames(2);
+  assert.equal(state.shot.heldOrigin,undefined);assert.equal(app.firstPersonFrame.releaseAge,null);
+  app.until(()=>state.mode==='settling');
+  assert.ok(!app.api.sceneItems(app.engine.targetAt(state.stage,state.time)).some(i=>i.kind==='contact-fragment'));
+  assert.equal(state.used,1);
 });

@@ -2,7 +2,7 @@ import {useEffect,useState} from "react";
 import {badges} from "../lib/station";
 import {I} from "./icons";
 
-export function InterestArt({interest,large=false}:{interest:string;large?:boolean}){
+export function InterestArt({interest}:{interest:string}){
   const badge=badges(interest);
   const [,setReady]=useState("");
   useEffect(()=>{
@@ -13,8 +13,8 @@ export function InterestArt({interest,large=false}:{interest:string;large?:boole
     return ()=>{current=false;};
   },[badge.key]);
   const url=window.pajangArt[badge.key];
-  return <span className={"avatar"+(large?" large":"")} style={{background:badge.bg}}>
-    {url?<img src={url} alt=""/>:<I n="user" s={large?26:16}/>}
+  return <span className="avatar" aria-hidden="true" style={{background:badge.bg}}>
+    {url?<img src={url} alt=""/>:<I n="user" s={16}/>}
   </span>;
 }
 

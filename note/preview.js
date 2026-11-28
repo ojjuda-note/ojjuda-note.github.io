@@ -35,7 +35,7 @@ function locationIsEnabled() {
 }
 function watchLocationPreference(userId) {
   stopLocationPreference(); stopLocationPreference = () => {};
-  if (!userId || !window.OjjudaLocation) return;
+  if (!userId || session?.user?.is_anonymous || !window.OjjudaLocation) return;
   const epoch = identityEpoch;
   let previous;
   const apply = choice => {
@@ -54,10 +54,9 @@ function watchLocationPreference(userId) {
       });
     }
   };
-  stopLocationPreference = window.OjjudaLocation.observe(client, userId, apply);
-  void window.OjjudaLocation.preference(client, userId, {
-    refresh: true, legacyDisabled: readComposerSettings(userId).locationEnabled === false
-  }).catch(() => {});
+  stopLocationPreference = window.OjjudaLocation.observe(client,userId,apply,{
+    legacyDisabled:readComposerSettings(userId).locationEnabled===false,isVisible:parkViewVisible
+  });
 }
 let nearbySnapshot = null;
 let publishRequestId = null, locationRun = 0;
@@ -71,7 +70,7 @@ let eventMap = null;
 let composerMapFetchRun = 0, composerMapTimer = null;
 let feedPages = 0, backgroundLocating = false, feedDeferred = false;
 function quietLocatedReload(tries = 0) {   // 허용된 위치가 늦게 도착해도 현재 첫 페이지를 갱신해요(근처 포함)
-  if (!nearbyPosition || feedMode !== 'all' || feedTerm || feedPages > 1 || !detail.hidden) return;
+  if (!parkViewVisible() || !nearbyPosition || feedMode !== 'all' || feedTerm || feedPages > 1 || !detail.hidden) return;
   if (feedLoading) { if (tries < 20) setTimeout(() => quietLocatedReload(tries + 1), 300); return; }
   loadFeed(false, true);
 }
@@ -153,7 +152,7 @@ const SELF_HOSTED_FONTS = ['heart', 'nanum-myeongjo'];
 const EFFECT_CODES = ['none', 'sparkle', 'frame', 'rain', 'shimmer', 'rainbow', 'snow',
   'starlight', 'fireflies', 'petals', 'bubbles', 'aurora', 'confetti', 'sunbeams',
   'mist', 'ocean', 'heartbeat', 'orbit', 'glitter', 'meteor', 'leaves', 'neon', 'dawn'];
-// 사진 위에서 자연스럽게: 글씨는 부드러운 색, 글상자는 같은 계열의 깊은 색을 반투명 유리처럼 깔아요.
+// solid는 글씨색과 밝은 글상자에, box는 어두운 글상자와 기본 투명도에 써요.
 // 안쪽 이름(red, yellow …)은 예전 그대로라, 이미 올린 카드도 새 색으로 보여요. deep은 색 고르기 단추에 보이는 글상자 색이에요.
 const COLOR_PALETTE = {
   white: { label: '흰색', solid: '#FFFDF7', box: '#FFFDF7A8', deep: '#EFE9DF' },
@@ -286,20 +285,20 @@ async function loadEventBackground(element, card) {
       element.style.backgroundImage = `url("${data.signedUrl.replaceAll('"', '%22')}")`;
   } catch (error) { console.warn('Note event background:', error); }
 }
-function colorLuminance(hex) {
-  const channels = [1, 3, 5].map(start => parseInt(hex.slice(start, start + 2), 16) / 255);
-  const linear = channels.map(value => value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4);
+function colorChannels(hex) {
+  return [1, 3, 5].map(start => parseInt(hex.slice(start, start + 2), 16));
+}
+function colorLuminance(channels) {
+  const linear = channels.map(channel => {
+    const value = channel / 255;
+    return value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4;
+  });
   return linear[0] * .2126 + linear[1] * .7152 + linear[2] * .0722;
 }
-function colorContrast(first, second) {
-  const values = [colorLuminance(first), colorLuminance(second)].sort((a, b) => b - a);
-  return (values[0] + .05) / (values[1] + .05);
-}
-function boxTransparencyColor(hex, value = 80) {
+function boxOpacity(hex, value = 80) {
   const raw = Number(value), level = Number.isInteger(raw) && raw >= 0 && raw <= 100 ? raw : 80;
   const base = parseInt(hex.slice(7, 9), 16) / 255;
-  const opacity = level <= 80 ? base * level / 80 : base + (1 - base) * (level - 80) / 20;
-  return `rgba(${parseInt(hex.slice(1, 3), 16)}, ${parseInt(hex.slice(3, 5), 16)}, ${parseInt(hex.slice(5, 7), 16)}, ${opacity.toFixed(3)})`;
+  return level <= 80 ? base * level / 80 : base + (1 - base) * (level - 80) / 20;
 }
 function setBoxTransparency(value) {
   const level = Number.isInteger(Number(value)) && Number(value) >= 0 && Number(value) <= 100 ? Number(value) : 25;
@@ -319,16 +318,23 @@ function applyVisualStyle(element, style = {}) {
   const textColor = COLOR_PALETTE[style.textColor];
   const boxColor = COLOR_PALETTE[style.boxColor];
   const textHex = textColor?.solid || (style.font === 'calligraphy' ? '#191A17' : '#FFFDF7');
-  const darkText = colorLuminance(textHex) < .3;   // 어두운 글씨면 기본 글상자를 밝은 유리로
+  const inkLight = colorLuminance(colorChannels(textHex));
+  const darkText = inkLight < .3;
   const boxHex = boxColor?.box || (darkText ? '#FFFDF7A8' : '#1C1A2447');
+  const boxRGB = colorChannels(darkText && boxColor && style.boxColor !== 'black' ? boxColor.solid : boxHex);
+  const opacity = boxOpacity(boxHex, style.boxTransparency);
+  // Check the least favorable photo behind the translucent box, before the photo loads.
+  const backdrop = darkText ? 0 : 255;
+  const boxLight = colorLuminance(boxRGB.map(channel => channel * opacity + backdrop * (1 - opacity)));
+  const contrast = darkText ? (boxLight + .05) / (inkLight + .05) : (inkLight + .05) / (boxLight + .05);
   element.style.setProperty('--note-text-color', textHex);
-  element.style.setProperty('--note-box-color', boxTransparencyColor(boxHex, style.boxTransparency));
+  element.style.setProperty('--note-box-color', `rgba(${boxRGB.join(', ')}, ${opacity.toFixed(3)})`);
   const boxLevel = Number(style.boxTransparency);
   element.style.setProperty('--note-box-blur', `${(6 * (Number.isFinite(boxLevel) ? Math.max(0, Math.min(100, boxLevel)) : 80) / 100).toFixed(2)}px`);
   element.classList.toggle('note-box-transparent', Number(style.boxTransparency) === 0);
   element.style.setProperty('--note-shadow', darkText ? 'rgba(255,253,247,.55)' : 'rgba(12,12,24,.42)');
-  element.classList.toggle('note-low-contrast', colorContrast(textHex, boxHex) < 4.5);
-  element.style.setProperty('--note-outline', colorLuminance(textHex) > .25 ? '#101020' : '#ffffff');
+  element.classList.toggle('note-low-contrast', contrast < 4.5);
+  element.style.setProperty('--note-outline', darkText ? '#ffffff' : '#101020');
 }
 
 
@@ -548,26 +554,26 @@ async function showMemberInfo(afterSave = null) {
     if (run === managementRun) state(managementBody, '회원정보를 불러오지 못했어요. 잠시 후 다시 열어 주세요.');
   }
 }
-// 자동 태그: 태그는 모두 5개까지. 내가 쓴 태그는 그대로 두고, 남은 자리만 글에서 고른 낱말로 채워요. 지운 자동 태그는 다시 붙이지 않아요
-const TAG_STOP = new Set(['오늘', '어제', '내일', '정말', '진짜', '너무', '그냥', '우리', '지금', '요즘', '항상', '조금', '많이', '같이', '다시', '아직', '이제',
-  '그래서', '그리고', '하지만', '근데', '그런데', '이런', '그런', '저런', '무슨', '어떤', '모든', '매일', '가끔', '계속', '나는', '내가', '저는', '제가', '너는', '네가',
-  '이거', '그거', '저거', '여기', '거기', '저기', '뭔가', '괜히', '역시', '벌써', '문득', '하루', '마음', '생각', '느낌', '기분', '사람', '시간', '때문',
-  '좋은', '예쁜', '멋진', '슬픈', '기쁜', '작은', '많은', '적은', '추운', '더운', '맛있는', '즐거운', '행복한', '소중한', '따뜻한', '같은', '다른', '새로운', '이상한', '특별한', '편한', '힘든', '어떤', '모든', '아무']);
-const TAG_SUFFIX = ['하면서', '하며', '하고', '해서', '하는', '했던', '에서는', '으로는', '에서', '으로', '에게', '한테', '께서', '이랑', '까지', '부터', '처럼',
-  '보다', '마다', '조차', '밖에', '이나', '이라', '은', '는', '이', '가', '을', '를', '에', '와', '과', '도', '만', '의', '로', '랑'];
-const TAG_VERB = /(었어요|았어요|였어요|했어요|어요|아요|해요|예요|이에요|에요|네요|군요|죠|습니다|니다|었다|았다|였다|했다|는다|한다|된다|하다|싶다|같다|좋다|있다|없다|었어|았어|했어|해|야|지|네|래|걸|구나|더라|면서|지만|는데|은데|니까|어서|아서|해도|어도|아도|으면|겠|싶|랑|요)$/;
-const TAG_FEEL = [[/(행복|기뻐|기쁘|신나|설레|좋았|좋아)/, '행복'], [/(슬프|슬퍼|우울|눈물|외로|쓸쓸)/, '위로'], [/(피곤|힘들|지쳐|지친|고단)/, '토닥토닥'],
-  [/사랑/, '사랑'], [/(고마|감사)/, '감사'], [/(화나|짜증|속상)/, '속상'], [/(그리워|그립|보고 싶)/, '그리움']];
-function suggestTags(body, limit = 5) {
-  const out = [], seen = new Set(), add = t => { if (t && !seen.has(t) && out.length < limit) { seen.add(t); out.push(t); } };
-  for (const [re, tag] of TAG_FEEL) if (re.test(body)) { add(tag); break; }
-  for (const raw of String(body).split(/[^가-힣A-Za-z0-9]+/)) {
-    let t = raw; if (t.length < 2) continue;
-    for (const s2 of TAG_SUFFIX) if (t.endsWith(s2) && t.length - s2.length >= 2) { t = t.slice(0, -s2.length); break; }
-    if (t.length < 2 || t.length > 12 || TAG_STOP.has(t) || TAG_VERB.test(t) || /^\d+$/.test(t) || /(스러운|로운|다운|스런)$/.test(t)) continue;   // 꾸밈말(사랑스러운, 자유로운…)은 빼요
-    add(t);
-  }
-  return out;
+// 자동 태그: 본문에 나온 낱말만 고르고, 직접 쓴 태그와 지운 태그를 우선한다.
+const MAX_CARD_TAGS = 5;
+let originalEditTags = [], composingCardTags = false;
+const MAX_TAG_TEXT = 4096;
+let wordTagger, wordTaggerLoading, tagAnalysis, pendingTagSubmit = null;
+function analyzeTagBody(body) {
+  if (tagAnalysis?.body === body) return tagAnalysis.result;
+  if (!body.trim()) return Promise.resolve([]);
+  wordTaggerLoading ??= import('/note/park-word-engine.mjs?v=1')
+    .then(module => module.loadTagger()).then(ready => wordTagger = ready)
+    .catch(error => { wordTaggerLoading = null; throw error; });
+  const result = wordTaggerLoading.then(analyze => analyze(body))
+    .catch(() => noteRpc('suggest_card_tags', { p_body: body }))
+    .then(words => {
+      if (!Array.isArray(words) || !words.every(word => typeof word === 'string')) throw Error('자동 태그를 불러오지 못했어요.');
+      return words;
+    });
+  tagAnalysis = { body, result };
+  result.catch(() => { if (tagAnalysis?.result === result) tagAnalysis = null; });
+  return result;
 }
 let autoTagMode = true, manualTags = [], rejectedTags = new Set(), autoTagsNow = [];
 // 일반 카드의 첨부 사진은 비공개 저장소에서 읽을 때마다 서명합니다.
@@ -579,6 +585,12 @@ let cardPhotoEditPath = null;
 const cardPhotoCache = new Map(), cardPhotoWanted = new Set();
 let cardPhotoTimer = null, cardPhotoRefreshTimer = null, photoLightbox = null, photoLightboxFocus = null;
 let photoLightboxRun = 0;
+let parkHostVisible=true, parkPageAway=false, passiveFix=null, resumeFixEpoch=null;
+function parkViewVisible(){return parkHostVisible&&!parkPageAway&&!document.hidden;}
+function schedulePhotoBatch(){
+  clearTimeout(cardPhotoTimer);cardPhotoTimer=null;
+  if(cardPhotoWanted.size&&parkViewVisible())cardPhotoTimer=setTimeout(fetchCardPhotos,80);
+}
 function wantCardPhoto(id) {
   if (!validCardId(id) || !client || !session?.user) return;
   const hit = cardPhotoCache.get(id);
@@ -586,10 +598,11 @@ function wantCardPhoto(id) {
     paintCardPhoto(id); return;
   }
   cardPhotoWanted.add(id);
-  clearTimeout(cardPhotoTimer); cardPhotoTimer = setTimeout(fetchCardPhotos, 80);
+  schedulePhotoBatch();
 }
 async function fetchCardPhotos() {
   cardPhotoTimer = null;
+  if(!parkViewVisible())return;
   const ids = [...cardPhotoWanted].slice(0, 100);
   for (const id of ids) cardPhotoWanted.delete(id);
   if (!ids.length || !session?.user) return;
@@ -598,6 +611,9 @@ async function fetchCardPhotos() {
     const rows = await noteRpc('card_media_paths', { p_ids: ids });
     if (epoch !== identityEpoch || session?.user?.id !== userId) return;
     let byPath = new Map();
+    if(!parkViewVisible()){
+      ids.forEach(id=>cardPhotoWanted.add(id));return;
+    }
     const paths = (rows || []).map(row => row.photo_path).filter(Boolean);
     if (paths.length) {
       let data, error;
@@ -622,7 +638,7 @@ async function fetchCardPhotos() {
       ids.filter(id => cardPhotoCache.get(id)?.failed).forEach(paintCardPhoto);
   }
   if (cardPhotoWanted.size && epoch === identityEpoch && session?.user?.id === userId)
-    cardPhotoTimer = setTimeout(fetchCardPhotos, 80);
+    schedulePhotoBatch();
 }
 function applyCardPhoto(thumb, url, failed = false, media = null) {
   const isVideo = !!media?.videoPath;
@@ -672,11 +688,12 @@ function activateCardPhoto(thumb) {
 }
 function scheduleCardPhotoRefresh() {
   clearTimeout(cardPhotoRefreshTimer); cardPhotoRefreshTimer = null;
-  if (!session?.user) return;
+  if (!session?.user || !parkViewVisible()) return;
   const next = [...cardPhotoCache.values()].filter(hit => hit.url)
     .reduce((minimum, hit) => Math.min(minimum, hit.at + 8 * 60 * 1000), Infinity);
   if (!Number.isFinite(next)) return;
   cardPhotoRefreshTimer = setTimeout(() => {
+    if(!parkViewVisible())return;
     for (const [id, hit] of cardPhotoCache) {
       if (!hit.url || Date.now() - hit.at < 8 * 60 * 1000) continue;
       cardPhotoCache.delete(id);
@@ -903,23 +920,84 @@ const tagList = raw => String(raw || '').split(/[\s,]+/u).map(value => value.rep
 function initialComposerTags(raw = '') {
   const values = tagList(raw);
   if (!editingId && kind !== 'event' && tagList(feedTerm).includes('19금') && !values.includes('19금')) values.unshift('19금');
+  if (!editingId && values.length > MAX_CARD_TAGS) {
+    if (values.includes('19금') && !values.slice(0, MAX_CARD_TAGS).includes('19금')) values.unshift('19금');
+    return values.slice(0, MAX_CARD_TAGS).join(', ');
+  }
   return values.join(', ');
 }
-function refreshAutoTags() {   // 내가 쓴 태그 + 남은 자리에 자동 태그 (모두 5개까지)
-  const mine = manualTags, room = Math.max(0, 5 - mine.length);
-  autoTagsNow = room > 0 ? suggestTags(text.value, 12).filter(t => !mine.includes(t) && !rejectedTags.has(t)).slice(0, room) : [];
-  tags.value = [...mine, ...autoTagsNow].join(', ');
+function setAutoTags(words) {
+  const seen = new Set(manualTags.map(t => t.toLowerCase()));
+  const explicit = Array.from(text.value.matchAll(/#([\p{L}\p{N}_]+)/gu), match => match[1]);
+  words ??= explicit;
+  const available = new Map(words.map(word => [word.toLowerCase(), word]));
+  const candidates = [...explicit.map(t => available.get(t.toLowerCase())), ...words];
+  autoTagsNow = [];
+  if (available.has('19금') && !seen.has('19금') && !rejectedTags.has('19금')) {
+    autoTagsNow.push('19금'); seen.add('19금');
+  }
+  for (const word of candidates) {
+    if (manualTags.length + autoTagsNow.length >= MAX_CARD_TAGS) break;
+    if (!word || seen.has(word.toLowerCase()) || rejectedTags.has(word.toLowerCase())) continue;
+    autoTagsNow.push(word); seen.add(word.toLowerCase());
+  }
+  const reserved = autoTagsNow.includes('19금') && manualTags.length === MAX_CARD_TAGS;
+  const chosen = reserved ? manualTags.slice(0, MAX_CARD_TAGS - 1) : manualTags;
+  tags.value = [...chosen, ...autoTagsNow].join(', ');
 }
-function noteTagEdit() {   // 직접 쓴 태그를 우선하고, 다섯 자리를 넘으면 자동 태그부터 빼요
+async function refreshAutoTags() {
+  const body = text.value, run = composerRun;
+  if (!autoTagMode || maskedTextLength(body) > 200) return false;
+  let words;
+  try {
+    words = body.trim() ? (wordTagger ? wordTagger(body) : await analyzeTagBody(body)) : [];
+  } catch {
+    // Suggestions are optional. Keep manual tags and hashtags from this exact draft.
+  }
+  if (!autoTagMode || composingCardTags || run !== composerRun || text.value !== body || backdrop.hidden) return false;
+  const before = tags.value;
+  setAutoTags(words);
+  if (before !== tags.value) { updateComposer(); recordDraft(); }
+  return true;
+}
+function noteTagEdit() {
   const now = tagList(tags.value);
-  const previousAuto = new Set(autoTagsNow);
-  const mine = now.filter(t => !previousAuto.has(t)).slice(0, 5);
-  const keepAuto = now.filter(t => previousAuto.has(t)).slice(0, 5 - mine.length);
-  const kept = now.filter(t => !previousAuto.has(t) || keepAuto.includes(t)).slice(0, 5);
-  for (const t of autoTagsNow) if (!kept.includes(t)) rejectedTags.add(t);
-  manualTags = kept.filter(t => !previousAuto.has(t));
-  autoTagsNow = kept.filter(t => previousAuto.has(t));
-  if (now.length > 5) tags.value = kept.join(', ');
+  const kept = new Set(now);
+  const previous = new Set(autoTagsNow);
+  for (const t of previous) if (!kept.has(t)) rejectedTags.add(t.toLowerCase());
+  manualTags = now.filter(t => !previous.has(t));
+  autoTagsNow = now.filter(t => previous.has(t));
+  // Keep the user's cursor and separators while a typed word displaces a suggestion.
+  const excess = now.length - MAX_CARD_TAGS;
+  if (excess > 0 && autoTagMode) {
+    const removable = autoTagsNow.filter(t => t !== '19금');
+    const drop = new Set(removable.slice(Math.max(0, removable.length - excess)));
+    if (drop.size) {
+      const caret = tags.selectionStart;
+      let removedBefore = 0;
+      tags.value = tags.value.replace(/[^\s,]+[\s,]*/gu, (part, pos) => {
+        if (!drop.has(tagList(part)[0])) return part;
+        removedBefore += Math.max(0, Math.min(part.length, caret - pos));
+        return '';
+      });
+      if (caret != null) tags.setSelectionRange(caret - removedBefore, caret - removedBefore);
+      autoTagsNow = autoTagsNow.filter(t => !drop.has(t));
+    }
+  }
+}
+function restoreTagChoices(body, saved) {
+  manualTags = tagList(saved); rejectedTags = new Set(); autoTagsNow = [];
+  if (!autoTagMode || !body.trim()) return;
+  const run = composerRun, mine = manualTags;
+  analyzeTagBody(body).then(words => {
+    if (run !== composerRun || manualTags !== mine || text.value !== body || tags.value !== saved) return;
+    const generated = new Set(words);
+    manualTags = mine.filter(t => !generated.has(t));
+    autoTagsNow = mine.filter(t => generated.has(t));
+    // A full draft contains a selection; unshown candidates can fill a later vacancy.
+    rejectedTags = mine.length >= MAX_CARD_TAGS ? new Set() :
+      new Set(words.filter(t => !mine.includes(t)).map(t => t.toLowerCase()));
+  }).catch(() => {});
 }
 function shownName(card) {
   const name = card.display_name;
@@ -978,6 +1056,8 @@ async function refreshReplyArchiveNotice(parent, run) {
 function fitTagRow(row) {
   if (!row?.clientWidth) return;
   row.classList.remove('tags-wrap');
+  const many = row.childElementCount > 5;
+  row.classList.toggle('tags-many', many);
   let fits = false;
   for (let step = 0; step <= 5; step++) {
     row.style.setProperty('--tag-font', `${11 - step * .5}px`);
@@ -985,7 +1065,7 @@ function fitTagRow(row) {
     row.style.setProperty('--tag-gap', `${6 - step * .6}px`);
     if (row.scrollWidth <= row.clientWidth + 1) { fits = true; break; }
   }
-  row.classList.toggle('tags-wrap', !fits);
+  row.classList.toggle('tags-wrap', !many && !fits);
   const frame = row.closest('.card-photo-frame, .compose-photo') || row.closest('.photo');
   frame?.style.setProperty('--card-tags-height', `${row.childElementCount ? row.offsetHeight : 0}px`);
 }
@@ -999,9 +1079,10 @@ function requestTagFit() {
 }
 const expandedBodyEntries = new Set(), quoteFitEntries = new Set();
 const inkCards = new WeakMap();
-function inkOptions(style, width, cardTags) {
+function inkOptions(style, width, cardTags, photo) {
   const inkColor = COLOR_PALETTE[style.textColor]?.solid;
-  return { width, inkColor, tags: cardTags, zoom: style.size === 'small' ? .85 : style.size === 'large' ? 1.12 : 1 };
+  const outlineColor = photo.classList.contains('note-low-contrast') ? photo.style.getPropertyValue('--note-outline') : '';
+  return { width, inkColor, outlineColor, tags: cardTags, zoom: style.size === 'small' ? .85 : style.size === 'large' ? 1.12 : 1 };
 }
 function renderParkInk(canvas, body, options) {
   const renderer = window.ParkCalligraphy;
@@ -1058,10 +1139,11 @@ function syncComposeInk(selected, style, previewTags) {
   cancelAnimationFrame(composeInkFrame);
   const run = ++composeInkRun;
   canvas.hidden = !on;
-  if (!on) { delete canvas.dataset.inkReady; composeInkComposing = false; }
+  delete canvas.dataset.inkReady;
+  if (!on) composeInkComposing = false;
   syncComposeInkDisplay();
   if (!on || composeInkComposing) return;
-  const body = text.value, options = inkOptions(style, 720, previewTags);
+  const body = text.value, options = inkOptions(style, 720, previewTags, photo);
   composeInkFrame = requestAnimationFrame(() => {
     if (run !== composeInkRun || backdrop.hidden) return;
     if (renderParkInk(canvas, body, options)) canvas.dataset.inkReady = 'true';
@@ -1167,7 +1249,7 @@ function cardElement(card, compact = false, expanded = false, deferBackground = 
   const body = hiddenEvent ? '범위 안에서만 보이는 이벤트' : typeof card.body === 'string' ? card.body : '';
   fillCardQuote(quote, body);
   const tagRow = node('span', 'card-tags');
-  const cardTags = Array.isArray(card.tags) ? card.tags.slice(0, 5) : [];
+  const cardTags = Array.isArray(card.tags) ? card.tags : [];
   for (const tag of cardTags) {
     const chip = node('span', '', `#${tag}`); chip.dataset.tag = tag; chip.setAttribute('role', 'button'); chip.title = `#${tag} 태그로 찾기`;
     chip.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); searchTagFn?.(tag); });
@@ -1182,7 +1264,7 @@ function cardElement(card, compact = false, expanded = false, deferBackground = 
   if (useInk) {
     photo.classList.add('park-ink-overlay');
     if (!expanded) open.setAttribute('aria-label', body + ', 카드 크게 보기');
-    const options = inkOptions(style, expanded ? 1080 : compact ? 480 : 720, cardTags);
+    const options = inkOptions(style, expanded ? 1080 : compact ? 480 : 720, cardTags, photo);
     const canvas = node('canvas', 'park-ink-art');
     canvas.setAttribute('aria-hidden', 'true');
     photo.append(canvas);
@@ -1493,12 +1575,12 @@ async function loadFeed(more = false, quiet = false) {
   if (!stack.length) resumeGuestWriting(null);
   // Location is optional; fetch it after cards have had time to paint.
   if (!more && !quiet && feedMode === 'all' && !feedTerm && feedSort !== 'nearby'
-      && !nearbyPosition && !backgroundLocating && !document.hidden) {
+      && !nearbyPosition && !backgroundLocating && parkViewVisible()) {
     backgroundLocating = true;
     const locationEpoch = identityEpoch;
     const locateAfterPaint = () => {
       if (locationEpoch !== identityEpoch || version !== feedRun
-          || !locationIsEnabled() || nearbyPosition || document.hidden || !detail.hidden) {
+          || !locationIsEnabled() || nearbyPosition || !parkViewVisible() || !detail.hidden) {
         backgroundLocating = false;
         return;
       }
@@ -1536,12 +1618,12 @@ async function refreshNearbyPosition(button, version) {
     if (button.isConnected) { button.disabled = false; button.textContent = label; }
   }
 }
-async function currentPosition(fresh = false, enable = false, signal) {
+async function currentPosition(fresh = false, enable = false, signal, automatic = false) {
   const service = window.OjjudaLocation, userId = session?.user?.id;
   if (!authKnown || !userId || session.user.is_anonymous) throw Error('로그인 후 위치를 이용해 주세요.');
   if (!service?.authorizePosition) throw Error('위치 기능을 불러오지 못했어요. 새로고침해 주세요.');
   const choice = await service.preference(client, userId);
-  const position = await service.readPosition({db:client,accountId:userId,fresh,allowDisabled:enable,signal,park:true});
+  const position = await service.readPosition({db:client,accountId:userId,fresh,allowDisabled:enable,signal,park:true,automatic});
   if (userId && userId !== session?.user?.id) throw Error('회원 정보를 다시 확인해 주세요.');
   if (enable && userId && !choice.enabled) await service.setPreference(client,userId,true,choice.version);
   return position;
@@ -1550,12 +1632,23 @@ function positionIsFresh(position) {
   return Number.isFinite(position?.capturedAt) && Date.now() - position.capturedAt < 120000;
 }
 async function positionIfAlreadyGranted() {
-  if (!locationIsEnabled() || !navigator.geolocation || !navigator.permissions?.query) return null;
-  try {
-    const permission = await navigator.permissions.query({ name: 'geolocation' });
-    if (permission.state === 'granted') return await currentPosition();
-  } catch { /* No implicit request when browser permissions cannot be inspected. */ }
-  return null;
+  if (!parkViewVisible() || !locationIsEnabled() || !navigator.geolocation || !navigator.permissions?.query) return null;
+  if(passiveFix?.epoch===identityEpoch)return passiveFix.promise;
+  passiveFix?.controller.abort();
+  const controller=new AbortController(), epoch=identityEpoch;
+  const current=()=>!controller.signal.aborted&&epoch===identityEpoch&&parkViewVisible()&&locationIsEnabled();
+  const fix={epoch,controller};
+  passiveFix=fix;
+  fix.promise=(async()=>{
+    try{
+      const permission=await navigator.permissions.query({name:'geolocation'});
+      if(permission.state!=='granted'||!current())return null;
+      const position=await currentPosition(false,false,controller.signal,true);
+      return current()?position:null;
+    }catch{return null;}
+  })();
+  try{return await fix.promise;}finally{if(passiveFix===fix)passiveFix=null;}
+
 }
 function consumeInitialCard() {
   if (initialParkCompose && authKnown && ready) { initialParkCompose = false; openComposer('memo'); }
@@ -2187,7 +2280,7 @@ function installFeatures() {
     try {
       const choice=await service.preference(client,userId);
       if (composerUserId!==userId || session?.user?.id!==userId || backdrop.hidden) return;
-      if (choice.enabled) {
+      if (choice.enabled && $('#card-location-button').getAttribute('aria-checked') === 'true') {
         $('#card-location-button').disabled=true;
         await service.setPreference(client,userId,false,choice.version);
         rememberComposerSetting('locationEnabled',false);
@@ -2581,11 +2674,11 @@ function restoreLocalComposer() {
   if (!content || content.kind !== kind || content.editingId !== editingId
     || !Number.isFinite(age) || age < 0 || age > 7 * 86400000
     || typeof content.body !== 'string' || maskedTextLength(content.body) > 200
-    || typeof content.tags !== 'string' || content.tags.length > 120
+    || typeof content.tags !== 'string' || content.tags.length > MAX_TAG_TEXT * 4
     || !content.style || typeof content.style !== 'object') {
     clearLocalComposer(); return false;
   }
-  text.value = content.body; tags.value = initialComposerTags(content.tags); manualTags = tagList(tags.value); rejectedTags = new Set(); autoTagsNow = [];
+  text.value = content.body; tags.value = initialComposerTags(content.tags); restoreTagChoices(text.value, tags.value);
   backgroundKey = photoAssetKey(content.backgroundKey) || backgroundKey;
   window.OjjudaDecorations?.setStyle(content.style);
   $('#compose-font').value = FONT_CODES.includes(content.style.font) ? content.style.font : 'default';
@@ -2622,7 +2715,7 @@ function restoreDraft(content) {
   kind = content.kind; parentId = content.parent_id; backgroundKey = content.background_key;
   $('.composer').dataset.mode = kind === 'memo' ? 'memo-new' : kind;
   $('#note-photo-pick').hidden = kind !== 'memo';
-  text.value = content.body; tags.value = initialComposerTags(content.tags); manualTags = tagList(tags.value); rejectedTags = new Set(); autoTagsNow = [];
+  text.value = content.body; tags.value = initialComposerTags(content.tags); restoreTagChoices(text.value, tags.value);
   const style = content.style && typeof content.style === 'object' ? content.style : {};
   window.OjjudaDecorations?.setStyle(style);
   $('#compose-font').value = FONT_CODES.includes(style.font) ? style.font : 'default';
@@ -2691,7 +2784,8 @@ function installDrafts() {
 
 function parsedTags(raw = tags.value) {
   const values = tagList(raw);
-  return values.length <= 5 && values.every(value => maskedTextLength(value) <= 20)
+  const unchanged = editingId && originalEditTags.length === values.length && originalEditTags.every((t, i) => values[i] === t);
+  return (values.length <= MAX_CARD_TAGS || unchanged) && maskedTextLength(raw) <= MAX_TAG_TEXT && values.every(value => maskedTextLength(value) <= 201)
     && new Set(values).size === values.length ? values : null;
 }
 function validEventBody(value) {
@@ -2711,7 +2805,7 @@ function isGuestComposer() {
 }
 function updateComposer() {
   text.maxLength = textInputMaxLength(text.value, 200);
-  tags.maxLength = textInputMaxLength(tags.value, 120);
+  tags.maxLength = textInputMaxLength(tags.value, MAX_TAG_TEXT);
   const selected = !isGuestComposer() && $('#compose-font').value === 'calligraphy';
   const convert = $('#convert-calligraphy');
   convert.setAttribute('aria-pressed', String(selected));
@@ -2722,7 +2816,7 @@ function updateComposer() {
   syncQuickChoices();
   syncCardPhotoAttach();
   const visual = currentStyle();
-  const previewTags = tagList(tags.value).slice(0, 5);
+  const previewTags = tagList(tags.value);
   syncComposeInk(selected, visual, previewTags);
   if (!backdrop.hidden && text.parentNode === $('.compose-photo')) resizeComposerText();
   $('#compose-count').textContent = `${maskedTextLength(text.value)} / 200자`;
@@ -2732,7 +2826,7 @@ function updateComposer() {
   if (composerTools) syncComposerTools();
   else $('#compose-more>summary').textContent = extra ? '꾸미기 · 추가 설정 (선택됨)' : '꾸미기 · 추가 설정';
   const values = parsedTags();
-  $('#compose-tag-display').replaceChildren(...previewTags.map(value => node('span', '', `#${value.slice(0, 20)}`)));
+  $('#compose-tag-display').replaceChildren(...previewTags.map(value => node('span', '', `#${value}`)));
   fitTagRow($('#compose-tag-display'));
   const overflows = !backdrop.hidden && !!text.value.trim()
     && (composerPhotoOverflows() || cardPhotoOverflows(text.value, previewTags));
@@ -2759,7 +2853,7 @@ function updateComposer() {
   } else if (!canWrite()) composeMessage.textContent = writingMessage();
   else if (maskedTextLength(text.value) > 200) composeMessage.textContent = '글은 200자 이내로 작성해 주세요';
   else if (kind === 'event' && !validEventBody(text.value)) composeMessage.textContent = '이벤트 내용을 입력해 주세요.';
-  else if (!values) composeMessage.textContent = '태그는 중복 없이 5개까지, 각 20자 이내';
+  else if (!values) composeMessage.textContent = previewTags.length > MAX_CARD_TAGS ? '태그는 최대 5개까지 달 수 있어요.' : '태그의 길이와 중복을 확인해 주세요';
   else if (kind === 'comment' && replyDueChecking) composeMessage.textContent = '상위 카드 공개 종료일 확인 중';
   else if (kind !== 'event' && !editingId && !writingPosition) composeMessage.textContent = composerTools
     ? '아래 위치 아이콘을 눌러 위치를 켜 주세요.' : '위치를 켜고 확인한 뒤 등록할 수 있어요.';
@@ -2855,6 +2949,7 @@ async function openComposer(mode, card = null, replyTo = null, pending = null) {
   focusBefore = document.activeElement;
   editingId = card?.is_mine ? card.id : null;
   composerUserId = session?.user?.id || null;
+  if (composerUserId) void loadPhotoEntitlements(composerUserId).catch(error => console.warn('Note photo entitlement:', error));
   kind = editingId ? card.kind : mode === 'event' ? 'event' : mode === 'reply' ? 'comment' : 'memo';
   $('.composer').toggleAttribute('data-guest', guest);
   const login = $('#guest-compose-login');
@@ -2909,10 +3004,13 @@ async function openComposer(mode, card = null, replyTo = null, pending = null) {
   for (const group of ['textColor', 'boxColor']) setColorChoice(group, style[group]);
   setBoxTransparency(editingId ? (style.boxTransparency ?? 80) : style.boxTransparency);
   applyComposeStyle(); updateEventPrice();
+  composingCardTags = false;
+  originalEditTags = editingId ? [...card.tags] : [];
   text.value = editingId ? card.body : ''; tags.value = editingId ? card.tags.join(', ') : guest ? '' : initialComposerTags();
   const identityMode = editingId ? (card.identity_mode === 'nickname' ? 'nickname' : 'anonymous') : readComposerSettings().identity;
   $(`input[name="identity"][value="${identityMode}"]`).checked = true;
   setGenderInputs(true);
+  tagAnalysis = null;
   autoTagMode = !guest && !editingId; manualTags = tagList(tags.value); rejectedTags = new Set(); autoTagsNow = [];
   clearLocalComposer();
   requestedDraftContent = draftContent();
@@ -2981,14 +3079,16 @@ async function loadWritingLocation(run, enable = false) {
   const controller=new AbortController();writingLocationController=controller;
   writingPosition=null;setCardLocationSwitch(enable||locationIsEnabled(),'위치를 확인하고 있어요.',true);updateComposer();
   try {
-    const position=await currentPosition(false,enable,controller.signal);
+    const position=await currentPosition(false,enable,controller.signal,!enable);
     if(request!==locationRun||run!==composerRun||backdrop.hidden||userId!==session?.user?.id||!locationIsEnabled())return;
     writingPosition=position;nearbyPosition=position;
     if(enable)rememberComposerSetting('locationEnabled',true);
     setCardLocationSwitch(true,'공원과 파장에서 함께 사용해요.');
   }catch(error){
     if(request===locationRun&&run===composerRun&&!backdrop.hidden){
-      writingPosition=null;setCardLocationSwitch(locationIsEnabled(),locationErrorText(error),false,true);
+      writingPosition=null;
+      if(error?.code==='prompt')setCardLocationSwitch(false,'위치를 켜면 현재 위치를 확인해요.');
+      else setCardLocationSwitch(locationIsEnabled(),locationErrorText(error),false,true);
     }
   }finally{if(request===locationRun){writingLocationController=null;updateComposer();}}
 }
@@ -3105,6 +3205,20 @@ async function publishGuestCard(body) {
 }
 async function publishCard() {
   if (busy || submit.disabled || !client || !ready) return;
+  if (autoTagMode) {
+    const run = composerRun;
+    if (pendingTagSubmit === run) return;
+    pendingTagSubmit = run;
+    let analyzed;
+    try {
+      noteTagEdit();
+      analyzed = await refreshAutoTags();
+    } finally {
+      if (pendingTagSubmit === run) pendingTagSubmit = null;
+    }
+    if (run !== composerRun || backdrop.hidden || busy) return;
+    if (!analyzed) { composeMessage.textContent = '자동 태그를 확인하지 못했어요. 다시 등록해 주세요.'; return; }
+  }
   let body = text.value.replace(/\r\n?/g, '\n').trim(), values = parsedTags();
   if (!body || maskedTextLength(body) > 200 || !values) return;
   if (cardPhotoPreparing) { composeMessage.textContent = '첨부 파일을 준비하는 중이에요. 잠시 뒤 등록해 주세요.'; return; }
@@ -4054,7 +4168,9 @@ text.addEventListener('focus', syncComposeInkDisplay);
 text.addEventListener('blur', syncComposeInkDisplay);
 text.addEventListener('compositionstart', () => { composeInkComposing = true; syncComposeInkDisplay(); });
 text.addEventListener('compositionend', () => { composeInkComposing = false; if (autoTagMode) refreshAutoTags(); updateComposer(); });
-tags.addEventListener('input', () => { noteTagEdit(); updateComposer(); recordDraft(); });
+tags.addEventListener('compositionstart', () => { composingCardTags = true; });
+tags.addEventListener('compositionend', () => { composingCardTags = false; noteTagEdit(); updateComposer(); });
+tags.addEventListener('input', event => { if (!composingCardTags && !event.isComposing) noteTagEdit(); updateComposer(); });
 tags.addEventListener('focus', () => updateComposer()); tags.addEventListener('blur', () => updateComposer());
 window.addEventListener('resize', () => { if (!backdrop.hidden) updateComposer(); requestTagFit(); });
 document.fonts?.addEventListener?.('loadingdone', () => { if (!backdrop.hidden) updateComposer(); requestTagFit(); });
@@ -4089,11 +4205,26 @@ $('#card-photo-attach')?.addEventListener('keydown', event => {
 $('#card-photo-remove')?.addEventListener('click', event => {
   event.preventDefault(); clearCardPhoto(); updateComposer();
 });
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') scheduleCardPhotoRefresh();
-  else closePhotoLightbox();
-});
-window.addEventListener('pagehide', closePhotoLightbox);
+function syncParkActivity(){
+  schedulePhotoBatch();scheduleCardPhotoRefresh();
+  if(!parkViewVisible()){
+    closePhotoLightbox();
+    if(passiveFix){
+      resumeFixEpoch=passiveFix.epoch;
+      passiveFix.controller.abort();passiveFix=null;
+    }
+  }else if(resumeFixEpoch!==null){
+    const epoch=resumeFixEpoch;resumeFixEpoch=null;
+    if(epoch===identityEpoch&&!nearbyPosition&&feedMode==='all'&&!feedTerm&&detail.hidden&&backdrop.hidden){
+      void positionIfAlreadyGranted().then(position=>{
+        if(position&&epoch===identityEpoch&&parkViewVisible()){nearbyPosition=position;quietLocatedReload();}
+      });
+    }
+  }
+}
+document.addEventListener('visibilitychange',syncParkActivity);
+window.addEventListener('pagehide',()=>{parkPageAway=true;syncParkActivity();});
+window.addEventListener('pageshow',()=>{parkPageAway=false;syncParkActivity();});
 $('#quick-gender')?.addEventListener('change', event => pickQuickChoice('gender', event.target.value));
 
 
@@ -4141,7 +4272,6 @@ function receiveAuth(current) {
     loadWorldBalance(current?.user?.id); loadModerator(current?.user?.id); loadNoteState();
     if (changed || accountNickname === null) void loadAccountProfile(current?.user?.id);
     if (current?.user?.id && !myIdentityReady) void loadMyGender(current.user.id).catch(() => {});
-    if (current?.user?.id) void loadPhotoEntitlements(current.user.id).catch(error => console.warn('Note photo entitlement:', error));
     notificationController?.refresh?.();
     if (!firstSession && !changed) consumeInitialCard();
   }, 0);
@@ -4190,6 +4320,7 @@ window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id |
   }
 });
 notificationController = window.OjjudaNoteNotifications?.install({
+  app: 'park',
   refreshClosedBadge: !parkEmbedded, // World owns the visible bell when Park is embedded.
   onGiftClaimed: userId => loadWorldBalance(userId),
   client, getUserId: () => session?.user?.id || null,

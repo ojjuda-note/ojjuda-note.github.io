@@ -27,6 +27,8 @@ async function presentation({concealed = false, reducedMotion = false} = {}) {
     if (!this.open) return;
     this.removeAttribute('open');this.dispatchEvent(new w.Event('close'));
   };
+  w.eval(fs.readFileSync(path.join(root,'shared/games/tutorial-visits.js'),'utf8'));
+  w.eval(fs.readFileSync(path.join(root,'shared/games/lesson-panel.js'),'utf8'));
   for (const name of ['game-guides.js','presentation.js'])
     w.eval(fs.readFileSync(path.join(root,'games/drinking',name),'utf8'));
   const dialog = type => w.document.querySelector('[data-drinking-dialog="'+type+'"]');
@@ -56,7 +58,11 @@ test('each drinking game has its own guide, only on entry or an explicit help re
     assert.equal(guide.steps.length,3,kind+' has three actionable steps');
     assert.ok(guide.steps.every(step=>typeof step==='string'&&step.trim().length>5));
     f.dp.enter(kind,{local});await delay();
-    assert.ok(f.isOpen('guide'),kind+' first-entry guide');
+    if(local&&kinds.includes(kind)){
+      assert.equal(f.isOpen('guide'),false,kind+' first visit already happened online');
+      f.dp.help();
+    }
+    assert.ok(f.isOpen('guide'),kind+' accessible guide');
     assert.match(f.dialog('guide').textContent,new RegExp(guide.title));
     assert.ok(f.content.contains(f.dialog('guide')),'guides stay inside the member gate');
     assert.ok(f.w.document.body.classList.contains('dp-playing'));
@@ -118,7 +124,7 @@ test('result text and participant names are inert text, and timed play closes au
   f.dp.update({phase:'active',roundKey:'bomb:2',urgent:true,result:null});await delay();
   assert.equal(f.isOpen('result'),false);
   f.dp.leave();f.dp.enter('bomb');await delay();
-  assert.ok(f.isOpen('guide'),'a fresh visit gets instructions again');
+  assert.equal(f.isOpen('guide'),false,'returning after a timer interrupted the guide does not repeat it');
   assert.deepEqual(f.errors,[]);
 });
 

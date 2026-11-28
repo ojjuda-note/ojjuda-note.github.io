@@ -5,14 +5,14 @@ from pathlib import Path
 from xml.etree import ElementTree as ET
 
 from launch_routes import LAUNCH_ROUTES, WEB_ORIGIN, direct_entry
-from prepare_resources import OUTPUT, PROJECT
+from prepare_resources import OUTPUT, PROJECT, app_links_manifest, manifest as common_manifest
 
 
 class TestNativeLaunchRoutes(unittest.TestCase):
     def test_every_app_opens_its_service_instead_of_a_second_splash(self):
         self.assertEqual(set(LAUNCH_ROUTES), {"agit", "park", "pajang"})
         self.assertEqual(LAUNCH_ROUTES["agit"]["start"], "/world.html?tab=hub&play_store=1")
-        self.assertEqual(LAUNCH_ROUTES["park"]["start"], "/world.html?place=park")
+        self.assertEqual(LAUNCH_ROUTES["park"]["start"], "/park/")
         self.assertEqual(LAUNCH_ROUTES["pajang"]["start"], "/features/pajang/")
         for app, route in LAUNCH_ROUTES.items():
             with self.subTest(app=app):
@@ -37,6 +37,34 @@ class TestNativeLaunchRoutes(unittest.TestCase):
             direct_entry("park", original)
         with self.assertRaises(ValueError):
             direct_entry("other", original)
+
+    def test_only_one_app_claims_each_service_link(self):
+        attr = "{http://schemas.android.com/apk/res/android}"
+        self.assertFalse(ET.fromstring(common_manifest()).findall(
+            ".//intent-filter[@" + attr + "autoVerify='true']"))
+        for host in ("ojjuda.kr", "ojjuda.com"):
+            for path, expected in (
+                ("/park", "park"), ("/park/", "park"), ("/park/guardian/", "park"),
+                ("/note/index.html", "park"), ("/pajang", "pajang"), ("/pajang/", "pajang"),
+                ("/features/pajang/station.html", "pajang"), ("/agit/", "agit"),
+                ("/parked/", None), ("/pajang-story/", None), ("/world.html", None),
+                ("/", "park" if host == "ojjuda.com" else None),
+            ):
+                with self.subTest(host=host, path=path):
+                    owners = []
+                    for app in LAUNCH_ROUTES:
+                        xml = ET.fromstring(app_links_manifest(app))
+                        self.assertEqual(xml.find(".//activity").get(attr + "exported"), "true")
+                        for intent in xml.findall(".//intent-filter"):
+                            data = intent.findall("data")
+                            if not any(item.get(attr + "host") == host for item in data):
+                                continue
+                            if any(item.get(attr + "path") == path
+                                   or (item.get(attr + "pathPrefix") is not None
+                                       and path.startswith(item.get(attr + "pathPrefix")))
+                                   for item in data):
+                                owners.append(app)
+                    self.assertEqual(owners, [expected] if expected else [])
 
     def test_generated_native_resources_use_approved_start(self):
         # Android CI runs this test immediately after prepare_resources.py.
