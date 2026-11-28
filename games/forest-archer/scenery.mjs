@@ -623,12 +623,18 @@ export function drawAnimal(ctx,x,y,radius,kind,time=0,direction=1,pose=null,came
   }
 }
 
-export function drawRangeTarget(ctx,x,y,r,groundX,groundY,rock=null,back=null){
+export function drawRangeTarget(ctx,x,y,r,groundX,groundY,rock=null,back=null,mountY=y,travel=0){
   const board=paintedAsset('range-straw-boss'),stand=paintedAsset('range-oak-easel');
   if(!board||!stand)return false;
-  const top=y-r*.65,feet=Math.max(top+r*.95,groundY);
+  const top=mountY-r*.65,feet=Math.max(top+r*.95,groundY);
   const standWidth=r*1.94;
   ctx.drawImage(stand,groundX-standWidth*.5,top,standWidth,feet-top);
+  if(travel>0||Math.abs(mountY-y)>.01){
+    const rail=travel+r*.18;
+    line(ctx,groundX-rail,mountY,groundX+rail,mountY,'#424a44',Math.max(.8,r*.11));
+    line(ctx,groundX-rail,mountY-r*.022,groundX+rail,mountY-r*.022,'#b8ac86',Math.max(.45,r*.035));
+    line(ctx,x,mountY,x,y,'#685b46',Math.max(1,r*.13));
+  }
   // The printed face is calibrated to the five scoring bands.
   const width=r/.388,height=width*board.naturalHeight/board.naturalWidth;
   ctx.save();
@@ -1174,6 +1180,34 @@ function drawGalleryGear(ctx,w,h,options){
   ctx.restore();return true;
 }
 const clampMotion=value=>Math.max(-.5,Math.min(.5,value));
+// The stock and limbs keep their photographed finish. Remove the two baked
+// string spans once, keeping the tip fittings and the centre rail intact.
+const crossbowFrames=new WeakMap();
+function crossbowFrame(art){
+  if(crossbowFrames.has(art))return crossbowFrames.get(art);
+  const iw=art.width||art.naturalWidth,ih=art.height||art.naturalHeight;
+  const layer=makeLayer(iw,ih),c=layer.ctx;
+  c.drawImage(art,0,0,iw,ih);c.scale(iw/900,ih/521);
+  c.globalCompositeOperation='destination-out';
+  for(const side of [1,-1]){
+    c.save();if(side<0){c.translate(900,0);c.scale(-1,1);}
+    c.beginPath();c.moveTo(43,177);c.lineTo(359,210);c.lineTo(359,228);c.lineTo(43,193);
+    c.closePath();c.fill();c.restore();
+  }
+  crossbowFrames.set(art,layer.canvas);return layer.canvas;
+}
+function crossbowString(ctx,nock){
+  ctx.lineCap='round';
+  for(const side of [-1,1]){
+    const x=side*.716,y=-.573;
+    line(ctx,x,y,0,-nock,'#443222',.014);
+    line(ctx,x,y-.002,0,-nock-.002,'#c09b58',.008);
+    for(let i=1;i<29;i++){
+      const u=i/29,px=x*(1-u),py=y*(1-u)-nock*u;
+      line(ctx,px-.002,py-.0035,px+.002,py+.0035,'#f1d59a',.0025);
+    }
+  }
+}
 function drawHeldStock(ctx,w,h,options){
   const {weaponType,color,scopeMounted,aim,charge=0,drawing,burstCount=1,fletching,arrowColor,releaseAge,reducedMotion}=options;
   const isGun=weaponType==='gun',art=finishedGear(gearName(weaponType,'held'),color);
@@ -1187,6 +1221,10 @@ function drawHeldStock(ctx,w,h,options){
   ctx.save();ctx.translate(rearX,rearY);ctx.rotate(angle);ctx.scale(size,size);
   const glove=paintedAsset('range-glove-grip');
   if(glove)ctx.drawImage(glove,-.40,-.34,.46,.46);
+  const pull=Math.max(0,Math.min(1,charge));
+  const recoil=releaseAge===null?1:Math.exp(-Math.max(0,releaseAge)*38)*
+    (reducedMotion?1:Math.cos(releaseAge*52));
+  const nock=.506-((drawing||releaseAge!==null)?pull*.23*recoil:0);
   const iw=art.width||art.naturalWidth,ih=art.height||art.naturalHeight;
   // Map both ends of the painted prop onto the same on-screen line as the reticle.
   const fromX=(isGun?.717:.50)*iw,fromY=ih*.975;
@@ -1194,9 +1232,10 @@ function drawHeldStock(ctx,w,h,options){
   const len=ux*ux+uy*uy,front=isGun?.98:.88;
   const a=-front*uy/len,b=-front*ux/len;
   ctx.save();ctx.transform(a,b,-b,a,-a*fromX+b*fromY,-b*fromX-a*fromY);
-  ctx.drawImage(art,0,0,iw,ih);ctx.restore();
+  ctx.drawImage(isGun?art:crossbowFrame(art),0,0,iw,ih);ctx.restore();
+  if(!isGun)crossbowString(ctx,nock);
   if(!isGun&&releaseAge===null){
-    const rear=-.37+(drawing?charge*.065:0);
+    const rear=-nock;
     line(ctx,0,rear,0,-.83,'#573f2b',.013);
     line(ctx,-.002,rear,-.002,-.83,'#e7c993',.006);
     ctx.save();ctx.translate(0,rear);ctx.rotate(-Math.PI/2);drawFletching(ctx,0,0,fletching,arrowColor,0,.37);ctx.restore();
@@ -1209,7 +1248,7 @@ function drawHeldStock(ctx,w,h,options){
   }
   ctx.restore();
   const onRail=along=>({x:rearX+Math.sin(angle)*size*along,y:rearY-Math.cos(angle)*size*along});
-  return isGun?true:{tip:onRail(.83),tail:onRail(.37-(drawing?charge*.065:0))};
+  return isGun?true:{tip:onRail(.83),tail:onRail(nock)};
 }
 
 /** Draws a transparent shop item illustration, without clearing the canvas. */

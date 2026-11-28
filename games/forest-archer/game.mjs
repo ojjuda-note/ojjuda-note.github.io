@@ -1,6 +1,6 @@
 import {createCoinExchangeClient,COIN_PACKS,COINS_PER_ZU} from './coin-exchange.mjs?v=20261104-archery-reset5';
 import {PLAYER, BOWS, ARROWS, BULLETS, getBullet, SCOPES, getScopePrice, getScoreCoinReward, DISTANCE_STAGES as STAGES, DISTANCE_GROUPS, prepareStage, passersAt, retirePasser, clamp, targetAt, applyAnimalHit, getAnimalAttachmentPoint, getSpeed, getArrowMass, getArrowConsistency, getArrowVariance, getArrowDragRate, getWindResponse, sortEquipment, launchArrow, launchVolley, stepArrow, predictTrajectory, createSway, stepSway} from './engine.mjs?v=20261128-pillars20';
-import {drawScenery, drawRangeTarget, drawAnimal, drawClay, drawUfo, drawObstacle, drawPasser, drawEquipmentIcon, drawFirstPersonBow, drawBullseyeImpact, drawBullseyeVignette} from './scenery.mjs?v=20261128-range-camera1';
+import {drawScenery, drawRangeTarget, drawAnimal, drawClay, drawUfo, drawObstacle, drawPasser, drawEquipmentIcon, drawFirstPersonBow, drawBullseyeImpact, drawBullseyeVignette} from './scenery.mjs?v=20261128-aim-motion1';
 import {FLIGHT_TIME_SCALE, IMPACT_HOLD, RETURN_DURATION, PREVIEW_RISE, PREVIEW_HOLD, PREVIEW_RETURN, NEAR_PLANE, projectPoint, depthFragments, desiredFollowCamera, desiredPreviewCamera, clearShotCamera, lerpCamera, returnView} from './view.mjs?v=20261128-range-camera1';
 import {createBullseyeCinematic, sampleBullseyeCinematic, desiredBullseyeCamera} from './cinematic.mjs?v=20261128-range-camera1';
 import {createBulletCinematic, sampleBulletCinematic, desiredBulletCamera} from './bullet-cinematic.mjs?v=20261128-range-camera1';
@@ -208,6 +208,7 @@ state.laserStep=1;
 state.laserAdjustOpen=false;
 state.coachSaid=false;state.coachReady=false;state.coachLastCueAt=-Infinity;state.coachCueUntil=0;state.coachLastCheck=-Infinity;
 let w=1,h=1,dpr=1,camera={},pointer=null,lastFrame=performance.now(),audio=null,toastTimer=0,drawTimer=0,keys=new Set();
+let framePending=false,canvasNeedsPaint=true;
 let laserDial=null;
 const laserGearAngles={horizontalClicks:0,verticalClicks:0};
 let coinExchange=null;
@@ -461,7 +462,7 @@ function setAimZoom(value){
   // raised well above a manually zeroed laser. It never changes the launch.
   state.panX-=Math.tan(sight.yaw)*delta;
   state.panY+=Math.tan(sight.pitch)/Math.cos(sight.yaw)*delta;
-  state.zoom=next;state.guide=null;updateCamera(0,true);
+  state.zoom=next;state.guide=null;updateCamera(0,true);queueGameFrame(true);
   if(state.mode==='ready'||state.mode==='drawing')clampAim(!centeredZoom);
   return true;
 }
@@ -675,6 +676,7 @@ function resize(fromObserver=false){
   if(pointer&&(Math.abs(width-w)>=1||(height!==h&&pointer.type!=='touch')))cancelDraw();
   w=width;h=height;dpr=Math.min(2,devicePixelRatio||1);
   canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);
+  queueGameFrame(true);
   updateCamera(0,true);
   if(state.mode==='ready'||state.mode==='drawing')clampAim();
   if(state.laserAdjustOpen)positionLaserAdjustments();
@@ -1197,7 +1199,7 @@ function finishRound(){
 
 function openModal(type,html,narrow=false){
 
-  cancelDraw();if(!state.modal)state.lastFocus=document.activeElement;state.modal=type;
+  cancelDraw();if(!state.modal)state.lastFocus=document.activeElement;state.modal=type;queueGameFrame(true);
   $('modalContent').innerHTML=html;$('modal').classList.toggle('narrow',narrow);$('modal').dataset.view=type;
   $('modal').setAttribute('aria-labelledby','modalTitle');
   $('modalClose').classList.toggle('hidden',type==='result');$('menuBtn').setAttribute('aria-expanded',type==='menu'?'true':'false');
@@ -1208,7 +1210,7 @@ function openModal(type,html,narrow=false){
   }else $('modalClose').focus();
 }
 function dismissModal(){
-  if(!state.modal)return;state.modal=null;$('modalBackdrop').classList.add('hidden');document.body.style.overflow='';
+  if(!state.modal)return;state.modal=null;lastFrame=performance.now();queueGameFrame();$('modalBackdrop').classList.add('hidden');document.body.style.overflow='';
   $('menuBtn').setAttribute('aria-expanded','false');
   state.lastFocus?.focus?.();state.lastFocus=null;
 }
@@ -1607,7 +1609,7 @@ document.addEventListener('keydown',e=>{
   if(e.code==='Space'&&!e.repeat&&!(document.activeElement?.tagName==='BUTTON')){e.preventDefault();beginDraw();}
 });
 document.addEventListener('keyup',e=>{;keys.delete(e.code);if(e.code==='Space'&&!state.modal&&!pointer){e.preventDefault();releaseShot();}});
-document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelDraw();else void refreshAmmoStatus();lastFrame=performance.now();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelDraw();else{void refreshAmmoStatus();lastFrame=performance.now();queueGameFrame();}});
 window.addEventListener('blur',()=>cancelDraw());new ResizeObserver(()=>resize(true)).observe(canvas);
 
 function poly(points,fill,stroke=null,width=1){
@@ -1673,7 +1675,10 @@ function drawTarget(target){
   const p=project(target);if(!p.visible)return;
   const r=target.radius*p.scale;
   ctx.save();
-  const ground=project({x:target.x,y:0,z:target.z});
+  const disk=target.kind==='target',stage=state.stage;
+  const moving=disk&&(stage.motion?.amplitudeX||stage.motion?.amplitudeY);
+  const mount=moving?project({x:stage.targetX||0,y:stage.height,z:target.z}):p;
+  const ground=project({x:moving?(stage.targetX||0):target.x,y:0,z:target.z});
   if(['target','clay','ufo'].includes(target.kind))ellipse(ground.x+3,ground.y+2,r*1.08,Math.max(2,r*.11),'#2f442a24');
   if(target.kind==='clay')drawClay(ctx,p.x,p.y,r,renderTime(),target.direction);
   else if(target.kind==='ufo')drawUfo(ctx,p.x,p.y,r,renderTime(),target.direction);
@@ -1686,15 +1691,20 @@ function drawTarget(target){
       ellipse(shadow.x,shadow.y,size*.53,Math.max(.4,size*.067),'#282c242e');ctx.restore();
     }
     drawAnimal(ctx,p.x,p.y,r,target.kind,target.poseTime??renderTime(),target.direction,target,camera);
-  }else if(!drawRangeTarget(ctx,p.x,p.y,r,ground.x,ground.y,targetRock(target),project({...target,z:target.z+.30*target.radius}))){
-    const footL=project({x:target.x-target.radius*.72,y:0,z:target.z-.1});
-    const footR=project({x:target.x+target.radius*.72,y:0,z:target.z-.1});
-    line(p.x-r*.36,p.y+r*.25,footL.x,footL.y,'#796744',Math.max(3,r*.10));
-    line(p.x+r*.36,p.y+r*.25,footR.x,footR.y,'#8c784e',Math.max(3,r*.10));
-    line(p.x,p.y+r*.4,ground.x+r*.4,ground.y,'#72613e',Math.max(2,r*.075));
+  }else{
+    const track=moving?Math.abs(stage.motion.amplitudeX||0)*p.scale:0;
+    const painted=drawRangeTarget(ctx,p.x,p.y,r,ground.x,ground.y,targetRock(target),
+      project({...target,z:target.z+.30*target.radius}),mount.y,track);
+    if(painted){ctx.restore();return;}
+    const footL={x:ground.x-r*.72,y:ground.y},footR={x:ground.x+r*.72,y:ground.y};
     for(const [joint,foot] of [[-.36,footL],[.36,footR]]){
-      line(p.x+r*joint-r*.018,p.y+r*.25,foot.x-r*.018,foot.y,'#e4c593',Math.max(.7,r*.024));
-      line(p.x+r*joint+r*.034,p.y+r*.25,foot.x+r*.034,foot.y,'#4e3b2d',Math.max(.7,r*.020));
+      line(mount.x+r*joint,mount.y+r*.25,foot.x,foot.y,'#796744',Math.max(3,r*.10));
+      line(mount.x+r*joint-r*.018,mount.y+r*.25,foot.x-r*.018,foot.y,'#e4c593',Math.max(.7,r*.024));
+    }
+    line(mount.x,mount.y+r*.4,ground.x+r*.4,ground.y,'#72613e',Math.max(2,r*.075));
+    if(moving){
+      line(mount.x-track,mount.y,mount.x+track,mount.y,'#6d6a53',Math.max(2,r*.08));
+      line(p.x,mount.y,p.x,p.y,'#817656',Math.max(2,r*.10));
     }
     const rim=ctx.createLinearGradient(p.x-r,p.y-r,p.x+r,p.y+r);
     rim.addColorStop(0,'#ffdc98');rim.addColorStop(.30,'#a2764f');rim.addColorStop(.62,'#59443c');rim.addColorStop(1,'#342e30');
@@ -1721,10 +1731,26 @@ function drawTarget(target){
 }
 function drawWall(ob){drawObstacle(ctx,ob,{project,camera,nearPlane:NEAR_PLANE});}
 
+// Keep high-angle shots possible and point back to the actual sight from a
+// clear strip just inside the field controls. The marker never changes aim.
+function drawSightEdge(point,laser=false){
+  if(!Number.isFinite(point.x)||!Number.isFinite(point.y))return false;
+  if(point.x>=0&&point.x<=w&&point.y>=0&&point.y<=h)return false;
+  const dx=point.x-w/2,dy=point.y-h/2;
+  const extentX=w/2-Math.min(16,w*.08),extentY=h/2-Math.min(62,h*.26);
+  const t=1/Math.max(Math.abs(dx)/extentX,Math.abs(dy)/extentY);
+  ctx.save();ctx.translate(w/2+dx*t,h/2+dy*t);ctx.rotate(Math.atan2(dy,dx));
+  const color=laser?'#ff6b6e':'#fff2bd';
+  circle(0,0,10,'rgba(26,43,41,.86)',color,1.2);
+  ctx.beginPath();ctx.moveTo(5,0);ctx.lineTo(-3,-4.5);ctx.lineTo(-3,4.5);
+  ctx.closePath();ctx.fillStyle=color;ctx.fill();ctx.restore();return true;
+}
+
 function drawReticle(){
   if(state.mode==='flight'||state.mode==='settling'||state.mode==='finished'||state.mode==='preview')return;
   if(state.mode==='drawing'&&laserEnabled())return;
   const p=screenAim(),held=state.mode==='drawing',steady=isSteady();
+  if(drawSightEdge(p))return;
   const scoped=hasScope()&&state.zoom===equippedScope();
   const radius=scoped?4:held?10:8;ctx.save();ctx.lineCap='round';
   if(scoped){
@@ -1754,7 +1780,7 @@ function drawLaser(){
   for(const axis of ['x','y','z'])canvas.dataset[`laser${axis.toUpperCase()}`]=String(frame.point[axis]);
   canvas.dataset.laserBlocked=String(frame.blocked);
   const point=project(frame.point);canvas.dataset.laserScreenX=String(point.x);canvas.dataset.laserScreenY=String(point.y);
-  if(!point.visible||point.x<-10||point.x>w+10||point.y<-10||point.y>h+10)return;
+  if(!point.visible||drawSightEdge(point,true))return;
   ctx.save();ctx.shadowColor='#ff263f';ctx.shadowBlur=12;circle(point.x,point.y,4,'#ff3048');ctx.shadowBlur=0;
   circle(point.x,point.y,1.4,'#fff1ec');circle(point.x,point.y,7,null,'#ff345b70',1);ctx.restore();
 }
@@ -2094,7 +2120,18 @@ function updatePower(){
     $('powerLabel').textContent=laser?'사격장을 눌러 조준':'아래 ⅓을 끌어 조준';$('controlTitle').textContent=laser?'사격장을 누르고 끌어 조준':'화면 아래 1/3을 끌어 조준';$('controlHint').textContent=usingGun()?'한 판에 10발 · 모두 쏘면 결과 확인':laser?'누르면 빨간 점이 가운데에서 시작 · 끌어 조준하고 손을 놓으면 발사':state.practiceOnly?'저장 없이 연습 중':activeBow().burstCount>1?`레어 석궁 · 3연발 · ${steadySeconds}초 안정`:`${steadySeconds}초 안정 기회 · 10초 후 자동발사`;
   }
 }
+function queueGameFrame(repaint=false){
+  if(repaint)canvasNeedsPaint=true;
+  if(framePending||document.hidden||(state.modal&&!canvasNeedsPaint))return;
+  framePending=true;requestAnimationFrame(tick);
+}
 function tick(now){
+  framePending=false;
+  if(document.hidden)return;
+  if(state.modal){
+    if(canvasNeedsPaint){render();canvasNeedsPaint=false;}
+    return;
+  }
 
   const dt=Math.min(.25,Math.max(0,(now-lastFrame)/1000));lastFrame=now;
   if(!document.hidden&&!state.modal&&!state.roundSaving){
@@ -2163,11 +2200,11 @@ function tick(now){
     if(state.feedbackUntil&&state.time>state.feedbackUntil){$('shotFeedback').classList.add('hidden');state.feedbackUntil=0;}
     state.effects=state.effects.filter(e=>state.time-e.born<1.6);
   }
-  render();updatePower();requestAnimationFrame(tick);
+  render();canvasNeedsPaint=false;updatePower();queueGameFrame();
 }
 if(!adminPreview){
   coinExchange=createCoinExchangeClient({onCredit:creditExchangedCoins,onChange:()=>{if(state.modal==='shop'&&shopTab==='coin')showCoinShop();}});
   ammo=createAmmoClient({onChange:onAmmoChange,recordsOnly:true});
 }
-save();resetRound(state.stage);requestAnimationFrame(tick);
+save();resetRound(state.stage);queueGameFrame();
 if(/(?:^|[?&])shop=coin(?:&|$)/.test(window.location.search||''))showShop('coin');
