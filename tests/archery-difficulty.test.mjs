@@ -367,12 +367,27 @@ test('partial-cover layouts randomize together and never accumulate offsets on p
   }
 });
 
-test('thin fixed pillars keep roughly three quarters visible while the target crosses their gaps', () => {
+test('only the 10m diagonal pillar lesson widens the visible columns by 20 percent', () => {
+  for (const template of DISTANCE_STAGES.filter(stage => stage.coverageMode === 'pillars')) {
+    const expectedRatio = template.lessonKey === 'pillars-diagonal' && template.distance === 10 ? 1.20 : 1;
+    for (const seed of [0, 5, 19]) {
+      const stage = prepareStage(template,seed);
+      for (const box of stage.obstacles) {
+        const sides = [box.x - box.width/2,box.x + box.width/2];
+        const depths = [box.z - box.depth/2,box.z + box.depth/2];
+        const edges = sides.flatMap(x => depths.map(z => x*stage.distance/z));
+        close(Math.max(...edges)-Math.min(...edges), stage.radius*.70*.25*expectedRatio);
+      }
+    }
+  }
+});
+
+test('each pillar lesson keeps its authored exposure while the target crosses the gaps', () => {
   for (const template of STAGES.filter(stage => stage.coverageMode === 'pillars')) for (const seed of [0, 5, 19]) {
     const stage = prepareStage(template, seed), before = structuredClone(stage.obstacles), positions = [];
     for (let sample = 0; sample < 48; sample++) {
       const time = sample * .43, visible = visibleFace(stage, time);
-      assert.ok(visible >= .70 && visible <= .80, `stage ${stage.id} seed ${seed} time ${time}: ${visible} visible`);
+      assert.ok(Math.abs(visible - template.visibleFraction) <= .05, `stage ${stage.id} seed ${seed} time ${time}: ${visible} visible`);
       positions.push(targetAt(stage, time).x);
     }
     assert.deepEqual(stage.obstacles, before, 'the target moves behind stationary pillars');
