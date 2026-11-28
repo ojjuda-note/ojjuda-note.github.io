@@ -294,10 +294,10 @@ function partialCover(stage, targetX = 0) {
       projectedBox(distance, targetX + edge, targetX + radius * 4.5, z, top, stage.coverMaterial || 'stone')
     ];
   }
-  // Thin columns cover roughly one quarter of the fixed-size round face.
+  // The authored open fraction sets the clear spacing between projected pillars.
   // Extend the row over its existing travel so shrinking the face never sends
   // it beyond the cover. Each column and gap remains real collision geometry.
-  const spacing = radius * .70, width = spacing * .25;
+  const spacing = radius * .70, width = spacing * (1 - stage.visibleFraction);
   const halfCount = Math.max(3, Math.ceil((Math.abs(stage.motion?.amplitudeX || 0) + radius) / spacing));
   return Array.from({ length: halfCount * 2 + 1 }, (_, index) => {
     const center = targetX + (index - halfCount) * spacing;
@@ -471,7 +471,7 @@ function lessonStages() {
     {key:'wide-irregular'});
   addChapter('기둥 사이 높낮이','기둥 뒤에서 과녁의 높이도 바뀌어요.',
     '가는 기둥 뒤 과녁이 대각선으로 움직여요. 중심의 높이와 가로 방향을 함께 따라가세요.',
-    (index,distance,radius) => pillars(index,distance,radius,{height:radius+.8,
+    (index,distance,radius) => pillars(index,distance,radius,{height:radius+.8,visibleFraction:distance===10?.70:.75,
       motion:motion(radius*.85,radius*.16,.29+index*.02)}),{key:'pillars-diagonal'});
   addChapter('한 사람 왕복 피하기','과녁 바로 앞을 왕복하는 사람의 틈을 읽어요.',
     '사람은 표적이 아니에요. 과녁 앞에서 방향을 바꾸는 박자를 보고 화살이 도착할 때 열리는 틈을 겨누세요.',

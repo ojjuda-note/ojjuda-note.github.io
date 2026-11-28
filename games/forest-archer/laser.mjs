@@ -1,5 +1,5 @@
 /** A manually zeroed sight only. This module never aims or fires an arrow. */
-import {PLAYER, BOWS} from './engine.mjs?v=20261128-wildlife1';
+import {PLAYER, BOWS} from './engine.mjs?v=20261128-pillars20';
 
 export const LASER_PRICE = 1000;
 export const LASER_CLICK_DEGREES = .05;
