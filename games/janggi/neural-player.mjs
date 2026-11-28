@@ -2,6 +2,8 @@
 // permitted root moves and handles its own bikjang, shuttle and points rules.
 import { openingCounts, pickOpeningMove } from './opening-book.mjs?v=20261115-janggi-book1';
 
+import { JG_PLY_LIMIT, jgAttackPiece } from './worker-rules.mjs?v=20261128-janggi-points1';
+
 const ENGINE='/games/janggi/fairy-4d4b393-9991472750de/';
 const NETWORK='janggi-9991472750de.nnue';
 const limits={pro:12000,master:40000,grandmaster:120000};
@@ -81,9 +83,12 @@ export function createNeuralPlayer(makeWorker=url=>new Worker(url)){
   });
  }
  async function choose(state,level,rules,budgetMs){
-  if(!limits[level]||state.passes||state.n>=390||facingKings(state.b)||
+  if(!limits[level]||state.passes||state.n>=JG_PLY_LIMIT-10||facingKings(state.b)||
     Object.values(state.bikjangKeys||{}).some(count=>count>=2)||
     Object.values(state.shuttle||{}).some(last=>last?.run>=3))return null;
+  // The last attacking piece can disappear on the next move. Let the local
+  // search settle that capture under Ojjuda's point rules.
+  if(state.b.filter(jgAttackPiece).length<=1)return null;
   if(!ready){
    let timer;
    try{await Promise.race([start(),new Promise(resolve=>{timer=setTimeout(resolve,350)})])}

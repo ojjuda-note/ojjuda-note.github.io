@@ -1,6 +1,6 @@
 // The arbiter owns move application, repetition and adjudication. For search,
 // index potential attackers once so that testing a move needs only its king's square.
-import { janggiRules, pieceTargets, repeatsShuttle } from './worker-rules.mjs?v=20261115-janggi-search1';
+import { janggiRules, pieceTargets, repeatsShuttle } from './worker-rules.mjs?v=20261128-janggi-points1';
 
 const TYPES = 'KAPHERC';
 const POINTS = { K:0, A:300, P:200, H:500, E:300, R:1300, C:700 };

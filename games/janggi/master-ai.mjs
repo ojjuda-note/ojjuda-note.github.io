@@ -2,7 +2,10 @@
 // longer searches cannot freeze the board or its close/undo controls.
 import { openingCounts, pickOpeningMove } from './opening-book.mjs?v=20261115-janggi-book1';
 
+import { JG_PLY_LIMIT } from './worker-rules.mjs?v=20261128-janggi-points1';
+
 const VALUES = Object.freeze({ R: 1300, C: 700, H: 500, E: 300, A: 300, P: 200, K: 0 });
+
 const MATE = 100000;
 const TIMEOUT = Symbol('janggi-master-timeout');
 
@@ -53,8 +56,8 @@ export function analyzeJanggiMasterMove(state, rules, options = {}) {
  }
 
  function terminal(node, ply) {
-  if (isDraw(node)) return 0;
-  if ((node.passes || 0) < 2 && node.n < 400) return null;
+  const pointsDue=rules.pointsDue ? rules.pointsDue(node) : node.n>=JG_PLY_LIMIT || node.passes>=2;
+  if (!pointsDue) return isDraw(node) ? 0 : null;
   const result = status(node);
   if (!result.over) return null;
   return result.result === 'draw' ? 0 : result.result === node.t ? MATE - ply : -MATE + ply;

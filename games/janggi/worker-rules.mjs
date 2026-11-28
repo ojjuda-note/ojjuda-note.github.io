@@ -34,10 +34,29 @@ function ca(t,e){
  const b=jgMovedBoard(t,e),turn=Ya(t.t),key=jgBikjangKey(b,turn);
  const bikjangKeys=key?{...t.bikjangKeys,[key]:(t.bikjangKeys?.[key]||0)+1}:t.bikjangKeys;
  return {b,t:turn,n:t.n+1,passes:e.pass?(t.passes||0)+1:0,shuttle:jgShuttleAfter(t,e),bikjangKeys};
-}function Dr(t,history=false){let e=[];for(let o=0;o<t.b.length;o++)if(!(!t.b[o]||ue(t.b[o])!==t.t))for(let r of Ep(t.b,o)){let a={f:o,t:r};if(!history&&jgRepeats(t,a))continue;t.b[r]&&(a.x=1);let i=ca(t,a).b;Cp(i,Ap(i,t.t),Ya(t.t))||e.push(a)}return e}var Za=t=>!hl(t),a2={R:13,C:7,H:5,E:3,A:3,P:2,K:0};function Fn(t,e){let o=e==="h"?1.5:0;for(let r of t)r&&ue(r)===e&&(o+=a2[Do(r)]);return o}function Mp(t){if(jgBikjangDraw(t))return{over:!0,result:"draw",reason:"bikjang"};let e=Dr(t),o=hl(t);if(!e.length&&o)return{over:!0,result:Ya(t.t),reason:"checkmate"};if((t.passes||0)>=2&&!jgBikjangKey(t.b,t.t)){let r=Fn(t.b,"c"),a=Fn(t.b,"h");return{over:!0,result:r>a?"c":"h",reason:"points",points:{c:r,h:a}}}if(t.n>=400){let r=Fn(t.b,"c"),a=Fn(t.b,"h");return{over:!0,result:r>a?"c":"h",reason:"points",points:{c:r,h:a}}}return{over:!1,check:o,moves:e,mustPass:!e.length}}var Dp=(t,e,history=false)=>e.pass?Za(t)?{pass:1}:null:Dr(t,history).find(o=>o.f===e.f&&o.t===e.t)||null,ul={R:1300,C:700,H:500,E:300,A:300,P:200,K:0};function pl(t){let e=0;for(let o=0;o<t.b.length;o++){let r=t.b[o];if(!r)continue;let a=ue(r),i=Do(r),[l,s]=kn(o),c=ul[i];i==="P"&&(c+=(a==="c"?6-s:s-3)*12+(4-Math.abs(l-4))*4),(i==="H"||i==="C"||i==="R")&&(c+=(4-Math.abs(l-4))*5),e+=a==="c"?c:-c}return t.t==="c"?e:-e}
+}function Dr(t,history=false){let e=[];for(let o=0;o<t.b.length;o++)if(!(!t.b[o]||ue(t.b[o])!==t.t))for(let r of Ep(t.b,o)){let a={f:o,t:r};if(!history&&jgRepeats(t,a))continue;t.b[r]&&(a.x=1);let i=ca(t,a).b;Cp(i,Ap(i,t.t),Ya(t.t))||e.push(a)}return e}var Za=t=>!hl(t),a2={R:13,C:7,H:5,E:3,A:3,P:2,K:0};function Fn(t,e){let o=e==="h"?1.5:0;for(let r of t)r&&ue(r)===e&&(o+=a2[Do(r)]);return o}
+const JG_PLY_LIMIT = 200;
+function jgAttackPiece(piece){
+ return !!piece && !['K','k','A','a'].includes(piece);
+}
+function jgPointsDue(state){
+ return state.n >= JG_PLY_LIMIT || !state.b.some(jgAttackPiece) ||
+  (state.passes >= 2 && !jgBikjangKey(state.b,state.t));
+}
+function Mp(state){
+ const moves=Dr(state), check=hl(state);
+ if(!moves.length && check)return {over:true,result:Ya(state.t),reason:"checkmate"};
+ if(jgPointsDue(state)){
+  const c=Fn(state.b,"c"),h=Fn(state.b,"h");
+  return {over:true,result:c>h?"c":"h",reason:"points",points:{c,h}};
+ }
+ if(jgBikjangDraw(state))return {over:true,result:"draw",reason:"bikjang"};
+ return {over:false,check,moves,mustPass:!moves.length};
+}
+var Dp=(t,e,history=false)=>e.pass?Za(t)?{pass:1}:null:Dr(t,history).find(o=>o.f===e.f&&o.t===e.t)||null,ul={R:1300,C:700,H:500,E:300,A:300,P:200,K:0};function pl(t){let e=0;for(let o=0;o<t.b.length;o++){let r=t.b[o];if(!r)continue;let a=ue(r),i=Do(r),[l,s]=kn(o),c=ul[i];i==="P"&&(c+=(a==="c"?6-s:s-3)*12+(4-Math.abs(l-4))*4),(i==="H"||i==="C"||i==="R")&&(c+=(4-Math.abs(l-4))*5),e+=a==="c"?c:-c}return t.t==="c"?e:-e}
 
-export const janggiRules = Object.freeze({ moves: Dr, apply: ca, evaluate: pl, isCheck: hl, isDraw: jgBikjangDraw, status: Mp });
-export { vp as createJanggiStart };
+export const janggiRules = Object.freeze({ moves: Dr, apply: ca, evaluate: pl, isCheck: hl, isDraw: jgBikjangDraw, status: Mp, pointsDue: jgPointsDue });
+export { vp as createJanggiStart, JG_PLY_LIMIT, jgAttackPiece };
 
 // Shared primitives for the search-only move generator.
 export { Ep as pieceTargets, jgRepeats as repeatsShuttle };
