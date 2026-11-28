@@ -87,3 +87,24 @@ test('detailed and legacy inputs do not duplicate a lifestyle factor', () => {
   assert.deepEqual(Array.from(legacy.rows, row => row.key), ['lifestyle-smoke', 'lifestyle-drink', 'lifestyle-sleepBand']);
   assert.ok(Number.isFinite(legacy.years));
 });
+
+test('weekly activity increases from none and is counted once at each age', () => {
+  for (const age of [19, 43.61, 44.99, 45, 60, 99]) {
+    for (const basis of ['men', 'women', '']) {
+      const results = ['0','1','2','3'].map(activity => {
+        const model = combinedEstimate(age, { basis, activity });
+        assert.deepEqual(Array.from(model.rows, row => row.key), ['activity']);
+        assert.equal(model.years, combinedEstimate(age, { basis, activity, exercise: '1' }).years);
+        return model.years;
+      });
+      for (let i=1; i<results.length; i++) assert.ok(results[i] > results[i-1]);
+    }
+  }
+  const estimate = fields => combinedEstimate(43.61, { basis: 'men', ...fields });
+  assert.equal(estimate({ activity: '3', exercise: '0' }).years, estimate({ exercise: '0' }).years);
+  assert.equal(estimate({ activity: '0', exercise: '0' }).years, estimate({ activity: '0' }).years);
+  assert.equal(estimate({ activity: '', exercise: '1' }).years, estimate({ exercise: '1' }).years);
+  assert.deepEqual(Array.from(estimate({ activity: '' }).rows), []);
+  assert.deepEqual(Array.from(estimate({ activity: '2', history: 'yes' }).rows), []);
+  for (const age of [18.99,100]) assert.equal(combinedEstimate(age, { activity: '2' }).rows.length, 0);
+});

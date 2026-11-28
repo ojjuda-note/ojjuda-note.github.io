@@ -158,6 +158,19 @@ function lifestyleRows(curve,age,sex,flags) {
   }
   return rows;
 }
+// For 19–44, the Korean adult study supplies two intensity-specific anchors.
+// Duration including light exercise is a clock approximation between them.
+function youngerActivityRow(curve,age,sex,activity,exercise) {
+  const anchor=adverse=>lifestyleRows(curve,age,sex,[null,null,adverse,null,null])[0];
+  const lower=anchor(true),upper=anchor(false);
+  const minutes=[0,37.5,112.5,150][Number(activity)];
+  // Vigorous activity is doubled in the separate threshold question.
+  const thresholdMet=exercise==="0" && (activity==="2" || activity==="3");
+  const share=thresholdMet?1:0.5*minutes/150;
+  const risk=lower.result.risk;
+  const selected=risk.selected+share*(upper.result.risk.selected-risk.selected);
+  return {key:"activity",label:"운동시간",url:lower.url,result:{risk:{...risk,selected}}};
+}
 function conditionEvidence(age,sex,f) {
   const curve=population.national[sex];
   const rows=[], skipped=[],covered=[];
@@ -195,7 +208,10 @@ function conditionEvidence(age,sex,f) {
   const amountKnown=["2","3","5","6"].includes(f.drink);
   const directDrink={"0":"0","1":"1","2":"2","3":"2","4":"2"}[f.drink]??"";
   if((!amountKnown || !lifestyleOK) && use("alcoholOnly",directDrink)) flags[1]=null;
-  if(use("activity",f.activity)) flags[2]=null;
+  if(f.activity!=="" && lifestyleOK && age<moreStudies.activity.ageMin) {
+    rows.push(youngerActivityRow(curve,age,sex,f.activity,f.exercise));
+    flags[2]=null;
+  } else if(use("activity",f.activity)) flags[2]=null;
   if(!hasIllness && f.sleepBand!=="4" && use("sleep",f.sleepBand)) flags[4]=null;
   if(flags.some(flag=>flag!==null)){
     if(lifestyleOK) {
