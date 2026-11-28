@@ -97,11 +97,13 @@ test('stage 72 remains reachable with the starter bow and arrow in its difficult
     'the introductory equipment can lead the actual visible cheetah without shooting at a future offscreen pass');
 });
 
-test('local approach easing preserves adjusted crossing times, non-eagle vertical paths and average species speed',()=>{
+test('local approach easing preserves adjusted crossing times, footfall timing and average species speed',()=>{
   const durations={68:4.45/1.03/1.15*2,72:4.6/1.03/1.15,196:4.45/1.03/1.15*1.2*2};
   for(const id of[68,72,196])for(const seed of seeds){
     const stage=prepareStage(STAGES[id-1],seed),previous={...stage,approachEase:.15};
-    close(stage.passDuration,durations[id]);
+    const half=stage.distance*1.25+stage.radius*3;
+    const speed=stage.kind==='eagle'?6.8:16;
+    close(stage.passDuration,Math.max(durations[id]*half/(stage.distance*.56+stage.radius*2),2*half/(speed*stage.radius)));
     const duration=stage.passDuration,start=targetAt(stage,0);
     for(const time of[0,duration])close(targetAt(stage,time,0).x,targetAt(previous,time,0).x);
     let oldMean=0,newMean=0,last=start;
@@ -109,12 +111,30 @@ test('local approach easing preserves adjusted crossing times, non-eagle vertica
       const time=duration*(sample+.5)/240,now=targetAt(stage,time),before=targetAt(previous,time),h=1e-5;
       // Eagle swoops now follow horizontal position so their ground contact
       // stays inside the view when local approach speed changes.
-      if(stage.kind!=='eagle')close(now.y,before.y);
+      if(stage.kind==='cheetah')assert.ok(Number.isFinite(now.gaitPhase)&&now.gaitPhase>last.gaitPhase,'running phase advances with distance');
       assert.equal(now.passId,before.passId);assert.equal(now.direction,before.direction);
       assert.ok((now.x-last.x)*now.direction>0,'the animal never reverses or jumps within a pass');last=now;
       close(now.velocityX,(targetAt(stage,time+h).x-targetAt(stage,time-h).x)/(2*h),1e-6);
       oldMean+=Math.abs(before.velocityX)/before.rx;newMean+=Math.abs(now.velocityX)/now.rx;
     }
     close(oldMean/240,newMean/240);
+  }
+});
+
+test('a planted paw holds its world position as a seeded pass changes speed', async()=>{
+  const {gaits,pawPose,modelScale}=await import('../games/forest-archer/wildlife.mjs');
+  for(const [kind,gait] of Object.entries(gaits)){
+    const stage=prepareStage(STAGES.find(s=>s.kind===kind&&s.distance===50),19);
+    let planted=0,recovering=0;
+    for(let i=0;i<240;i++){
+      const t=stage.passDuration*(.25+i/480),next=t+.0005;
+      const p=targetAt(stage,t),q=targetAt(stage,next);
+      close((q.gaitPhase-p.gaitPhase)/(2*Math.PI)*gait.stride*p.radius*modelScale,Math.abs(q.x-p.x));
+      const a=pawPose(kind,p.gaitPhase,true,1),b=pawPose(kind,q.gaitPhase,true,1);
+      if(a.lift||b.lift){recovering++;continue;}
+      const foot=(pose,leg)=>pose.x+pose.direction*pose.radius*modelScale*leg.x;
+      close(foot(p,a),foot(q,b));planted++;
+    }
+    assert.ok(planted>0&&recovering>0,kind+' has a grounded stance and a swing phase');
   }
 });

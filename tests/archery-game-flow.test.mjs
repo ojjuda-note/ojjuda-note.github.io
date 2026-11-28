@@ -1,3 +1,4 @@
+import {visiblePart} from './archery-wildlife-fixtures.mjs';
 /** Integration checks for the actual app handlers/state. No browser or browser driver. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -17,6 +18,7 @@ const PREVIOUS_STAGE_COUNT = 120;
 const STAGE_COUNT = 220;
 const SERVER_EPOCH = Date.parse('2026-11-02T12:00:00.000Z');
 const engineSource = await readFile(new URL('../games/forest-archer/engine.mjs', import.meta.url), 'utf8');
+const wildlifeSource=await readFile(new URL('../games/forest-archer/wildlife.mjs',import.meta.url),'utf8');
 const animalSource = await readFile(new URL('../games/forest-archer/animal-zones.mjs', import.meta.url), 'utf8');
 const viewSource = await readFile(new URL('../games/forest-archer/view.mjs', import.meta.url), 'utf8');
 const cinematicSource = await readFile(new URL('../games/forest-archer/cinematic.mjs', import.meta.url), 'utf8');
@@ -158,6 +160,7 @@ async function appHarness(saved = null, ammoOptions = {}) {
     ResizeObserver: class { constructor(fn) { this.fn = fn; } observe() {} }
   });
   const engine = new vm.SourceTextModule(engineSource, { context, identifier: 'engine.mjs' });
+  const wildlife=new vm.SourceTextModule(wildlifeSource,{context,identifier:'wildlife.mjs'});
   const animals = new vm.SourceTextModule(animalSource, { context, identifier: 'animal-zones.mjs' });
   const view = new vm.SourceTextModule(viewSource, { context, identifier: 'view.mjs' });
   const cinematic = new vm.SourceTextModule(cinematicSource, { context, identifier: 'cinematic.mjs' });
@@ -176,7 +179,7 @@ async function appHarness(saved = null, ammoOptions = {}) {
     for (const [name, frames] of Object.entries(bulletEffectFrames)) this.setExport(name, (...args) => frames.push(args.slice(1)));
   }, { context });
   const game = new vm.SourceTextModule(gameSource + '\nexport const testApi = { state, get progress(){return progress;}, planBalloon, balloonPosition, checkBalloon, get ammo(){return ammo;}, startStage, resetRound, finishRound, showShop, equipItem, installScope, equippedScope, hasScope, maximumZoom, setAimZoom, installLaser, activeLaser, laserEnabled, setLaserSettings, adjustLaser, resetLaser, toggleLaser, setLaserStep, laserFrame, openLaserAdjustments, closeLaserAdjustments, save, closeModal, activeBow, activeArrow, activeBullet, aimAngles, shotParams, effectiveSway, isSteady, get camera(){return camera;}, sceneItems, resize, project, onImpact, retryAmmo, showStabilizers, buyStabilizer, useStabilizer, aimBounds, cinematicFrame, renderTime, adminTrialRequested:false, adminTrialActive:false, get pointer(){return pointer;} };', { context, identifier: 'game.mjs' });
-  await game.link(specifier => specifier.startsWith('./engine.mjs') ? engine : specifier.startsWith('./animal-zones.mjs') ? animals : specifier.startsWith('./view.mjs') ? view : specifier.startsWith('./cinematic.mjs') ? cinematic : specifier.startsWith('./bullet-cinematic.mjs') ? bulletCinematic : specifier.startsWith('./bullet-effects.mjs') ? bulletEffects : specifier.startsWith('./coach.mjs') ? coach : specifier.startsWith('./laser.mjs') ? laser : specifier.startsWith('./ammo-client.mjs') ? ammoModule : specifier.startsWith('./coin-exchange.mjs') ? coinExchangeModule : scenery);
+  await game.link(specifier => specifier.startsWith('./wildlife.mjs') ? wildlife : specifier.startsWith('./engine.mjs') ? engine : specifier.startsWith('./animal-zones.mjs') ? animals : specifier.startsWith('./view.mjs') ? view : specifier.startsWith('./cinematic.mjs') ? cinematic : specifier.startsWith('./bullet-cinematic.mjs') ? bulletCinematic : specifier.startsWith('./bullet-effects.mjs') ? bulletEffects : specifier.startsWith('./coach.mjs') ? coach : specifier.startsWith('./laser.mjs') ? laser : specifier.startsWith('./ammo-client.mjs') ? ammoModule : specifier.startsWith('./coin-exchange.mjs') ? coinExchangeModule : scenery);
   await game.evaluate();
   await flush();
   api = game.namespace.testApi;
@@ -4950,27 +4953,8 @@ function resolveTestHit(app, offset, velocity = { x: 2, y: -3, z: 38 }, score = 
 function resolveAnimalContact(app, score) {
   const { state } = app.api, target = app.engine.targetAt(state.stage, state.time);
   const parts = { 10: ['heart'], 8: ['head'], 5: ['body'], 3: ['leg', 'ear'] }[score];
-  const geometry = app.animals.getAnimalGeometry(target.kind, target.poseTime);
-  let point, contact;
-  outer: for (const primitive of geometry.primitives) {
-    if (!parts.includes(primitive.part)) continue;
-    for (const path of primitive.paths) {
-      const points = path.points;
-      const candidates = path.ellipse ? [{ x: path.ellipse.x, y: path.ellipse.y }] : [
-        { x: points.reduce((sum, value) => sum + value.x, 0) / points.length,
-          y: points.reduce((sum, value) => sum + value.y, 0) / points.length },
-        ...points.slice(1).map((value, index) => ({ x: (points[index].x + value.x) / 2, y: (points[index].y + value.y) / 2 }))
-      ];
-      for (const candidate of candidates) {
-        const m = primitive.matrix, local = { x: m[0] * candidate.x + m[2] * candidate.y + m[4],
-          y: m[1] * candidate.x + m[3] * candidate.y + m[5] };
-        const world = { x: target.x + local.x * target.radius * (target.direction < 0 ? -1 : 1),
-          y: target.y - local.y * target.radius, z: target.z };
-        const result = app.animals.scoreAnimalPoint(world, target);
-        if (result?.score === score && result.animalAttachment) { point = world;contact = result;break outer; }
-      }
-    }
-  }
+  const point=visiblePart(target,parts[0]),contact=app.animals.scoreAnimalPoint(point,target);
+  assert.equal(contact?.score,score);
   assert.ok(contact, `${target.kind} has a painted ${score}-point contact in its current pose`);
   state.shot = { ...app.engine.launchArrow({ bow: app.api.activeBow(), arrow: app.api.activeArrow() }),
     position: { ...point }, velocity: { x: 2, y: -3, z: 38 }, elapsed: .2, active: false, handled: false,
@@ -5051,15 +5035,14 @@ test('real rabbit head, body, ear and leg hits show their own points and follow 
     await enterScene(app, 'rabbit');
     prepareAnimalCrossing(app);
     const { state } = app.api, initial = app.engine.targetAt(state.stage, 0);
-    const point = { x: initial.x + sample.x * initial.radius * (initial.direction < 0 ? -1 : 1),
-      y: initial.y - sample.y * initial.radius, z: initial.z };
+    const point=visiblePart(initial,sample.part);
     const contact = app.animals.scoreAnimalPoint(point, initial, 0);
     assert.equal(contact?.part, sample.part);assert.equal(contact.score, sample.score);assert.ok(contact.animalAttachment);
-    const aimAt = target => app.engine.getAnimalAttachmentPoint(target, contact.animalAttachment);
+    const aimAt = target => visiblePart(target,sample.part);
     const draw = preciseMainDraw(app, { x: 0, y: 0 }, { aimAt });
     draw.pad.emit('pointerup', draw.coords);await app.flush();app.until(() => state.mode === 'settling');
     const result = state.shot.result, reward = app.engine.getScoreCoinReward(sample.score, state.stage.id);
-    assert.equal(result.type, 'hit');assert.equal(result.part, sample.part);assert.equal(result.score, sample.score);
+    assert.equal(result.type, 'hit',sample.part+' '+JSON.stringify(result.point));assert.equal(result.part, sample.part);assert.equal(result.score, sample.score);
     assert.equal(state.score, sample.score);assert.equal(state.hits, 1);assert.equal(app.api.progress.coins, 100 + reward);
     assert.match(app.getElement('feedbackTitle').textContent, new RegExp(`${sample.zone} 명중.*\\+${sample.score}점`));
     assert.equal(state.cinematic, null);assert.ok(result.animalAttachment);
@@ -5208,7 +5191,7 @@ test('a real arrow through empty space inside the former animal ellipse keeps fl
   // All three spaces were inside the former ellipse; the actual painted parts
   // remain clear there while the ears and legs animate.
   const gaps = [{ name: 'above the tail', x: -.9, y: -.25 },
-    { name: 'between the ears', x: .47, y: -.58 }, { name: 'between the legs', x: .06, y: .4032 }];
+    { name: 'behind the raised ears', x: .01, y: -.54 }, { name: 'between the legs', x: .06, y: .4032 }];
   for (const gapSample of gaps) {
     const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG,
       ownedBows: [0, 11], ownedArrows: [0, 11], bow: 11, arrow: 11, coins: 100, sound: false });
