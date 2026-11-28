@@ -1,6 +1,7 @@
+import {drawWildlife} from './wildlife.mjs?v=20261128-wildlife1';
 // Range paintings, world objects, and first-person equipment use CSS pixels.
 // Distant art and tree sprites are cached; world scenery follows the camera.
-import {drawAnimalModel,getAnimalFallPose,getAnimalAimPoint} from './animal-zones.mjs?v=20261104-archery-eagle-dive1';
+import {drawAnimalModel,getAnimalFallPose,getAnimalAimPoint} from './animal-zones.mjs?v=20261128-wildlife1';
 import {rangePalette, paintPanorama, paintFir, paintRedPine} from './range-art.mjs?v=20261128-motion1';
 const layers = new Map();
 const TAU = Math.PI * 2;
@@ -620,39 +621,20 @@ export function drawUfo(ctx,x,y,radius,time=0,direction=1) {
   ctx.restore();
 }
 
-// Each 4 × 4 sheet was registered against one full cycle of the game's moving silhouette.
-const wildlifeSheets={
-  rabbit:[-0.85119,-0.73214,302,208,7.2],
-  wildcat:[-1.04762,-0.625,350,205,6.1],
-  deer:[-0.97024,-0.7619,352,249,5.4],
-  cheetah:[-1.34524,-0.48214,402,179,10],
-  bird:[-1.17262,-0.75,368,216,8.5],
-  pigeon:[-1.04762,-0.70833,337,200,10.2],
-  eagle:[-1.47024,-0.88095,494,244,2.2],
-};
-export function drawAnimal(ctx,x,y,radius,kind,time=0,direction=1,pose=null) {
-  if(!Number.isFinite(x)||!Number.isFinite(y))return;
-  const r=Math.max(.1,Number.isFinite(radius)?radius:1),side=direction<0?-1:1;
-  const clock=Number.isFinite(pose?.poseTime)?pose.poseTime:time;
-  const sheet=wildlifeSheets[kind],art=sheet&&paintedAsset('wildlife-'+kind);
-  ctx.save();ctx.translate(x,y);ctx.scale(side*r,r);
-  if(!art)drawAnimalModel(ctx,kind,clock,pose);
-  else{
-    const [left,top,width,height,speed]=sheet;
-    const frame=(Math.round(clock*speed*16/TAU)%16+16)%16;
-    const fall=getAnimalFallPose(pose);
-    ctx.save();ctx.rotate(fall.rotation);ctx.scale(1,fall.scaleY);
-    ctx.drawImage(art,frame%4*width,Math.floor(frame/4)*height,width,height,left,top,width/168,height/168);
-    ctx.restore();
-    const mark=pose&&getAnimalAimPoint(pose);
-    if(mark){
-      const mx=(mark.x-pose.x)*side/pose.radius,my=(pose.y-mark.y)/pose.radius;
-      ctx.beginPath();ctx.arc(mx,my,.100,0,TAU);ctx.lineWidth=.019;
-      ctx.strokeStyle='#463722bd';ctx.stroke();ctx.lineWidth=.011;ctx.strokeStyle='#ffdf96';ctx.stroke();
-      ellipse(ctx,mx,my,.019,.019,'#fff1c5');
-    }
+export function drawAnimal(ctx,x,y,radius,kind,time=0,direction=1,pose=null,camera){
+  if(!Number.isFinite(x)||!Number.isFinite(y)||!(radius>0))return;
+  const subject=pose||{x:0,y:1.65,z:20,radius:1,kind,poseTime:time,direction};
+  if(!drawWildlife(ctx,x,y,radius,subject,camera,getAnimalFallPose(subject))){
+    ctx.save();ctx.translate(x,y);ctx.scale(direction<0?-radius:radius,radius);
+    drawAnimalModel(ctx,kind,subject.poseTime??time,subject);ctx.restore();return;
   }
-  ctx.restore();
+  const mark=getAnimalAimPoint(subject);
+  if(mark){
+    const mx=x+(mark.x-subject.x)*radius/subject.radius,my=y-(mark.y-subject.y)*radius/subject.radius;
+    ctx.save();ctx.beginPath();ctx.arc(mx,my,radius*.10,0,TAU);ctx.lineWidth=Math.max(.55,radius*.019);ctx.strokeStyle='#463722bd';ctx.stroke();
+    ctx.lineWidth=Math.max(.38,radius*.012);ctx.strokeStyle='#ffdf96';ctx.stroke();
+    ellipse(ctx,mx,my,Math.max(.45,radius*.019),Math.max(.45,radius*.019),'#fff1c5');ctx.restore();
+  }
 }
 
 export function drawRangeTarget(ctx,x,y,r,groundX,groundY,rock=null,back=null){
