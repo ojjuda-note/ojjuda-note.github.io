@@ -52,7 +52,7 @@ function drawPhotoStrips(ctx,w,h,image,camera,frame) {
   if(Math.abs(camera.z)+Math.abs(camera.x)<1e-6){
     strip(seam,h,row(seam),row(h));return;
   }
-  const step=Math.max(2,Math.round(h/170));
+  const step=Math.max(2,Math.round(h/106));
   for(let y=seam;y<h;y+=step){
     const bottom=Math.min(h,y+step+.25);
     strip(y,bottom,row(y),row(bottom));
@@ -102,29 +102,40 @@ function groundTile(image){
   const edge=trailCtx.createLinearGradient(0,0,size,0);
   for(const [at,alpha] of [[0,0],[.42,0],[.462,.7],[.48,.94],[.52,.96],[.543,.7],[.582,0],[1,0]])edge.addColorStop(at,'rgba(0,0,0,'+alpha+')');
   trailCtx.fillStyle=edge;trailCtx.fillRect(0,0,size,size);ctx.drawImage(trail,0,0);
-  if(tile.transferToImageBitmap)tile=tile.transferToImageBitmap();
-  groundTiles.set(image,tile);return tile;
+  const atlas=surface(1536,512),stamp=atlas.getContext('2d',{willReadFrequently:true});
+  for(let row=0;row<2;row++)for(let col=0;col<6;col++)stamp.drawImage(tile,col*256,row*256,256,256);
+  groundTiles.set(image,atlas);return atlas;
 }
-const groundPatterns=new WeakMap();
 function drawGroundDetail(ctx,w,h,camera,image){
   if(camera.z<=2)return;
-  let entry=groundPatterns.get(ctx);
-  if(entry?.image!==image){entry={image,texture:ctx.createPattern(groundTile(image),'repeat')};groundPatterns.set(ctx,entry);}
-  const texture=entry.texture;
-  if(!texture)return;
-  const start=Math.max(0,camera.horizon+.006*camera.focal),step=Math.max(2,Math.round(h/190));
+  const tile=groundTile(image),unit=tile.height/2;
   const blend=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t);};
-  const originalAlpha=ctx.globalAlpha;
+  const travel=blend((camera.z-2)/14),originalAlpha=ctx.globalAlpha;
+  // Below one texel per pixel the original distant field already contains all
+  // visible detail. Bounding the far edge also bounds the cost on mobile GPUs.
+  const start=Math.max(0,camera.horizon+camera.focal*Math.max(.009,camera.y/145));
+  const step=Math.max(2,Math.round(h/92));
   for(let y=start;y<h;y+=step){
-    const bottom=Math.min(h,y+step+.26),down=((y+bottom)*.5-camera.horizon)/camera.focal;
+    const bottom=Math.min(h,y+step+.22);
+    const down=((y+bottom)*.5-camera.horizon)/camera.focal;
     const depth=camera.y/down,zoom=camera.focal/depth,worldZ=camera.z+depth;
-    const pixelX=18/512*zoom,pixelY=pixelX*down;
+    const alpha=travel*blend((down-.009)/.15)*blend((145-depth)/50);
+    if(alpha<.008)continue;
+    const tileWidth=18*zoom;
     const left=camera.cx-(camera.x+9)*zoom+Math.sin(worldZ*.17)*.28*zoom;
-    const top=(y+bottom)*.5+worldZ/18*512*pixelY;
-    ctx.save();ctx.globalAlpha=originalAlpha*blend((camera.z-2)/14)*blend((down-.006)/.11);
-    ctx.translate(left,top);ctx.scale(pixelX,pixelY);ctx.fillStyle=texture;
-    ctx.fillRect(-left/pixelX,(y-top)/pixelY,w/pixelX,(bottom-y)/pixelY);ctx.restore();
+    const far=camera.z+camera.y*camera.focal/(y-camera.horizon);
+    const near=camera.z+camera.y*camera.focal/(bottom-camera.horizon);
+    const row=-far/18,sy=(row-Math.floor(row))*unit,sh=Math.min(unit,Math.max(.05,(far-near)/18*unit));
+    const startU=-left/tileWidth;
+    let sx=(startU-Math.floor(startU))*unit;
+    ctx.globalAlpha=originalAlpha*alpha;
+    for(let x=0;x<w;){
+      const length=Math.min(w-x,(tile.width-sx)*tileWidth/unit);
+      ctx.drawImage(tile,sx,sy,length*unit/tileWidth,sh,x,y,length,bottom-y);
+      x+=length;sx=0;
+    }
   }
+  ctx.globalAlpha=originalAlpha;
 }
 
 const scheduled=new WeakSet();

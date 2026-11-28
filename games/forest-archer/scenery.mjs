@@ -332,7 +332,8 @@ export function drawScenery(ctx,w,h,options={}) {
     const depth=2+wrap(phase*band-camera.z,band);
     const p=project({x:(leaf.x-w*.5)*home/baseFocal,
       y:1.65+(h*.405-leaf.y)*home/baseFocal,z:camera.z+depth});
-    const alpha=Math.min(1,(depth-2)/3,(34-depth)/4);
+    const edge=Math.min(leaf.x+12,w+12-leaf.x,leaf.y+12,h*.78+12-leaf.y);
+    const alpha=Math.min(1,(depth-2)/3,(34-depth)/4,Math.max(0,edge)/21);
     if(!p.visible||alpha<.02)continue;
     const r=Math.min(leaf.radius*2.1,leaf.radius*home*p.scale/baseFocal);
     if(p.x< -r*2||p.x>w+r*2||p.y< -r*2||p.y>h+r*2)continue;
