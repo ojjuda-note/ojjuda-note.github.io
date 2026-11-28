@@ -1,4 +1,4 @@
-// Search for the three advanced Janggi tiers. Runs in a module Worker, so
+// All six levels share one search. It normally runs in a module Worker, so
 // longer searches cannot freeze the board or its close/undo controls.
 import { openingCounts, pickOpeningMove } from './opening-book.mjs?v=20261115-janggi-book1';
 
@@ -6,10 +6,15 @@ const VALUES = Object.freeze({ R: 1300, C: 700, H: 500, E: 300, A: 300, P: 200, 
 const MATE = 100000;
 const TIMEOUT = Symbol('janggi-master-timeout');
 
-export const MASTER_LEVELS = Object.freeze({
- pro: Object.freeze({ label: '프로', budgetMs: 2700, maxDepth: 6, quiescence: 3, openingMargin: 10 }),
- master: Object.freeze({ label: '마스터', budgetMs: 4500, maxDepth: 8, quiescence: 4, openingMargin: 7 }),
- grandmaster: Object.freeze({ label: '그랜드마스터', budgetMs: 7500, maxDepth: 10, quiescence: 5, openingMargin: 5 })
+// Node limits keep the steps comparable across devices. Wall time also caps
+// latency. A smaller score band makes each successive level more selective.
+export const JANGGI_LEVELS = Object.freeze({
+ easy:        { budgetMs: 200,  nodes: 400,    maxDepth: 1,  quiescence: 1, moveMargin: 105, openingMargin: 0,  neuralChance: 0, basicThreatsOnly: true },
+ normal:      { budgetMs: 450,  nodes: 1600,   maxDepth: 2,  quiescence: 1, moveMargin: 52,  openingMargin: 0,  neuralChance: 0 },
+ hard:        { budgetMs: 1050, nodes: 6400,   maxDepth: 3,  quiescence: 2, moveMargin: 42,  openingMargin: 0,  neuralChance: 0 },
+ pro:         { budgetMs: 2700, nodes: 25600,  maxDepth: 5,  quiescence: 3, moveMargin: 12,   openingMargin: 10, neuralChance: 1/3 },
+ master:      { budgetMs: 4500, nodes: 102400, maxDepth: 7,  quiescence: 4, moveMargin: 5,   openingMargin: 7,  neuralChance: 2/3 },
+ grandmaster: { budgetMs: 7500, nodes: 409600, maxDepth: 10, quiescence: 5, moveMargin: 0,   openingMargin: 5,  neuralChance: 1 }
 });
 
 const sameMove = (a, b) => !!a && !!b && a.f === b.f && a.t === b.t;
@@ -28,7 +33,7 @@ function positionKey(state) {
 }
 
 export function analyzeJanggiMasterMove(state, rules, options = {}) {
- const config = MASTER_LEVELS[options.level] || MASTER_LEVELS.master;
+ const config = JANGGI_LEVELS[options.level] || JANGGI_LEVELS.master;
  const budgetMs = Math.max(60, Math.min(9000, Number(options.budgetMs) || config.budgetMs));
  const maxDepth = Math.max(1, Math.min(12, Number(options.maxDepth) || config.maxDepth));
  const { moves, apply, evaluate, isCheck, isDraw, status } = rules;
@@ -43,7 +48,8 @@ export function analyzeJanggiMasterMove(state, rules, options = {}) {
  if (!legal.length) return report(isCheck(state) ? null : { pass: 1 });
 
  function checkTime() {
-  if ((++nodes & 63) === 0 && Date.now() >= deadline) throw TIMEOUT;
+  if (nodes >= config.nodes || ((nodes & 63) === 0 && Date.now() >= deadline)) throw TIMEOUT;
+  nodes++;
  }
 
  function terminal(node, ply) {
@@ -92,7 +98,12 @@ export function analyzeJanggiMasterMove(state, rules, options = {}) {
   if (!checked && remaining<=0) return alpha;
   // At the normal horizon still search the legal answers to a check.
   if (checked && remaining<=-2) return evaluate(node);
-  const tactical = checked ? available : rules.captures ? rules.captures(node) : moves(node).filter(move => node.b[move.t]);
+  let tactical = checked ? available : rules.captures ? rules.captures(node) : moves(node).filter(move => node.b[move.t]);
+  if (config.basicThreatsOnly && !checked) {
+   const justMoved = node.shuttle?.[node.t === 'c' ? 'h' : 'c'];
+   // Beginners also notice a loose chariot or cannon elsewhere on the board.
+   tactical = tactical.filter(move => move.t === justMoved?.t || pieceValue(node.b[move.t]) >= VALUES.C);
+  }
   for (const move of ordered(node, tactical, null, ply)) {
    const score = -quiescence(apply(node, move), -beta, -alpha, ply + 1, remaining - 1);
    if (score >= beta) return score;
@@ -165,15 +176,16 @@ export function analyzeJanggiMasterMove(state, rules, options = {}) {
  if(settlement>0)return report({pass:1});
  const rootMoves=settlement===0?[...legal,{pass:1}]:legal;
  let root=ordered(state,rootMoves,null,0), chosen=root[0], alternatives=[chosen];
- const counts=openingCounts(state);
- const margin=(state.n<10||!!counts)&&!state.passes&&!isCheck(state)?config.openingMargin:0;
+ const counts=config.openingMargin ? openingCounts(state) : null;
+ const opening=(state.n<10||!!counts)&&!state.passes&&!isCheck(state);
+ const margin=opening && config.openingMargin ? config.openingMargin : config.moveMargin;
  for (let depth=1;depth<=maxDepth;depth++) {
   try {
    const ranked=[];
    let best=-Infinity;
    for(const move of root){
     checkTime();
-    // A score inside this narrow opening band must be exact. Fail-low
+    // A score inside the level’s candidate band must be exact. Fail-low
     // bounds from ordinary alpha-beta cannot be used to pick alternatives.
     const score=-search(apply(state,move),depth-1,-Infinity,-best+margin+1,1);
     ranked.push({move,score});
@@ -185,7 +197,7 @@ export function analyzeJanggiMasterMove(state, rules, options = {}) {
    ranked.sort((a,b)=>b.score-a.score);
    chosen=ranked[0].move;
    root=ranked.map(entry=>entry.move);
-   alternatives=margin && depth>=2 && Math.abs(best)<MATE-400
+   alternatives=margin && (!config.openingMargin || depth>=2) && Math.abs(best)<MATE-400
     ? ranked.filter(entry=>entry.score>=best-margin).map(entry=>entry.move)
     : [chosen];
    depthReached=depth;

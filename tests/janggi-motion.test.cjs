@@ -51,7 +51,7 @@ test('a fast AI waits only for the previous landing and cannot apply a stale rep
  let now=1000,applied=0;
  const move={f:27,t:36},timers=[];
  const session=()=>({kind:'janggi',level:'pro',s:{},anim:{endsAt:1250}});
- const ctx=vm.createContext({qt:false,E:session(),JG_MASTER_BUDGETS:{pro:2700},performance:{now:()=>now},
+ const ctx=vm.createContext({qt:false,E:session(),performance:{now:()=>now},
   h2(){},Dr:()=>[move],jgMasterThink:async()=>move,Ka(){applied++},console,
   setTimeout:(fn,delay)=>timers.push({fn,delay})});
  vm.runInContext(part('function Fl(){','function g2(t){'),ctx);
@@ -67,12 +67,13 @@ test('a fast AI waits only for the previous landing and cannot apply a stale rep
 test('local AI calculation starts after a long slide has landed',async()=>{
  let now=1000, searches=0, applied=0;
  const timers=[];
- const ctx=vm.createContext({qt:false,wn:520,JG_MASTER_BUDGETS:{},
+ const ctx=vm.createContext({qt:false,wn:520,
   E:{kind:'janggi',level:'normal',s:{},anim:{endsAt:1820}},performance:{now:()=>now},
-  h2(){},ze:()=>({best(){searches++;return {f:27,t:36}}}),Ka(){applied++},
+  h2(){},jgMasterThink:async()=>{throw Error('worker unavailable')},console:{warn(){}},
+  waitForJanggiProAi:async()=> (_s,_rules,budget,level)=>{assert.equal(level,'normal');searches++;return {f:27,t:36}},Ka(){applied++},
   setTimeout:(fn,delay)=>timers.push({fn,delay})});
  vm.runInContext(part('function Fl(){','function g2(t){'),ctx);
- ctx.Fl();assert.equal(searches,0);assert.equal(timers[0].delay,880);
- now+=timers[0].delay;await timers.shift().fn();
+ ctx.Fl();await new Promise(setImmediate);assert.equal(searches,0);assert.equal(timers[0].delay,880);
+ now+=timers[0].delay;timers.shift().fn();await new Promise(setImmediate);
  assert.equal(searches,1);assert.equal(applied,1);assert.equal(timers.length,0);
 });

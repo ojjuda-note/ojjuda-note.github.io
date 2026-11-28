@@ -60,16 +60,38 @@ test('master engine looks past an attractive losing capture', async () => {
  assert.equal(move.to, 2);
 });
 
-test('module worker returns a legal move with a matching request ID', async () => {
+test('lower levels progressively narrow the candidate scores in the same position', async () => {
+ const { analyzeJanggiMasterMove } = await import('../games/janggi/master-ai.mjs');
+ const root = { b: Array(90).fill(''), n: 30, t: 'c' };
+ const values = [0, 15, 45, 90, 180];
+ const moves = values.map((_, i) => ({ f: 10, t: 20+i }));
+ const rules = {
+  moves: () => moves, apply: (state, move) => ({ ...state, n: state.n+1, score: values[move.t-20] }),
+  evaluate: state => state.score, isCheck: () => false, isDraw: () => false, captures: () => []
+ };
+ for (const [level, last] of [['easy',3], ['normal',2], ['hard',1]]) {
+  const pick = random => analyzeJanggiMasterMove(root, rules, { level, maxDepth: 1, random }).move;
+  assert.deepEqual(pick(() => 0), moves[0]);
+  assert.deepEqual(pick(() => 0.999), moves[last]);
+ }
+});
+
+test('all six worker levels return legal moves under their own search limits', async () => {
  const { createJanggiStart, janggiRules } = await import('../games/janggi/worker-rules.mjs');
+ const { JANGGI_LEVELS } = await import('../games/janggi/master-ai.mjs');
+ const state = createJanggiStart(), legal = janggiRules.moves(state);
  const replies = [];
  globalThis.self = { postMessage: message => replies.push(message) };
  try {
   await import('../games/janggi/master-worker.mjs');
-  globalThis.self.onmessage({ data: { requestId: 13, level: 'master', budgetMs: 100, state: createJanggiStart() } });
-  assert.equal(replies[0].requestId, 13);
-  assert.equal(replies[0].error, undefined);
-  assert.ok(janggiRules.moves(createJanggiStart()).some(move => move.f === replies[0].move.f && move.t === replies[0].move.t));
+  for (const [level, config] of Object.entries(JANGGI_LEVELS)) {
+   await self.onmessage({ data: { requestId: level, level, budgetMs: 100, state } });
+   const reply = replies.at(-1);
+   assert.equal(reply.requestId, level);
+   assert.equal(reply.error, undefined);
+   assert.ok(legal.some(move => move.f === reply.move.f && move.t === reply.move.t));
+   assert.ok(reply.nodes > 0 && reply.nodes <= config.nodes);
+  }
  } finally { delete globalThis.self; }
 });
 
@@ -77,7 +99,7 @@ test('background AI turn applies a verified move and ignores an abandoned match'
  const move = { f: 54, t: 45 }, queued = [], applied = [];
  const makeSession = () => ({ kind: 'janggi', level: 'master', s: { b: Array(90).fill(''), t: 'h' }, thinking: false });
  const context = vm.createContext({
-  E: makeSession(), JG_MASTER_BUDGETS: { master: 4500 },
+  E: makeSession(),
   h2: () => {}, Dr: () => [move], hl: () => false,
   jgMasterThink: () => new Promise(resolve => queued.push(resolve)),
   Ka: next => applied.push(next), pa: () => {}, Je: () => {},
@@ -105,7 +127,7 @@ test('background AI turn applies a verified move and ignores an abandoned match'
 test('advanced tiers load the revised worker with the independent Janggi release', () => {
  const revision = JSON.parse(fs.readFileSync(path.join(root, 'game-release.json'), 'utf8')).revision;
  const assets = fs.readFileSync(path.join(root, 'shared/games/world-game-assets.js'), 'utf8');
- assert.ok(source.includes('master-worker.mjs?v=20261115-janggi-book1'));
+ assert.ok(source.includes('master-worker.mjs?v=20261128-janggi-levels1'));
  assert.ok(source.includes(`world-game-assets.js?v=${revision}`));
  assert.ok(assets.includes(`const revision='${revision}'`));
  const version = assets.match(/janggi:'(\d+)\.(\d+)\.(\d+)'/)?.slice(1).map(Number);
