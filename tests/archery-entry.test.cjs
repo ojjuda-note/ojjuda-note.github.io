@@ -101,16 +101,16 @@ assert.equal(read('games/forest-archer/index.html').match(/src="game\.mjs\?v=([^
 // Refresh main gun play and its record-only bridge while retaining unchanged
 // camera and anatomy modules. Every consumer must share its dependency's URL.
 const moduleRevision=game.match(/from '\.\/engine\.mjs\?v=([^']+)'/)?.[1];
-assert.equal(moduleRevision,'20261106-archery-distance1','every consumer loads the distance-ordered catalog');
-assert.equal(game.match(/from '\.\/laser\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the laser sight uses the current engine release');
+assert.equal(moduleRevision,'20261128-wildlife1','every consumer loads the same wildlife physics');
+assert.equal(game.match(/from '\.\/laser\.mjs\?v=([^']+)'/)?.[1],archeryRevision,'the laser sight loads the current release');
 assert.equal(read('games/forest-archer/laser.mjs').match(/from '\.\/engine\.mjs\?v=([^']+)'/)?.[1],moduleRevision);
-assert.equal(game.match(/from '\.\/coach\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the unchanged gun coach keeps its ballistics release');
+assert.equal(game.match(/from '\.\/coach\.mjs\?v=([^']+)'/)?.[1],archeryRevision,'the coach loads the current release');
 assert.equal(coach.match(/from '\.\/engine\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the coach must use the same physics as actual shots');
 const anatomyRevision=read('games/forest-archer/engine.mjs').match(/from '\.\/animal-zones\.mjs\?v=([^']+)'/)?.[1];
 assert.ok(anatomyRevision);
 assert.equal(read('games/forest-archer/scenery.mjs').match(/from '\.\/animal-zones\.mjs\?v=([^']+)'/)?.[1],anatomyRevision,'painted anatomy and collision shapes load the same release');
 assert.equal(game.match(/from '\.\/scenery\.mjs\?v=([^']+)'/)?.[1],archeryRevision,'the current scene renderer is loaded');
-assert.ok(read('games/forest-archer/scenery.mjs').includes('./range-art.mjs?v='+archeryRevision),'landscape art loads with the scene revision');
+assert.ok(read('games/forest-archer/scenery.mjs').includes('./range-projection.mjs?v='+archeryRevision),'landscape art loads with the scene revision');
 assert.equal(game.match(/from '\.\/ammo-client\.mjs\?v=([^']+)'/)?.[1],'20261111-game-score-save1','the record-only client loads storage fallback and retains record recovery');
 assert.equal(read('games/forest-archer/index.html').match(/href="style\.css\?v=([^"]+)"/)?.[1],archeryRevision,'the current range HUD is loaded');
 const archerPage=read('games/forest-archer/index.html'),archerCss=read('games/forest-archer/style.css');
@@ -119,10 +119,10 @@ assert.match(archerPage,/class="round-heading"[^\n]*class="monthly-game-link"[^\
 assert.ok(!archerCss.includes('.page-heading{display:flex;align-items:center;gap:8px}'),'a narrow-screen rule must never squeeze the range into a strip');
 
 const cameraRevision=game.match(/from '\.\/view\.mjs\?v=([^']+)'/)?.[1];
-assert.equal(cameraRevision,'20261104-archery-eagle-dive1','the unchanged camera keeps its cache revision');
+assert.equal(cameraRevision,archeryRevision,'the real flight and replay share the current camera');
 assert.equal(game.match(/from '\.\/cinematic\.mjs\?v=([^']+)'/)?.[1],cameraRevision,'the replay receives the same camera release');
 assert.equal(read('games/forest-archer/cinematic.mjs').match(/from '\.\/view\.mjs\?v=([^']+)'/)?.[1],cameraRevision,'ordinary and ten-point views share the same camera module');
-assert.ok(game.includes('./bullet-cinematic.mjs?v=20261104-archery-bullet-penetration1'),'the replay records the exact wall entry and speed change');
+assert.ok(game.includes('./bullet-cinematic.mjs?v='+cameraRevision),'the replay records the exact wall entry and speed change');
 assert.ok(game.includes('./bullet-effects.mjs?v=20261104-archery-bullet-cinematic1'),'unchanged bullet art retains its cache revision');
 assert.equal(read('games/forest-archer/bullet-cinematic.mjs').match(/from '\.\/view\.mjs\?v=([^']+)'/)?.[1],cameraRevision,'the bullet view uses the unchanged camera math');
 

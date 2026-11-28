@@ -1,10 +1,11 @@
+import {landscapeRow} from '../games/forest-archer/range-projection.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   FLIGHT_TIME_SCALE, IMPACT_HOLD, RETURN_DURATION, NEAR_PLANE,
   PREVIEW_RISE, PREVIEW_HOLD, PREVIEW_RETURN,
   projectPoint, clipSegmentNear, splitSegmentAtDepths, depthFragments,
-  desiredFollowCamera, desiredPreviewCamera, clearShotCamera, lerpCamera
+  desiredFollowCamera, desiredPreviewCamera, clearShotCamera, lerpCamera, returnView
 } from '../games/forest-archer/view.mjs';
 import {ARROWS, BOWS, STAGES, prepareStage, targetAt, launchArrow, stepArrow} from '../games/forest-archer/engine.mjs';
 
@@ -417,4 +418,33 @@ test('preview ignores walls behind the target and remains finite without optiona
   assert.ok(camera.y * (1 - fraction) + (3 - 1.2) * fraction >= 3.5 - 1e-9);
   const fallback = desiredPreviewCamera();
   assert.ok(Object.values(fallback).every(Number.isFinite));
+});
+
+test('a spot painted on the grass stays under its world marker as the camera moves', () => {
+  for (const [w,h] of [[390,480],[844,310],[750,750]]) {
+    const baseView=base(w,h), frame={focal:baseView.focal,width:w*1.4,height:h*1.2,skyline:.545};
+    const spot={x:-2.1,y:0,z:35},atRest=projectPoint(spot,baseView);
+    const original=landscapeRow(atRest.y,baseView,frame);
+    const u=(atRest.x-original.x)/original.width;
+    for(const camera of [baseView,{...baseView,x:-1.6,y:4,z:17,cx:w*.41,horizon:h*.44,focal:baseView.focal*1.35}]){
+      const mark=projectPoint(spot,camera),row=landscapeRow(mark.y,camera,frame);
+      near(row.x+row.width*u,mark.x);near(row.v,original.v);
+      near(landscapeRow(camera.horizon,camera,frame).v,frame.skyline);
+    }
+  }
+});
+
+test('return from a distant close-up follows a straight path with even changes of apparent size', () => {
+  const anchor={x:.3,y:1,z:95},end=base(390,480);
+  const start={...end,x:-2.7,y:3,z:91,cx:153,focal:635},sizes=[];
+  for(let i=0;i<=8;i++){
+    const camera=returnView(start,end,anchor,i/8);
+    sizes.push(projectPoint(anchor,camera).scale);
+    const travelled=(camera.z-start.z)/(end.z-start.z);
+    near(camera.y,start.y+(end.y-start.y)*travelled);
+    near(camera.x,start.x+(end.x-start.x)*travelled);
+  }
+  for(let i=2;i<sizes.length;i++)near(sizes[i]/sizes[i-1],sizes[1]/sizes[0]);
+  assert.deepEqual(returnView(start,end,anchor,0),start);
+  assert.deepEqual(returnView(start,end,anchor,1),end);
 });

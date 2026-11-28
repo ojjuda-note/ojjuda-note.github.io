@@ -1,13 +1,13 @@
 import {createCoinExchangeClient,COIN_PACKS,COINS_PER_ZU} from './coin-exchange.mjs?v=20261104-archery-reset5';
 import {PLAYER, BOWS, ARROWS, BULLETS, getBullet, SCOPES, getScopePrice, getScoreCoinReward, DISTANCE_STAGES as STAGES, DISTANCE_GROUPS, prepareStage, passersAt, retirePasser, clamp, targetAt, applyAnimalHit, getAnimalAttachmentPoint, getSpeed, getArrowMass, getArrowConsistency, getArrowVariance, getArrowDragRate, getWindResponse, sortEquipment, launchArrow, launchVolley, stepArrow, predictTrajectory, createSway, stepSway} from './engine.mjs?v=20261128-wildlife1';
-import {drawScenery, drawRangeTarget, drawAnimal, drawClay, drawUfo, drawObstacle, drawPasser, drawEquipmentIcon, drawFirstPersonBow, drawBullseyeImpact, drawBullseyeVignette} from './scenery.mjs?v=20261128-wildlife1';
-import {FLIGHT_TIME_SCALE, IMPACT_HOLD, RETURN_DURATION, PREVIEW_RISE, PREVIEW_HOLD, PREVIEW_RETURN, NEAR_PLANE, projectPoint, depthFragments, desiredFollowCamera, desiredPreviewCamera, clearShotCamera, lerpCamera} from './view.mjs?v=20261104-archery-eagle-dive1';
-import {createBullseyeCinematic, sampleBullseyeCinematic, desiredBullseyeCamera} from './cinematic.mjs?v=20261104-archery-eagle-dive1';
-import {createBulletCinematic, sampleBulletCinematic, desiredBulletCamera} from './bullet-cinematic.mjs?v=20261104-archery-bullet-penetration1';
+import {drawScenery, drawRangeTarget, drawAnimal, drawClay, drawUfo, drawObstacle, drawPasser, drawEquipmentIcon, drawFirstPersonBow, drawBullseyeImpact, drawBullseyeVignette} from './scenery.mjs?v=20261128-range-camera1';
+import {FLIGHT_TIME_SCALE, IMPACT_HOLD, RETURN_DURATION, PREVIEW_RISE, PREVIEW_HOLD, PREVIEW_RETURN, NEAR_PLANE, projectPoint, depthFragments, desiredFollowCamera, desiredPreviewCamera, clearShotCamera, lerpCamera, returnView} from './view.mjs?v=20261128-range-camera1';
+import {createBullseyeCinematic, sampleBullseyeCinematic, desiredBullseyeCamera} from './cinematic.mjs?v=20261128-range-camera1';
+import {createBulletCinematic, sampleBulletCinematic, desiredBulletCamera} from './bullet-cinematic.mjs?v=20261128-range-camera1';
 import {drawCinematicBullet, drawBulletMark, drawBulletImpact, drawBulletVignette} from './bullet-effects.mjs?v=20261104-archery-bullet-cinematic1';
-import {evaluateCoachShot} from './coach.mjs?v=20261106-archery-distance1';
+import {evaluateCoachShot} from './coach.mjs?v=20261128-range-camera1';
 import {createAmmoClient, createRequestId, LAUNCH_EPOCH} from './ammo-client.mjs?v=20261111-game-score-save1';
-import {LASER_PRICE, LASER_CLICK_DEGREES, LASER_MAX_CLICKS, canEquipLaser, normalizeLaserSettings, traceLaserPoint} from './laser.mjs?v=20261106-archery-distance1';
+import {LASER_PRICE, LASER_CLICK_DEGREES, LASER_MAX_CLICKS, canEquipLaser, normalizeLaserSettings, traceLaserPoint} from './laser.mjs?v=20261128-range-camera1';
 
 const $ = id => document.getElementById(id);
 const icon = name => `<svg aria-hidden="true"><use href="#i-${name}"/></svg>`;
@@ -634,7 +634,7 @@ function updateCamera(dt=0,immediate=false){
       // Return from the wall-clearing view actually shown at impact, so the
       // first return frame cannot jump back behind an occluding wall.
       if(immediate||!state.returnCamera)state.returnCamera=immediate?clearShotCamera(close,state.stage,replayShot,{w,h}):{...camera};
-      camera=lerpCamera(state.returnCamera,base,ease(replay.progress));
+      camera=returnView(state.returnCamera,base,state.shot.result?.point||state.shot.position,ease(replay.progress));
     }
     else{
       const enter=clamp(state.settle/state.cinematic.entryDuration,0,1);
@@ -649,24 +649,28 @@ function updateCamera(dt=0,immediate=false){
     return;
   }
   const follow=desiredFollowCamera(state.shot.position,base,{w,h});
-  if(state.mode==='flight'&&state.shot.projectileType!=='bullet'&&!motionPreference?.matches){
+  if(state.shot.projectileType!=='bullet'&&!motionPreference?.matches){
     const z=state.shot.position.z;
     // Let the arrow gain distance from the viewer, even while the camera follows.
-    const lag=Math.max(0,z-5)*.24;
+    // A blocked shot eases up to the obstruction so the contact stays readable.
+    const blocked=state.mode==='settling'&&['obstacle','person'].includes(state.shot.result?.type);
+    const blend=blocked?(immediate?1:clamp(state.settle/.35,0,1)):0;
+    const lag=Math.max(0,z-5)*.24*(1-blend*blend*(3-2*blend));
     follow.z=Math.max(0,follow.z-lag);
     follow.x-=Math.min(1.8,lag*.11);
   }
   if(state.mode==='settling'&&state.settle>impactHold()){
     if(immediate||!state.returnCamera)state.returnCamera=immediate?(state.shot.result?.type==='hit'?clearShotCamera(follow,state.stage,state.shot,{w,h}):follow):{...camera};
     const t=clamp((state.settle-impactHold())/impactReturn(),0,1);
-    camera=lerpCamera(state.returnCamera,base,t*t*(3-2*t));
+    camera=returnView(state.returnCamera,base,state.shot.result?.point||state.shot.position,t*t*(3-2*t));
   }else{
     camera=immediate?follow:lerpCamera(camera,follow,1-Math.exp(-9*dt));
     if(!state.shot.result||state.shot.result.type==='hit')camera=clearShotCamera(camera,state.stage,state.shot,{w,h});
   }
 }
-function resize(){
+function resize(fromObserver=false){
   const r=canvas.getBoundingClientRect(),width=Math.max(1,r.width),height=Math.max(1,r.height);
+  if(fromObserver&&width===w&&height===h&&dpr===Math.min(2,devicePixelRatio||1)&&canvas.width===Math.round(width*dpr)&&canvas.height===Math.round(height*dpr))return;
   // Browser toolbars can resize the height while a finger remains on the range.
   if(pointer&&(Math.abs(width-w)>=1||(height!==h&&pointer.type!=='touch')))cancelDraw();
   w=width;h=height;dpr=Math.min(2,devicePixelRatio||1);
@@ -1604,7 +1608,7 @@ document.addEventListener('keydown',e=>{
 });
 document.addEventListener('keyup',e=>{;keys.delete(e.code);if(e.code==='Space'&&!state.modal&&!pointer){e.preventDefault();releaseShot();}});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelDraw();else void refreshAmmoStatus();lastFrame=performance.now();});
-window.addEventListener('blur',()=>cancelDraw());new ResizeObserver(resize).observe(canvas);
+window.addEventListener('blur',()=>cancelDraw());new ResizeObserver(()=>resize(true)).observe(canvas);
 
 function poly(points,fill,stroke=null,width=1){
   ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.closePath();ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=width;ctx.stroke();}
