@@ -3,19 +3,19 @@ name: Restaurant recommendation map smoke checks
 on:
   pull_request:
     paths:
-      - 'games/certified-restaurants/recommended-restaurants.js'
-      - 'games/certified-restaurants/app.js'
-      - 'tests/recommended-restaurants-dom.test.cjs'
-      - 'tests/restaurant-guide-ui.test.cjs'
+      - 'games/certified-restaurants/**'
+      - 'tests/restaurant-*.cjs'
+      - 'tests/recommended-restaurants-*.cjs'
+      - 'ops/restaurant-region-audit*.json'
       - 'shared/games/world-game-assets.js'
       - '.github/workflows/restaurant-map-smoke.yml'
   push:
     branches: [main]
     paths:
-      - 'games/certified-restaurants/recommended-restaurants.js'
-      - 'games/certified-restaurants/app.js'
-      - 'tests/recommended-restaurants-dom.test.cjs'
-      - 'tests/restaurant-guide-ui.test.cjs'
+      - 'games/certified-restaurants/**'
+      - 'tests/restaurant-*.cjs'
+      - 'tests/recommended-restaurants-*.cjs'
+      - 'ops/restaurant-region-audit*.json'
       - 'shared/games/world-game-assets.js'
       - '.github/workflows/restaurant-map-smoke.yml'
 
@@ -41,3 +41,45 @@ jobs:
           node --check games/certified-restaurants/app.js
       - name: Check recommendation editing and coordinate safeguards without browser download
         run: node --test tests/recommended-restaurants-dom.test.cjs
+
+  catalog_guard:
+    name: Restaurant catalog, sources and UI
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install locked test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Parse all restaurant JSON without changing live data
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const root = 'games/certified-restaurants';
+          const files = fs.readdirSync(root).filter(name => name.endsWith('.json'));
+          for (const name of files) {
+            const data = JSON.parse(fs.readFileSync(path.join(root, name), 'utf8'));
+            if (Array.isArray(data.restaurants)) {
+              const ids = data.restaurants.map(row => row.id);
+              if (ids.some(id => typeof id !== 'string' || !id) || new Set(ids).size !== ids.length) {
+                throw new Error(name + ': duplicate or missing restaurant ID');
+              }
+            }
+          }
+          console.log('Verified ' + files.length + ' restaurant JSON files');
+          NODE
+      - name: Verify broadcasts, addresses, guide and restaurant DOM
+        run: |
+          node tests/restaurant-broadcast-dom.test.cjs
+          node tests/restaurant-guide-dom.test.cjs
+          node --test tests/recommended-restaurants-dom.test.cjs
+      - name: Install Chromium for actual guide and map rendering
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Verify responsive restaurant guide and map UI
+        run: node tests/restaurant-guide-ui.test.cjs
