@@ -204,7 +204,11 @@ async function appHarness(saved = null, ammoOptions = {}) {
         }
       }
       now = target;
-      if (frame) { const callback = nextFrame; nextFrame = null; assert.ok(callback, 'app should schedule its next frame'); callback(now); }
+      if (frame) {
+        const callback = nextFrame; nextFrame = null;
+        if (!api.state.modal && !document.hidden) assert.ok(callback, 'the visible game should schedule its next frame');
+        callback?.(now);
+      }
     },
     frames(count = 1) { for (let i = 0; i < count; i++) this.advanceTo(now + 1000 / 60); },
     until(predicate, maxFrames = 1000) { for (let i = 0; i < maxFrames && !predicate(); i++) this.frames(); assert.ok(predicate(), 'app must reach its expected state'); },
@@ -5713,4 +5717,20 @@ test('reduced motion retains the normal arrow path and skips release and impact 
   app.until(()=>state.mode==='settling');
   assert.ok(!app.api.sceneItems(app.engine.targetAt(state.stage,state.time)).some(i=>i.kind==='contact-fragment'));
   assert.equal(state.used,1);
+});
+
+test('a menu freezes the last scene and resumes a single game clock', async () => {
+  const app=await appHarness();
+  app.frames(2);
+  const clock=app.api.state.time;
+  app.getElement('menuBtn').emit('click');app.frames(1);
+  const before=app.sceneryFrame;
+  app.frames(90);
+  assert.equal(app.animationScheduled,false);
+  assert.equal(app.sceneryFrame,before);
+  assert.equal(app.api.state.time,clock);
+  app.api.closeModal();
+  assert.equal(app.animationScheduled,true);
+  app.frames(1);
+  assert.ok(Math.abs(app.api.state.time-clock-1/60)<1e-8);
 });
