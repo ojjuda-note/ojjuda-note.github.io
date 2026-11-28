@@ -45,7 +45,7 @@ restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
   for(const width of [320,390,412,768,899]){
    await page.setViewportSize({width,height:844});
    const layout=await page.locator('.bottomnav').evaluate(el=>({width:el.clientWidth,left:parseFloat(getComputedStyle(el).paddingLeft),right:parseFloat(getComputedStyle(el).paddingRight),gap:parseFloat(getComputedStyle(el).columnGap)||0,buttons:[...el.children].map(b=>({x:b.offsetLeft,width:b.offsetWidth}))}));
-   assert.equal(layout.buttons.length,3,'Agit navigation has 아지트, 오락실, 설정; Park uses its own navigation');
+   assert.equal(layout.buttons.length,4,'the current Agit navigation exposes four equal-width entries while Park uses its own navigation');
    const expected=(layout.width-layout.left-layout.right-layout.gap*(layout.buttons.length-1))/layout.buttons.length;
    layout.buttons.forEach((b,i)=>{assert.ok(Math.abs(b.width-expected)<=1);assert.ok(Math.abs(b.x-(layout.left+i*(expected+layout.gap)))<=1)});
   }

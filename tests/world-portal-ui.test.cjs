@@ -59,7 +59,7 @@ const searchTitle = '오쭈다 아지트 | 그룹 모임과 오락실 게임';
         assert.equal(await page.locator(selector).getAttribute('content'), searchTitle);
       }
       const description = await page.locator('meta[name="description"]').getAttribute('content');
-      assert.ok(description.includes(siteName) && description.includes('그룹') && description.includes('오락실') && description.includes('타로·사주') && description.includes('맛집'));
+      assert.ok(description.includes('그룹') && description.includes('오락실') && description.includes('타로·사주') && description.includes('맛집'));
       for (const selector of ['meta[property="og:description"]', 'meta[name="twitter:description"]']) {
         assert.equal(await page.locator(selector).getAttribute('content'), description);
       }

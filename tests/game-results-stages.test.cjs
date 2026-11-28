@@ -126,7 +126,7 @@ test('archery completed rounds keep equipment purchases directly beneath the sta
   w.HTMLCanvasElement.prototype.getContext=()=>drawing;w.ResizeObserver=class{observe(){}};
   w.HTMLElement.prototype.getBoundingClientRect=()=>({left:0,top:0,width:900,height:600});
   const modules=new Map(),context=dom.getInternalVMContext();
-  const load=file=>{if(!modules.has(file)){let source=read('games/forest-archer/'+file);if(file==='game.mjs')source+='\nexport const resultTest={state,progress,finishRound,startStage,creditExchangedCoins};';modules.set(file,new vm.SourceTextModule(source,{context,identifier:file}));}return modules.get(file);};
+  const load=file=>{if(!modules.has(file)){let source=read('games/forest-archer/'+file);if(file==='game.mjs')source+='\nexport const resultTest={state,progress,finishRound,startStage,creditExchangedCoins};';modules.set(file,new vm.SourceTextModule(source,{context,identifier:file,initializeImportMeta(meta,module){meta.url=new URL(module.identifier,'https://fixture.test/games/forest-archer/').href;}}));}return modules.get(file);};
   const game=load('game.mjs');await game.link(specifier=>load(specifier.replace(/^\.\//,'').split('?')[0]));await game.evaluate();await flush();
   const g=game.namespace.resultTest,$=selector=>w.document.querySelector(selector);
   try{
@@ -159,7 +159,7 @@ test('archery coin shop recovers old hosts and checks stale balances on the serv
   w.HTMLCanvasElement.prototype.getContext=()=>drawing;w.ResizeObserver=class{observe(){}};
   w.HTMLElement.prototype.getBoundingClientRect=()=>({left:0,top:0,width:900,height:600});
   const modules=new Map(),context=dom.getInternalVMContext();
-  const load=file=>{if(!modules.has(file)){let source=read('games/forest-archer/'+file);if(file==='game.mjs')source+='\nexport const coinTest={get client(){return coinExchange;},get coins(){return progress.coins;}};';modules.set(file,new vm.SourceTextModule(source,{context,identifier:file}));}return modules.get(file);};
+  const load=file=>{if(!modules.has(file)){let source=read('games/forest-archer/'+file);if(file==='game.mjs')source+='\nexport const coinTest={get client(){return coinExchange;},get coins(){return progress.coins;}};';modules.set(file,new vm.SourceTextModule(source,{context,identifier:file,initializeImportMeta(meta,module){meta.url=new URL(module.identifier,'https://fixture.test/games/forest-archer/').href;}}));}return modules.get(file);};
   const game=load('game.mjs');await game.link(specifier=>load(specifier.replace(/^\.\//,'').split('?')[0]));await game.evaluate();await flush();
   const g=game.namespace.coinTest,$=selector=>w.document.querySelector(selector),owner='11111111-1111-4111-8111-111111111111',sessionId='22222222-2222-4222-8222-222222222222';
   const emit=data=>w.dispatchEvent(new w.MessageEvent('message',{origin:w.location.origin,source:parent,data:{source:'ojjuda-archery-world',owner,sessionId,launchEpoch:5,...data}}));
