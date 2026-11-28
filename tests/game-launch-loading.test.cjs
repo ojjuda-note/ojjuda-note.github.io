@@ -130,7 +130,7 @@ test('lazy entry opens the game after assets load and ignores a cancelled reques
 test('age-gated game frames keep the entrance until their async access check finishes', async () => {
   const start = world.indexOf('function Al(');
   const end = world.indexOf('// User-requested exits ask first;', start);
-  for (const game of ['photo_ttang', 'roulette']) {
+  for (const game of ['photo_ttang']) {
     let assetDone, bridgeDone, loaded = false, started = 0, finished = 0;
     const bridge = new Promise(resolve => {bridgeDone = resolve;});
     const state = {

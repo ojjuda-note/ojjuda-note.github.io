@@ -7,7 +7,7 @@ const origin = 'https://ojjuda.test';
 const cardId = '00000000-0000-4000-8000-000000000010';
 const copy = '취향이 모이는 우리의 아지트.';
 const siteName = '오쭈다 아지트';
-const searchTitle = '오쭈다 아지트 | 게임·타로·사주·익명카드';
+const searchTitle = '오쭈다 아지트 | 그룹 모임과 오락실 게임';
 
 (async () => {
   const browser = await chromium.launch({ headless: true,
@@ -59,7 +59,7 @@ const searchTitle = '오쭈다 아지트 | 게임·타로·사주·익명카드'
         assert.equal(await page.locator(selector).getAttribute('content'), searchTitle);
       }
       const description = await page.locator('meta[name="description"]').getAttribute('content');
-      assert.ok(description.includes(siteName) && description.includes('타로·사주') && description.includes('익명카드'));
+      assert.ok(description.includes(siteName) && description.includes('그룹') && description.includes('오락실') && description.includes('타로·사주') && description.includes('맛집'));
       for (const selector of ['meta[property="og:description"]', 'meta[name="twitter:description"]']) {
         assert.equal(await page.locator(selector).getAttribute('content'), description);
       }

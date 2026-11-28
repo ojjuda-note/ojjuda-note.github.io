@@ -28,10 +28,10 @@ function fixture(page,html='<main></main>') {
 }
 
 test('a closing game never reads document.body after iframe teardown',() => {
-  const f=fixture('/games/roulette/index.html');
+  const f=fixture('/games/bang/index.html');
   try {
     assert.equal(f.observers.length,1);
-    f.observers[0].callback([{type:'childList'}]);
+    f.observers[0].callback([{type:'childList',target:f.w.document.body,addedNodes:[Object.assign(f.w.document.createElement('div'),{className:'tour-game-dialog'})],removedNodes:[]}]);
     assert.equal(f.frames.size,1,'an entrance update was scheduled');
     const body=f.w.document.body;body.remove();
     f.w.dispatchEvent(new f.w.MessageEvent('message',{
@@ -51,7 +51,7 @@ test('a closing game never reads document.body after iframe teardown',() => {
 
 test('a removed multiplayer frame releases its load listener',() => {
   const f=fixture('/world.html',
-    '<div class="tour-game-dialog"><header><button>닫기</button></header><iframe src="/games/roulette/index.html"></iframe></div>');
+    '<div class="tour-game-dialog"><header><button>닫기</button></header><iframe src="/games/ojjuda-tour/index.html"></iframe></div>');
   try {
     const host=f.w.document.querySelector('.tour-game-dialog');
     const iframe=host.querySelector('iframe');
