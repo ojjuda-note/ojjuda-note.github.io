@@ -8,6 +8,7 @@ const { chromium } = require('playwright');
 const root = path.join(__dirname, '..');
 const fixtures = [
   { game: 'bang', file: 'games/bang/index.html', body: '<div id="overlay" class="overlay"><section class="modal response-modal result-modal" data-result-host></section></div>', extra: '<p>3연승 · 저장 완료</p>' },
+  { game: 'poker', file: 'games/poker/index.html', bodyClass: 'poker-playing', body: '<main id="app"><section class="felt" style="height:calc(100dvh - 150px);margin-top:70px"><div class="table-start-overlay"><section class="table-start-card" data-result-host></section></div></section></main>', outcome: 'gold-loss', metric: '-200 G' },
   { game: 'tank', file: 'games/tank/index.html', body: '<div id="over" class="ov"><div id="tankResult" data-result-host></div></div>' },
   { game: 'mines', file: 'games/mines/index.html', body: '<div id="result" class="on"><div id="minesResultCard" data-result-host></div></div>', metric: '고급 · 123초' },
   { game: 'tour', file: 'games/ojjuda-tour/index.html', body: '<div id="sheet2" class="sheet result-view"><div class="sheet-card panel"><div class="sheet-head"></div><div id="s2Body"></div><div id="s2Btns" data-result-host></div></div></div>', extra: '<p id="tourRecordStatus">기록 저장 완료</p>' },
@@ -15,6 +16,7 @@ const fixtures = [
   { game: 'matgo', file: 'games/matgo-online.html', body: '<div class="dialog"><section class="card result-card" data-result-host></section></div>', metric: '+400 G', extra: '<p>7점</p>' },
   { game: 'ttang', file: 'games/ttang.html', body: '<div class="overlay"><div class="panel" data-result-host></div></div>', metric: '내 땅 50.1% · 120초' },
   { game: 'photo_ttang', file: 'games/photo-ttang.html', body: '<div class="overlay"><div class="panel" data-result-host></div></div>', metric: '9단계 · 사진 공개', extra: '<img class="fullimg" alt="공개된 사진" style="width:100%;object-fit:contain;border-radius:16px" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 300 400%22%3E%3Crect width=%22300%22 height=%22400%22 fill=%22%23e8eee2%22/%3E%3C/svg%3E"><button id="report">사진 신고</button>' },
+  { game: 'roulette', file: 'games/roulette/index.html', body: '', native: true, outcome: 'gold-gain', metric: '+1,000 G', extra: '<p>당첨 번호 12</p>' }
 ];
 
 test('game styles preserve readable results and reachable share/replay controls on narrow and short screens', async t => {
@@ -54,7 +56,7 @@ test('game styles preserve readable results and reachable share/replay controls 
           if (fixture.game === 'matgo' && innerHeight === 320) document.documentElement.style.setProperty('--matgo-safe-bottom', '34px');
           const options = { game: fixture.game, outcome: fixture.outcome || 'success', metric: fixture.metric || '게임 종료', extra: fixture.extra || '', key: fixture.file };
           if (fixture.native) OjjudaGameResults.show({ ...options, actions: [{ label: '다음 판', onClick: () => false }] });
-          else document.querySelector('[data-result-host]').innerHTML = OjjudaGameResults.markup({ ...options, actions: (fixture.game === 'photo_ttang' ? '<button id="next">다음 판</button>' : '') + '<button id="play">다시 하기</button><button id="inspect">결과 보기</button>' });
+          else document.querySelector('[data-result-host]').innerHTML = OjjudaGameResults.markup({ ...options, actions: (['photo_ttang', 'poker'].includes(fixture.game) ? '<button id="next">다음 판</button>' : '') + '<button id="play">다시 하기</button><button id="inspect">결과 보기</button>' });
         }, fixture);
         await page.locator('.game-result-card').waitFor();
         // Let the existing sheet entry transform finish before checking hit targets.

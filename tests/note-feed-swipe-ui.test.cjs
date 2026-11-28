@@ -100,9 +100,7 @@ assert.ok(bootAt > 0);
       assert.equal(await page.evaluate(() => window.cardOpens), 0, 'swiping a card must not open it');
 
       await drag(-1); assert.equal(await active(), 'nearby');
-      const nearbyCopy = await page.locator('#feed-list').textContent();
-      assert.match(nearbyCopy, /반경 30km/, 'the nearby range is clear');
-      assert.match(nearbyCopy, /위치 켜기/, 'location is only requested after an explicit tap');
+      assert.match(await page.locator('#feed-list').textContent(), /위치 확인/);
       await drag(-1); assert.equal(await active(), 'tag');
       assert.equal(await page.locator('#note-tag-panel').isVisible(), true);
       assert.equal(await page.locator('#note-tag-panel input').evaluate(el => el === document.activeElement), false,

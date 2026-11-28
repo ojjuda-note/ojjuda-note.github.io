@@ -93,6 +93,11 @@ function comparePopulation(age,sex,form) {
       ({counts,ratios}=metabolicModel[sex]); group=3*index+Number(form.metabolicBmi);
     } else {
       counts=study.weightedPopulationCounts??study.counts[sex]??study.counts.all;ratios=study.ratiosBySex?.[sex]??study.hr;
+      if(key==="activity") {
+        // KLoSA's first nonzero estimate (1.03, CI 0.77–1.40) is uncertain.
+        // Interpolate the clock's 37.5-min level between 0 and 112.5 min.
+        ratios=[ratios[0],ratios[0]+(ratios[2]-ratios[0])/3,...ratios.slice(2)];
+      }
     }
     const estimate=modeledGroups(curve,age,study.horizonYears,counts,ratios), selected=estimate.groups[group];
     return {...result,applied:true,risk:{base:estimate.baselineRisk,selected:selected.risk,horizon:estimate.horizon},note:"선택한 집단의 사망위험 차이를 처음 "+study.horizonYears+"년간 반영했어요."};

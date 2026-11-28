@@ -68,15 +68,11 @@ test('shared UI caches stay consistent while the game release revision updates i
       pages.push(`games/${game.name}/index.html`);
     }
   }
-  const pageKeys = new Map(), worldKeys = new Map();
+  const releaseKeys = new Map();
   function checkAsset(asset, key, page) {
     assert.match(key, validKey, page + ': ' + asset);
-    // Cache busting is per page/release. A game may keep its own historical
-    // revision while the actual URL stays the same; never couple all games.
-    const identity = page + ':' + asset;
-    if (pageKeys.has(identity)) assert.equal(key, pageKeys.get(identity), page + ': mismatched duplicate cache URL for ' + asset);
-    else pageKeys.set(identity, key);
-    if (page === 'world.html') worldKeys.set(asset, key);
+    if (!releaseKeys.has(asset)) releaseKeys.set(asset, key);
+    assert.equal(key, releaseKeys.get(asset), page + ': inconsistent cache key for ' + asset);
   }
   let sharedReferences = 0;
   let multiplayerReferences = 0;
@@ -95,12 +91,11 @@ test('shared UI caches stay consistent while the game release revision updates i
     }
   }
   assert.ok(sharedReferences >= 25, 'the shared style covers many game entrances and outcomes');
-  assert.ok(multiplayerReferences >= 6, 'the remaining multiplayer games load the unified entrance styles');
+  assert.ok(multiplayerReferences >= 8, 'each multiplayer game loads the unified entrance styles');
   assert.ok(world.includes(`/shared/games/world-game-assets.js?v=${revision}`));
-  assert.ok(worldKeys.has('results-script'), 'the World results loader has an explicit version');
-  assert.ok(world.includes(`/shared/games/game-results.js?v=${worldKeys.get('results-script')}`));
+  assert.ok(world.includes(`/shared/games/game-results.js?v=${releaseKeys.get('results')}`));
   assert.match(world, /\/shared\/games\/chacha-rush-portal\.js\?v=\d{8}-[a-z0-9-]+/,
     'the score portal keeps its own cache revision when updated independently of shared CSS');
   assert.ok(read('shared/games/world-game-assets.js').includes(`const revision='${revision}'`));
-  assert.match(read('shared/games/world-game-assets.js'), /\/shared\/games\/game-controls\.css\?v=\d{8}-[a-z0-9-]+/, 'the shared loader keeps an explicit control CSS cache revision');
+  assert.ok(read('shared/games/world-game-assets.js').includes(`/shared/games/game-controls.css?v=${releaseKeys.get('controls')}`));
 });

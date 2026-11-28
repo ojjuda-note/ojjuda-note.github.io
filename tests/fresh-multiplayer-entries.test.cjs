@@ -34,7 +34,7 @@ test('handoff migration preserves function security and rejects an unexpected pr
  }catch(error){delete error.query;throw error;}finally{await f.close();}
 });
 
-for(const kind of ['tank','marble','bang'])test(kind+': leave preserves the exact seat, AI continues it, access retires, and final departure is bounded',async()=>{
+for(const kind of ['tank','marble','bang','poker'])test(kind+': leave preserves the exact seat, AI continues it, access retires, and final departure is bounded',async()=>{
  const f=await fixture();try{
   const actors=ids.slice(0,kind==='bang'?5:2),{room,call,createRequest,options}=await table(f,kind,actors),before=await raw(f,kind,room.id);
   const seat=currentSeat(kind,before.state),actor=actors[seat],remaining=actors.filter(id=>id!==actor);
@@ -104,7 +104,32 @@ for(const kind of ['tank','marble','bang'])test(kind+': eliminated spectators do
  }catch(error){delete error.query;throw error;}finally{await f.close();}
 });
 
-for(const kind of ['tank','marble','bang'])test(kind+': deadline AI records exclusion without ejecting a returning human',async()=>{
+test('poker pays the inherited hand to its original owner but ranks only the human who finishes',async()=>{
+ const f=await fixture();try{
+  const {room,call}=await table(f,'poker',ids.slice(0,2)),oldRound=randomUUID();
+  await f.db.query("insert into ojjuda_guest_internal.round_records(game,actor_key,user_id,round_id,value,source) values('poker',$1,$2,$3,123,'online')",['member:'+ids[1],ids[1],oldRound]);
+  await leave(call,ids[1],room);
+  let r=await raw(f,'poker',room.id);
+  for(let i=0;r.status==='active'&&i<150;i++){
+   if(r.state.turn===0&&['discard','open','betting'].includes(r.state.phase)){
+    const view=(await call(ids[0],{action:'read',room_id:r.id})).room;
+    const command=r.state.phase==='discard'?{type:'discard',index:0}:r.state.phase==='open'?{type:'open',index:0}:{type:view.game.legal.check?'check':'call'};
+    await call(ids[0],{action:'move',room_id:r.id,version:view.version,request_id:randomUUID(),command});
+   }else{await due(f,'poker',r.id);await call(ids[0],{action:'read',room_id:r.id});}
+   r=await raw(f,'poker',r.id);
+  }
+  assert.equal(r.status,'finished');assert.deepEqual(r.rank_excluded,[1]);
+  const rows=(await f.db.query('select user_id,value from ojjuda_guest_internal.round_records where round_id=$1',[room.id])).rows;
+  assert.deepEqual(rows.map(row=>row.user_id),[ids[0]]);assert.equal((await f.db.query('select count(*)::int n from ojjuda_guest_internal.round_records where round_id=$1',[oldRound])).rows[0].n,1,'a previous ranking is never erased');
+  const wallets=(await f.db.query('select * from ojjuda_poker_internal.wallets where user_id=any($1) order by user_id',[ids.slice(0,2)])).rows;
+  for(let i=0;i<2;i++){assert.equal(Number(wallets[i].gold)-5000,r.state.result.net[i]);assert.equal(wallets[i].active_room,null);assert.equal(wallets[i].rounds,i===0?1:0);}
+  await f.db.query("select set_config('request.jwt.claim.sub',$1,false)",[ids[1]]);
+  const ranking=(await f.db.query("select ojjuda_guest_internal.criteria_ranking('poker','all',null) value")).rows[0].value;
+  assert.equal(ranking.find(row=>row.me).score,123,'the live best-round query retains only the earlier eligible gain');
+ }catch(error){delete error.query;throw error;}finally{await f.close();}
+});
+
+for(const kind of ['tank','marble','bang','poker'])test(kind+': deadline AI records exclusion without ejecting a returning human',async()=>{
  const f=await fixture();try{
   const actors=ids.slice(0,kind==='bang'?4:2),{room,call}=await table(f,kind,actors),before=await raw(f,kind,room.id),seat=currentSeat(kind,before.state);
   await due(f,kind,room.id);await call(actors.find((_,i)=>i!==seat),{action:'read',room_id:room.id});
@@ -144,3 +169,24 @@ test('Bang hands off a pending defense without changing the attack, cards or hea
  }catch(error){delete error.query;throw error;}finally{await f.close();}
 });
 
+test('Poker settlement waiting can progress an expired disconnected opponent without restoring the departed player’s hand',async()=>{
+ const f=await fixture();try{
+  const {room,call}=await table(f,'poker',ids.slice(0,2));await leave(call,ids[0],room);
+  let current=await raw(f,'poker',room.id);const version=current.version;
+  for(let n=0;n<3;n++){const mine=await call(ids[0],{action:'mine'});assert.equal(mine.room,null);assert.equal(mine.wallet.locked,true);assert.equal(mine.settlement,undefined);}
+  assert.equal((await raw(f,'poker',room.id)).version,version,'waiting on settlement cannot shorten the other person’s existing turn');
+  for(const next of [null,{}, {state:current.state,kind:'move'},{state:current.state,kind:'timeout'}])await assert.rejects(f.db.query('select public.poker_online_service($1,$2,$3,$4,$5,$6,$7,$8)',[ids[0],'commit',room.id,null,randomUUID(),version,{},next]),/room_unavailable/,'even a trusted commit cannot bypass the existing deadline or departed-action restrictions');
+  await due(f,'poker',room.id);const outsider=await call(ids[2],{action:'mine',room_id:room.id});assert.equal(outsider.room,null);assert.equal(outsider.wallet.locked,false);assert.equal((await raw(f,'poker',room.id)).version,version,'another account cannot drive this escrow through a supplied room id');
+  const mine=await call(ids[0],{action:'mine'});current=await raw(f,'poker',room.id);
+  assert.ok(current.version>version,'the departed account’s pending wallet query drives only an expired server AI decision');
+  assert.equal(mine.room,null);assert.equal(mine.settlement,undefined);assert.equal(mine.state,undefined);
+  assert.deepEqual(current.computer_seats,[0]);assert.ok(current.rank_excluded.includes(1));
+  assert.equal((await call(ids[1],{action:'mine'})).room.id,room.id,'the unconfirmed disconnect does not eject the other person');
+  assert.notEqual((await f.callGame('poker',ids[0],{action:'read',room_id:room.id})).ok,true);
+  for(let n=0;current.status==='active'&&n<150;n++){await due(f,'poker',room.id);const result=await call(ids[0],{action:'mine'});assert.equal(result.room,null);assert.equal(result.settlement,undefined);current=await raw(f,'poker',room.id);}
+  assert.equal(current.state.phase,'finished');assert.equal(current.settled_round,current.round);
+  assert.equal((await call(ids[0],{action:'mine'})).wallet.locked,false);
+  const wallets=(await f.db.query('select gold,active_room from ojjuda_poker_internal.wallets where user_id=any($1)',[ids.slice(0,2)])).rows;
+  assert.ok(wallets.every(wallet=>wallet.active_room===null));assert.equal(wallets.reduce((sum,wallet)=>sum+Number(wallet.gold),0),10000);
+ }catch(error){delete error.query;throw error;}finally{await f.close();}
+});

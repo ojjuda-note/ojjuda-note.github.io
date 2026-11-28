@@ -3,8 +3,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const {chromium} = require('playwright');
 const root=path.join(__dirname,'..');
-// Park now has its own entry; ordinary World navigation must never restore an old administrator session.
-const ordinaryLinks=['<a class="world-link" href="/world.html">아지트 입장</a>','<a class="world-link" href="/world.html?tab=hub">아지트 둘러보기</a>'];
+const noteLinks=fs.readFileSync(path.join(root,'park/index.html'),'utf8').match(/<a\b[^>]*class="world-link[^\"]*"[^>]*>[\s\S]*?<\/a>/g);
+assert.equal(noteLinks?.length,2,'both real Note minihome shortcuts are covered');
 let world=fs.readFileSync(path.join(root,'world.html'),'utf8')
  .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'')
  .replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
@@ -31,7 +31,7 @@ restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
   await context.route('**/*',route=>{
    const u=new URL(route.request().url());
    if(u.hostname!=='fixture.test')return route.abort();
-   if(u.pathname==='/world.html'&&u.searchParams.get('place')==='park')return route.fulfill({contentType:'text/html',body:`<!doctype html><title>ordinary World entrances</title><nav>${ordinaryLinks.join('')}</nav>`});
+   if(u.pathname==='/world.html'&&u.searchParams.get('place')==='park')return route.fulfill({contentType:'text/html',body:`<!doctype html><title>Note shortcuts</title><nav>${noteLinks.join('')}</nav>`});
    if(u.pathname==='/world.html')return route.fulfill({contentType:'text/html',body:world});
    const file=path.join(root,u.pathname);
    return file.startsWith(root+path.sep)&&fs.existsSync(file)&&fs.statSync(file).isFile()?route.fulfill({path:file}):route.abort();
@@ -45,7 +45,7 @@ restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
   for(const width of [320,390,412,768,899]){
    await page.setViewportSize({width,height:844});
    const layout=await page.locator('.bottomnav').evaluate(el=>({width:el.clientWidth,left:parseFloat(getComputedStyle(el).paddingLeft),right:parseFloat(getComputedStyle(el).paddingRight),gap:parseFloat(getComputedStyle(el).columnGap)||0,buttons:[...el.children].map(b=>({x:b.offsetLeft,width:b.offsetWidth}))}));
-   assert.equal(layout.buttons.length,4,'the current Agit navigation exposes four equal-width entries while Park uses its own navigation');
+   assert.equal(layout.buttons.length,3,'Agit navigation has 아지트, 오락실, 설정; Park uses its own navigation');
    const expected=(layout.width-layout.left-layout.right-layout.gap*(layout.buttons.length-1))/layout.buttons.length;
    layout.buttons.forEach((b,i)=>{assert.ok(Math.abs(b.width-expected)<=1);assert.ok(Math.abs(b.x-(layout.left+i*(expected+layout.gap)))<=1)});
   }
@@ -79,7 +79,7 @@ restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
    assert.equal(state.after.area,area,'re-render retains the migrated area: '+JSON.stringify(state));
    assert.equal(state.after.tab,tab,'re-render retains the migrated tab');
   }
-  for(let index=0;index<ordinaryLinks.length;index++){
+  for(let index=0;index<noteLinks.length;index++){
    await page.evaluate(()=>worldTest.actions.tab({tab:'admin'}));
    await page.goto('https://fixture.test/world.html?place=park');
    await page.waitForURL('https://fixture.test/world.html?place=park');
@@ -115,6 +115,6 @@ restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
   await page.evaluate(()=>worldTest.clear());
   assert.equal(await page.evaluate(()=>sessionStorage.getItem('ojjuda.world.admin-view')),null);
   assert.deepEqual(errors,[]);
-  console.log('PASS: real reload preserves admin submenus; ordinary entry links and direct entry open World normally; explicit admin links retain role checks; exit, account changes and corrupt storage are safe; 4 equal-width menus at 5 mobile/tablet widths.');
+  console.log('PASS: real reload preserves admin submenus; both Note minihome links and direct entry open World normally; explicit admin links retain role checks; exit, account changes and corrupt storage are safe; 4 equal-width menus at 5 mobile/tablet widths.');
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});
