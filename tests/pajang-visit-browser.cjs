@@ -26,7 +26,7 @@ const clientFixture = `<script>
 async function entryHtml(filename) {
   const actual = await fs.readFile(path.join(root, 'features/pajang', filename), 'utf8');
   const shell = actual.match(/<script type="module" src="\.\/shell\.mjs\?[^\"]+"><\/script>/)?.[0];
-  const config = actual.match(/<script src="\/config\.js\?[^\"]+"><\/script>/)?.[0];
+  const config = actual.match(/<script\b[^>]*\bsrc="\/config\.js\?[^"]+"[^>]*><\/script>/)?.[0];
   assert.ok(shell && config, 'the real published page supplies the current script URLs');
   // Keep the production script order and module graph; unrelated member content
   // is omitted so every database request comes from the measurement under test.
