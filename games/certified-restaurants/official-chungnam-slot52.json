@@ -1,8 +1,8 @@
 {
-  "updatedAt": "2026-11-07",
+  "updatedAt": "2026-11-28",
   "cycle": 1,
   "slot": 52,
-  "sourceName": "충청남도 충남관광 공식 대표 맛집 선정·백년가게 안내",
+  "sourceName": "충청남도 충남관광 공식 대표 맛집 선정·백년가게 안내 · KBS 공식 방송정보",
   "sourceUrls": [
     "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
     "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=1053",
@@ -14,9 +14,12 @@
     "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1098",
     "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1094",
     "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1095",
-    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1089"
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1089",
+    "https://iaudience.kbs.co.kr/broadcast/11409",
+    "https://iaudience.kbs.co.kr/broadcast/10657",
+    "https://www.hakhwa1934.com/cs.html"
   ],
-  "sourceScope": "2024·2025 대표 맛집 선정 6곳과 충남관광 상세에 [백년가게]로 실명·주소 수록된 4곳을 별개 이력으로 보존. 선정연도/수록시점·현재 영업·블루리본 정규 등급 미추정.",
+  "sourceScope": "2024·2025 대표 맛집 선정 6곳과 충남관광 상세에 [백년가게]로 실명·주소 수록된 4곳을 별개 이력으로 보존. 선정연도/수록시점·현재 영업·블루리본 정규 등급 미추정. 2026-11-25 KBS 2625회(2026-10-16) 상호·주소 재대조. 방송 출연은 선정·현재 영업과 구분. 2026-11-28 KBS 6시 내고향 8128회(2024-09-27) 두 업소의 별도 방송 이력과 학화 공식 매장 안내의 본점 주소를 추가 확인. 실제 방문 시점 영업 여부와 수치 좌표는 미확인.",
   "completeRegionalCollection": false,
   "verifiedSelectionYears": [
     2024,
@@ -323,6 +326,99 @@
       ],
       "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1089",
       "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "broadcast-chungnam-c2s52-cheonan-gc-bread",
+      "name": "지씨브레드",
+      "category": "디저트",
+      "district": "천안시 동남구",
+      "address": "충청남도 천안시 동남구 유량로 196",
+      "region": "충남",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [],
+      "broadcasts": [
+        {
+          "program": "2TV 생생정보",
+          "broadcaster": "KBS",
+          "episode": 2625,
+          "airedAt": "2026-10-16",
+          "sourceUrl": "https://iaudience.kbs.co.kr/broadcast/11409",
+          "sourceName": "KBS 시청자상담실 · 2TV 생생정보 2625회 공식 방송정보",
+          "verifiedAt": "2026-11-25",
+          "sourceType": "broadcaster_program_information",
+          "airedAtSourceUrl": "https://iaudience.kbs.co.kr/broadcast/11409",
+          "sourcePublishedAt": "2026-10-16",
+          "addressAtSource": "충청남도 천안시 동남구 유량로 196"
+        },
+        {
+          "program": "6시 내고향",
+          "broadcaster": "KBS",
+          "episode": 8128,
+          "airedAt": "2024-09-27",
+          "sourceUrl": "https://iaudience.kbs.co.kr/broadcast/10657",
+          "sourceName": "KBS 시청자상담실 · 6시 내고향 8128회 공식 방송정보",
+          "verifiedAt": "2026-11-28",
+          "sourceType": "broadcaster_program_information",
+          "airedAtSourceUrl": "https://iaudience.kbs.co.kr/broadcast/10657",
+          "sourcePublishedAt": "2024-09-27",
+          "addressAtSource": "충청남도 천안시 동남구 유량로 196"
+        }
+      ],
+      "addressSourceUrl": "https://iaudience.kbs.co.kr/broadcast/11409",
+      "addressSourceCheckedAt": "2026-11-28",
+      "addressCurrentOperatingStatus": "unverified",
+      "addressCrosscheckUrls": [
+        "https://iaudience.kbs.co.kr/broadcast/10657"
+      ]
+    },
+    {
+      "id": "broadcast-chungnam-c2s52-cheonan-hakhwa-hodugwaja",
+      "name": "할머니학화호도과자 본점",
+      "category": "디저트",
+      "district": "천안시 동남구",
+      "address": "충청남도 천안시 동남구 만남로 62",
+      "region": "충남",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [],
+      "broadcasts": [
+        {
+          "program": "2TV 생생정보",
+          "broadcaster": "KBS",
+          "episode": 2625,
+          "airedAt": "2026-10-16",
+          "sourceUrl": "https://iaudience.kbs.co.kr/broadcast/11409",
+          "sourceName": "KBS 시청자상담실 · 2TV 생생정보 2625회 공식 방송정보",
+          "verifiedAt": "2026-11-25",
+          "sourceType": "broadcaster_program_information",
+          "airedAtSourceUrl": "https://iaudience.kbs.co.kr/broadcast/11409",
+          "sourcePublishedAt": "2026-10-16",
+          "addressAtSource": "충청남도 천안시 동남구 만남로 62"
+        },
+        {
+          "program": "6시 내고향",
+          "broadcaster": "KBS",
+          "episode": 8128,
+          "airedAt": "2024-09-27",
+          "sourceUrl": "https://iaudience.kbs.co.kr/broadcast/10657",
+          "sourceName": "KBS 시청자상담실 · 6시 내고향 8128회 공식 방송정보",
+          "verifiedAt": "2026-11-28",
+          "sourceType": "broadcaster_program_information",
+          "airedAtSourceUrl": "https://iaudience.kbs.co.kr/broadcast/10657",
+          "sourcePublishedAt": "2024-09-27",
+          "addressAtSource": "충청남도 천안시 동남구 만남로 62"
+        }
+      ],
+      "addressSourceUrl": "https://iaudience.kbs.co.kr/broadcast/11409",
+      "addressSourceCheckedAt": "2026-11-28",
+      "addressCurrentOperatingStatus": "unverified",
+      "addressCrosscheckUrls": [
+        "https://iaudience.kbs.co.kr/broadcast/10657",
+        "https://www.hakhwa1934.com/cs.html"
+      ]
     }
   ],
   "verifiedBaeknyeonListings": 4
