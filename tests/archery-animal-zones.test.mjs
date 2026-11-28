@@ -1,3 +1,5 @@
+import {visiblePart} from './archery-wildlife-fixtures.mjs';
+import {wildlifeMesh} from '../games/forest-archer/wildlife.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {getAnimalGeometry,getAnimalAimPoint,getAnimalAttachmentPoint,getAnimalFallPose,getAnimalGroundHeight,scoreAnimalPoint} from '../games/forest-archer/animal-zones.mjs';
@@ -64,7 +66,7 @@ test('wings and tails count as body and beaks count as head, with real bird clip
 function range(kind,directionSeed=19){return prepareStage({id:901,kind,distance:20,radius:1,height:5,
   motion:{amplitudeX:0,amplitudeY:0,speed:0,irregular:false},passDuration:20,wind:0,obstacles:[],passers:[]},directionSeed);}
 function crossingShot(stage,local,dt=.005){
-  const subject=targetAt(stage,dt),point=local==='heart'?getAnimalAimPoint(subject):world(subject,local);
+  const subject=targetAt(stage,dt),point=typeof local==='string'?visiblePart(subject,local):world(subject,local);
   const shot=launchArrow({charge:1,velocityBias:0});
   // Isolate the real swept collision at a known incoming point. The engine
   // still integrates gravity and resolves the exact arrival time itself.
@@ -75,7 +77,7 @@ function crossingShot(stage,local,dt=.005){
 
 test('swept arrow collisions use painted anatomy and remain invariant across integration steps',()=>{
   for(const kind of kinds)for(const seed of[0,19])for(const[part,local]of[['heart','heart'],...Object.entries(anatomy[kind]).filter(([part])=>part!=='blank')]){
-    const stage=range(kind,seed),a=crossingShot(stage,local),b=crossingShot(stage,local);
+    const stage=range(kind,seed),a=crossingShot(stage,part),b=crossingShot(stage,part);
     const whole=stepArrow(a.shot,.02,stage,0);
     let split=null;for(let i=0;i<20&&b.shot.active;i++)split=stepArrow(b.shot,.001,stage,i*.001);
     assert.equal(whole?.type,'hit',`${kind} ${part}`);assert.equal(split?.type,'hit');
@@ -89,13 +91,13 @@ test('swept arrow collisions use painted anatomy and remain invariant across int
   }
 });
 
-test('visible ear outside the old hit ellipse can score, and a blank area inside it stays a miss',()=>{
-  const stage=range('deer'),ear=crossingShot(stage,anatomy.deer.ear),relative=ear.point;
-  assert.ok(Math.hypot((relative.x-ear.subject.x)/ear.subject.rx,(relative.y-ear.subject.y)/ear.subject.ry)>1);
+test('the visible 3D ear can score and empty space within the approach envelope stays a miss',()=>{
+  const stage=range('deer'),ear=crossingShot(stage,'ear'),relative=ear.point;
+  assert.ok(relative.y>ear.subject.y+ear.subject.radius*.5,'the elevated ear remains reachable');
   const hit=stepArrow(ear.shot,.02,stage,0);
   assert.equal(hit?.score,3);assert.equal(hit?.zone,'귀 명중');
   for(const kind of kinds){
-    const stage=range(kind),blank=crossingShot(stage,anatomy[kind].blank);
+    const stage=range(kind),blank=crossingShot(stage,[-.18,.58]);
     assert.ok(Math.hypot((blank.point.x-blank.subject.x)/blank.subject.rx,(blank.point.y-blank.subject.y)/blank.subject.ry)<1);
     const result=stepArrow(blank.shot,.02,stage,0);
     assert.equal(result,null);assert.equal(blank.shot.targetPassed,true);assert.equal(blank.shot.active,true);
@@ -207,7 +209,7 @@ test('the fall and attached arrows share one transform with no impact jump or co
     }
   }
   const stage=range('rabbit'),initial=targetAt(stage,0);
-  const paw=scoreAnimalPoint(world(initial,anatomy.rabbit.leg),initial);
+  const paw=scoreAnimalPoint(visiblePart(initial,'leg'),initial);
   const impact=targetAt(stage,2);applyAnimalHit(stage,impact,5,2);
   const settled=getAnimalAttachmentPoint(targetAt(stage,3),paw.animalAttachment);
   assert.deepEqual(getAnimalAttachmentPoint(targetAt(stage,4),paw.animalAttachment),settled,
@@ -230,8 +232,8 @@ test('airborne bodies and attached arrows descend under gravity and rest on thei
     const attached=getAnimalAttachmentPoint(settled,hit.animalAttachment);
     assert.ok(attached.y<point.y);assert.ok(attached.y>=0,'the lodged heart arrow rests above the floor with its body');
     assert.deepEqual(attached,getAnimalAttachmentPoint(later,hit.animalAttachment));
-    const geometry=getAnimalGeometry(kind,impact.poseTime),pose=getAnimalFallPose(settled);
-    const minY=Math.min(...geometry.groundHull.map(p=>settled.y-(Math.sin(pose.rotation)*p.x+Math.cos(pose.rotation)*p.y*pose.scaleY)*settled.radius));
+    const mesh=wildlifeMesh(kind,settled.gaitPhase,settled.bank,settled.landing),pose=getAnimalFallPose(settled);
+    let minY=Infinity;for(let i=0;i<mesh.v.length;i+=8)minY=Math.min(minY,settled.y+(Math.cos(pose.rotation)*mesh.v[i+1]*pose.scaleY-Math.sin(pose.rotation)*mesh.v[i])*settled.radius);
     assert.ok(minY>=0&&minY<.01*settled.radius,'a visible body edge contacts the ground instead of hovering');
   }
 });

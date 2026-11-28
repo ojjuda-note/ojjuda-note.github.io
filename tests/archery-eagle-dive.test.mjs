@@ -1,3 +1,4 @@
+import {wildlifeMesh} from '../games/forest-archer/wildlife.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {STAGES,BOWS,ARROWS,PLAYER,GRAVITY,prepareStage,targetAt,getSpeed,launchArrow,stepArrow,applyAnimalHit} from '../games/forest-archer/engine.mjs';
@@ -23,10 +24,10 @@ function touchdown(stage,passId=0){
 }
 
 function paintedBottom(subject){
-  getAnimalGroundHeight(subject); // Build the same painted contour used by drawing.
-  const geometry=getAnimalGeometry(subject.kind,subject.poseTime),pose=getAnimalFallPose(subject);
-  return Math.min(...geometry.groundHull.map(point=>subject.y-
-    (Math.sin(pose.rotation)*point.x+Math.cos(pose.rotation)*point.y*pose.scaleY)*subject.radius));
+  const mesh=wildlifeMesh(subject.kind,subject.gaitPhase,subject.bank,subject.landing),pose=getAnimalFallPose(subject);
+  let bottom=Infinity;for(let i=0;i<mesh.v.length;i+=8)bottom=Math.min(bottom,subject.y+
+    (Math.cos(pose.rotation)*mesh.v[i+1]*pose.scaleY-Math.sin(pose.rotation)*mesh.v[i])*subject.radius);
+  return bottom;
 }
 
 test('every eagle lesson descends to a visible painted ground contact and rises in each seeded pass',()=>{
@@ -124,7 +125,7 @@ test('actual shots, coaching and attached arrows agree with the eagle at ground 
 });
 
 test('an eagle killed at touchdown rotates on top of the ground and keeps the next pass unchanged',()=>{
-  let supportIncreased=false;
+  let supportChanged=false;
   for(const seed of[0,5,19,42,71,97]){
     const stage=prepareStage(eagles[0],seed),clean=prepareStage(eagles[0],seed),{time,target,duration}=touchdown(stage);
     const hit=scoreAnimalPoint(getAnimalAimPoint(target),target);
@@ -134,7 +135,7 @@ test('an eagle killed at touchdown rotates on top of the ground and keeps the ne
     close(impact.y,target.y);assert.equal(impact.x,target.x);
     for(let sample=0;sample<=40;sample++){
       const corpse=targetAt(stage,time+sample*.01,target.passId),support=getAnimalGroundHeight(corpse);
-      supportIncreased||=support>target.y+1e-6;
+      supportChanged||=Math.abs(support-target.y)>1e-6;
       assert.ok(paintedBottom(corpse)>=-1e-9,'rotation must not push a wing below the ground');
       assert.equal(corpse.x,target.x);assert.equal(corpse.z,target.z);assert.equal(corpse.poseTime,target.poseTime);
       assert.equal(corpse.dead,true);assert.equal(corpse.health,0);
@@ -144,5 +145,5 @@ test('an eagle killed at touchdown rotates on top of the ground and keeps the ne
     close(settled.y,getAnimalGroundHeight(settled));
     assert.deepEqual(targetAt(stage,duration+.001),targetAt(clean,duration+.001));
   }
-  assert.ok(supportIncreased,'the fixture covers a rotating wing that needs more support than the live tail');
+  assert.ok(supportChanged,'the fixture covers a settling pose changes its point of contact with the turf');
 });

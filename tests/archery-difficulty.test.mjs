@@ -1,3 +1,4 @@
+import {gaits,gaitLift} from '../games/forest-archer/wildlife.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { PLAYER, BOWS, ARROWS, STAGES, DISTANCE_STAGES, DISTANCE_GROUPS, STAGE_GEAR_BANDS, MISSION_GROUPS, LEGACY_STAGE_MAP, CATALOG_V1_STAGE_MAP, LONG_RANGE_DISTANCES, LONG_RANGE_LESSONS, prepareStage, targetAt, passersAt, createClayEvent, eventTargetsAt, launchArrow, stepArrow, getArrowMass, getArrowConsistency, getArrowDragRate, getWindResponse } from '../games/forest-archer/engine.mjs';
@@ -404,7 +405,8 @@ test('each animal keeps its own body shape and characteristic motion without rev
       assert.ok((current.x - previous.x) * start.direction > 0);
       assert.equal(current.passId, start.passId);assert.equal(current.direction, start.direction);
       if(kind==='eagle')assert.ok(current.y>=getAnimalGroundHeight(current)-1e-9,'the swooping eagle keeps its painted body above the ground');
-      else assert.ok(current.y - current.ry > 0, 'the hit envelope stays above the ground');
+      else if(!gaits[kind])assert.ok(current.y-current.ry>0,'flying birds clear the ground');
+      else assert.ok(current.y>0,'ground animals plant their feet beneath the body');
       heights.push(current.y); velocities.push(Math.abs(current.velocityX));previous = current;
     }
     assert.ok(Math.max(...velocities) > Math.min(...velocities) * 1.3);
@@ -463,7 +465,7 @@ test('visible species motion has real hops, large leaps, quick bird waves and st
       const visible=samples.filter(t=>Math.abs(t.x-(stage.targetX||0))<distance*.42);
       const heights=visible.map(t=>t.y),speeds=visible.map(t=>Math.abs(t.velocityX));
       metrics[kind]={range:(Math.max(...heights)-Math.min(...heights))/stage.radius,
-        variation:Math.max(...speeds)/Math.min(...speeds),ground:visible.filter(t=>t.y===stage.height).length/visible.length,
+        variation:Math.max(...speeds)/Math.min(...speeds),ground:visible.filter(t=>gaits[kind]&&gaitLift(kind,t.gaitPhase)===0).length/visible.length,
         turns:samples.slice(1,-1).filter((t,i)=>(t.y-samples[i].y)*(samples[i+2].y-t.y)<0).length};
     }
     assert.ok(metrics.rabbit.range>.35&&metrics.rabbit.ground>.3,'rabbit hops visibly leave and return to the ground');

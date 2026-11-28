@@ -1,6 +1,7 @@
+import {gaits,gaitLift,gaitBob,modelScale,wildlifeSupport} from './wildlife.mjs?v=20261128-wildlife1';
 /** Deterministic metre/second archery simulation. Coordinates: x right, y up, z forward. */
-import {isAnimalKind,scoreAnimalPoint,getAnimalGroundHeight} from './animal-zones.mjs?v=20261104-archery-eagle-dive1';
-export {getAnimalAimPoint,getAnimalAttachmentPoint} from './animal-zones.mjs?v=20261104-archery-eagle-dive1';
+import {isAnimalKind,scoreAnimalPoint,getAnimalGroundHeight} from './animal-zones.mjs?v=20261128-wildlife1';
+export {getAnimalAimPoint,getAnimalAttachmentPoint} from './animal-zones.mjs?v=20261128-wildlife1';
 export const PLAYER = Object.freeze({ x: 0, y: 1.65, z: 0 });
 export const GRAVITY = 9.81;
 export const WIND_RESPONSE = 2.5;
@@ -664,20 +665,19 @@ function arrangeHiddenRange(template) {
   adjusted.obstacles=hiddenCover(adjusted);
   return {...adjusted,difficulty:stageDifficulty(adjusted)};
 }
-// These fast crossings need a readable middle before the arrow arrives. Keep
-// their total crossing time and vertical motion; the entry/exit stays fast.
-// Apply after long-range expansion so a repair never spreads to other ranges.
 const animalApproachEase=Object.freeze({68:.35,72:.25,196:.30});
+const cruisingSpeed={rabbit:3.4,wildcat:4.9,deer:8,pigeon:11,eagle:6.8,cheetah:16,bird:9};
 function arrangeAnimalTracking(template) {
-  const adjusted=Object.hasOwn(animalApproachEase,template.id)?{...template,approachEase:animalApproachEase[template.id]}:template;
-  if(adjusted.kind!=='eagle')return adjusted;
-  // A broad soaring pass must leave time to see, lead and release a real arrow.
-  // Apply once after range expansion, keeping every eagle lesson readable while
-  // the other animals and the doubled circular-target speed stay independent.
-  const eagle={...adjusted,passDuration:adjusted.passDuration*2,
-    paceVariation:Math.min(adjusted.paceVariation??1,.55),
-    motion:{...adjusted.motion,amplitudeY:adjusted.motion.amplitudeY*.6}};
-  return {...eagle,difficulty:stageDifficulty(eagle)};
+  const speed=cruisingSpeed[template.kind];if(!speed)return template;
+  const {distance,radius}=template,halfCrossing=distance*1.25+radius*3;
+  const duration=template.passDuration*(template.kind==='eagle'?2:1)*halfCrossing/(distance*.56+radius*2);
+  const adjusted={...template,passDuration:Math.max(duration,2*halfCrossing/(speed*radius))};
+  if(Object.hasOwn(animalApproachEase,template.id))adjusted.approachEase=animalApproachEase[template.id];
+  if(template.kind==='eagle'){
+    adjusted.paceVariation=Math.min(template.paceVariation??1,.55);
+    adjusted.motion={...template.motion,amplitudeY:template.motion.amplitudeY*.6};
+  }
+  return {...adjusted,difficulty:stageDifficulty(adjusted)};
 }
 export const STAGES = Object.freeze([...introductoryStages,...longRangeStages(introductoryStages)]
   .map(arrangeHiddenRange).map(arrangeAnimalTracking));
@@ -781,7 +781,7 @@ const animalPace = Object.freeze({
 // The live eagle's tail is its lowest painted point throughout the wing cycle.
 // Derive its support once from the shared silhouette, not a broad hit envelope
 // or a fresh geometry allocation at every prediction/physics sample.
-const eagleGroundRadius = getAnimalGroundHeight({kind:'eagle',x:0,y:0,z:1,radius:1,poseTime:0});
+const eagleGroundRadius = wildlifeSupport({kind:'eagle',radius:1,gaitPhase:0,bank:0});
 function hashUnit(value) {
   value = Math.imul(value ^ (value >>> 16), 0x7feb352d);
   value = Math.imul(value ^ (value >>> 15), 0x846ca68b);
@@ -841,7 +841,7 @@ export function applyAnimalHit(stage,target,score,worldTime=target?.poseTime??0)
   const entry={damage:total,killed,hits:[...(existing?.hits||[]),{time:worldTime,score}]};
   if(killed){
     entry.deathTime=worldTime;
-    entry.frozen={x:target.x,y:target.y,z:target.z,direction:target.direction,
+    entry.frozen={x:target.x,y:target.y,z:target.z,direction:target.direction,gaitPhase:target.gaitPhase,bank:target.bank,landing:target.landing,
       poseTime:Number.isFinite(target.poseTime)?target.poseTime:worldTime};
   }
   stage.animalState[passId]=entry;
@@ -880,7 +880,7 @@ function animalMotion(stage, time, forcedPassId) {
   const random = salt => hashUnit(passSeed ^ salt);
   const direction = random(0x243f6a88) < .5 ? -1 : 1;
   const phase = random(0xb7e15162) * Math.PI * 2, secondPhase = random(0x8aed2a6b) * Math.PI * 2;
-  const variation = clamp(stage.paceVariation ?? 1, .2, 1);
+  const variation = clamp(stage.paceVariation ?? 1, .2, 1)*(stage.kind==='bird'?1:.82);
   const profile=animalPace[stage.kind],a=profile.a*(.9+random(0x9e3779b9)*.1)*variation,
     b=profile.b*(.9+random(0x3c6ef372)*.1)*variation;
   const approach = clamp(stage.approachEase || 0, 0, Math.min(.45,.94-a-b));
@@ -892,6 +892,7 @@ function animalMotion(stage, time, forcedPassId) {
   const rate = 1 + approach * Math.cos(tau*u) + a*Math.cos(tau*profile.beats*u+phase)+b*Math.cos(tau*profile.secondBeats*u+secondPhase);
   const span = stage.distance * 1.25 + (stage.radius || 1.25) * 3;
   const x = (stage.targetX || 0) + direction * span * (2 * progress - 1);
+  let gaitPhase,bank=0,landing=0;
   let y = stage.height ?? (flyingKinds.has(stage.kind) ? 4.8 : stage.kind === 'rabbit' ? .7 : 1.65);
   if (stage.kind === 'eagle') {
     const radius = stage.radius || 1.25, center = stage.targetX || 0;
@@ -906,22 +907,28 @@ function animalMotion(stage, time, forcedPassId) {
     // Smooth at both the ground and the upper glide. Using the same monotone
     // horizontal path keeps the contact inside the view despite pace changes.
     const rise = away * away * (3 - 2 * away);
+    landing=(1-rise)*(1-rise);
+    bank=direction*Math.sign(x-touchX)*away*(1-away)*.94;
+    gaitPhase=progress*duration*timeScale*2.2+phase;
     y = ground + Math.max(radius, y - ground + (stage.motion?.amplitudeY || 0)) * rise;
   } else if (flyingKinds.has(stage.kind)) {
     const amplitude = stage.motion?.amplitudeY || .7;
     const cycles = stage.kind === 'pigeon' ? 4.8 + random(0xa54ff53a) : 2.4 + random(0xa54ff53a);
+    gaitPhase=progress*duration*timeScale*(stage.kind==='pigeon'?10.2:8.5)+phase;
+    bank=.27*Math.cos(tau*cycles*u+phase);
     y += amplitude * (.72 * Math.sin(tau * cycles * u + phase) + .28 * Math.sin(tau * (cycles + .8) * u + secondPhase));
   } else {
     const amplitude = stage.motion?.amplitudeY || 0;
-    const leaps=stage.kind==='rabbit'||stage.kind==='deer';
-    const frequency = stage.kind==='rabbit'?1.8:stage.kind==='wildcat'?2.8:stage.kind==='deer'?.85:3.5;
-    // Root movement follows the animal while the drawing only animates limbs.
-    // Positive smooth hops keep the body above its ground-level baseline.
-    const wave=Math.sin(t*timeScale*Math.PI*frequency*(leaps?2:1)+phase);
-    const stride=leaps?Math.max(0,wave):wave;
-    y += amplitude * stride * stride;
+    const gait=gaits[stage.kind],radius=stage.radius||1.25;
+    gaitPhase=tau*progress*span*2/(gait.stride*radius*modelScale)+phase;
+    const lift=gaitLift(stage.kind,gaitPhase);
+    // Elevated custom courses preserve their platform height. On the meadow a
+    // planted foot meets the turf, and only an airborne gait raises the root.
+    const footLevel=radius*modelScale*(gait.foot+.037);
+    y=(y<=1.58*radius?footLevel:y)+amplitude*lift+radius*modelScale*gaitBob(stage.kind,gaitPhase);
+
   }
-  return { x, y, passId, direction, passDuration: duration, velocityX: direction * span * 2 / duration * rate, active: true };
+  return { x, y, gaitPhase, bank, landing, passId, direction, passDuration: duration, velocityX: direction * span * 2 / duration * rate, active: true };
 }
 
 function eventTargetAt(stage, time, passId) {

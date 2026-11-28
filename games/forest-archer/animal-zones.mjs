@@ -1,3 +1,4 @@
+import {pickWildlife,wildlifeAttachment,wildlifeSupport,modelScale} from './wildlife.mjs?v=20261128-wildlife1';
 /** Shared painted animal shapes, scoring and attachments. Local y points down. */
 const TAU = Math.PI * 2;
 const zones = Object.freeze({heart:{score:10,zone:'심장 명중'},head:{score:8,zone:'머리 명중'},
@@ -368,6 +369,7 @@ export function getAnimalGeometry(kind,time=0) {
 /** Ground support comes from the same visible paths, including round strokes. */
 export function getAnimalGroundHeight(target) {
   if(!validTarget(target))return 0;
+  if(Number.isFinite(target.gaitPhase))return wildlifeSupport(target,getAnimalFallPose(target));
   const geometry=getAnimalGeometry(target.kind,target.poseTime);
   if(!geometry.groundHull){
     const points=[];
@@ -401,7 +403,8 @@ function validTarget(target){return target&&isAnimalKind(target.kind)&&['x','y',
 /** A stable chest aim point; call with the target predicted at arrival time. */
 export function getAnimalAimPoint(target,zone='heart') {
   if(!validTarget(target)||target.dead||zone!=='heart')return null;
-  return worldPoint(target,hearts[target.kind]);
+  const h=hearts[target.kind],scale=Number.isFinite(target.gaitPhase)?modelScale:1;
+  return worldPoint(target,{x:h.x*scale,y:h.y*scale});
 }
 
 function weights(p,a,b,c) {
@@ -454,6 +457,14 @@ function attachToPrimitive(point,primitive,index) {
 export function scoreAnimalPoint(point,target,time=target?.poseTime??0) {
   if(!validTarget(target)||target.active===false||target.dead||!point||!Number.isFinite(point.x)||!Number.isFinite(point.y))return null;
   const local={x:(point.x-target.x)/target.radius*(target.direction<0?-1:1),y:(target.y-point.y)/target.radius};
+  if(Number.isFinite(target.gaitPhase)){
+    const heart=hearts[target.kind];
+    if(((local.x/modelScale-heart.x)/heart.rx)**2+((local.y/modelScale-heart.y)/heart.ry)**2<=1){
+      return {...zones.heart,part:'heart',animalAttachment:{kind:target.kind,part:'heart',type:'chest',local}};
+    }
+    const hit=pickWildlife(target,point);
+    return hit?{...zones[hit.part],part:hit.part,animalAttachment:{...hit,kind:target.kind}}:null;
+  }
   const geometry=getAnimalGeometry(target.kind,time);
   for(const part of ['heart','head','body','leg','ear']) {
     for(let index=geometry.primitives.length-1;index>=0;index--) {
@@ -468,6 +479,8 @@ export function scoreAnimalPoint(point,target,time=target?.poseTime??0) {
 /** Follow the exact moving ear/leg/wing primitive an arrow originally hit. */
 export function getAnimalAttachmentPoint(target,attachment,time=target?.poseTime??0) {
   if(!validTarget(target)||!attachment||attachment.kind!==target.kind)return null;
+  if(attachment.type==='chest')return worldPoint(target,attachment.local);
+  if(attachment.type==='wildlife')return wildlifeAttachment(target,attachment,getAnimalFallPose(target));
   const clock=target.dead&&Number.isFinite(target.poseTime)?target.poseTime:time;
   const primitive=getAnimalGeometry(target.kind,clock)?.primitives[attachment.index],sub=primitive?.paths[attachment.path];
   if(!sub)return null;
