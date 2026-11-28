@@ -1,5 +1,5 @@
 /** Bullet-time presentation of a resolved shot. Never advances or changes physics. */
-import {NEAR_PLANE, projectPoint, lerpCamera} from './view.mjs?v=20261104-archery-eagle-dive1';
+import {NEAR_PLANE, projectPoint, lerpCamera} from './view.mjs?v=20261128-range-camera1';
 
 export const BULLET_REPLAY_DISTANCE = 6.4;
 export const BULLET_FLIGHT_DURATION = .82;

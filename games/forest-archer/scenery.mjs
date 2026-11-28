@@ -1,3 +1,4 @@
+import {drawRangeLandscape,prepareRangeLandscape} from './range-projection.mjs?v=20261128-range-camera1';
 import {drawWildlife} from './wildlife.mjs?v=20261128-wildlife1';
 // Range paintings, world objects, and first-person equipment use CSS pixels.
 // Distant art and tree sprites are cached; world scenery follows the camera.
@@ -243,7 +244,7 @@ function paintTerrain(ctx,w,h,palette,camera,project,backdrop,baseFocal,distance
   // Distant scenery has small parallax, while nearby objects use full world
   // projection. Overscan covers normal aiming pans and the eased chase view.
   const dx=camera.cx-w*.5*zoom-camera.x*camera.focal/350;
-  const dy=camera.horizon-backdrop.horizon*zoom-(camera.y-1.65)*camera.focal/350;
+  const dy=camera.horizon-backdrop.horizon*zoom+(camera.y-1.65)*camera.focal/350;
   ctx.drawImage(backdrop.canvas,dx-backdrop.ox*zoom,dy-backdrop.oy*zoom,w*2*zoom,h*1.6*zoom);
   drawGround(ctx,w,h,camera,project,palette);drawWorldTrees(ctx,w,h,camera,project,palette);
   drawDistancePosts(ctx,w,h,camera,project,distance);
@@ -276,33 +277,6 @@ function paintedAsset(name){
 function rangePhotograph(distance){
   return paintedAsset(distance>=90?'seorak-moon':distance>=40?'seorak-sunset':'seorak-dawn');
 }
-function paintRangePhoto(ctx,w,h,camera,baseFocal,image){
-  const horizon=.51,iw=image.naturalWidth,ih=image.naturalHeight;
-  const cover=Math.max(w/iw,h*.405/(ih*horizon),h*.595/(ih*(1-horizon)));
-  const zoom=Math.max(1,Math.min(4,camera.focal/baseFocal));
-  const scale=cover*1.045*zoom*(1+Math.min(.11,Math.max(0,camera.z)/750));
-  const width=iw*scale,height=ih*scale;
-  const cx=w*.5+(camera.cx-w*.5)*.65-camera.x*camera.focal/290;
-  const cy=h*.405+(camera.horizon-h*.405)*.72+(camera.y-1.65)*camera.focal/290;
-  const x=Math.min(0,Math.max(w-width,cx-width*.5));
-  const y=Math.min(0,Math.max(h-height,cy-height*horizon));
-  ctx.drawImage(image,x,y,width,height);
-  // Reproject the near meadow towards the viewer while the distant ridge holds its position.
-  const travel=1-Math.exp(-Math.max(0,camera.z)/24);
-  if(travel<.003)return;
-  const seam=y+height*horizon,visible=Math.max(1,h-seam);
-  const first=Math.max(0,Math.floor(seam)),step=Math.max(6,Math.ceil(h/44));
-  function sourceY(screenY){
-    const down=screenY-seam,weight=Math.max(0,down/visible);
-    return ((seam+down/(1+.43*travel*weight))-y)*ih/height;
-  }
-  for(let top=first;top<h;top+=step){
-    const bottom=Math.min(h,top+step+1),sy=sourceY(top),sb=sourceY(bottom);
-    const weight=Math.max(0,((top+bottom)*.5-seam)/visible),stretch=1+.24*travel*weight;
-    ctx.drawImage(image,0,sy,iw,Math.max(.1,sb-sy),cx+(x-cx)*stretch,top,width*stretch,bottom-top);
-  }
-}
-
 const meadowDetails=Array.from({length:54},(_,i)=>{
   const random=rng(72419+i*7151),side=i%2?1:-1;
   return {y:0,z:3+i*2.85+random()*1.5,x:side*(1.3+random()*2.8),width:.36+random()*.46,variant:i%3};
@@ -327,7 +301,8 @@ export function drawScenery(ctx,w,h,options={}) {
   ctx.save();
   const photo=rangePhotograph(distance);
   if(photo){
-    paintRangePhoto(ctx,w,h,camera,baseFocal,photo);
+    prepareRangeLandscape(photo);
+    drawRangeLandscape(ctx,w,h,camera,photo,distance>=90?.535:distance>=40?.485:.545);
     drawMeadowDetails(ctx,w,h,camera,project,distance);
     drawDistancePosts(ctx,w,h,camera,project,distance);
   }else{
@@ -350,8 +325,19 @@ export function drawScenery(ctx,w,h,options={}) {
   }
   const time=Number(options.time)||0,wind=Number(options.stage?.wind)||0;
   for(let i=0;i<windLeafCount(wind);i++){
-    const leaf=windLeafAt(i,time,w,h,wind),r=leaf.radius;
-    ctx.save();ctx.translate(leaf.x,leaf.y);ctx.rotate(leaf.rotation);ctx.globalAlpha=.40+leaf.depth*.22;
+    const leaf=windLeafAt(i,time,w,h,wind);
+    // Pass each airborne leaf at its own depth. Fade it outside the visible
+    // band before the next leaf enters, including on the way back to the bow.
+    const band=32,home=5+leaf.depth*17,phase=wrap(i*.618034+.17,1);
+    const depth=2+wrap(phase*band-camera.z,band);
+    const p=project({x:(leaf.x-w*.5)*home/baseFocal,
+      y:1.65+(h*.405-leaf.y)*home/baseFocal,z:camera.z+depth});
+    const edge=Math.min(leaf.x+12,w+12-leaf.x,leaf.y+12,h*.78+12-leaf.y);
+    const alpha=Math.min(1,(depth-2)/3,(34-depth)/4,Math.max(0,edge)/21);
+    if(!p.visible||alpha<.02)continue;
+    const r=Math.min(leaf.radius*2.1,leaf.radius*home*p.scale/baseFocal);
+    if(p.x< -r*2||p.x>w+r*2||p.y< -r*2||p.y>h+r*2)continue;
+    ctx.save();ctx.translate(p.x,p.y);ctx.rotate(leaf.rotation);ctx.globalAlpha=alpha*(.32+leaf.depth*.2);
     ctx.beginPath();ctx.moveTo(-r,0);ctx.quadraticCurveTo(-r*.12,-r*.88,r,0);ctx.quadraticCurveTo(-r*.12,r*.72,-r,0);
     ctx.fillStyle=i%3?palette.bloom:palette.leaf;ctx.fill();line(ctx,-r*1.45,0,r*.68,0,'#7a8b59',.7);ctx.restore();
   }

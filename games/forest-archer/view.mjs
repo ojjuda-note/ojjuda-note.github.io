@@ -91,6 +91,22 @@ export function lerpCamera(from = {}, to = {}, t = 0) {
   return result;
 }
 
+// Dolly along a straight path at a steady apparent rate of change in size.
+// Linear travel in metres rushes away from a close hit.
+export function returnView(from,to,anchor,t) {
+  const u=clamp01(t),view=lerpCamera(from,to,u);
+  if(u===0||u===1||!pointIsFinite(anchor))return view;
+  const start=anchor.z-from.z,end=anchor.z-to.z;
+  if(start<=NEAR_PLANE||end<=NEAR_PLANE||from.focal<=0||to.focal<=0)return view;
+  const depth=start*Math.pow(end/start,u);
+  view.focal=from.focal*Math.pow(to.focal/from.focal,u);
+  view.z=anchor.z-depth;
+  const travel=Math.abs(end-start)>.0001?(depth-start)/(end-start):u;
+  view.x=from.x+(to.x-from.x)*travel;
+  view.y=from.y+(to.y-from.y)*travel;
+  return view;
+}
+
 /** A trailing view, eased out of the original shooting position over five metres. */
 export function desiredFollowCamera(position, baseCamera, viewport = {}) {
   const w = Math.max(1, finite(viewport.w, 1)), h = Math.max(1, finite(viewport.h, 1));
